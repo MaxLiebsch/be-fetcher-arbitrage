@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start-fetch": "cross-env NODE_ENV=development nodemon --ignore ./data/  --exec node ./index.js",
     "start": "cross-env NODE_ENV=production node ./index.js",
