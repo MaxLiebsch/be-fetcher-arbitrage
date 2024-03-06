@@ -1,4 +1,4 @@
-import pkg2, {
+import {
   CrawlerQueue,
   crawlShopClean,
 } from "@dctrbx/mediprixpackage";
