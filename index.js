@@ -65,6 +65,7 @@ async function main() {
     }
     console.log("BrowserHealth", await queue.browserHealth());
     console.log("Queue is idle:", queue.idle());
+    console.log("Products:", products.length);
   }, 5000);
 }
 
