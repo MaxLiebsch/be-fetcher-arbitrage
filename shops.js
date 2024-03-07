@@ -77,6 +77,9 @@ export const shops = {
     ],
   },
   "idealo.de": {
+    resourceTypes: {
+      crawl: ['media', 'font', 'stylesheet', 'ping','image', 'xhr', 'fetch', 'imageset','sub_frame']
+    },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
     queryUrlSchema: [
       {
@@ -85,7 +88,7 @@ export const shops = {
       },
     ],
     d: "idealo.de",
-    mimic: 'svg.i-header-logo-image',
+    mimic: "svg.i-header-logo-image",
     purlschema: "Prod\\w*\\/\\d*",
     action: [
       {

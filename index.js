@@ -27,9 +27,9 @@ async function main() {
       if (productStr) {
         const _products = JSON.parse(productStr);
         _products.push(product);
-        write("./data/idealo/products.json", JSON.stringify(_products));
+        write("./data/shop/products.json", JSON.stringify(_products));
       } else {
-        write("./data/idealo/products.json", JSON.stringify([product]));
+        write("./data/shop/products.json", JSON.stringify([product]));
       }
       products.push(product);
       const endTime = Date.now();
