@@ -441,6 +441,7 @@ export const shops = {
         "fetch",
         "imageset",
         "sub_frame",
+        "script"
       ],
     },
     d: "amazon.de",
@@ -517,6 +518,7 @@ export const shops = {
         "fetch",
         "imageset",
         "sub_frame",
+        "script"
       ],
     },
     d: "ebay.de",

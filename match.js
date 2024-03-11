@@ -38,10 +38,9 @@ const main = async () => {
 
   const rawproducts = read("./data/shop/products.json", "json");
 
-
-
-
   if (!rawproducts) return;
+
+  const shuffled = _.shuffle(rawproducts)
 
   const babapromiseArr = [];
 
@@ -56,11 +55,11 @@ const main = async () => {
       process.exit(0);
     }
     console.log("BrowserHealth", await queue.browserHealth());
-    console.log(done, " products matched from", rawproducts.length);
+    console.log(done, " products matched from", shuffled.length);
   }, 5000);
 
-  for (let index = 0; index < rawproducts.length; index++) {
-    const product = rawproducts[index];
+  for (let index = 0; index < shuffled.length; index++) {
+    const product = shuffled[index];
     const {
       name: nm,
       description: dscrptn,
@@ -128,9 +127,12 @@ const main = async () => {
 
     babapromiseArr.push(
       Promise.all(_shops).then((res) => {
-        console.log('res:', res.map(({products,targetShop})=>{
-            return `${products.length} from shop ${targetShop.d}`
-        }))
+        console.log(
+          "res:",
+          res.map(({ products, targetShop }) => {
+            return `${products.length} from shop ${targetShop.d}`;
+          })
+        );
         const _candidates = {
           "ebay.de": [],
           "amazon.de": [],
@@ -156,6 +158,13 @@ const main = async () => {
           }
         });
         done += 1;
+        const products = read("./data/shop/matched_products.json", "json");
+        if (products) {
+          products.push(result);
+          write("./data/shop/matched_products.json", products);
+        } else {
+          write("./data/shop/matched_products.json", [result]);
+        }
         write(`./data/shop/raw/${slug(result.nm)}.json`, {
           s: result.s,
           nm: result.nm,
@@ -167,15 +176,13 @@ const main = async () => {
       })
     );
   }
-  const res = await Promise.all(babapromiseArr);
+  await Promise.all(babapromiseArr);
   const endTime = Date.now();
   const elapsedTime = (endTime - startTime) / 1000 / 60;
-  write("./data/shop/matching_result.json", res);
   write(
     "./data/shop/elapsedMatchTime.txt",
     `${done} took ` + elapsedTime.toFixed(2) + " min"
   );
-
 };
 
 main();
