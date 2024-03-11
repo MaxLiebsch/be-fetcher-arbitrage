@@ -56,11 +56,11 @@ const main = async () => {
       process.exit(0);
     }
     console.log("BrowserHealth", await queue.browserHealth());
-    console.log(done, " products matched from", _rawproducts.length);
+    console.log(done, " products matched from", rawproducts.length);
   }, 5000);
 
-  for (let index = 0; index < _rawproducts.length; index++) {
-    const product = _rawproducts[index];
+  for (let index = 0; index < rawproducts.length; index++) {
+    const product = rawproducts[index];
     const {
       name: nm,
       description: dscrptn,
