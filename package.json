@@ -5,17 +5,24 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start-fetch": "cross-env NODE_ENV=development nodemon --ignore ./data/  --exec node ./index.js",
-    "start": "cross-env NODE_ENV=production node ./index.js",
+    "dev:fetch": "cross-env NODE_ENV=development nodemon --ignore ./data/  --exec node ./index.js",
+    "dev:match": "cross-env NODE_ENV=development nodemon --ignore ./data/  --exec node ./match.js",
+    "prod:fetch": "cross-env NODE_ENV=production node ./index.js",
+    "prod:match": "cross-env NODE_ENV=production node ./match.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "convert-units": "^2.3.4",
     "cross-env": "^7.0.3",
     "fs-jetpack": "^5.1.0",
     "nodemon": "^3.1.0",
+    "parse-price": "^1.1.8",
     "puppeteer": "^22.4.0",
     "underscore": "^1.13.6"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
   }
 }

@@ -1,20 +1,24 @@
 import {
   CrawlerQueue,
-  crawlShopClean,
+  crawlShop,
 } from "@dctrbx/mediprixpackage";
 
 import { shops } from "./shops.js";
 import pkg from "fs-jetpack";
 const { write, read } = pkg;
+import { config } from "dotenv";
+import 'dotenv/config'
+
+config({path: `.env.${process.env.NODE_ENV}`})
 
 const proxyAuth = {
-  host: "rp.proxyscrape.com:6060",
-  username: "4a2lvpvkrwf3zgi-country-de",
-  password: "myuk165vxsk5fdq",
+  host: process.env.PROXY_HOST,
+  username: process.env.PROXY_USERNAME,
+  password: process.env.PROXY_PASSWORD,
 };
 
 async function main() {
-  const queue = new CrawlerQueue(4, proxyAuth);
+  const queue = new CrawlerQueue(8, proxyAuth);
   await queue.connect();
   const shopDomain = "idealo.de";
   const products = [];
@@ -43,14 +47,14 @@ async function main() {
       }
     }
   };
-  queue.pushTask(crawlShopClean, {
+  queue.pushTask(crawlShop, {
     parent: null,
     parentPath: "",
     shop: shops[shopDomain],
     addProduct,
     queue,
     prio: 0,
-    pageInfo: { link: "https://www.idealo.de", name: "Idealo" },
+    pageInfo: { link: "https://www." + shopDomain , name: "Idealo" },
   });
 
   setInterval(async () => {
@@ -64,8 +68,7 @@ async function main() {
       process.exit(0);
     }
     console.log("BrowserHealth", await queue.browserHealth());
-    console.log("Queue is idle:", queue.idle());
-    console.log("Products:", products.length);
+    console.log("Products crawled:", products.length);
   }, 5000);
 }
 

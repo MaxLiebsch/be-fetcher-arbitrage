@@ -1,84 +1,17 @@
 export const shops = {
-  "suchen.mobile.de": {
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    queryUrlSchema: [
-      {
-        baseUrl: `https://suchen.mobile.de/fahrzeuge/search.html?isSearchRequest=true&ms=<query>&od=down&s=Truck&sb=doc&vc=ConstructionMachine`,
-        searchParams: {
-          queryPart: {
-            seperator: ";;;",
-          },
-          brand: {
-            key: "key",
-          },
-          year: {
-            param: "&yc=",
-            min: "",
-            max: ":",
-          },
-        },
-        category: "ConstructionMachine",
-      },
-    ],
-    entryPoint: [
-      {
-        url: "https://suchen.mobile.de/fahrzeuge/search.html?s=Truck&vc=ConstructionMachine",
-        category: "ConstructionMachine",
-      },
-    ],
-    queryActions: [
-      {
-        type: "button",
-        sel: "button.mde-consent-accept-btn",
-        action: "click",
-        wait: false,
-      },
-    ],
-    paginationEl: {
-      type: "pagination",
-      sel: "div[data-testid='srp-pagination']",
-      nav: "&pageNumber=",
-      button: {
-        sel: "div[data-testid=srp-pagination] button.FxqoS.cq2eI.ZUdn6 span span",
-        hint: "span span",
-        wait: true,
-      },
-    },
-    productList: [
-      {
-        sel: 'article[data-testid="result-list-container"]',
-        product: {
-          sel: 'a[data-testid*="result-listing-"]',
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img[data-testid*='result-listing-image-']",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "a[data-testid*='result-listing-'] h2",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "section[data-testid='listing-details']",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "span[data-testid='price-label']",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
   "idealo.de": {
     resourceTypes: {
-      crawl: ['media', 'font', 'stylesheet', 'ping','image', 'xhr', 'fetch', 'imageset','sub_frame']
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+      ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
     queryUrlSchema: [
@@ -266,171 +199,6 @@ export const shops = {
             {
               content: "price",
               sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
-  "machineryline.info": {
-    waitUntil: { product: "load", entryPoint: "domcontentloaded" },
-    entryPoint: "https://machineryline.info",
-    queryUrlSchema: [
-      {
-        baseUrl: `https://machineryline.info/search_text.php?query=<query>`,
-        category: "default",
-      },
-    ],
-    queryActions: [
-      {
-        sel: "div.items a",
-        type: "button",
-        name: "QueryAction 3",
-        wait: true,
-        action: "click",
-      },
-      {
-        sel: "span[data-value=cgrp1]",
-        type: "button",
-        name: "QueryAction 4",
-        wait: true,
-        action: "click",
-      },
-      {
-        sel: "input[name=ym0]",
-        type: "input",
-        name: "QueryAction 3",
-        what: ["year.min"],
-      },
-      {
-        sel: "input[name=ym1]",
-        type: "input",
-        name: "QueryAction 4",
-        what: ["year.max"],
-      },
-    ],
-    paginationEl: {
-      type: "pagination",
-      sel: "div.paginator",
-      nav: "&page=",
-      calculation: {
-        method: "first_last",
-        last: "div.paginator a.pgn-item.pgn-last",
-        sel: "div.paginator a.pgn-page",
-      },
-    },
-    productList: [
-      {
-        sel: "div.sales-list",
-        type: "container",
-        product: {
-          sel: "div.item.sales-list-item",
-          type: "container",
-          details: [
-            {
-              content: "link",
-              sel: "div.description div.title a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "picture img",
-              type: "src",
-            },
-            {
-              content: "year",
-              sel: "div.main-properties span.prop-c_year span.value",
-              type: "text",
-            },
-            {
-              content: "name",
-              sel: "div.description div.title a",
-              type: "title",
-            },
-            {
-              content: "description",
-              sel: "div.additional-properties",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.price span.price-value",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
-  "mascus.de": {
-    waitUntil: { product: "domcontentloaded", entryPoint: "networkidle2" },
-    entryPoint: "https://www.mascus.de",
-    queryUrlSchema: [
-      {
-        baseUrl: `https://www.mascus.de/<query>/catalogs=construction<year><continent>/1,relevance,search.html`,
-        searchParams: {
-          brand: {
-            key: "value",
-          },
-          contient: "&continentcodes=150",
-          year: {
-            min: "&yearofmanufacture.min=",
-            max: "&yearofmanufacture.max=",
-          },
-        },
-        suffix: "/1,relevance,search.html",
-        category: "ConstructionMachine",
-      },
-    ],
-    queryActions: [
-      // {
-      //   type: "input",
-      //   sel: "input[id='searchBarInput']",
-      //   what: ["brand", "model"],
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button[class*=SearchBar__SearchButton]",
-      //   action: "click",
-      //   wait: true,
-      // },
-    ],
-    paginationEl: {
-      type: "infinite_scroll",
-      sel: "div[class*=SearchResult_paginationUI__]",
-    },
-    productList: [
-      {
-        sel: "div[class*='SearchResult_searchResult___']",
-        type: "container",
-        product: {
-          sel: "div[class*='SearchResult_searchResultItemWrapper__']",
-          type: "container",
-          details: [
-            {
-              content: "link",
-              sel: "a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div[class*=Wrappers] div[class*=typography__Text]",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "p[class*=typography__BodyText2]",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div[class*=SearchResult_priceWrapper__]",
               type: "text",
             },
           ],
@@ -662,19 +430,40 @@ export const shops = {
   },
   "amazon.de": {
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    resourceTypes: {
+      query: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+      ],
+    },
+    d: "amazon.de",
     entryPoint: "https://www.amazon.de",
+    queryUrlSchema: [
+      {
+        baseUrl: `https://www.amazon.de/s?k=<query>`,
+        category: "default",
+      },
+    ],
+    mimic: "a[id=nav-logo-sprites]",
     queryActions: [
-      {
-        type: "input",
-        sel: "input[id='twotabsearchtextbox']",
-        what: ["product"],
-      },
-      {
-        type: "button",
-        sel: "input[id=nav-search-submit-button]",
-        action: "click",
-        wait: true,
-      },
+      // {
+      //   type: "input",
+      //   sel: "input[id='twotabsearchtextbox']",
+      //   what: ["product"],
+      // },
+      // {
+      //   type: "button",
+      //   sel: "input[id=nav-search-submit-button]",
+      //   action: "click",
+      //   wait: true,
+      // },
     ],
     paginationEl: {},
     productList: [
@@ -717,19 +506,40 @@ export const shops = {
   },
   "ebay.de": {
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    resourceTypes: {
+      query: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+      ],
+    },
+    d: "ebay.de",
+    mimic: "a[id=gh-la]",
+    queryUrlSchema: [
+      {
+        baseUrl: `https://www.ebay.de/sch/i.html?_nkw=<query>&_sacat=0`,
+        category: "default",
+      },
+    ],
     entryPoint: "https://www.ebay.de",
     queryActions: [
-      {
-        type: "input",
-        sel: "input[id=gh-ac]",
-        what: ["product"],
-      },
-      {
-        type: "button",
-        sel: "input[id=gh-btn]",
-        action: "click",
-        wait: true,
-      },
+      // {
+      //   type: "input",
+      //   sel: "input[id=gh-ac]",
+      //   what: ["product"],
+      // },
+      // {
+      //   type: "button",
+      //   sel: "input[id=gh-btn]",
+      //   action: "click",
+      //   wait: true,
+      // },
     ],
     paginationEl: {},
     productList: [
