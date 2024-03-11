@@ -36,7 +36,7 @@ const main = async () => {
   await queue.connect();
   let done = 0;
 
-  const _rawproducts = read("./data/shop/products.json", "json");
+  const rawproducts = read("./data/shop/products.json", "json");
 
   if (!_rawproducts) return;
 
@@ -45,7 +45,7 @@ const main = async () => {
   setInterval(async () => {
     const endTime = Date.now();
     const elapsedTime = (endTime - startTime) / 1000 / 60;
-    if (elapsedTime > 480) {
+    if (done === rawproducts.length || elapsedTime > 480) {
       write(
         "./data/shop/elapsedMatchTime.txt",
         `${done} took ` + elapsedTime.toFixed(2) + " min"
@@ -53,12 +53,11 @@ const main = async () => {
       process.exit(0);
     }
     console.log("BrowserHealth", await queue.browserHealth());
-    console.log(done, " products matched from", _rawproducts.length);
+    console.log(done, " products matched from", rawproducts.length);
   }, 5000);
 
-  for (let index = 0; index < _rawproducts.length; index++) {
-    const product = _rawproducts[index];
-
+  for (let index = 0; index < rawproducts.length; index++) {
+    const product = rawproducts[index];
     const {
       name: nm,
       description: dscrptn,
@@ -150,7 +149,7 @@ const main = async () => {
             result = { ...result, ...arbitrage };
           }
         });
-        done =+ 1;
+        done += 1;
         write(`./data/shop/raw/${slug(result.nm)}.json`, {
           s: result.s,
           nm: result.nm,
@@ -170,7 +169,6 @@ const main = async () => {
     "./data/shop/elapsedMatchTime.txt",
     `${done} took ` + elapsedTime.toFixed(2) + " min"
   );
-  process.exit(0);
 
 };
 
