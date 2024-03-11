@@ -56,7 +56,7 @@ const main = async () => {
     console.log(done, " products matched from", _rawproducts.length);
   }, 5000);
 
-  for (let index = 0; index < _rawproducts.slice(0, 200).length; index++) {
+  for (let index = 0; index < _rawproducts.length; index++) {
     const product = _rawproducts[index];
 
     const {
@@ -163,8 +163,15 @@ const main = async () => {
     );
   }
   const res = await Promise.all(babapromiseArr);
+  const endTime = Date.now();
+  const elapsedTime = (endTime - startTime) / 1000 / 60;
+  write("./data/shop/matching_result.json", res);
+  write(
+    "./data/shop/elapsedMatchTime.txt",
+    `${done} took ` + elapsedTime.toFixed(2) + " min"
+  );
+  process.exit(0);
 
-  write("./data/shop/machting_result.json", res);
 };
 
 main();

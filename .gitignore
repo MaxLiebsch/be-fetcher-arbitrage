@@ -3,4 +3,8 @@ node_modules
 .env.production
 .env.development
 /data/shop/products.json
+/data/shop/products_remote.json
 /data/shop/stats.json
+/data/shop/elapsedMatchTime.txt
+/data/shop/matching_result.json
+/data/shop/raw
