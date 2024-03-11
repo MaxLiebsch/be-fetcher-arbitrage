@@ -38,14 +38,17 @@ const main = async () => {
 
   const rawproducts = read("./data/shop/products.json", "json");
 
-  if (!_rawproducts) return;
+
+
+
+  if (!rawproducts) return;
 
   const babapromiseArr = [];
 
   setInterval(async () => {
     const endTime = Date.now();
     const elapsedTime = (endTime - startTime) / 1000 / 60;
-    if (done === rawproducts.length || elapsedTime > 480) {
+    if (elapsedTime > 480) {
       write(
         "./data/shop/elapsedMatchTime.txt",
         `${done} took ` + elapsedTime.toFixed(2) + " min"
@@ -53,11 +56,11 @@ const main = async () => {
       process.exit(0);
     }
     console.log("BrowserHealth", await queue.browserHealth());
-    console.log(done, " products matched from", rawproducts.length);
+    console.log(done, " products matched from", _rawproducts.length);
   }, 5000);
 
-  for (let index = 0; index < rawproducts.length; index++) {
-    const product = rawproducts[index];
+  for (let index = 0; index < _rawproducts.length; index++) {
+    const product = _rawproducts[index];
     const {
       name: nm,
       description: dscrptn,
@@ -125,6 +128,9 @@ const main = async () => {
 
     babapromiseArr.push(
       Promise.all(_shops).then((res) => {
+        console.log('res:', res.map(({products,targetShop})=>{
+            return `${products.length} from shop ${targetShop.d}`
+        }))
         const _candidates = {
           "ebay.de": [],
           "amazon.de": [],
