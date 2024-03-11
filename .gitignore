@@ -7,4 +7,5 @@ node_modules
 /data/shop/stats.json
 /data/shop/elapsedMatchTime.txt
 /data/shop/matching_result.json
+/data/shop/matched_products.json
 /data/shop/raw

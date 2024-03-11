@@ -14,7 +14,7 @@ import { shops } from "./shops.js";
 import _ from "underscore";
 import pkg from "fs-jetpack";
 import parsePrice from "parse-price";
-const { write, read } = pkg;
+const { write, read, append } = pkg;
 import "dotenv/config";
 import { config } from "dotenv";
 
@@ -27,6 +27,7 @@ const proxyAuth = {
 };
 
 const main = async () => {
+  append("./data/shop/elapsedMatchTime.txt", `Start: ${new Date()}\n`);
   const targetShopDomains = [
     { prefix: "e_", d: "ebay.de" },
     { prefix: "a_", d: "amazon.de" },
@@ -40,7 +41,7 @@ const main = async () => {
 
   if (!rawproducts) return;
 
-  const shuffled = _.shuffle(rawproducts)
+  const shuffled = _.shuffle(rawproducts);
 
   const babapromiseArr = [];
 
@@ -50,7 +51,11 @@ const main = async () => {
     if (elapsedTime > 480) {
       write(
         "./data/shop/elapsedMatchTime.txt",
-        `${done} took ` + elapsedTime.toFixed(2) + " min"
+        `${done} took ` +
+          elapsedTime.toFixed(2) +
+          " min" +
+          "\n" +
+          `End: ${new Date()}`
       );
       process.exit(0);
     }
@@ -179,9 +184,13 @@ const main = async () => {
   await Promise.all(babapromiseArr);
   const endTime = Date.now();
   const elapsedTime = (endTime - startTime) / 1000 / 60;
-  write(
+  append(
     "./data/shop/elapsedMatchTime.txt",
-    `${done} took ` + elapsedTime.toFixed(2) + " min"
+    `${done} took ` +
+      elapsedTime.toFixed(2) +
+      " min" +
+      "\n" +
+      `End: ${new Date()}`
   );
 };
 
