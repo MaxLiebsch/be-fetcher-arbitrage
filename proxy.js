@@ -62,9 +62,9 @@ server.on("connect", (req, clientSocket, head) => {
       proxySocket.once("data", (chunk) => {
         // Assuming the proxy responds with a 200 connection established
         if (
-          chunk.toString().indexOf("HTTP/1.1 200 Connection established") > -1
+          chunk.toString().includes('Connection established')
         ) {
-          console.log("CONNECTED:", hostname, port, req.method, req.url);
+          console.log("CONNECTED:", hostname);
           clientSocket.write(
             "HTTP/1.1 200 Connection Established\r\nProxy-agent: Node.js-Proxy\r\n\r\n"
           );

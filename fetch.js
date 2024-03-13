@@ -37,7 +37,7 @@ async function main() {
       if (products.length > 10000 || elapsedTime > 480) {
         write(
           "./data/shop/elapsedTime.txt",
-          `${products.length} took ` + elapsedTime.toFixed(2) + " min"
+          `${products.length} took ` + elapsedTime.toFixed(2) + " min\n"
         );
         process.exit(0);
       }
@@ -59,7 +59,7 @@ async function main() {
     if (products.length > 10000 || elapsedTime > 480) {
       write(
         "./data/shop/elapsedTime.txt",
-        `${products.length} took ` + elapsedTime.toFixed(2) + " min"
+        `${products.length} took ` + elapsedTime.toFixed(2) + " min\n"
       );
       process.exit(0);
     }
