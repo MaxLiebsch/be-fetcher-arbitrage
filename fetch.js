@@ -6,15 +6,11 @@ import {
 import { shops } from "./shops.js";
 import pkg from "fs-jetpack";
 const { write, read } = pkg;
-import { config } from "dotenv";
-import 'dotenv/config'
-
-config({path: `.env.${process.env.NODE_ENV}`})
 
 const proxyAuth = {
-  host: process.env.PROXY_HOST,
-  username: process.env.PROXY_USERNAME,
-  password: process.env.PROXY_PASSWORD,
+  host: '127.0.0.1:8080',
+  username: '',
+  password: '',
 };
 
 async function main() {
