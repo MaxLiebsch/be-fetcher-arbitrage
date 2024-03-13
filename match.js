@@ -15,15 +15,11 @@ import _ from "underscore";
 import pkg from "fs-jetpack";
 import parsePrice from "parse-price";
 const { write, read, append } = pkg;
-import "dotenv/config";
-import { config } from "dotenv";
-
-config({ path: `.env.${process.env.NODE_ENV}` });
 
 const proxyAuth = {
-  host: process.env.PROXY_HOST,
-  username: process.env.PROXY_USERNAME,
-  password: process.env.PROXY_PASSWORD,
+  host: '127.0.0.1:8080',
+  username: '',
+  password: '',
 };
 
 const main = async () => {
@@ -190,7 +186,7 @@ const main = async () => {
       elapsedTime.toFixed(2) +
       " min" +
       "\n" +
-      `End: ${new Date()}`
+      `End: ${new Date()}\n`
   );
 };
 
