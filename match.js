@@ -47,7 +47,7 @@ const main = async () => {
 
   const shuffled = _.shuffle(rawproducts);
 
-  const sliced = shuffled.slice(0, 1);
+  const sliced = shuffled
 
   const babapromiseArr = [];
 
