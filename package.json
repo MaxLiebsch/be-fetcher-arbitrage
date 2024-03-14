@@ -15,6 +15,7 @@
     "dev:fetch": "concurrently --raw \"yarn start:dev:proxy:gb\" \"yarn start:dev:fetch\" ",
     "prod:fetch": "cross-env NODE_ENV=production PROXY_TYPE=gb concurrently \"yarn proxy\" \"yarn fetch\"",
     "prod:match": "cross-env NODE_ENV=production PROXY_TYPE=request concurrently \"yarn proxy\" \"yarn match\"",
+    "mio": "cross-env NODE_ENV=production PROXY_TYPE=request concurrently \"yarn proxy\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

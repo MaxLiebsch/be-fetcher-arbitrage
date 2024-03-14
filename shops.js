@@ -498,6 +498,11 @@ export const shops = {
             },
             {
               content: "price",
+              sel: "span.a-color-base",
+              type: "text"
+            },
+            {
+              content: "price",
               sel: "span.a-offscreen",
               type: "text",
             },

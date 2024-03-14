@@ -14,12 +14,12 @@ import { shops } from "./shops.js";
 import _ from "underscore";
 import pkg from "fs-jetpack";
 import parsePrice from "parse-price";
-const { write, read, append } = pkg;
+const { write, read, append, readAsync } = pkg;
 
 const proxyAuth = {
-  host: '127.0.0.1:8080',
-  username: '',
-  password: '',
+  host: "127.0.0.1:8080",
+  username: "",
+  password: "",
 };
 
 const main = async () => {
@@ -138,7 +138,7 @@ const main = async () => {
           "ebay.de": [],
           "amazon.de": [],
         };
-        res.map(({ products, targetShop }) => {
+        res.forEach(({ products, targetShop }) => {
           if (products && products.length) {
             const { nm, prc, mnfctr } = result;
             const candidates = getProductCandidates(products);
@@ -159,13 +159,16 @@ const main = async () => {
           }
         });
         done += 1;
-        const products = read("./data/shop/matched_products.json", "json");
-        if (products) {
-          products.push(result);
-          write("./data/shop/matched_products.json", products);
-        } else {
-          write("./data/shop/matched_products.json", [result]);
-        }
+        readAsync("./data/shop/matched_products.json", "json").then(
+          (products) => {
+            if (products) {
+              products.push(result);
+              write("./data/shop/matched_products.json", products);
+            } else {
+              write("./data/shop/matched_products.json", [result]);
+            }
+          }
+        );
         write(`./data/shop/raw/${slug(result.nm)}.json`, {
           s: result.s,
           nm: result.nm,
