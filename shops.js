@@ -498,7 +498,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "span.a-color-base",
+              sel: "div[data-cy=secondary-offer-recipe] span.a-color-base",
               type: "text"
             },
             {
@@ -532,7 +532,7 @@ export const shops = {
     mimic: "a[id=gh-la]",
     queryUrlSchema: [
       {
-        baseUrl: `https://www.ebay.de/sch/i.html?_nkw=<query>&_sacat=0`,
+        baseUrl: `https://www.ebay.de/sch/i.html?_nkw=<query>`,
         category: "default",
       },
     ],
@@ -556,7 +556,7 @@ export const shops = {
         sel: "ul.srp-results",
         type: "container",
         product: {
-          sel: "li.s-item",
+          sel: "ul.srp-results li.s-item",
           type: "container",
           details: [
             {
@@ -581,7 +581,7 @@ export const shops = {
             },
           ],
         },
-      },
+      }
     ],
   },
 };
