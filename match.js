@@ -15,6 +15,7 @@ import _ from "underscore";
 import pkg from "fs-jetpack";
 import parsePrice from "parse-price";
 const { write, read, append, readAsync } = pkg;
+import { join } from "path";
 
 const proxyAuth = {
   host: "127.0.0.1:8080",
@@ -22,8 +23,15 @@ const proxyAuth = {
   password: "",
 };
 
+const path = "./data/shop";
+
 const main = async () => {
-  append("./data/shop/elapsedMatchTime.txt", `Start: ${new Date()}\n`);
+  const shopName = "idealo.de";
+
+  append(
+    join(path, shopName, "elapsedMatchTime.txt"),
+    `Start: ${new Date()}\n`
+  );
   const targetShopDomains = [
     { prefix: "e_", d: "ebay.de" },
     { prefix: "a_", d: "amazon.de" },
@@ -33,11 +41,13 @@ const main = async () => {
   await queue.connect();
   let done = 0;
 
-  const rawproducts = read("./data/shop/products.json", "json");
+  const rawproducts = read(join(path, shopName, "products.json"), "json");
 
-  if (!rawproducts) return;
+  if (!rawproducts) throw new Error(`No products for ${shopName}`);
 
   const shuffled = _.shuffle(rawproducts);
+
+  const sliced = shuffled.slice(0, 1);
 
   const babapromiseArr = [];
 
@@ -46,21 +56,25 @@ const main = async () => {
     const elapsedTime = (endTime - startTime) / 1000 / 60;
     if (elapsedTime > 480) {
       write(
-        "./data/shop/elapsedMatchTime.txt",
+        join(path, shopName, "elapsedMatchTime.txt"),
         `${done} took ` +
           elapsedTime.toFixed(2) +
           " min" +
           "\n" +
           `End: ${new Date()}`
       );
-      process.exit(0);
+      setTimeout(() => {
+        throw new Error("Time is up");
+      }, 5000);
     }
-    console.log("BrowserHealth", await queue.browserHealth());
-    console.log(done, " products matched from", shuffled.length);
+    console.log({
+      ...(await queue.browserHealth()),
+      status: `${done} from ${sliced.length}`,
+    });
   }, 5000);
 
-  for (let index = 0; index < shuffled.length; index++) {
-    const product = shuffled[index];
+  for (let index = 0; index < sliced.length; index++) {
+    const product = sliced[index];
     const {
       name: nm,
       description: dscrptn,
@@ -85,6 +99,8 @@ const main = async () => {
       ctgry,
       mnfctr: mnfctr.manufacturer,
       nm: mnfctr.name,
+      e_prc: 0,
+      a_prc: 0,
       img: prefixLink(img, s),
       lnk: prefixLink(lnk, s),
       prc: parsePrice(getPrice(prc ?? 0)),
@@ -128,12 +144,6 @@ const main = async () => {
 
     babapromiseArr.push(
       Promise.all(_shops).then((res) => {
-        console.log(
-          "res:",
-          res.map(({ products, targetShop }) => {
-            return `${products.length} from shop ${targetShop.d}`;
-          })
-        );
         const _candidates = {
           "ebay.de": [],
           "amazon.de": [],
@@ -159,17 +169,28 @@ const main = async () => {
           }
         });
         done += 1;
-        readAsync("./data/shop/matched_products.json", "json").then(
+        console.table(
+          res.reduce((table, { products, targetShop }) => {
+            table[targetShop.d] = {
+              cnt: products.length,
+              prc: targetShop.d.includes("amazon")
+                ? result.a_prc
+                : result.e_prc,
+            };
+            return table;
+          }, {})
+        );
+        readAsync(join(path, shopName, "matched_products.json"), "json").then(
           (products) => {
             if (products) {
               products.push(result);
-              write("./data/shop/matched_products.json", products);
+              write(join(path, shopName, "matched_products.json"), products);
             } else {
-              write("./data/shop/matched_products.json", [result]);
+              write(join(path, shopName, "matched_products.json"), [result]);
             }
           }
         );
-        write(`./data/shop/raw/${slug(result.nm)}.json`, {
+        write(join(path, shopName, `/raw/${slug(result.nm)}.json`), {
           s: result.s,
           nm: result.nm,
           mnfctr: result.mnfctr,
@@ -180,17 +201,22 @@ const main = async () => {
       })
     );
   }
-  await Promise.all(babapromiseArr);
-  const endTime = Date.now();
-  const elapsedTime = (endTime - startTime) / 1000 / 60;
-  append(
-    "./data/shop/elapsedMatchTime.txt",
-    `${done} took ` +
-      elapsedTime.toFixed(2) +
-      " min" +
-      "\n" +
-      `End: ${new Date()}\n`
-  );
+  const res = await Promise.all(babapromiseArr);
+  if (res) {
+    const endTime = Date.now();
+    const elapsedTime = (endTime - startTime) / 1000 / 60;
+    append(
+      join(path, shopName, "elapsedMatchTime.txt"),
+      `${done} from ${sliced.length}` +
+        elapsedTime.toFixed(2) +
+        " min" +
+        "\n" +
+        `End: ${new Date()}\n`
+    );
+    setTimeout(() => {
+      throw new Error("Done in time");
+    }, 8000);
+  }
 };
 
 main();

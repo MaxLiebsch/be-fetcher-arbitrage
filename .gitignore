@@ -1,14 +1,5 @@
 node_modules
-
-.env.production.gb
-.env.production.request
-.env.development.gb
-.env.development.request
-/data/shop/products.json
-/data/shop/products_remote.json
-/data/shop/stats.json
-/data/shop/elapsedMatchTime.txt
-/data/shop/matching_result.json
-/data/shop/matched_products.json
-/data/shop/raw
+.env.production.*
+.env.development.*
+/data/shop/*
 *.json
