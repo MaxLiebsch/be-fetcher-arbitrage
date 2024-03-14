@@ -109,8 +109,8 @@ const main = async () => {
     };
     const query = {
       product: {
-        key: product.name,
-        value: product.name,
+        key: product.name.replaceAll(/[\\(\\)]/g,''),
+        value: product.name.replaceAll(/[\\(\\)]/g,''),
       },
       category: "default",
     };
