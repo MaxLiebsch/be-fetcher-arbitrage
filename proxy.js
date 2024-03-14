@@ -5,7 +5,7 @@ import request from "request";
 import blocked from "./static/blocked.js";
 
 import "dotenv/config";
-import {config} from 'dotenv';
+import { config } from "dotenv";
 config({ path: `.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}` });
 
 const username = process.env.PROXY_USERNAME;
@@ -60,9 +60,12 @@ server.on("connect", (req, clientSocket, head) => {
 
       // Wait for the proxy's response
       proxySocket.once("data", (chunk) => {
+        const chunkStr = chunk.toString();
         // Assuming the proxy responds with a 200 connection established
         if (
-          chunk.toString().includes('Connection established')
+          chunkStr.toLowerCase().includes("connection established") ||
+          chunkStr.toLowerCase().includes("ok") || 
+          chunkStr.toLowerCase().includes("200")
         ) {
           console.log("CONNECTED:", hostname);
           clientSocket.write(
@@ -72,6 +75,7 @@ server.on("connect", (req, clientSocket, head) => {
           proxySocket.pipe(clientSocket);
           clientSocket.pipe(proxySocket);
         } else {
+          console.log("WELL", chunkStr);
           // Handle non-200 responses
           clientSocket.end("HTTP/1.1 500 Internal Server Error\r\n");
           proxySocket.end();
