@@ -15,19 +15,21 @@ const host = process.env.PROXY_HOST;
 const FORWARD_PROXY_URL = `http://${username}:${password}@${host}`;
 
 // Create your custom server and define the logic
-const server = http.createServer((req, res) => {
-  const hostname = req.headers.host;
-  console.log("hostname:", hostname);
-  // Check if the domain is blocked
-  if (blocked.some((domain) => hostname.includes(domain))) {
-    res.writeHead(403, { "Content-Type": "text/plain" });
-    res.end("This domain is blocked.");
-    return;
-  }
+const server = http.createServer(
+//   (req, res) => {
+//   const hostname = req.headers.host;
+//   console.log("hostname:", hostname);
+//   // Check if the domain is blocked
+//   if (blocked.some((domain) => hostname.includes(domain))) {
+//     res.writeHead(403, { "Content-Type": "text/plain" });
+//     res.end("This domain is blocked.");
+//     return;
+//   }
 
-  // Forward the request to the specified forward proxy
-  req.pipe(request({ url: req.url, proxy: FORWARD_PROXY_URL })).pipe(res);
-});
+//   // Forward the request to the specified forward proxy
+//   req.pipe(request({ url: req.url, proxy: FORWARD_PROXY_URL })).pipe(res);
+// }
+);
 
 server.on("request", (req, res) => {
   const hostname = req.headers.host;
