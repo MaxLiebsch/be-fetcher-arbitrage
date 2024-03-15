@@ -503,7 +503,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "span.a-offscreen",
+              sel: "span.a-price span.a-offscreen",
               type: "text",
             },
           ],

@@ -151,7 +151,7 @@ const main = async () => {
         res.forEach(({ products, targetShop }) => {
           if (products && products.length) {
             const { nm, prc, mnfctr } = result;
-            const candidates = getProductCandidates(products);
+            const candidates = getProductCandidates(products.filter(p=> p.price !== ''));
             _candidates[targetShop.d] = candidates.map((candidate) => {
               return {
                 nm: candidate.name,
