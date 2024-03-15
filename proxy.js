@@ -31,19 +31,6 @@ const server = http.createServer(
 // }
 );
 
-server.on("request", (req, res) => {
-  const hostname = req.headers.host;
-  console.log("request", hostname);
-  // Check if the domain is blocked
-  if (blocked.some((domain) => hostname.includes(domain))) {
-    res.writeHead(403, { "Content-Type": "text/plain" });
-    res.end("This domain is blocked.");
-    return;
-  }
-
-  // Forward the request to the specified forward proxy
-  req.pipe(request({ url: req.url, proxy: FORWARD_PROXY_URL })).pipe(res);
-});
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
