@@ -64,6 +64,7 @@ const blocked = [
     "bat.bing.com",
     "www.bing.com",
     "www.google-analytics.com",
+    'images-na.ssl-images-amazon.com',
     "completion.amazon.com",
     "content-autofill.googleapis.com",
     "usercentrics.eu",

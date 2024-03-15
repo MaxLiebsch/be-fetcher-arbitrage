@@ -16,7 +16,9 @@
     "prod:fetch": "cross-env NODE_ENV=production PROXY_TYPE=gb concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn fetch\"",
     "prod:match": "cross-env NODE_ENV=production PROXY_TYPE=request concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "prod:match:debug": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
+    "prod:match:debug:gb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "mio": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true concurrently \"yarn proxy\"",
+    "miogb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently \"yarn proxy\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

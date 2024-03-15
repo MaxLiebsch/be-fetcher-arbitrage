@@ -37,7 +37,7 @@ const main = async () => {
     { prefix: "a_", d: "amazon.de" },
   ];
   const startTime = Date.now();
-  const queue = new QueryQueue(6, proxyAuth);
+  const queue = new QueryQueue(4, proxyAuth);
   await queue.connect();
   let done = 0;
 
@@ -109,8 +109,8 @@ const main = async () => {
     };
     const query = {
       product: {
-        key: product.name.replaceAll(/[\\(\\)]/g,''),
-        value: product.name.replaceAll(/[\\(\\)]/g,''),
+        key: nm.replaceAll(/[\\(\\)]/g, ""),
+        value: nm.replaceAll(/[\\(\\)]/g, ""),
       },
       category: "default",
     };
@@ -176,6 +176,7 @@ const main = async () => {
               prc: targetShop.d.includes("amazon")
                 ? result.a_prc
                 : result.e_prc,
+              query: query.product.value,
             };
             return table;
           }, {})
@@ -190,13 +191,15 @@ const main = async () => {
             }
           }
         );
-        write(join(path, shopName, `/raw/${slug(result.nm)}.json`), {
-          s: result.s,
-          nm: result.nm,
-          mnfctr: result.mnfctr,
-          prc: result.prc,
-          _candidates,
-        });
+        if (process.env.DEBUG)
+          write(join(path, shopName, `/raw/${slug(result.nm)}.json`), {
+            s: result.s,
+            nm: result.nm,
+            mnfctr: result.mnfctr,
+            prc: result.prc,
+            _candidates,
+          });
+
         return result;
       })
     );
