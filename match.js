@@ -12,7 +12,7 @@ import {
 } from "@dctrbx/mediprixpackage";
 import { shops } from "./shops.js";
 import _ from "underscore";
-import pkg from "fs-jetpack";
+import pkg, { writeAsync } from "fs-jetpack";
 import parsePrice from "parse-price";
 const { write, read, append, readAsync } = pkg;
 import { join } from "path";
@@ -50,6 +50,7 @@ const main = async () => {
   const sliced = shuffled
 
   const babapromiseArr = [];
+  const matchedProducts = [];
 
   setInterval(async () => {
     const endTime = Date.now();
@@ -64,14 +65,19 @@ const main = async () => {
           `End: ${new Date()}`
       );
       setTimeout(() => {
-        throw new Error("Time is up");
-      }, 5000);
+        writeAsync(
+          join(path, shopName, "t_matched_products.json"),
+          products
+        ).then(() => {
+          throw new Error("Time is up");
+        });
+      }, 25000);
     }
     console.log({
       ...(await queue.browserHealth()),
       status: `${done} from ${sliced.length}`,
     });
-  }, 5000);
+  }, 20000);
 
   for (let index = 0; index < sliced.length; index++) {
     const product = sliced[index];
@@ -151,7 +157,9 @@ const main = async () => {
         res.forEach(({ products, targetShop }) => {
           if (products && products.length) {
             const { nm, prc, mnfctr } = result;
-            const candidates = getProductCandidates(products.filter(p=> p.price !== ''));
+            const candidates = getProductCandidates(
+              products.filter((p) => p.price !== "")
+            );
             _candidates[targetShop.d] = candidates.map((candidate) => {
               return {
                 nm: candidate.name,
@@ -181,16 +189,6 @@ const main = async () => {
             return table;
           }, {})
         );
-        readAsync(join(path, shopName, "matched_products.json"), "json").then(
-          (products) => {
-            if (products) {
-              products.push(result);
-              write(join(path, shopName, "matched_products.json"), products);
-            } else {
-              write(join(path, shopName, "matched_products.json"), [result]);
-            }
-          }
-        );
         if (process.env.DEBUG)
           write(join(path, shopName, `/raw/${slug(result.nm)}.json`), {
             s: result.s,
@@ -199,26 +197,40 @@ const main = async () => {
             prc: result.prc,
             _candidates,
           });
-
+        matchedProducts.push(result);
         return result;
       })
     );
   }
   const res = await Promise.all(babapromiseArr);
   if (res) {
-    const endTime = Date.now();
-    const elapsedTime = (endTime - startTime) / 1000 / 60;
-    append(
-      join(path, shopName, "elapsedMatchTime.txt"),
-      `${done} from ${sliced.length}` +
-        elapsedTime.toFixed(2) +
-        " min" +
-        "\n" +
-        `End: ${new Date()}\n`
-    );
-    setTimeout(() => {
-      throw new Error("Done in time");
-    }, 8000);
+    readAsync(join(path, shopName, "matched_products.json"), "json")
+      .then((products) => {
+        if (products) {
+          products.push(...res);
+          write(join(path, shopName, "matched_products.json"), products);
+        } else {
+          write(join(path, shopName, "matched_products.json"), res);
+        }
+      })
+      .catch((e) => {
+        console.log("Saving products");
+      })
+      .finally(() => {
+        const endTime = Date.now();
+        const elapsedTime = (endTime - startTime) / 1000 / 60;
+        append(
+          join(path, shopName, "elapsedMatchTime.txt"),
+          `${done} from ${sliced.length}` +
+            elapsedTime.toFixed(2) +
+            " min" +
+            "\n" +
+            `End: ${new Date()}\n`
+        );
+        setTimeout(() => {
+          throw new Error("Done in time");
+        }, 8000);
+      });
   }
 };
 
