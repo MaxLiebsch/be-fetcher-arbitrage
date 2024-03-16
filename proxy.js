@@ -13,6 +13,7 @@ const username = process.env.PROXY_USERNAME;
 const password = process.env.PROXY_PASSWORD;
 
 let currProxyIdx = 0;
+let retries = 0;
 
 const proxyHosts = Object.entries(process.env).reduce((acc, [key, host]) => {
   if (key.trim().startsWith("PROXY_HOST_")) {
@@ -103,8 +104,6 @@ server.on("connect", (req, clientSocket, head) => {
             "\r\n",
           ].join("\r\n");
           clientSocket.end(`${responseHeaders}${responseMessage}`);
-          proxySocket.end();
-          return;
         }
       });
     }
@@ -154,6 +153,12 @@ server.on("connect", (req, clientSocket, head) => {
 
   clientSocket.on("error", (err) => {
     console.log("ClientSocket", err);
+    if(err.message.includes('ECONNRESET')){
+       retries += 1;
+    }
+    if(retries >= 30){
+      throw new Error(`Proxies connection failed for ${retries}`)
+    }
     proxySocket.end();
   });
 });
