@@ -12,9 +12,9 @@ import {
 } from "@dctrbx/mediprixpackage";
 import { shops } from "./shops.js";
 import _ from "underscore";
-import pkg, { writeAsync } from "fs-jetpack";
+import pkg from "fs-jetpack";
 import parsePrice from "parse-price";
-const { write, read, append, readAsync } = pkg;
+const { write, read, append, readAsync, writeAsync } = pkg;
 import { join } from "path";
 
 const proxyAuth = {
