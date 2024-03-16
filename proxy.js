@@ -1,36 +1,44 @@
 import http from "http";
 import net from "net";
-import request from "request";
 import blocked from "./static/blocked.js";
 
 import "dotenv/config";
 import { config } from "dotenv";
-config({ path: `.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}` });
+
+config({
+  path: [`.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}`],
+});
 
 const username = process.env.PROXY_USERNAME;
 const password = process.env.PROXY_PASSWORD;
-const host = process.env.PROXY_HOST;
 
-// Define your forward proxy settings
-const FORWARD_PROXY_URL = `http://${username}:${password}@${host}`;
+let currProxyIdx = 0;
+
+const proxyHosts = Object.entries(process.env).reduce((acc, [key, host]) => {
+  if (key.trim().startsWith("PROXY_HOST_")) {
+    acc.push(`http://${username}:${password}@${host}`);
+  }
+  return acc;
+}, []);
+
+const numberOfProxies = proxyHosts.length;
+
+
+const nextProxyUrlStr = () => {
+  if(numberOfProxies === 1){
+    return proxyHosts[0]
+  }
+  if (currProxyIdx === numberOfProxies - 1) {
+    currProxyIdx = 0;
+    return proxyHosts[currProxyIdx];
+  } else {
+    currProxyIdx += 1;
+    return proxyHosts[currProxyIdx];
+  }
+};
 
 // Create your custom server and define the logic
-const server = http.createServer(
-//   (req, res) => {
-//   const hostname = req.headers.host;
-//   console.log("hostname:", hostname);
-//   // Check if the domain is blocked
-//   if (blocked.some((domain) => hostname.includes(domain))) {
-//     res.writeHead(403, { "Content-Type": "text/plain" });
-//     res.end("This domain is blocked.");
-//     return;
-//   }
-
-//   // Forward the request to the specified forward proxy
-//   req.pipe(request({ url: req.url, proxy: FORWARD_PROXY_URL })).pipe(res);
-// }
-);
-
+const server = http.createServer();
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
@@ -47,8 +55,8 @@ server.on("connect", (req, clientSocket, head) => {
     clientSocket.end(`${responseHeaders}${responseMessage}`);
     return;
   }
-  const forwardProxyUrl = new URL(FORWARD_PROXY_URL);
-
+  const proxyUrlStr = nextProxyUrlStr()
+  const forwardProxyUrl = new URL(proxyUrlStr);
   const proxyAuth = Buffer.from(
     `${forwardProxyUrl.username}:${forwardProxyUrl.password}`
   ).toString("base64");
@@ -96,10 +104,12 @@ server.on("connect", (req, clientSocket, head) => {
           ].join("\r\n");
           clientSocket.end(`${responseHeaders}${responseMessage}`);
           proxySocket.end();
+          return;
         }
       });
     }
   );
+
   proxySocket.setTimeout(15000);
 
   proxySocket.on("lookup", (err, address, family, host) => {
