@@ -1,6 +1,31 @@
 const allowed = [
-    
-]
+  "www.idealo.de",
+  "www.alternate.de",
+  "www.actionsports.de",
+  "www.bergfreunde.de",
+  "www.action.com",
+  "www.costway.de",
+  "www.cyberport.de",
+  "www.dm.de",
+  "www.fahrrad.de",
+  "www.fressnapf.de",
+  "www.gamestop.de",
+  "www.kaufland.de",
+  "www.mediamarkt.de",
+  "www.metro.de",
+  "www.mindfactory.de",
+  "www.mueller.de",
+  "www.otto.de",
+  "www.quelle.de",
+  "www.reichelt.de",
+  "www.saturn.de",
+  "www.sportspar.de",
+  "www.weltbild.de",
+  "www.voelkner.de",
+  "www.zooplus.de",
+  "www.idena.de",
+  "www.amazon.de",
+  "www.ebay.de",
+];
 
-
-export default allowed
+export default allowed;

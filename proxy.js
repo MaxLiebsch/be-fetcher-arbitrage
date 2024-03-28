@@ -4,6 +4,7 @@ import blocked from "./static/blocked.js";
 
 import "dotenv/config";
 import { config } from "dotenv";
+import allowed from "./static/allowed.js";
 
 config({
   path: [`.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}`],
@@ -24,17 +25,20 @@ const proxyHosts = Object.entries(process.env).reduce((acc, [key, host]) => {
 
 const numberOfProxies = proxyHosts.length;
 
-
 const nextProxyUrlStr = () => {
-  if(numberOfProxies === 1){
-    return proxyHosts[0]
+  if (numberOfProxies === 1) {
+    return proxyHosts[0];
   }
   if (currProxyIdx === numberOfProxies - 1) {
     currProxyIdx = 0;
     return proxyHosts[currProxyIdx];
-  } else {
+  } else if (currProxyIdx === 0) {
     currProxyIdx += 1;
-    return proxyHosts[currProxyIdx];
+    return proxyHosts[0];
+  } else {
+    const curr = currProxyIdx
+    currProxyIdx += 1;
+    return proxyHosts[curr];
   }
 };
 
@@ -43,8 +47,7 @@ const server = http.createServer();
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
-
-  if (blocked.some((domain) => hostname.includes(domain))) {
+  if (!allowed.some((domain) => hostname.includes(domain))) {
     const responseMessage = "This domain is blocked.";
     const responseHeaders = [
       "HTTP/1.1 403 Forbidden",
@@ -56,7 +59,7 @@ server.on("connect", (req, clientSocket, head) => {
     clientSocket.end(`${responseHeaders}${responseMessage}`);
     return;
   }
-  const proxyUrlStr = nextProxyUrlStr()
+  const proxyUrlStr = nextProxyUrlStr();
   const forwardProxyUrl = new URL(proxyUrlStr);
   const proxyAuth = Buffer.from(
     `${forwardProxyUrl.username}:${forwardProxyUrl.password}`
@@ -109,7 +112,19 @@ server.on("connect", (req, clientSocket, head) => {
     }
   );
 
-  proxySocket.setTimeout(15000);
+  setTimeout(() => {
+    console.log("reset connection");
+    const responseMessage = "Proxy change";
+    const responseHeaders = [
+      "HTTP/1.1 307 Temporary Redirect",
+      "Content-Type: text/plain",
+      `Content-Length: ${Buffer.byteLength(responseMessage)}`,
+      "Connection: close",
+      "\r\n",
+    ].join("\r\n");
+    clientSocket.end(`${responseHeaders}${responseMessage}`);
+    proxySocket.end();
+  }, 2 * 60 * 1000); // reset connection every 2 minutes
 
   proxySocket.on("lookup", (err, address, family, host) => {
     if (process.env.DEBUG) {
@@ -153,11 +168,11 @@ server.on("connect", (req, clientSocket, head) => {
 
   clientSocket.on("error", (err) => {
     console.log("ClientSocket", err);
-    if(err.message.includes('ECONNRESET')){
-       retries += 1;
+    if (err.message.includes("ECONNRESET")) {
+      retries += 1;
     }
-    if(retries >= 30){
-      throw new Error(`Proxies connection failed for ${retries}`)
+    if (retries >= 30) {
+      throw new Error(`Proxies connection failed for ${retries}`);
     }
     proxySocket.end();
   });
