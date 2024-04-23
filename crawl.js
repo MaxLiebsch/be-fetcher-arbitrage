@@ -1,4 +1,10 @@
-import { CrawlerQueue, crawlShop, StatService } from "@dipmaxtech/clr-pkg";
+import {
+  CrawlerQueue,
+  crawlShop,
+  StatService,
+  crawlSubpage,
+  sleep,
+} from "@dipmaxtech/clr-pkg";
 import {
   createCollection,
   getShops,
@@ -21,8 +27,15 @@ const CONCURRENCY = 4;
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
-    const { shopDomain, type: taskType, productLimit, limit } = task;
-    const shops = await getShops([shopDomain]);
+    const {
+      shopDomain,
+      type: taskType,
+      productLimit,
+      limit,
+      recurrent,
+      categories,
+    } = task;
+    const shops = await getShops([{ d: shopDomain }]);
     let crawledPages = 0;
 
     if (shops === null) reject(new MissingShopError("", task));
@@ -36,7 +49,24 @@ export default async function crawl(task) {
 
     const products = [];
 
+    const statService = StatService.getSingleton(shopDomain);
+    const queue = new CrawlerQueue(
+      task?.concurrency ? task.concurrency : CONCURRENCY,
+      proxyAuth,
+      task
+    );
+    await queue.connect();
+
     const startTime = Date.now();
+
+    const interval = setInterval(
+      async () =>
+        await checkProcess().catch((r) => {
+          clearInterval(interval);
+          handleResult(r, res, reject);
+        }),
+      20000
+    );
 
     const checkProcess = async () => {
       if (queue.workload() > crawledPages) {
@@ -54,34 +84,28 @@ export default async function crawl(task) {
         crawledPages,
       };
       if (products.length >= PRODUCT_LIMIT) {
-        await queue.disconnect();
-        throw new TaskCompletedStatus("PRODUCT_LIMIT_REACHED", task, progress);
+        clearInterval(interval);
+        await sleep(35000);
+        await queue.clearQueue();
+        throw new TaskCompletedStatus("PRODUCT_LIMIT_REACHED", task, progress); 
       }
       if (elapsedTime > CRAWL_TIME_LIMIT) {
-        await queue.disconnect();
+        clearInterval(interval);
+        await sleep(35000);
+        await queue.clearQueue();
         throw new TimeLimitReachedStatus("", task, progress);
       }
 
       if (queue.workload() === 0) {
-        await queue.disconnect();
+        clearInterval(interval);
+        await sleep(35000);
+        await queue.clearQueue();
         throw new TaskCompletedStatus("", task, progress);
       }
     };
-    const interval = setInterval(
-      async () =>
-        await checkProcess().catch((r) => {
-          clearInterval(interval);
-          handleResult(r, res, reject);
-        }),
-      20000
-    );
-
-    const statService = StatService.getSingleton(shopDomain);
-    const queue = new CrawlerQueue(CONCURRENCY, proxyAuth);
-    await queue.connect();
 
     const addProduct = async (product) => {
-      const found = products.find((_product) => _product.name === product.name);
+      const found = products.find((_product) => _product.link === product.link);
       if (!found) {
         if (product.name) {
           await upsertCrawledProduct(shopDomain, {
@@ -97,20 +121,42 @@ export default async function crawl(task) {
       ? shops[shopDomain].entryPoint[0].url
       : "https://www." + shopDomain;
 
-    queue.pushTask(crawlShop, {
-      parent: null,
-      parentPath: "",
-      shop: shops[shopDomain],
-      addProduct,
-      limit,
-      queue,
-      retries: 0,
-      prio: 0,
-      onlyCrawlCategories,
-      pageInfo: {
-        link,
-        name: shopDomain.split(".")[0],
-      },
-    });
+    if (recurrent) {
+      categories.map((category) => {
+        queue.pushTask(crawlSubpage, {
+          parent: null,
+          parentPath: "",
+          shop: shops[shopDomain],
+          addProduct,
+          limit,
+          queue,
+          retries: 0,
+          prio: 0,
+          onlyCrawlCategories,
+          pageInfo: {
+            entryCategory: category.name,
+            link: category.link,
+            name: category.name,
+          },
+        });
+      });
+    } else {
+      queue.pushTask(crawlShop, {
+        parent: null,
+        parentPath: "",
+        shop: shops[shopDomain],
+        addProduct,
+        limit,
+        queue,
+        retries: 0,
+        prio: 0,
+        onlyCrawlCategories,
+        pageInfo: {
+          entryCategory: shopDomain,
+          link,
+          name: shopDomain.split(".")[0],
+        },
+      });
+    }
   });
 }

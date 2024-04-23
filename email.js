@@ -1,6 +1,6 @@
 import { createTransport } from "nodemailer";
 import "dotenv/config";
-import os from 'os'
+import { LoggerService } from "@dipmaxtech/clr-pkg"
 
 import { config } from "dotenv";
 
@@ -26,6 +26,6 @@ export const sendMail = async (mail) => {
       ...mail,
     });
   } catch (error) {
-    console.log("error:", error);
+    LoggerService.getSingleton().logger.info(`SendMail: ${error}`)
   }
 };

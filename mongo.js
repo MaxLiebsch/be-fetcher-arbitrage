@@ -1,34 +1,25 @@
+import { last } from "underscore";
 import clientPool from "./mongoPool.js";
+import os from "os";
 
 const arbispotter_db = "arbispotter";
-const crawler_data_db = "crawler_data";
+const crawler_data_db = "crawler-data";
 const sitemapcollectionName = "sitemaps";
 const tasksCollectionName = "tasks";
 const shopCollectionName = "shops";
 
-/*
-  crawler_data
-  tasks,
-  sitemaps,  
-  <domain>.products
-
-  arbispotter
-  <domain>
-  shops
-*/
-
 const getCollection = async (name) => {
-  const client = await clientPool["crawler-data"];
+  const client = await clientPool[crawler_data_db];
   return client.db().collection(name);
 };
 
 const getArbispotterDb = async () => {
-  const client = await clientPool["arbispotter"];
+  const client = await clientPool[arbispotter_db];
   return client.db();
 };
 
 const getCrawlerDataDb = async () => {
-  const client = await clientPool["crawler-data"];
+  const client = await clientPool[crawler_data_db];
   return client.db();
 };
 
@@ -48,12 +39,19 @@ export const createArbispotterCollection = async (name) => {
 };
 
 export const getSiteMap = async (domain) => {
-  const sitemap = (await getCollection(sitemapcollectionName))
+  const sitemap = await (
+    await getCollection(sitemapcollectionName)
+  )
     .find({
-      name: domain,
+      "sitemap.name": domain,
     })
     .toArray();
-  return sitemap;
+
+  if (sitemap.length) {
+    return sitemap[0];
+  } else {
+    return null;
+  }
 };
 
 export const upsertSiteMap = async (domain, stats) => {
@@ -70,17 +68,35 @@ export const upsertCrawledProduct = async (domain, product) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.replaceOne({ name: product.name }, product, {
-    upsert: true,
-  });
+  return await collection.updateOne(
+    { link: product.link },
+    { $set: { ...product } },
+    {
+      upsert: true,
+    }
+  );
 };
 
-export const updateCrawledProduct = async (domain, name, update) => {
+export const findCrawledProductByName = async (domain, name) => {
+  const collectionName = domain + ".products";
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return await collection.findOne({ name });
+};
+
+export const findCrawledProductByLink = async (domain, link) => {
+  const collectionName = domain + ".products";
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return await collection.findOne({ link });
+};
+
+export const updateCrawledProduct = async (domain, link, update) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
   await collection.updateOne(
-    { name: name },
+    { link: link },
     {
       $set: {
         ...update,
@@ -109,11 +125,19 @@ export const unlockProduts = async (domain, products) => {
   );
 };
 
-export const lockProducts = async (domain, limit = 0) => {
+export const lockProducts = async (domain, limit = 0, taskId, action) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
 
   const options = {};
+  const query = {};
+
+  if (action === "recover") {
+    query["taskId"] = taskId.toString();
+  } else {
+    query["locked"] = { $exists: true, $eq: false };
+    query["matched"] = { $exists: true, $eq: false };
+  }
 
   if (limit) {
     options["limit"] = limit;
@@ -121,13 +145,7 @@ export const lockProducts = async (domain, limit = 0) => {
 
   const documents = await db
     .collection(collectionName)
-    .find(
-      {
-        locked: { $exists: true, $eq: false },
-        matched: { $exists: true, $eq: false },
-      },
-      options
-    )
+    .find(query, options)
     .toArray();
 
   // Update documents to mark them as locked
@@ -135,7 +153,7 @@ export const lockProducts = async (domain, limit = 0) => {
     .collection(collectionName)
     .updateMany(
       { _id: { $in: documents.map((doc) => doc._id) } },
-      { $set: { locked: true } }
+      { $set: { locked: true, taskId: taskId.toString() } }
     );
 
   return documents;
@@ -146,7 +164,7 @@ export const upsertProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  return await collection.replaceOne({ nm: product.nm }, product, {
+  return await collection.replaceOne({ lnk: product.lnk }, product, {
     upsert: true,
   });
 };
@@ -171,21 +189,108 @@ export const updateProduct = async (domain, name, update) => {
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
-  const collection = db.collection(collectionName);
-  const task = await collection
-    .find({
+  const taskCollection = db.collection(collectionName);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const twentyFourAgo = new Date();
+  twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
+
+  const ninetyMinutesAgo = new Date();
+  ninetyMinutesAgo.setMinutes(ninetyMinutesAgo.getMinutes() - 90);
+
+  const task = await taskCollection.findOneAndUpdate(
+    {
       $and: [
-        { completed: { $exists: true, $eq: false } },
-        { executing: { $exists: true, $eq: false } },
-        { errored: { $exists: true, $eq: false } },
+        {
+          maintenance: false,
+        },
+        {
+          $or: [
+            { startedAt: "" },
+            { startedAt: { $lte: ninetyMinutesAgo.toISOString() } },
+          ],
+        },
+        {
+          $or: [
+            {
+              $and: [
+                { completed: { $eq: false } },
+                { executing: { $eq: false } },
+                // { errored: { $eq: false } },
+              ],
+            },
+            {
+              $or: [
+                {
+                  $and: [
+                    { completed: { $eq: true } },
+                    { recurrent: { $eq: true } },
+                    { executing: { $eq: false } },
+                    // { errored: { $eq: false } },
+                    { completedAt: { $lte: sevenDaysAgo.toISOString() } }, // Crawl Job
+                  ],
+                },
+                {
+                  $and: [
+                    { type: "LOOKUP_PRODUCTS" },
+                    { completed: { $eq: true } },
+                    { recurrent: { $eq: true } },
+                    { executing: { $eq: false } },
+                    // { errored: { $eq: false } },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
       ],
-    })
-    .toArray();
-  if (task.length) {
-    return task[0];
+    },
+    {
+      $set: {
+        executing: true,
+        lastCrawler: os.hostname(),
+        startedAt: new Date().toISOString(),
+      },
+    },
+    { returnNewDocument: true }
+  );
+  if (task) {
+    if (task.type === "LOOKUP_PRODUCTS") {
+      const shopProductCollectionName = task.shopDomain + ".products";
+      const shopProductCollection = db.collection(shopProductCollectionName);
+      const count = await shopProductCollection.count({
+        $and: [
+          { matched: false, locked: false },
+          {
+            $or: [
+              { matchedAt: { $exists: false } },
+              { matchedAt: { $lte: twentyFourAgo.toISOString() } },
+            ],
+          },
+        ],
+      });
+      if (count === 0) {
+        await updateTask(task._id, {
+          executing: false,
+          lastCrawler: "",
+        });
+        return null;
+      }
+    }
+
+    return task;
   } else {
     return null;
   }
+};
+
+export const findTasks = async (query) => {
+  const collectionName = tasksCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+
+  return collection.find(query).toArray();
 };
 
 export const getTasks = async () => {
@@ -225,15 +330,31 @@ export const deleteTask = async (id) => {
 
 //getShop
 
-export const getShops = async (domains) => {
+export const getAllShops = async (shopsDomains = []) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  const shops = await collection.find({ d: { $in: domains } }).toArray();
+  const shops = await collection.find({ d: { $in: shopsDomains } }).toArray();
+  return shops;
+};
+
+export const getShops = async (retailerList) => {
+  const collectionName = shopCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+
+  const retailerListQueryArr = retailerList.reduce((targetShops, shop) => {
+    targetShops.push(shop.d);
+    return targetShops;
+  }, []);
+
+  const shops = await collection
+    .find({ d: { $in: retailerListQueryArr } })
+    .toArray();
   if (shops.length) {
-    return domains.reduce((acc, val) => {
-      const shop = shops.find((shop) => shop.d === val);
-      acc[val] = shop;
+    return retailerList.reduce((acc, val) => {
+      const shop = shops.find((shop) => shop.d === val.d);
+      acc[val.d] = shop;
       return acc;
     }, {});
   } else {
@@ -246,4 +367,31 @@ export const inserShop = async (shop) => {
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
   return await collection.replaceOne({ d: shop.d }, shop, { upsert: true });
+};
+
+export const updateShopStats = async (shopDomain) => {
+  const db = await getArbispotterDb();
+  const shopCollection = db.collection(shopDomain);
+  if (!shopCollection) return;
+
+  const total = await shopCollection.count();
+  const a_fat_total = await shopCollection.count({
+    a_mrgn_pct: { $gt: 0 },
+  });
+  const e_fat_total = await shopCollection.count({
+    e_mrgn_pct: { $gt: 0 },
+  });
+  const shopsCollection = db.collection(shopCollectionName);
+  if (!shopsCollection) return;
+
+  return await shopsCollection.updateOne(
+    { d: shopDomain },
+    {
+      $set: {
+        a_fat_total,
+        e_fat_total,
+        total,
+      },
+    }
+  );
 };

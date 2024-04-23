@@ -1,5 +1,6 @@
 const allowed = [
   "www.idealo.de",
+  "cdn.idealo.com",
   "www.alternate.de",
   "www.actionsports.de",
   "www.bergfreunde.de",
@@ -15,6 +16,7 @@ const allowed = [
   "www.metro.de",
   "www.mindfactory.de",
   "www.mueller.de",
+  "static.mueller.de",
   "www.otto.de",
   "www.quelle.de",
   "www.reichelt.de",
