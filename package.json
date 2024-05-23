@@ -1,19 +1,26 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "type": "module",
   "scripts": {
-    "match": "node ./match.js",
-    "crawl": "node ./crawl.js",
-    "proxy": "node ./proxy.js",
-    "scheduler:standalone": "node ./checkAndExecuteTasksPeriodically.js" ,
-    "dev:scheduler": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./proxy.js\" \"node ./checkAndExecuteTasksPeriodically.js\"",
-    "prod:scheduler": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=false concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./checkAndExecuteTasksPeriodically.js\"",
-    "start:dev:proxy:gb": "nodemon --ignore ./data/  --exec \"cross-env NODE_ENV=development PROXY_TYPE=gb node ./proxy.js\"",
-    "start:dev:proxy:request": "nodemon --ignore ./data/  --exec \"cross-env NODE_ENV=development PROXY_TYPE=request node ./proxy.js\"",
-    "start:dev:match": "nodemon --ignore ./data/ --exec \"node ./match.js\"",
-    "start:dev:crawl": "nodemon --ignore ./data/ --exec \"node ./crawl.js\"",
+    "match": "node ./src/services/match.js",
+    "dev:match:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/match.js\"",
+    "dev:lookup:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/lookup.js\"",
+    "dev:crawl:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawl.js\"",
+    "dev:wholesale:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"yarn start:test:wholesale\"",
+    "dev:singlematch:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematch.js\"",
+    "dev:singlematchae:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematchae.js\"",
+    "crawl": "node ./src/services/crawl.js",
+    "proxy": "node ./src/proxy.js",
+    "scheduler:standalone": "node ./src/checkAndExecuteTasksPeriodically.js",
+    "dev:scheduler": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./src/checkAndExecuteTasksPeriodically.js\"",
+    "prod:scheduler": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=false concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./src/checkAndExecuteTasksPeriodically.js\"",
+    "start:dev:proxy:gb": "nodemon --ignore ./data/  --exec \"cross-env NODE_ENV=development PROXY_TYPE=gb node ./src/proxy.js\"",
+    "start:dev:proxy:request": "nodemon --ignore ./data/  --exec \"cross-env NODE_ENV=development PROXY_TYPE=request node ./src/proxy.js\"",
+    "start:dev:match": "nodemon --ignore ./data/ --exec \"node ./src/services/match.js\"",
+    "start:test:wholesale": "nodemon --ignore ./data/ --exec \"node ./__test__/wholesale.js\"",
+    "start:dev:crawl": "nodemon --ignore ./data/ --exec \"node ./src/services/crawl.js\"",
     "dev:match:debug": "cross-env NODE_ENV=development PROXY_TYPE=gb DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn start:dev:match\"",
     "dev:match": "concurrently --kill-others-on-fail --raw \"yarn start:dev:proxy:request\" \"yarn start:dev:match\" ",
     "dev:crawl": "concurrently --kill-others-on-fail --raw \"yarn start:dev:proxy:gb\" \"yarn start:dev:crawl\" ",
@@ -25,10 +32,19 @@
     "prod:match:debug:gb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "mio": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true concurrently \"yarn proxy\"",
     "miogb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently \"yarn proxy\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:endtoend": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/endtoend.js\"",
+    "test:securemode": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/secureMode.js\"",
+    "test:page": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/pageMode.js\"",
+    "test:production:securemode": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true node ./__test__/secureMode.js",
+    "test:mongoquery": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true nodemon ./__test__/mongo/testQueries.js"
   },
   "author": "",
   "license": "ISC",
+  "nodemonConfig": {
+    "events": {
+      "start": "cls || clear"
+    }
+  },
   "dependencies": {
     "concurrently": "^8.2.2",
     "convert-units": "^2.3.4",
@@ -42,7 +58,7 @@
     "parse-price": "^1.1.8",
     "pino": "^8.20.0",
     "pino-mongodb": "^4.3.0",
-    "puppeteer": "^22.4.0",
+    "puppeteer": "22.4.0",
     "request": "^2.88.2",
     "underscore": "^1.13.6"
   },

@@ -1,4 +1,4 @@
-import { inserShop } from "./mongo.js";
+import { insertShop } from "./services/db/util/shops.js";
 
 export const shops = {
   "idealo.de": {
@@ -39,8 +39,8 @@ export const shops = {
     },
     pauseOnProductPage: {
       pause: true,
-      min: 300,
-      max: 500,
+      min: 500,
+      max: 800,
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
     queryUrlSchema: [
@@ -78,42 +78,22 @@ export const shops = {
         conditions: [
           {
             type: "regexMatch",
-            value: "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+            value:
+              "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
           },
         ],
       },
     ],
     actions: [
       {
-        type: "button",
+        type: "recursive-button",
         sel: "button.productOffers-listLoadMore",
         action: "click",
-        waitDuration: 300,
+        waitDuration: 600,
         wait: false,
-      },
-      {
-        type: "button",
-        sel: "button.productOffers-listLoadMore",
-        action: "click",
-        wait: false,
-        waitDuration: 300,
-      },
-      {
-        type: "button",
-        sel: "button.productOffers-listLoadMore",
-        action: "click",
-        wait: false,
-        waitDuration: 300,
-      },
-      {
-        type: "button",
-        sel: "button.productOffers-listLoadMore",
-        action: "click",
-        wait: false,
-        waitDuration: 300,
       },
     ],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.idealo.de",
         category: "default",
@@ -153,7 +133,7 @@ export const shops = {
     paginationEl: [
       {
         type: "pagination",
-        sel: "div.sr-pagination__numbers",
+        sel: "div[class*=sr-pagination__numbers]",
         nav: "I16-<page>.html",
         scrollToBottom: true,
         paginationUrlSchema: {
@@ -166,8 +146,8 @@ export const shops = {
         },
         calculation: {
           method: "count",
-          last: "div.sr-pagination__numbers a.sr-pageElement",
-          sel: "div.sr-pagination__numbers a.sr-pageElement",
+          last: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
+          sel: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
         },
       },
       {
@@ -195,8 +175,8 @@ export const shops = {
         sel: "div.offerList",
         timeout: 100,
         productCntSel: [
-          "span.offerList-count",
-          "span.sr-resultTitle__resultCount",
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
         ],
         product: {
           sel: "div.offerList a.offerList-itemWrapper",
@@ -230,8 +210,8 @@ export const shops = {
         timeout: 100,
         type: "shopcomparison",
         productCntSel: [
-          "span.offerList-count",
-          "span.sr-resultTitle__resultCount",
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
         ],
         product: {
           sel: "div[id=offerList] li.productOffers-listItem",
@@ -261,60 +241,60 @@ export const shops = {
         },
       },
       {
-        sel: "div.sr-resultList",
+        sel: "div[class*=sr-resultList__]",
         timeout: 100,
         productCntSel: [
-          "span.offerList-count",
-          "span.sr-resultTitle__resultCount",
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
         ],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[class*=sr-resultList_] div[class*=sr-resultList__item]",
           type: "not_link",
           details: [
             {
               content: "vendor",
-              sel: "div.sr-singleOffer__shopName span[role=link]",
+              sel: "div[class*=sr-singleOffer__shopName] span[role=link]",
               type: "text",
             },
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "div[class*=sr-resultItemLink] a",
               type: "href",
             },
             {
               content: "link",
-              sel: 'span[data-gtm-payload*="{"][data-gtm-event="productlist.click"]',
+              sel: 'span[role=button][data-wishlist-heart*="{"]',
               urls: {
                 redirect:
                   "https://www.idealo.de/relocator/relocate?offerKey=<key>&type=oc_offer",
                 default:
                   "https://www.idealo.de/preisvergleich/OffersOfProduct/",
               },
-              attr: "data-gtm-payload",
-              key: "productId",
+              attr: "data-wishlist-heart",
+              key: "offerKey",
               redirect_regex: "^[0-9a-f]{32}$",
               type: "parse_json",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection noscript",
+              sel: "div[class*=sr-resultItemTile__imageSection] noscript",
               type: "text",
               extractPart: 0,
               regexp: "(www|http:|https:)+[^\\s]+[\\w]",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "div[class*=sr-productSummary__title]",
               type: "text",
             },
             {
               content: "description",
-              sel: "div.sr-productSummary__description",
+              sel: "div[class*=sr-productSummary__description]",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div[class*=sr-detailedPriceInfo__price]",
               type: "text",
             },
           ],
@@ -329,7 +309,7 @@ export const shops = {
         link: "https://www.alternate.de/TagesDeals",
       },
     ],
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     entryPoint: "https://www.alternate.de",
     resourceTypes: {
       crawl: [
@@ -361,7 +341,7 @@ export const shops = {
         type: "href",
       },
     },
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.alternate.de",
         category: "default",
@@ -632,7 +612,7 @@ export const shops = {
     mimic: "a.logo--link img",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.actionsports.de",
         category: "default",
@@ -800,7 +780,7 @@ export const shops = {
     mimic: "a.hamburgerLogo",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.gamestop.de",
         category: "default",
@@ -956,7 +936,7 @@ export const shops = {
     mimic: "a[data-mapp-click='header.logo'] img",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.bergfreunde.de",
         category: "default",
@@ -1046,7 +1026,7 @@ export const shops = {
     mimic: "nav[data-testid='top-menu'] a svg.h-6",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.action.com/de-de",
         category: "default",
@@ -1179,7 +1159,7 @@ export const shops = {
     mimic: "img[title='COSTWAY']",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.costway.de",
         category: "default",
@@ -1321,7 +1301,7 @@ export const shops = {
     mimic: "svg.cpHeaderLogo__svg",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.cyberport.de",
         category: "default",
@@ -1460,7 +1440,7 @@ export const shops = {
     mimic: "svg[data-dmid=dm-brand]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.dm.de",
         category: "default",
@@ -1584,7 +1564,7 @@ export const shops = {
     mimic: "a.logo",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.fahrrad.de",
         category: "default",
@@ -1705,7 +1685,7 @@ export const shops = {
     mimic: "div[data-v-45f6e4f9]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.fressnapf.de",
         category: "default",
@@ -1827,7 +1807,7 @@ export const shops = {
     mimic: "#bToprow > div.row > div.col-logo > div > a > img",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.mindfactory.de",
         category: "default",
@@ -1951,7 +1931,7 @@ export const shops = {
     mimic: "img.mu-header__logo",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.mueller.de",
         category: "default",
@@ -2052,7 +2032,7 @@ export const shops = {
     mimic: "header > a > svg",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.quelle.de",
         category: "default",
@@ -2169,16 +2149,16 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     query: {
       content: "van",
     },
     d: "reichelt.de",
-    // mimic: "label[for=loginb]",
+    mimic: "label[for=loginb]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.reichelt.de",
         category: "default",
@@ -2373,7 +2353,7 @@ export const shops = {
     mimic: "#bToprow > div.row > div.col-logo > div > a > img",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.mindfactory.de",
         category: "default",
@@ -2512,7 +2492,7 @@ export const shops = {
     mimic: "#bToprow > div.row > div.col-logo > div > a > img",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.sportspar.de",
         category: "default",
@@ -2636,7 +2616,7 @@ export const shops = {
     mimic: "img[alt=Weltbild]",
     purlschema: "",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.weltbild.de",
         category: "default",
@@ -2767,7 +2747,7 @@ export const shops = {
     mimic: "span.svg-logo.rh-main__logo-normal svg",
     purlschema: "",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.kaufland.de",
         category: "default",
@@ -2875,13 +2855,13 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "otto.de",
     mimic: "svg.pl_logo",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.otto.de",
         category: "default",
@@ -3041,13 +3021,13 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "voelkner.de",
     mimic: "a.head__wrapper__group__button svg",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.voelkner.de",
         category: "default",
@@ -3131,15 +3111,33 @@ export const shops = {
       ],
     },
     d: "amazon.de",
-    entryPoint: "https://www.amazon.de",
+    entryPoints: [
+      {
+        url: "https://www.amazon.de/?language=de_DE",
+        category: "default",
+      },
+    ],
     queryUrlSchema: [
       {
-        baseUrl: `https://www.amazon.de/s?k=<query>`,
+        baseUrl: `https://www.amazon.de/s?k=<query>&language=de_DE`,
         category: "default",
       },
     ],
     mimic: "a[id=nav-logo-sprites]",
-    queryActions: [],
+    queryActions: [
+      // {
+      //   type: "input",
+      //   sel: "input[id=twotabsearchtextbox]",
+      //   wait: false,
+      //   what: ["product"],
+      // },
+      // {
+      //   type: "button",
+      //   sel: "input[id=nav-search-submit-button]",
+      //   action: "click",
+      //   wait: false,
+      // },
+    ],
     paginationEl: [],
     productList: [
       {
@@ -3209,7 +3207,7 @@ export const shops = {
         category: "default",
       },
     ],
-    entryPoint: "https://www.ebay.de",
+    entryPoint: [{url: "https://www.ebay.de", category: "default"}],
     queryActions: [],
     paginationEl: [],
     productList: [
@@ -3250,7 +3248,7 @@ export const shops = {
 const updateShops = async (shops) => {
   return Promise.all(
     Object.entries(shops).map(async ([key, val]) => {
-      return await inserShop(val);
+      return await insertShop(val);
     })
   );
 };

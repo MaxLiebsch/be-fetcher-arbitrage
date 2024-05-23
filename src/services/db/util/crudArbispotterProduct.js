@@ -1,0 +1,111 @@
+import { MAX_EARNING_MARGIN } from "../../../constants.js";
+import { getArbispotterDb, hostname } from "../mongo.js";
+
+export const findProduct = async (domain, name) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.findOne({ nm: name });
+};
+
+export const findProductByLink = async (domain, link) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.findOne({ lnk: link });
+};
+
+export const lockArbispotterProducts = async (
+  domain,
+  limit = 0,
+  taskId,
+  action
+) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+
+  const options = {};
+  let query = {};
+
+  if (action === "recover") {
+    query["taskId"] = `${hostname}:${taskId.toString()}`;
+  } else {
+    query = {
+      $and: [
+        {
+          $and: [{ a_prc: { $gt: 0 } }, { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } }],
+        },
+        {
+          $or: [{ lckd: { $exists: false } }, { lckd: { $eq: false } }],
+        },
+        {
+          $or: [{ a_props: { $exists: false } }, { a_props: {$in: ["incomplete"]} }],
+        },
+      ],
+    };
+  }
+
+  if (limit && action !== "recover") {
+    options["limit"] = limit;
+  }
+
+  const documents = await db
+    .collection(collectionName)
+    .find(query, options)
+    .toArray();
+
+  // Update documents to mark them as locked
+  if (action !== "recover")
+    await db
+      .collection(collectionName)
+      .updateMany(
+        { _id: { $in: documents.map((doc) => doc._id) } },
+        { $set: { lckd: true, taskId: `${hostname}:${taskId.toString()}` } }
+      );
+
+  return documents;
+};
+
+export const upsertProduct = async (domain, product) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return await collection.replaceOne({ lnk: product.lnk }, product, {
+    upsert: true,
+  });
+};
+
+export const updateProduct = async (domain, link, update) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.updateOne(
+    { lnk: link },
+    {
+      $set: {
+        ...update,
+      },
+    }
+  );
+};
+
+export const updateProducts = async (domain, query, update) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.updateMany(
+    { ...query },
+    {
+      $set: {
+        ...update,
+      },
+    }
+  );
+};
+
+export const deleteAllArbispotterProducts = async (domain) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.deleteMany({});
+};

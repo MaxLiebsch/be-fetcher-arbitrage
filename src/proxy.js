@@ -4,47 +4,24 @@ import net from "net";
 import "dotenv/config";
 import { config } from "dotenv";
 import allowed from "./static/allowed.js";
+import os from "os"
+
+const osHostname = os.hostname()
 
 config({
-  path: [`.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}`],
+  path: [
+    `.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}`,
+    `.env.${process.env.NODE_ENV}`,
+  ],
 });
 
-const username = process.env.PROXY_USERNAME;
-const password = process.env.PROXY_PASSWORD;
-
-let currProxyIdx = 0;
-let retries = 0;
-
-const proxyHosts = Object.entries(process.env).reduce((acc, [key, host]) => {
-  if (key.trim().startsWith("PROXY_HOST_")) {
-    acc.push(`http://${username}:${password}@${host}`);
-  }
-  return acc;
-}, []);
-
-const numberOfProxies = proxyHosts.length;
-
-const nextProxyUrlStr = () => {
-  if (numberOfProxies === 1) {
-    return proxyHosts[0];
-  }
-  if (currProxyIdx === numberOfProxies - 1) {
-    currProxyIdx = 0;
-    return proxyHosts[currProxyIdx];
-  } else if (currProxyIdx === 0) {
-    currProxyIdx += 1;
-    return proxyHosts[0];
-  } else {
-    const curr = currProxyIdx;
-    currProxyIdx += 1;
-    return proxyHosts[curr];
-  }
-};
+const username = process.env.BASIC_AUTH_USERNAME;
+const password = process.env.BASIC_AUTH_PASSWORD;
+const host = process.env.PROXY_GATEWAY_URL;
+const PORT = 8080;
 
 // Create your custom server and define the logic
 const server = http.createServer();
-
-const establishedConnections = {};
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
@@ -55,6 +32,7 @@ server.on("connect", (req, clientSocket, head) => {
       "HTTP/1.1 403 Forbidden",
       "Content-Type: text/plain",
       `Content-Length: ${Buffer.byteLength(responseMessage)}`,
+      // `Crawler: ${osHostname}`,
       "Connection: close",
       "\r\n",
     ].join("\r\n");
@@ -63,9 +41,9 @@ server.on("connect", (req, clientSocket, head) => {
   }
 
   const targetHostPort = `${hostname}:${port}`;
-
-  const proxyUrlStr = nextProxyUrlStr();
+  const proxyUrlStr = `http://${username}:${password}@${host}`;
   const forwardProxyUrl = new URL(proxyUrlStr);
+
   const proxyAuth = Buffer.from(
     `${forwardProxyUrl.username}:${forwardProxyUrl.password}`
   ).toString("base64");
@@ -75,13 +53,10 @@ server.on("connect", (req, clientSocket, head) => {
     `Host: ${targetHostPort}`,
     `Proxy-Authorization: Basic ${proxyAuth}`,
     "Connection: Keep-Alive",
-    "Keep-Alive: timeout=20, max=1000",
     "",
     "",
   ].join("\r\n");
 
-  console.log(`Establishing new connection to ${targetHostPort}`);
-  // Establish a new connection
   establishedConnection(
     clientSocket,
     forwardProxyUrl,
@@ -90,17 +65,13 @@ server.on("connect", (req, clientSocket, head) => {
     head
   );
 
-  clientSocket.on("close", () => {
-    console.log("clientsocket close");
-  });
-
   clientSocket.on("error", (err) => {
     console.log("ClientSocket", err);
   });
 });
 
 console.log("Listening on port 8080");
-server.listen(8080);
+server.listen(PORT);
 
 server.on("error", (err) => {
   console.log("Proxy Server error", err);
@@ -131,16 +102,13 @@ const establishedConnection = (
         chunkStr.toLowerCase().includes("ok") ||
         chunkStr.toLowerCase().includes("200")
       ) {
-        console.log("CONNECTED:", targetHostPort);
         clientSocket.write(
           "HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n"
         );
         proxySocket.write(head);
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
-        // establishedConnections[targetHostPort].connected = true;
       } else {
-        console.log("WELL", chunkStr);
         const responseMessage = "Internal Server Error.";
         const responseHeaders = [
           "HTTP/1.1 500 Internal Server Error",
@@ -154,25 +122,7 @@ const establishedConnection = (
     });
   });
 
-  proxySocket.setTimeout(60000);
-
-  proxySocket.on("close", () => {
-    delete establishedConnections[targetHostPort];
-    console.log("proxySocket closed");
-  });
-
-  proxySocket.on("drain", () => {
-    console.log("proxySocket drain");
-  });
-
-  proxySocket.on("timeout", () => {
-    delete establishedConnections[targetHostPort];
-    console.log("proxySocket timeout");
-  });
-
   proxySocket.on("error", (err) => {
-    console.error("Proxy socket error:", err);
-    delete establishedConnections[targetHostPort];
     const responseMessage = "Internal Proxy Server Error.";
     const responseHeaders = [
       "HTTP/1.1 500 Internal Server Error",

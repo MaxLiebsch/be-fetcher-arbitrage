@@ -8,7 +8,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PROXY_TYPE: "request",
-        DEBUG: true,
+        DEBUG: false,
       },
     },
     {
@@ -19,7 +19,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PROXY_TYPE: "request",
-        DEBUG: true,
+        DEBUG: false,
       },
     },
   ],
