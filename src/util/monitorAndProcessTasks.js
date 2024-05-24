@@ -34,8 +34,7 @@ async function executeTask(task) {
   if (type === "CRAWL_SHOP") {
     return await crawl(task);
   }
-  if (type === "WHOLESALE_SEARCH") {
-    console.log("about to call wholesale...");
+  if (type === "WHOLESALE_SEARCH") { 
     return await wholesale(task);
   }
   if (type === "SCAN_SHOP") {

@@ -14,7 +14,7 @@ import parsePrice from "parse-price";
 import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import { createOrUpdateProduct } from "./db/util/findAndUpdateProduct.js";
+import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { getShops } from "./db/util/shops.js";
 import {
   lockProducts,
@@ -27,6 +27,7 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { getRedirectUrl } from "./head.js";
+import { AxiosError } from "axios";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -152,6 +153,7 @@ export default async function match(task) {
           done++;
           if (targetShopProds[0] && targetShopProds[0]?.procProd) {
             const procProd = targetShopProds[0]?.procProd;
+            
             try {
               if (
                 procProd.a_lnk &&
@@ -168,7 +170,12 @@ export default async function match(task) {
                 procProd.e_lnk = redirectUrl;
               }
             } catch (error) {
-              console.error("Error retrieving redirect URL:", error);
+              if (error instanceof AxiosError) {
+                console.error(
+                  "Error retrieving redirect URL:",
+                  error.response.status
+                );
+              }
             }
             await createOrUpdateProduct(collectionName, procProd);
             const update = {
@@ -179,7 +186,6 @@ export default async function match(task) {
               matched: true,
               locked: false,
               taskId: "",
-              updatedAt: new Date().toISOString(),
               matchedAt: new Date().toISOString(),
             };
             if (targetShopProds[0]?.candidates) {
@@ -208,7 +214,12 @@ export default async function match(task) {
                 procProd.e_lnk = redirectUrl;
               }
             } catch (error) {
-              console.error("Error retrieving redirect URL:", error);
+              if (error instanceof AxiosError) {
+                console.error(
+                  "Error retrieving redirect URL:",
+                  error.response.status
+                );
+              }
             }
             await createOrUpdateProduct(collectionName, procProd);
             await updateCrawledProduct(shopDomain, rawProd.link, {
@@ -218,7 +229,6 @@ export default async function match(task) {
               query: query.product.value,
               dscrptnSegments,
               nmSubSegments,
-              updatedAt: new Date().toISOString(),
               matchedAt: new Date().toISOString(),
               mnfctr,
               candidates,

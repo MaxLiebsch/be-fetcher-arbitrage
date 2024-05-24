@@ -5,6 +5,8 @@ export const upsertCrawledProduct = async (domain, product) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
+  product["createdAt"] = new Date().toISOString();
+  product["updatedAt"] = new Date().toISOString();
   return await collection.updateOne(
     { link: product.link },
     { $set: { ...product } },
@@ -32,6 +34,9 @@ export const updateCrawledProduct = async (domain, link, update) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
+
+  update["updatedAt"] = new Date().toISOString();
+
   await collection.updateOne(
     { link: link },
     {
@@ -46,6 +51,9 @@ export const updateCrawlDataProducts = async (domain, query, update) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
+
+  update["updatedAt"] = new Date().toISOString();
+
   return collection.updateMany(
     { ...query },
     {

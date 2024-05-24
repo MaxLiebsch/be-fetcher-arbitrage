@@ -1,9 +1,5 @@
-import {
-  CrawlerQueue,
-  crawlShop,
-  crawlSubpage,
-} from "@dipmaxtech/clr-pkg";
-import { createCollection} from "./db/mongo.js";
+import { CrawlerQueue, crawlShop, crawlSubpage } from "@dipmaxtech/clr-pkg";
+import { createCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
@@ -14,6 +10,7 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
+import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
@@ -44,22 +41,26 @@ export default async function crawl(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({queue, done, startTime, productLimit}).catch(async (r) => { 
-          clearInterval(interval);
-          handleResult(r, res, reject);
-        }),
+        await checkProgress({ queue, done, startTime, productLimit }).catch(
+          async (r) => {
+            clearInterval(interval);
+            handleResult(r, res, reject);
+          }
+        ),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product) => {
       if (done >= productLimit && !queue.idle()) {
-        await checkProgress({queue, done, startTime, productLimit}).catch(async (r) => {
-          clearInterval(interval);
-          handleResult(r, res, reject);
-        });
+        await checkProgress({ queue, done, startTime, productLimit }).catch(
+          async (r) => {
+            clearInterval(interval);
+            handleResult(r, res, reject);
+          }
+        );
       } else {
         if (product.name) {
           done++;
-          await upsertCrawledProduct(shopDomain, {
+          await createOrUpdateCrawlDataProduct(shopDomain, {
             ...product,
             locked: false,
             matched: false,

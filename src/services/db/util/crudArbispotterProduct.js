@@ -79,6 +79,7 @@ export const updateProduct = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
+  update["updatedAt"] = new Date().toISOString();
   return collection.updateOne(
     { lnk: link },
     {

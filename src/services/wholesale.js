@@ -18,9 +18,10 @@ import {
   lockProducts,
   updateWholeSaleProduct,
 } from "./db/util/crudWholeSaleSearch.js";
+import { getRedirectUrl } from "./head.js";
+import { AxiosError } from "axios";
 
 export default async function wholesale(task) {
-  console.log("wholesale started... ", task.id, task?.action);
   return new Promise(async (resolve, reject) => {
     const { shopDomain, productLimit, limit, _id } = task;
 
@@ -177,25 +178,59 @@ export default async function wholesale(task) {
             });
           };
 
-          queue.pushTask(lookupProductQueue, {
-            retries: 0,
-            shop: amazonShopInfo,
-            addProduct,
-            targetShop: retailerTargetShop,
-            onNotFound: handleNotFound,
-            addProductInfo,
-            queue,
-            query: {},
-            prio: 0,
-            extendedLookUp: false,
-            limit: undefined,
-            prodInfo: undefined,
-            isFinished: undefined,
-            pageInfo: {
-              link: intermProcProd.a_lnk,
-              name: amazonShopInfo.d,
-            },
-          });
+          let isOK = true;
+
+          try {
+            if (
+              intermProcProd.a_lnk &&
+              intermProcProd.a_lnk.includes("idealo.de/relocator/relocate")
+            ) {
+              const redirectUrl = await getRedirectUrl(intermProcProd.a_lnk);
+              intermProcProd.a_lnk = redirectUrl;
+            }
+          } catch (error) {
+            if (error instanceof AxiosError) {
+              if (error.response.status === 404) {
+                isOK = false;
+              }
+
+              console.error(
+                "Error retrieving redirect URL:",
+                error.response.status
+              );
+            }
+          }
+
+          let link = intermProcProd.a_lnk;
+          if (
+            intermProcProd.a_lnk.startsWith("https://www.amazon.de") &&
+            !intermProcProd.a_lnk.includes("&language=")
+          ) {
+            link = intermProcProd.a_lnk + "&language=de_DE";
+          }
+          if (!isOK) {
+            handleNotFound();
+          } else {
+            queue.pushTask(lookupProductQueue, {
+              retries: 0,
+              shop: amazonShopInfo,
+              addProduct,
+              targetShop: retailerTargetShop,
+              onNotFound: handleNotFound,
+              addProductInfo,
+              queue,
+              query: {},
+              prio: 0,
+              extendedLookUp: false,
+              limit: undefined,
+              prodInfo: undefined,
+              isFinished: undefined,
+              pageInfo: {
+                link,
+                name: amazonShopInfo.d,
+              },
+            });
+          }
         } else {
           await updateWholeSaleProduct(rawProd._id, {
             status: "not found",

@@ -85,8 +85,6 @@ export default async function lookup(task) {
           if (img) {
             update["a_img"] = img.value;
           }
-          update["updatedAt"] = new Date().toISOString();
-
           await updateProduct(shopDomain, rawProd.lnk, update);
         } else {
           await updateProduct(shopDomain, rawProd.lnk, {
@@ -94,7 +92,6 @@ export default async function lookup(task) {
             a_props: "missing",
             a_lnk: url,
             taskId: "",
-            updatedAt: new Date().toISOString(),
           });
         }
         done++;
@@ -130,7 +127,11 @@ export default async function lookup(task) {
         }
       };
 
-      if (rawProd.a_lnk)
+      if (rawProd.a_lnk) {
+        let link = rawProd.a_lnk;
+        if (!rawProd.a_lnk.includes("&language=")) {
+          link = rawProd.a_lnk + "&language=de_DE";
+        }
         queue.pushTask(lookupProductQueue, {
           retries: 0,
           shop,
@@ -146,14 +147,13 @@ export default async function lookup(task) {
           prodInfo: undefined,
           isFinished: undefined,
           pageInfo: {
-            link: rawProd.a_lnk,
+            link,
             name: shop.d,
           },
         });
-      else {
+      } else {
         await updateProduct(shopDomain, rawProd.lnk, {
           lckd: false,
-          updatedAt: new Date().toISOString(),
           taskId: "",
           a_prc: 0,
           a_lnk: "",
