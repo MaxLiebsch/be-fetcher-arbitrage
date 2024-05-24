@@ -64,7 +64,7 @@ export default async function lookup(task) {
       const rawProd = products[index];
 
       const addProduct = async (product) => {};
-      const addProductInfo = async (productInfo) => {
+      const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const bsr = productInfo.find((info) => info.key === "bsr");
           const asin = productInfo.find((info) => info.key === "asin");
@@ -77,6 +77,7 @@ export default async function lookup(task) {
             a_props: "complete",
             lckd: false,
             taskId: "",
+            a_lnk: url,
           };
           if (price && price > 0) {
             update["a_prc"] = price.value;
@@ -91,6 +92,7 @@ export default async function lookup(task) {
           await updateProduct(shopDomain, rawProd.lnk, {
             lckd: false,
             a_props: "missing",
+            a_lnk: url,
             taskId: "",
             updatedAt: new Date().toISOString(),
           });

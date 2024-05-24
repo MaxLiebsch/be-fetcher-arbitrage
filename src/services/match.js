@@ -26,6 +26,7 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
+import { getRedirectUrl } from "./head.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -49,7 +50,7 @@ export default async function match(task) {
 
     const startTime = Date.now();
 
-    let targetShops = standardTargetRetailerList
+    let targetShops = standardTargetRetailerList;
 
     if (startShops && startShops.length) {
       targetShops = [...targetShops, ...startShops];
@@ -151,6 +152,24 @@ export default async function match(task) {
           done++;
           if (targetShopProds[0] && targetShopProds[0]?.procProd) {
             const procProd = targetShopProds[0]?.procProd;
+            try {
+              if (
+                procProd.a_lnk &&
+                procProd.a_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
+                procProd.a_lnk = redirectUrl;
+              }
+              if (
+                procProd.e_lnk &&
+                procProd.e_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
+                procProd.e_lnk = redirectUrl;
+              }
+            } catch (error) {
+              console.error("Error retrieving redirect URL:", error);
+            }
             await createOrUpdateProduct(collectionName, procProd);
             const update = {
               dscrptnSegments,
@@ -166,17 +185,31 @@ export default async function match(task) {
             if (targetShopProds[0]?.candidates) {
               update.candidates = targetShopProds[0]?.candidates;
             }
-            await updateCrawledProduct(
-              shopDomain,
-              rawProd.link,
-              update
-            );
+            await updateCrawledProduct(shopDomain, rawProd.link, update);
             return procProd;
           } else {
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
               targetShopProds,
               prodInfo
             );
+            try {
+              if (
+                procProd.a_lnk &&
+                procProd.a_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
+                procProd.a_lnk = redirectUrl;
+              }
+              if (
+                procProd.e_lnk &&
+                procProd.e_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
+                procProd.e_lnk = redirectUrl;
+              }
+            } catch (error) {
+              console.error("Error retrieving redirect URL:", error);
+            }
             await createOrUpdateProduct(collectionName, procProd);
             await updateCrawledProduct(shopDomain, rawProd.link, {
               matched: true,

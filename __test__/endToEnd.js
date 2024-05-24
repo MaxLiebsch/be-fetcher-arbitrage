@@ -1,11 +1,11 @@
 import { sub } from "date-fns";
-import { addTask, deleteTask } from "../src/service/db/util/tasks.js";
-import { deleteAllProducts } from "../src/service/db/util/crudCrawlDataProduct.js";
-import { deleteAllArbispotterProducts } from "../src/service/db/util/crudArbispotterProduct.js";
+import { addTask, deleteTask } from "../src/services/db/util/tasks.js";
+import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
+import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import os from "os"
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
-import { deleteLogs } from "../src/service/db/util/logs.js";
+import { deleteLogs } from "../src/services/db/util/logs.js";
 
 const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
@@ -13,7 +13,7 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "reichelt.de";
+const shopDomain = "voelkner.de";
 const crawlTask = {
   _id: "661a785dc801f69f2beb16d6",
   type: "CRAWL_SHOP",
@@ -26,13 +26,13 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Werkstatt und Löttechnik",
-      "link": "https://www.reichelt.de/de/de/messtechnik-und-werkstattbedarf-c536.html?&nbc=1"
+      "name": "Haus & Garten",
+      "link": "https://www.voelkner.de/categories/13146/haus-garten.html"
     },
     {
-      "name": "Haustechnik Sicherheit",
-      "link": "https://www.reichelt.de/de/de/haus-und-sicherheitstechnik-c2712.html?&nbc=1"
-    } 
+      "name": "Beleuchtung",
+      "link": "https://www.voelkner.de/categories/13147/beleuchtung.html"
+    }
   ],
   recurrent: true,
   executing: false,

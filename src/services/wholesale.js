@@ -114,13 +114,13 @@ export default async function wholesale(task) {
             });
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
-              status: "completed",
+              status: "complete",
               updatedAt: new Date().toISOString(),
               lookup_pending: false,
               locked: false,
               clrName: "",
             });
-            
+
             if (done >= productLimit && !queue.idle()) {
               await checkProgress({
                 queue,
@@ -134,8 +134,9 @@ export default async function wholesale(task) {
             }
           };
 
-          const addProductInfo = async (productInfo) => {
+          const addProductInfo = async ({ productInfo, url }) => {
             const prodInfo = {};
+            prodInfo["a_lnk"] = url;
             if (productInfo) {
               const bsr = productInfo.find((info) => info.key === "bsr");
               const asin = productInfo.find((info) => info.key === "asin");
