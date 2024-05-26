@@ -3,7 +3,7 @@ import { addTask, deleteTask } from "../src/services/db/util/tasks.js";
 import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
 import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import os from "os"
+import os from "os";
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
 import { deleteLogs } from "../src/services/db/util/logs.js";
 
@@ -26,12 +26,12 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Haus & Garten",
-      "link": "https://www.voelkner.de/categories/13146/haus-garten.html"
+      "name": "Computer & Büro",
+      "link": "https://www.voelkner.de/categories/13140/computer-buero.html"
     },
     {
-      "name": "Beleuchtung",
-      "link": "https://www.voelkner.de/categories/13147/beleuchtung.html"
+      "name": "Multimedia",
+      "link": "https://www.voelkner.de/categories/13141/multimedia.html"
     }
   ],
   recurrent: true,
@@ -108,8 +108,8 @@ const main = async () => {
   //empty tasks
   await Promise.all(tasks.map(async (task) => await deleteTask(task._id)));
   //empty tasks
-  await deleteLogs()
-  
+  await deleteLogs();
+
   //empty DBs
   await deleteAllProducts(shopDomain);
   await deleteAllArbispotterProducts(shopDomain);

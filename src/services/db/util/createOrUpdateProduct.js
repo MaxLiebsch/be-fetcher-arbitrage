@@ -5,10 +5,12 @@ import {
   upsertProduct,
 } from "./crudArbispotterProduct.js";
 
-export const createOrUpdateProduct = async (domain, procProd) => {
+export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
+  let isNewProduct = true;
   const product = await findProductByLink(domain, procProd.lnk);
 
   if (product) {
+    isNewProduct = false;
     if (procProd.a_lnk) {
       if (!verifyHash(procProd.a_lnk, product.a_hash)) {
         procProd.a_props = "incomplete";
@@ -53,8 +55,6 @@ export const createOrUpdateProduct = async (domain, procProd) => {
       lckd: false,
       taskId: "",
       a_props: "incomplete",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       ean: "",
       asin: "",
       bsr: [],
@@ -65,10 +65,13 @@ export const createOrUpdateProduct = async (domain, procProd) => {
       const a_hash = createHash(newProduct.a_lnk);
       newProduct.a_hash = a_hash;
     }
+
     if (newProduct.e_lnk) {
       const e_hash = createHash(newProduct.e_lnk);
       newProduct.e_hash = e_hash;
     }
+    
     await upsertProduct(domain, newProduct);
   }
+  infoCb(isNewProduct);
 };

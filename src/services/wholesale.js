@@ -33,12 +33,25 @@ export default async function wholesale(task) {
 
     const rawproducts = await lockProducts(productLimit, _id, task?.action);
 
-    let done = 0;
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      locked: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      }
+    }
 
     if (!rawproducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
+
+    infos.locked = rawproducts.length;
 
     const startTime = Date.now();
 
@@ -60,7 +73,7 @@ export default async function wholesale(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             clearInterval(interval);
             handleResult(r, resolve, reject);
@@ -98,7 +111,7 @@ export default async function wholesale(task) {
       const addProduct = async (product) => {};
 
       const isFinished = async (interm) => {
-        done++;
+        infos.total++;
         if (
           interm &&
           interm.intermProcProd.a_nm &&
@@ -116,16 +129,15 @@ export default async function wholesale(task) {
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
               status: "complete",
-              updatedAt: new Date().toISOString(),
               lookup_pending: false,
               locked: false,
               clrName: "",
             });
 
-            if (done >= productLimit && !queue.idle()) {
+            if (infos.total >= productLimit && !queue.idle()) {
               await checkProgress({
                 queue,
-                done,
+                infos,
                 startTime,
                 productLimit,
               }).catch(async (r) => {
@@ -171,7 +183,6 @@ export default async function wholesale(task) {
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
               status: "complete",
-              updatedAt: new Date().toISOString(),
               lookup_pending: false,
               locked: false,
               clrName: "",
@@ -234,7 +245,6 @@ export default async function wholesale(task) {
         } else {
           await updateWholeSaleProduct(rawProd._id, {
             status: "not found",
-            updatedAt: new Date().toISOString(),
             lookup_pending: false,
             locked: false,
             clrName: "",

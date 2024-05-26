@@ -3,7 +3,6 @@ import { createCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
-import { upsertCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -16,7 +15,6 @@ export default async function crawl(task) {
   return new Promise(async (res, reject) => {
     const {
       shopDomain,
-      type: taskType,
       productLimit,
       limit,
       recurrent,
@@ -24,7 +22,18 @@ export default async function crawl(task) {
     } = task;
 
     const shops = await getShops([{ d: shopDomain }]);
-    let done = 0;
+
+    let infos = {
+      new: 0,
+      old: 0,
+      total: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     if (shops === null) reject(new MissingShopError("", task));
 
@@ -41,29 +50,54 @@ export default async function crawl(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, res, reject);
-          }
-        ),
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, res, reject);
+        }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product) => {
-      if (done >= productLimit && !queue.idle()) {
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, res, reject);
-          }
-        );
+      const infoCb = (isNewProduct) => {
+        if (isNewProduct) {
+          infos.new++;
+        } else {
+          infos.old++;
+        }
+      };
+
+      if (infos.total >= productLimit && !queue.idle()) {
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, res, reject);
+        });
       } else {
-        if (product.name) {
-          done++;
-          await createOrUpdateCrawlDataProduct(shopDomain, {
-            ...product,
-            locked: false,
-            matched: false,
+        if (product.name && product.price && product.link && product.image) {
+          infos.total++;
+          await createOrUpdateCrawlDataProduct(
+            shopDomain,
+            {
+              ...product,
+              locked: false,
+              matched: false,
+            },
+            infoCb
+          );
+        } else {
+          const properties = ['name', 'price', 'link', 'image'];
+          properties.forEach(prop => {
+            if (!product[prop]) {
+              infos.missingProperties[prop]++;
+            }
           });
         }
       }

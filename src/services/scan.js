@@ -24,7 +24,19 @@ export default async function scan(task) {
       limit,
     } = task;
     const shops = await getShops([{ d: shopDomain }]);
-    let done = 0;
+
+    let infos = {
+      new: 0,
+      old: 0,
+      total: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    
+    }
 
     if (shops === null) reject(new MissingShopError("", task));
 
@@ -41,7 +53,7 @@ export default async function scan(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             await upsertSiteMap(shopDomain, statService.getStatsFile());
             clearInterval(interval);
@@ -52,8 +64,8 @@ export default async function scan(task) {
     );
 
     const addProduct = async (product) => {
-      if (done >= productLimit && !queue.idle()) {
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+      if (infos.total >= productLimit && !queue.idle()) {
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             await upsertSiteMap(shopDomain, statService.getStatsFile());
             clearInterval(interval);
@@ -62,7 +74,7 @@ export default async function scan(task) {
         );
       } else {
         if (product.name) {
-          done++;
+          infos.total++;
           await upsertCrawledProduct(shopDomain, {
             ...product,
             locked: false,

@@ -61,6 +61,9 @@ export const lockProducts = async (limit = 0, taskId, action) => {
 export const updateWholeSaleProduct = async (productId, update) => {
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
+
+  update["updatedAt"] = new Date().toISOString();
+  
   await collection.updateOne(
     { _id: productId },
     {

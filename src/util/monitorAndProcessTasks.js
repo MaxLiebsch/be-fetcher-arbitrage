@@ -21,8 +21,13 @@ import { updateShopStats } from "../services/db/util/shops.js";
 import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
 import { getAmazonLookupProgress } from "../services/db/util/getLookupProgress.js";
 import { MissingProductsError } from "../errors.js";
-import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
+import {
+  COOLDOWN,
+  NEW_TASK_CHECK_INTERVAL,
+  MAX_TASK_RETRIES,
+} from "../constants.js";
 import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
+import { isTaskComplete } from "./isTaskcomplete.js";
 
 const hostname = os.hostname();
 const { errorLogger } = LoggerService.getSingleton();
@@ -34,7 +39,7 @@ async function executeTask(task) {
   if (type === "CRAWL_SHOP") {
     return await crawl(task);
   }
-  if (type === "WHOLESALE_SEARCH") { 
+  if (type === "WHOLESALE_SEARCH") {
     return await wholesale(task);
   }
   if (type === "SCAN_SHOP") {
@@ -74,7 +79,7 @@ export async function monitorAndProcessTasks() {
 
       executeTask(task)
         .then(async (r) => {
-          const { type } = task;
+          const { type, productLimit } = task;
           // Update progress for lookup stage
           if (type === "MATCH_PRODUCTS" || type === "LOOKUP_PRODUCTS") {
             const lookupProgress = await getAmazonLookupProgress(shopDomain);
@@ -129,16 +134,22 @@ export async function monitorAndProcessTasks() {
           let completedAt = new Date().toISOString();
           let retry = 0;
           let errored = false;
+
           if (r instanceof TaskCompletedStatus) {
-            const { processedProducts } = r.result;
-            //nothing is crawled try again
-            if (processedProducts === 0) {
-              if (task.retry !== undefined && task.retry < 3) {
+            const taskComplete = isTaskComplete(
+              task.type,
+              r.result.infos,
+              productLimit
+            );
+            console.log("taskComplete:", taskComplete, task.type);
+            if (!taskComplete) {
+              if (task.retry !== undefined && task.retry < MAX_TASK_RETRIES) {
                 completedAt = "";
                 retry = task.retry + 1;
               }
-              // //including 3
-              if (retry > 3 && isMatchLookup) {
+              // Retry the task if not completed and retry is less than 3 times and task is match, lookup
+              // after 3 hours cooldown
+              if (retry > MAX_TASK_RETRIES && isMatchLookup) {
                 cooldown = new Date(Date.now() + COOLDOWN * 3).toISOString(); // 3 hours from now
               }
 
@@ -158,8 +169,8 @@ export async function monitorAndProcessTasks() {
               }
               await updateTask(task._id, update);
             } else {
-              //updates stats
-              !isWholeSale && await updateShopStats(shopDomain);
+              //states are only relevant for match, lookup and crawl
+              !isWholeSale && (await updateShopStats(shopDomain));
               const update = {
                 completedAt,
                 lastCrawler: task.lastCrawler.filter(

@@ -42,12 +42,26 @@ export default async function match(task) {
       task?.action
     );
 
-    let done = 0;
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      notFound: 0,
+      locked: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     if (!rawproducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
+      
+    infos.locked = rawproducts.length;
 
     const startTime = Date.now();
 
@@ -72,7 +86,7 @@ export default async function match(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             clearInterval(interval);
             handleResult(r, resolve, reject);
@@ -142,18 +156,28 @@ export default async function match(task) {
 
       procProductsPromiseArr.push(
         Promise.all(_shops).then(async (targetShopProds) => {
-          if (done >= productLimit && !queue.idle()) {
-            await checkProgress({ queue, done, startTime, productLimit }).catch(
-              async (r) => {
-                clearInterval(interval);
-                handleResult(r, resolve, reject);
-              }
-            );
+          const infoCb = (isNewProduct) => {
+            if (isNewProduct) {
+              infos.new++;
+            } else {
+              infos.old++;
+            }
+          };
+          if (infos.total >= productLimit && !queue.idle()) {
+            await checkProgress({
+              queue,
+              infos,
+              startTime,
+              productLimit,
+            }).catch(async (r) => {
+              clearInterval(interval);
+              handleResult(r, resolve, reject);
+            });
           }
-          done++;
+          infos.total++;
           if (targetShopProds[0] && targetShopProds[0]?.procProd) {
             const procProd = targetShopProds[0]?.procProd;
-            
+
             try {
               if (
                 procProd.a_lnk &&
@@ -171,13 +195,16 @@ export default async function match(task) {
               }
             } catch (error) {
               if (error instanceof AxiosError) {
+                if (error.response.status === 404) {
+                  infos.notFound++;
+                }
                 console.error(
                   "Error retrieving redirect URL:",
                   error.response.status
                 );
               }
             }
-            await createOrUpdateProduct(collectionName, procProd);
+            await createOrUpdateProduct(collectionName, procProd, infoCb);
             const update = {
               dscrptnSegments,
               nmSubSegments,
@@ -215,13 +242,16 @@ export default async function match(task) {
               }
             } catch (error) {
               if (error instanceof AxiosError) {
+                if (error.response.status === 404) {
+                  infos.notFound++;
+                }
                 console.error(
                   "Error retrieving redirect URL:",
                   error.response.status
                 );
               }
             }
-            await createOrUpdateProduct(collectionName, procProd);
+            await createOrUpdateProduct(collectionName, procProd, infoCb);
             await updateCrawledProduct(shopDomain, rawProd.link, {
               matched: true,
               locked: false,

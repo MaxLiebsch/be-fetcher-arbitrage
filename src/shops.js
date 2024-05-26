@@ -915,6 +915,11 @@ export const shops = {
       "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
     ],
     manualCategories: [],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     resourceTypes: {
       crawl: [
         "media",
@@ -930,7 +935,7 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "bergfreunde.de",
     mimic: "a[data-mapp-click='header.logo'] img",
@@ -1291,12 +1296,7 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    queryUrlSchema: [
-      {
-        baseUrl: `https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>`,
-        category: "default",
-      },
-    ],
+    queryUrlSchema: [],
     d: "cyberport.de",
     mimic: "svg.cpHeaderLogo__svg",
     purlschema: "Prod\\w*\\/\\d*",
@@ -3207,7 +3207,7 @@ export const shops = {
         category: "default",
       },
     ],
-    entryPoint: [{url: "https://www.ebay.de", category: "default"}],
+    entryPoint: [{ url: "https://www.ebay.de", category: "default" }],
     queryActions: [],
     paginationEl: [],
     productList: [

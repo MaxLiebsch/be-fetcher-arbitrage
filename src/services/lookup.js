@@ -19,7 +19,22 @@ import { checkProgress } from "../util/checkProgress.js";
 export default async function lookup(task) {
   return new Promise(async (resolve, reject) => {
     const { shopDomain, productLimit } = task;
-    let done = 0;
+
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      notFound: 0,
+      locked: 0,
+      missingProperties: {
+        bsr: 0,
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+  
+    }
 
     const products = await lockArbispotterProducts(
       shopDomain,
@@ -32,6 +47,8 @@ export default async function lookup(task) {
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
+
+    infos.locked = products.length;
 
     const startTime = Date.now();
 
@@ -51,7 +68,7 @@ export default async function lookup(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             clearInterval(interval);
             handleResult(r, resolve, reject);
@@ -87,6 +104,7 @@ export default async function lookup(task) {
           }
           await updateProduct(shopDomain, rawProd.lnk, update);
         } else {
+          infos.missingProperties.bsr++;
           await updateProduct(shopDomain, rawProd.lnk, {
             lckd: false,
             a_props: "missing",
@@ -94,9 +112,9 @@ export default async function lookup(task) {
             taskId: "",
           });
         }
-        done++;
-        if (done >= productLimit && !queue.idle()) {
-          await checkProgress({ queue, done, startTime, productLimit }).catch(
+        infos.total++;
+        if (infos.total >= productLimit && !queue.idle()) {
+          await checkProgress({ queue, infos, startTime, productLimit }).catch(
             async (r) => {
               clearInterval(interval);
               handleResult(r, resolve, reject);
@@ -105,6 +123,7 @@ export default async function lookup(task) {
         }
       };
       const handleNotFound = async () => {
+        infos.notFound++;
         await updateProduct(shopDomain, rawProd.lnk, {
           lckd: false,
           taskId: "",
@@ -116,9 +135,9 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        done++;
-        if (done >= productLimit && !queue.idle()) {
-          await checkProgress({ queue, done, startTime, productLimit }).catch(
+        infos.total++;
+        if (infos.total >= productLimit && !queue.idle()) {
+          await checkProgress({ queue, infos, startTime, productLimit }).catch(
             async (r) => {
               clearInterval(interval);
               handleResult(r, resolve, reject);
@@ -163,7 +182,7 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        done++;
+        infos.total++;
       }
     }
   });

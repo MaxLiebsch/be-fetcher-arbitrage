@@ -33,13 +33,19 @@ export const lockArbispotterProducts = async (
     query = {
       $and: [
         {
-          $and: [{ a_prc: { $gt: 0 } }, { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } }],
+          $and: [
+            { a_prc: { $gt: 0 } },
+            { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+          ],
         },
         {
           $or: [{ lckd: { $exists: false } }, { lckd: { $eq: false } }],
         },
         {
-          $or: [{ a_props: { $exists: false } }, { a_props: {$in: ["incomplete"]} }],
+          $or: [
+            { a_props: { $exists: false } },
+            { a_props: { $in: ["incomplete"] } },
+          ],
         },
       ],
     };
@@ -70,7 +76,11 @@ export const upsertProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  return await collection.replaceOne({ lnk: product.lnk }, product, {
+
+  product["createdAt"] = new Date().toISOString();
+  product["updatedAt"] = new Date().toISOString();
+
+  return collection.replaceOne({ lnk: product.lnk }, product, {
     upsert: true,
   });
 };
