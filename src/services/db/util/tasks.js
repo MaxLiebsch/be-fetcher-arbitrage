@@ -60,7 +60,7 @@ export const getNewTask = async () => {
   ];
   const wholesaleTaskQuery = [
     { type: "WHOLESALE_SEARCH" },
-    { "progress.pending": { $ne: 0 } },
+    { "progress.pending": { $gt: 0 } },
   ];
 
   const matchTaskQuery = [
@@ -269,7 +269,7 @@ export const updateTask = async (id, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateOne(
+  return collection.updateOne(
     { _id: id },
     {
       $set: {
@@ -283,7 +283,7 @@ export const updateTaskWithQuery = async (query, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateOne(
+  return collection.updateOne(
     { ...query },
     {
       $set: {
@@ -297,7 +297,7 @@ export const updateTasks = async (taskType, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateMany(
+  return collection.updateMany(
     { type: taskType },
     {
       $set: {

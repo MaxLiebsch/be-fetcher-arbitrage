@@ -25,9 +25,12 @@ import {
   COOLDOWN,
   NEW_TASK_CHECK_INTERVAL,
   MAX_TASK_RETRIES,
+  COOLDOWN_MULTIPLIER,
+  DEFAULT_MAX_TASK_RETRIES,
 } from "../constants.js";
 import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
-import { isTaskComplete } from "./isTaskcomplete.js";
+import isTaskComplete from "../util/isTaskComplete.js";
+import calculatePageLimit from "../util/calculatePageLimit.js";
 
 const hostname = os.hostname();
 const { errorLogger } = LoggerService.getSingleton();
@@ -69,188 +72,208 @@ async function checkForNewTask() {
 export async function monitorAndProcessTasks() {
   const intervalId = setInterval(async () => {
     const task = await checkForNewTask(); // Implement this function to check for new tasks
-    if (task) {
-      const isMatchLookup =
-        task.type === "MATCH_PRODUCTS" || task.type === "LOOKUP_PRODUCTS";
-      const isWholeSale = task.type === "WHOLESALE_SEARCH";
-      clearInterval(intervalId); // Stop checking while executing the task
-      taskId = task.id;
-      const shopDomain = task.shopDomain;
+    if (!task) return;
 
-      executeTask(task)
-        .then(async (r) => {
-          const { type, productLimit } = task;
-          // Update progress for lookup stage
-          if (type === "MATCH_PRODUCTS" || type === "LOOKUP_PRODUCTS") {
-            const lookupProgress = await getAmazonLookupProgress(shopDomain);
-            if (lookupProgress)
-              await updateTaskWithQuery(
-                {
-                  type: "LOOKUP_PRODUCTS",
-                  id: `lookup_products_${shopDomain}`,
-                },
-                { progress: lookupProgress }
-              );
-          }
-          // Update progress for match stage
-          if (type === "CRAWL_SHOP" || type === "MATCH_PRODUCTS") {
-            const progress = await getMatchingProgress(shopDomain);
-            if (progress)
-              await updateTaskWithQuery(
-                { type: "MATCH_PRODUCTS", id: `match_products_${shopDomain}` },
-                { progress }
-              );
-          }
-          if (type === "WHOLESALE_SEARCH") {
-            const progress = await getWholesaleProgress(
-              task._id,
-              task.progress.total
-            );
-            if (progress) {
-              await updateTaskWithQuery({ _id: task._id }, { progress });
-            }
-          }
+    const {
+      type,
+      productLimit,
+      id,
+      shopDomain,
+      lastCrawler,
+      retry: currentRetry,
+      limit,
+      _id,
+    } = task;
 
-          const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+    const isMatchLookup =
+      type === "MATCH_PRODUCTS" || type === "LOOKUP_PRODUCTS";
+    const isWholeSale = type === "WHOLESALE_SEARCH";
+    const isCrawl = type === "CRAWL_SHOP";
+    const maxRetries =
+      isMatchLookup || isWholeSale
+        ? DEFAULT_MAX_TASK_RETRIES
+        : MAX_TASK_RETRIES;
+    const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+    clearInterval(intervalId); // Stop checking while executing the task
+    taskId = id;
 
-          if (
-            r instanceof ProductLimitReachedStatus ||
-            r instanceof TimeLimitReachedStatus
-          ) {
-            const update = {
-              completed: false,
-              executing: false,
-              errored: false,
-              lastCrawler: task.lastCrawler.filter(
-                (crawler) => crawler !== hostname
-              ),
-            };
-            if (isMatchLookup) {
-              update.cooldown = cooldown;
-            }
-            await updateTask(task._id, update);
-          }
-          let completed = true;
-          let completedAt = new Date().toISOString();
-          let retry = 0;
-          let errored = false;
+    try {
+      const taskResult = await executeTask(task);
+      const { name, result, message } = taskResult;
+      let completed = true;
+      let completedAt = new Date().toISOString();
+      let newRetry = 0;
+      let errored = false;
+      let priority = "normal";
+      let subject = `${hostname}: ${type}: ${shopDomain}`;
 
-          if (r instanceof TaskCompletedStatus) {
-            const taskComplete = isTaskComplete(
-              task.type,
-              r.result.infos,
-              productLimit
-            );
-            console.log("taskComplete:", taskComplete, task.type);
-            if (!taskComplete) {
-              if (task.retry !== undefined && task.retry < MAX_TASK_RETRIES) {
-                completedAt = "";
-                retry = task.retry + 1;
-              }
-              // Retry the task if not completed and retry is less than 3 times and task is match, lookup
-              // after 3 hours cooldown
-              if (retry > MAX_TASK_RETRIES && isMatchLookup) {
-                cooldown = new Date(Date.now() + COOLDOWN * 3).toISOString(); // 3 hours from now
-              }
-
-              const update = {
-                cooldown,
-                completedAt,
-                lastCrawler: task.lastCrawler.filter(
-                  (crawler) => crawler !== hostname
-                ),
-                executing: false,
-                completed,
-                retry,
-                errored,
-              };
-              if (isMatchLookup) {
-                update.cooldown = cooldown;
-              }
-              await updateTask(task._id, update);
-            } else {
-              //states are only relevant for match, lookup and crawl
-              !isWholeSale && (await updateShopStats(shopDomain));
-              const update = {
-                completedAt,
-                lastCrawler: task.lastCrawler.filter(
-                  (crawler) => crawler !== hostname
-                ),
-                executing: false,
-                completed,
-                retry,
-                errored,
-              };
-              if (isMatchLookup) {
-                update.cooldown = cooldown;
-              }
-              await updateTask(task._id, update);
-            }
-          }
-
-          const text = JSON.stringify(
+      // Update progress for lookup stage
+      if (isMatchLookup) {
+        const lookupProgress = await getAmazonLookupProgress(shopDomain);
+        if (lookupProgress)
+          await updateTaskWithQuery(
             {
-              shop: shopDomain,
-              taskId: task.id,
-              name: r.name,
-              ...r.result,
-              message: r.message,
+              type: "LOOKUP_PRODUCTS",
+              id: `lookup_products_${shopDomain}`,
             },
-            null,
-            2
+            { progress: lookupProgress }
           );
-          const htmlBody = `\n<h1>Summary</h1>\n<pre>${text}</pre>\n\n`;
-          await sendMail({
-            subject: `${hostname}: ${task.type}: ${shopDomain}`,
-            html: htmlBody,
-          });
-          monitorAndProcessTasks().then(); // Resume checking after task execution
-        })
-        .catch(async (error) => {
-          console.log("error:", error);
-          errorLogger.error({
-            error,
-            taskId: task.id,
-            type: task.type,
-            hostname,
-          });
-          const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+      }
+      // Update progress for match stage
+      if (isCrawl || type === "MATCH_PRODUCTS") {
+        const progress = await getMatchingProgress(shopDomain);
+        if (progress)
+          await updateTaskWithQuery(
+            { type: "MATCH_PRODUCTS", id: `match_products_${shopDomain}` },
+            { progress }
+          );
+      }
+      if (isWholeSale) {
+        const progress = await getWholesaleProgress(_id, task.progress.total);
+        if (progress) {
+          await updateTaskWithQuery({ _id }, { progress });
+        }
+      }
 
-          if (error instanceof MissingProductsError) {
-            const update = {
-              completed: true,
-              executing: false,
-              completedAt: new Date().toISOString(),
-              lastCrawler: task.lastCrawler.filter(
-                (crawler) => crawler !== hostname
-              ),
-              errored: false,
-            };
-            if (isMatchLookup) {
-              update.cooldown = cooldown;
-            }
-            await updateTask(task._id, update);
-          } else {
-            const update = {
-              completed: true,
-              executing: false,
-              lastCrawler: task.lastCrawler.filter(
-                (crawler) => crawler !== hostname
-              ),
-              errored: true,
-            };
-            if (isMatchLookup) {
-              update.cooldown = cooldown;
-            }
-            await updateTask(task._id, update);
+      if (taskResult instanceof TimeLimitReachedStatus) {
+        const update = {
+          completed: false,
+          executing: false,
+          errored: false,
+          lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
+        };
+        if (isMatchLookup) {
+          update.cooldown = cooldown;
+        }
+        await updateTask(_id, update);
+      }
+
+      if (taskResult instanceof TaskCompletedStatus) {
+        const { taskCompleted, completionPercentage } = isTaskComplete(
+          type,
+          result.infos,
+          productLimit
+        );
+        console.log('taskCompleted:', taskCompleted)
+        if (!taskCompleted) {
+          subject = "🚱 " + subject + " " + completionPercentage;
+          priority = "high";
+          if (currentRetry !== undefined && currentRetry < maxRetries) {
+            completedAt = "";
+            newRetry = currentRetry + 1;
           }
-          const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${task.type}\n${task.id}\n\n`;
-          await sendMail({
-            subject: `${hostname}: Error: ${error?.name}`,
-            html: htmlBody,
-          });
-          monitorAndProcessTasks().then(); // Resume processing error
-        });
+          // Retry the task if not completed and retry is less than 3 times and task is match, lookup
+          // after 3 hours cooldown
+          if (currentRetry > maxRetries && isMatchLookup) {
+            cooldown = new Date(
+              Date.now() + COOLDOWN * COOLDOWN_MULTIPLIER
+            ).toISOString();
+          }
+
+          const update = {
+            cooldown,
+            completedAt,
+            lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
+            executing: false,
+            completed,
+            retry: newRetry,
+            errored,
+          };
+          if (isCrawl && result.infos.total > 0) {
+            const newPageLimit = calculatePageLimit(
+              limit.pages,
+              productLimit,
+              result.infos.total
+            );
+            update.limit = {
+              ...limit,
+              pages: newPageLimit,
+            };
+          }
+
+          if (isMatchLookup) {
+            update.cooldown = cooldown;
+          }
+          await updateTask(_id, update);
+        } else {
+          //states are only relevant for match, lookup and crawl
+          !isWholeSale && (await updateShopStats(shopDomain));
+          subject = "🆗 " + subject + " " + completionPercentage;
+
+          const update = {
+            completedAt,
+            lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
+            executing: false,
+            completed,
+            retry: newRetry,
+            errored,
+          };
+          if (isMatchLookup) {
+            update.cooldown = cooldown;
+          }
+          await updateTask(_id, update);
+        }
+      }
+
+      const text = JSON.stringify(
+        {
+          shop: shopDomain,
+          taskId: id,
+          name,
+          ...result,
+          message,
+        },
+        null,
+        2
+      );
+      const htmlBody = `\n<h1>Summary</h1>\n<pre>${text}</pre>\n\n`;
+      await sendMail({
+        priority,
+        subject,
+        html: htmlBody,
+      });
+      monitorAndProcessTasks().then(); // Resume checking after task execution
+    } catch (error) {
+      errorLogger.error({
+        error,
+        taskId: id,
+        type: type,
+        hostname,
+      });
+      const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+
+      if (error instanceof MissingProductsError) {
+        const update = {
+          completed: true,
+          executing: false,
+          completedAt: new Date().toISOString(),
+          lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
+          errored: false,
+        };
+        if (isMatchLookup) {
+          update.cooldown = cooldown;
+        }
+        await updateTask(_id, update);
+      } else {
+        const update = {
+          completed: true,
+          executing: false,
+          lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
+          errored: true,
+        };
+        if (isMatchLookup) {
+          update.cooldown = cooldown;
+        }
+        await updateTask(_id, update);
+      }
+      const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${type}\n${id}\n\n`;
+      await sendMail({
+        priority: "high",
+        subject: `🚱 ${hostname}: Error: ${error?.name}`,
+        html: htmlBody,
+      });
+
+      monitorAndProcessTasks().then(); // Resume processing error
     }
   }, NEW_TASK_CHECK_INTERVAL); // Check every 5 seconds
 }

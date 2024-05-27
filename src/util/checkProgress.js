@@ -13,14 +13,14 @@ export const checkProgress = async (args) => {
     const task = await queue.clearQueue("PRODUCT_LIMIT_REACHED", infos);
     throw new TaskCompletedStatus("PRODUCT_LIMIT_REACHED", task, {
       infos,
-      ...task.statistics,
+      statistics: task.statistics,
     });
   }
   if (elapsedTime > MATCH_TIME_LIMIT) {
     const task = await queue.clearQueue("TIME_LIMIT_REACHED", infos);
     throw new TimeLimitReachedStatus("", task, {
       infos,
-      ...task.statistics,
+      statistics: task.statistics,
     });
   }
   if (queue.workload() === 0) {
@@ -28,7 +28,7 @@ export const checkProgress = async (args) => {
     const task = await queue.clearQueue("TASK_COMPLETED", infos);
     throw new TaskCompletedStatus("", task, {
       infos,
-      ...task.statistics,
+      statistics: task.statistics,
     });
   }
 };

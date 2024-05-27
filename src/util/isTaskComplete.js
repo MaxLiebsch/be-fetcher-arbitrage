@@ -6,16 +6,25 @@ import { CRAWL_THRESHOLD, MATCH_LOOKUP_THRESHOLD } from "../constants.js";
     #crawl
       total / estimatedProducts >= crawl_threshold              
 */
-export const isTaskComplete = (type, infos, productLimit) => {
-  let result = false;
+const isTaskComplete = (type, infos, productLimit) => {
+  let taskCompleted = false;
+  let completionPercentage = 0;
+  const { total, locked } = infos;
   if (
     type === "MATCH_PRODUCTS" ||
     type === "LOOKUP_PRODUCTS" ||
     type === "WHOLESALE_SEARCH"
   ) {
-    result = infos.total / infos.locked >= MATCH_LOOKUP_THRESHOLD;
+    completionPercentage = total / locked;
+    taskCompleted = completionPercentage >= MATCH_LOOKUP_THRESHOLD;
   } else if (type === "CRAWL_SHOP") {
-    result = infos.total / productLimit >= CRAWL_THRESHOLD;
+    completionPercentage = total / productLimit;
+    taskCompleted = completionPercentage >= CRAWL_THRESHOLD;
   }
-  return result;
+  return {
+    taskCompleted,
+    completionPercentage: `${(completionPercentage * 100).toFixed(2)} %`,
+  };
 };
+
+export default isTaskComplete;
