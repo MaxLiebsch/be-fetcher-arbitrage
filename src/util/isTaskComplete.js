@@ -1,4 +1,8 @@
-import { CRAWL_THRESHOLD, MATCH_LOOKUP_THRESHOLD } from "../constants.js";
+import {
+  CRAWL_THRESHOLD,
+  MATCH_LOOKUP_THRESHOLD,
+  SMALL_LOCKED_PRODUCT_CNT_THRESHOLD,
+} from "../constants.js";
 
 /*
     #match, lookup, wholsale 
@@ -16,7 +20,10 @@ const isTaskComplete = (type, infos, productLimit) => {
     type === "WHOLESALE_SEARCH"
   ) {
     completionPercentage = total / locked;
-    taskCompleted = completionPercentage >= MATCH_LOOKUP_THRESHOLD;
+    taskCompleted =
+      total < SMALL_LOCKED_PRODUCT_CNT_THRESHOLD
+        ? true
+        : completionPercentage >= MATCH_LOOKUP_THRESHOLD;
   } else if (type === "CRAWL_SHOP") {
     completionPercentage = total / productLimit;
     taskCompleted = completionPercentage >= CRAWL_THRESHOLD;

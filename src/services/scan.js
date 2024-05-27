@@ -1,9 +1,5 @@
-import {
-  CrawlerQueue,
-  crawlShop,
-  StatService,
-} from "@dipmaxtech/clr-pkg";
-import {  upsertSiteMap } from "./db/mongo.js";
+import { CrawlerQueue, crawlShop, StatService } from "@dipmaxtech/clr-pkg";
+import { upsertSiteMap } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
@@ -18,25 +14,38 @@ import { checkProgress } from "../util/checkProgress.js";
 
 export default async function scan(task) {
   return new Promise(async (res, reject) => {
-    const {
-      shopDomain,
-      productLimit,
-      limit,
-    } = task;
+    const { shopDomain, productLimit, limit } = task;
     const shops = await getShops([{ d: shopDomain }]);
 
     let infos = {
       new: 0,
       old: 0,
       total: 0,
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
       missingProperties: {
         name: 0,
         price: 0,
         link: 0,
         image: 0,
       },
-    
-    }
+    };
 
     if (shops === null) reject(new MissingShopError("", task));
 
@@ -92,6 +101,8 @@ export default async function scan(task) {
       parentPath: "",
       shop: shops[shopDomain],
       addProduct,
+      categoriesHeuristic: infos.categoriesHeuristic,
+      productPageCountHeuristic: infos.productPageCountHeuristic,
       limit,
       queue,
       retries: 0,

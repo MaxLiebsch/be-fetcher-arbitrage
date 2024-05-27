@@ -11,9 +11,9 @@ const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
 
 const today = new Date();
-const productLimit = 20;
+const productLimit = 30;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "voelkner.de";
+const shopDomain = "reichelt.de";
 const crawlTask = {
   _id: "661a785dc801f69f2beb16d6",
   type: "CRAWL_SHOP",
@@ -26,13 +26,13 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Computer & Büro",
-      "link": "https://www.voelkner.de/categories/13140/computer-buero.html"
+      name: "Neu",
+      link: "https://www.reichelt.de/?PAGE=2",
     },
     {
-      "name": "Multimedia",
-      "link": "https://www.voelkner.de/categories/13141/multimedia.html"
-    }
+      name: "SALE",
+      link: "https://www.reichelt.de/sale-l2568.html",
+    },
   ],
   recurrent: true,
   executing: false,
@@ -46,6 +46,7 @@ const crawlTask = {
   lastCrawler: [],
   weekday: today.getDay(),
 };
+
 const matchTask = {
   _id: "66262c7ea4877eab871802b6",
   type: "MATCH_PRODUCTS",

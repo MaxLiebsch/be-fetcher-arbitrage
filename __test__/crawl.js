@@ -1,23 +1,30 @@
+import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
+
+const shopDomain = "reichelt.de";
+
+const today = new Date();
+const productLimit = 500;
+const yesterday = sub(today, { days: 1 });
 
 const task = {
   _id: "661a785dc801f69f2beb16d9",
   type: "CRAWL_SHOP",
-  id: "crawl_shop_voelkner.de_1_of_4",
-  shopDomain: "voelkner.de",
+  id: `crawl_shop_${shopDomain}_1_of_4`,
+  shopDomain,
   limit: {
     mainCategory: 2,
     subCategory: 100,
-    pages: 2,
+    pages: 10,
   },
   categories: [
     {
-      name: "Haus & Garten",
-      link: "https://www.voelkner.de/categories/13146/haus-garten.html",
+      name: "Neu",
+      link: "https://www.reichelt.de/?PAGE=2",
     },
     {
-      name: "Beleuchtung",
-      link: "https://www.voelkner.de/categories/13147/beleuchtung.html",
+      name: "SALE",
+      link: "https://www.reichelt.de/sale-l2568.html",
     },
   ],
   recurrent: true,
@@ -25,13 +32,15 @@ const task = {
   completed: true,
   createdAt: "2024-04-13T12:19:41.168Z",
   errored: false,
-  startedAt: "2024-05-07T11:53:43.545Z",
-  completedAt: "2024-05-07T11:54:26.079Z",
-  productLimit: 500,
+  startedAt: yesterday.toISOString(),
+  completedAt: yesterday.toISOString(),
+  productLimit,
   retry: 0,
   maintenance: false,
   lastCrawler: [],
-  weekday: 2,
+  weekday: today.getDay(),
 };
 
-crawl(task).then();
+crawl(task)
+  .then((r) => console.log(JSON.stringify(r, null, 2)))
+  .catch((e) => console.log(e));

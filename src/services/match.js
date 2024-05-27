@@ -195,13 +195,9 @@ export default async function match(task) {
               }
             } catch (error) {
               if (error instanceof AxiosError) {
-                if (error.response.status === 404) {
+                if (error.response?.status === 404) {
                   infos.notFound++;
                 }
-                console.error(
-                  "Error retrieving redirect URL:",
-                  error.response.status
-                );
               }
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
@@ -242,13 +238,9 @@ export default async function match(task) {
               }
             } catch (error) {
               if (error instanceof AxiosError) {
-                if (error.response.status === 404) {
+                if (error.response?.status === 404) {
                   infos.notFound++;
                 }
-                console.error(
-                  "Error retrieving redirect URL:",
-                  error.response.status
-                );
               }
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);

@@ -27,6 +27,8 @@ import {
   MAX_TASK_RETRIES,
   COOLDOWN_MULTIPLIER,
   DEFAULT_MAX_TASK_RETRIES,
+  COMPLETE_FAILURE_THRESHOLD,
+  SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
 import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
 import isTaskComplete from "../util/isTaskComplete.js";
@@ -154,11 +156,11 @@ export async function monitorAndProcessTasks() {
           result.infos,
           productLimit
         );
-        console.log('taskCompleted:', taskCompleted)
+        console.log(type, " completed? ", taskCompleted);
         if (!taskCompleted) {
           subject = "🚱 " + subject + " " + completionPercentage;
           priority = "high";
-          if (currentRetry !== undefined && currentRetry < maxRetries) {
+          if (currentRetry < maxRetries) {
             completedAt = "";
             newRetry = currentRetry + 1;
           }
@@ -170,6 +172,7 @@ export async function monitorAndProcessTasks() {
             ).toISOString();
           }
 
+          console.log("currentRetry:", currentRetry);
           const update = {
             cooldown,
             completedAt,
@@ -179,7 +182,11 @@ export async function monitorAndProcessTasks() {
             retry: newRetry,
             errored,
           };
-          if (isCrawl && result.infos.total > 0) {
+          if (
+            isCrawl &&
+            result.infos.total > COMPLETE_FAILURE_THRESHOLD &&
+            limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
+          ) {
             const newPageLimit = calculatePageLimit(
               limit.pages,
               productLimit,

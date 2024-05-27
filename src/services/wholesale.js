@@ -43,8 +43,8 @@ export default async function wholesale(task) {
         price: 0,
         link: 0,
         image: 0,
-      }
-    }
+      },
+    };
 
     if (!rawproducts.length)
       return reject(
@@ -201,14 +201,9 @@ export default async function wholesale(task) {
             }
           } catch (error) {
             if (error instanceof AxiosError) {
-              if (error.response.status === 404) {
+              if (error.response?.status === 404) {
                 isOK = false;
               }
-
-              console.error(
-                "Error retrieving redirect URL:",
-                error.response.status
-              );
             }
           }
 

@@ -125,10 +125,10 @@ export const shops = {
       sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
       type: "href",
       basepath: true,
-      subCategories: {
+      subCategories: [{
         sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -326,6 +326,11 @@ export const shops = {
         "other",
       ],
     },
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     d: "alternate.de",
     action: [],
     category: [],
@@ -336,10 +341,10 @@ export const shops = {
       sel: "div[id=navigation-tree] a",
       type: "href",
       basepath: false,
-      subCategories: {
+      subCategories: [{
         sel: "div[id=category] div.accordion a.font-weight-bold",
         type: "href",
-      },
+      }],
     },
     entryPoints: [
       {
@@ -644,10 +649,10 @@ export const shops = {
       exclude: ["marken"],
       sel: "div.navigation--list-wrapper ul.navigation--list li.navigation--entry a",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "ul.is--level1 a.navigation--link",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -820,10 +825,10 @@ export const shops = {
       ],
       sel: "a.accountSideMenuListLink",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div[id=categories] li a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -954,10 +959,10 @@ export const shops = {
       visible: false,
       sel: "a.level-1-link",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.list-box a.cat-title-link",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1043,10 +1048,10 @@ export const shops = {
       exclude: [],
       sel: "li[data-section-type=CategoryMenuItem] a",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div[data-section-type=SubCategoryFilter] li a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1176,10 +1181,10 @@ export const shops = {
       exclude: ["alle"],
       sel: "a.top-nav",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.catalog-sub-menu div.ant-col a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1331,10 +1336,10 @@ export const shops = {
       sel: "#top > header > div.mainNavigation > div > div:nth-child(1) > div > div > nav > ul > li.nav-main-primary.nav-main-md-plus-devices > ul > li > a",
       type: "href",
       basepath: true,
-      subCategories: {
+      subCategories: [{
         sel: "li:is(.levelFirst,.levelSecond) a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1453,10 +1458,10 @@ export const shops = {
       exclude: ["marken"],
       sel: "nav[id=categoryNavigationContainer] a",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "a[data-dmid=on-page-navigation-item]",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1576,10 +1581,10 @@ export const shops = {
       exclude: ["aktivitäten", "marken", "service & beratung"],
       sel: "ul.menu-category li.li-level-1 a.a-level-1",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div[id=newcategorychips] a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1698,10 +1703,10 @@ export const shops = {
       exclude: ["service", "magazin"],
       sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "a.swiper-slide",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1819,10 +1824,10 @@ export const shops = {
       exclude: ["mindstart", "actionen"],
       sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -1925,7 +1930,7 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "mueller.de",
     mimic: "img.mu-header__logo",
@@ -1952,10 +1957,10 @@ export const shops = {
       visible: false,
       sel: "li:not(.mu-navigation__item--all) a:is(.mu-navigation__link,.mu-navigation__special-link)",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "a.mu-category-overview-desktop__link.mu-category-overview-desktop__link--main",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2044,10 +2049,10 @@ export const shops = {
       exclude: [],
       sel: "nav div[data-testid=stack] a.MuiTypography-root",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.MuiGrid-root.MuiGrid-item.MuiGrid-grid-lg-1.css-15dky00 > ul > a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2179,16 +2184,22 @@ export const shops = {
       ],
       sel: "a:is(.rootgroups,.rtgrps,.nwmshp,.sale)",
       type: "href",
-      subCategories: {
-        sel: "div[id=gov_groupview] a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "ul[id=pictogramm] li.pre[class*=pictogramm_] a",
+          type: "href",
+        },
+        {
+          sel: "div[id=gov_groupview] a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
         type: "pagination",
-        sel: "div.div.PageLinksNavi",
-        nav: "?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
+        sel: "div.PageLinksNavi",
+        nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
         scrollToBottom: true,
         paginationUrlSchema: {
           replace: "\\.html",
@@ -2365,10 +2376,10 @@ export const shops = {
       exclude: ["mindstart", "actionen"],
       sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2504,10 +2515,10 @@ export const shops = {
       exclude: ["sparclub", "service", "marken", "weitere"],
       sel: "nav.navigation-main li.navigation--entry.is--active.has--sub-categories.js--menu-scroller--item",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "ul.sidebar--navigation li.navigation--entry > a.navigation--link.link--go-forward",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2628,10 +2639,10 @@ export const shops = {
       exclude: ["Nur bei weltbild", "alles"],
       sel: "nav.nav-container a.nav-link",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "section.sx-box.listnavigation a:not(.current)",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2759,10 +2770,10 @@ export const shops = {
       exclude: ["ratgeber"],
       sel: "a.rh-menu-overlay__category",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "a:is(.rd-link.rd-tile,.btn.-primary)",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -2873,10 +2884,10 @@ export const shops = {
       exclude: ["marken"],
       sel: "a.nav_navi-elem",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "ul.nav_local-links a.ts-link",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -3021,6 +3032,11 @@ export const shops = {
         "other",
       ],
     },
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "voelkner.de",
@@ -3039,10 +3055,10 @@ export const shops = {
       exclude: ["#", "voelkner-finds"],
       sel: "li.js_load_subcategories a",
       type: "href",
-      subCategories: {
+      subCategories: [{
         sel: "div.grid_container div.category__box a",
         type: "href",
-      },
+      }],
     },
     paginationEl: [
       {
@@ -3092,7 +3108,6 @@ export const shops = {
       },
     ],
   },
-
   "amazon.de": {
     waitUntil: { product: "load", entryPoint: "load" },
     resourceTypes: {

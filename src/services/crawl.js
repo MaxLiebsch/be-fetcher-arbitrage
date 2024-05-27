@@ -13,13 +13,7 @@ import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDat
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
-    const {
-      shopDomain,
-      productLimit,
-      limit,
-      recurrent,
-      categories,
-    } = task;
+    const { shopDomain, productLimit, limit, recurrent, categories } = task;
 
     const shops = await getShops([{ d: shopDomain }]);
 
@@ -27,6 +21,24 @@ export default async function crawl(task) {
       new: 0,
       old: 0,
       total: 0,
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
       missingProperties: {
         name: 0,
         price: 0,
@@ -93,8 +105,8 @@ export default async function crawl(task) {
             infoCb
           );
         } else {
-          const properties = ['name', 'price', 'link', 'image'];
-          properties.forEach(prop => {
+          const properties = ["name", "price", "link", "image"];
+          properties.forEach((prop) => {
             if (!product[prop]) {
               infos.missingProperties[prop]++;
             }
@@ -113,6 +125,8 @@ export default async function crawl(task) {
           parentPath: "",
           shop: shops[shopDomain],
           addProduct,
+          categoriesHeuristic: infos.categoriesHeuristic,
+          productPageCountHeuristic: infos.productPageCountHeuristic,
           limit,
           queue,
           retries: 0,
@@ -131,6 +145,8 @@ export default async function crawl(task) {
         parentPath: "",
         shop: shops[shopDomain],
         addProduct,
+        categoriesHeuristic: infos.categoriesHeuristic,
+        productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
         queue,
         retries: 0,
