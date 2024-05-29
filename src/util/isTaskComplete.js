@@ -29,7 +29,7 @@ const isTaskComplete = (type, infos, productLimit) => {
     taskCompleted = completionPercentage >= CRAWL_THRESHOLD;
   } else if (type === "SCAN_SHOP") {
     taskCompleted = total > 3;
-    if(taskCompleted) {
+    if (taskCompleted) {
       completionPercentage = 1;
     }
   }
