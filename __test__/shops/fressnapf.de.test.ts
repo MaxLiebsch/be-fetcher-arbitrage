@@ -90,10 +90,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         shops[shopDomain].resourceTypes["crawl"],
         shops[shopDomain].exceptions,
         shops[shopDomain].rules
-      ); 
+      );
   }, 1000000);
 
-  
   test("Mimic for block detection is working", async () => {
     if (page && shops && shops[shopDomain]) {
       const blocked = await checkForBlockingSignals(
@@ -102,9 +101,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         shops[shopDomain].mimic,
         "test.de"
       );
-      if(blocked) {
+      if (blocked) {
         expect(blocked).toBe(true);
-      }else{
+      } else {
         expect(blocked).toBe(false);
       }
     }
@@ -179,12 +178,12 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       expect(categories !== undefined).toBe(true);
       if (categories)
         expect(categories.length).toBe(
-      testParameters[shopDomain].subCategoriesCount
-    );
-  }
-}, 1000000);
+          testParameters[shopDomain].subCategoriesCount
+        );
+    }
+  }, 1000000);
 
-test("Find product in category count", async () => {
+  test("Find product in category count", async () => {
     if (page && shops && shops[shopDomain]) {
       await page.goto(initialProductPageUrl);
       const count = await getProductCount(page, shops[shopDomain].productList);
@@ -220,7 +219,7 @@ test("Find product in category count", async () => {
       products.push(product);
     };
     if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], pageNo, addProductCb, {
+      await crawlProducts(page, shops[shopDomain], addProductCb, {
         name: "",
         link: "",
       });
@@ -242,14 +241,21 @@ test("Find product in category count", async () => {
     };
     if (page && shops && shops[shopDomain]) {
       await page.goto(initialProductPageUrl);
-      await browseProductpages(page, shops[shopDomain], addProductCb, {
-        name: "",
-        link: "",
-      }, {
-        pages: 5,
-        mainCategory: 0,
-        subCategory: 0,
-      }, undefined, undefined);
+      await browseProductpages(
+        page,
+        shops[shopDomain],
+        addProductCb,
+        {
+          name: "",
+          link: "",
+        },
+        {
+          pages: 5,
+          mainCategory: 0,
+          subCategory: 0,
+        },
+        undefined
+      );
       expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
       if (products.length > 0) console.log(products[0]);
     }

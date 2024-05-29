@@ -121,8 +121,6 @@ export default async function crawl(task) {
     if (recurrent) {
       categories.map((category) => {
         queue.pushTask(crawlSubpage, {
-          parent: null,
-          parentPath: "",
           shop: shops[shopDomain],
           addProduct,
           categoriesHeuristic: infos.categoriesHeuristic,
@@ -131,7 +129,6 @@ export default async function crawl(task) {
           queue,
           retries: 0,
           prio: 0,
-          onlyCrawlCategories: false,
           pageInfo: {
             entryCategory: category.name,
             link: category.link,
@@ -140,9 +137,7 @@ export default async function crawl(task) {
         });
       });
     } else {
-      queue.pushTask(crawlShop, {
-        parent: null,
-        parentPath: "",
+      queue.pushTask(crawlShop, { 
         shop: shops[shopDomain],
         addProduct,
         categoriesHeuristic: infos.categoriesHeuristic,
@@ -151,7 +146,6 @@ export default async function crawl(task) {
         queue,
         retries: 0,
         prio: 0,
-        onlyCrawlCategories: false,
         pageInfo: {
           entryCategory: shopDomain,
           link,

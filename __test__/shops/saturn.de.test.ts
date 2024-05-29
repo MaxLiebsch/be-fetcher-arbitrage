@@ -221,7 +221,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       products.push(product);
     };
     if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], pageNo, addProductCb, {
+      await crawlProducts(page, shops[shopDomain], addProductCb, {
         name: "",
         link: "",
       });
@@ -256,7 +256,6 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
           mainCategory: 0,
           subCategory: 0,
         },
-        undefined,
         undefined
       );
       expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);

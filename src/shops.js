@@ -1727,9 +1727,9 @@ export const shops = {
       ],
     },
     javascript: {
-      sharedWorker: 'enabled',
-      webWorker: 'enabled',
-      serviceWorker: 'disabled',
+      sharedWorker: "enabled",
+      webWorker: "enabled",
+      serviceWorker: "disabled",
     },
     waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
@@ -1753,7 +1753,7 @@ export const shops = {
       subCategories: [
         {
           sel: "div.teaser-slider-small div.swiper-wrapper a.swiper-slide",
-          type: "href"
+          type: "href",
         },
       ],
     },
@@ -2399,94 +2399,79 @@ export const shops = {
   },
   "saturn.de": {
     manualCategories: [
-      [
-        {
-          name: "Angebote & Aktionen",
-          link: "https://www.saturn.de/de/campaign/angebote-aktionen",
-        },
-        {
-          name: "OUTLET%",
-          link: "https://www.saturn.de/de/campaign/restposten",
-        },
-        {
-          name: "Computer + Tablet",
-          link: "https://www.saturn.de/de/category/computer-tablet-1.html",
-        },
-        {
-          name: "Smartphone + Tarife",
-          link: "https://www.saturn.de/de/category/smartphones-tarife-467.html",
-        },
-        {
-          name: "TV + Beamer",
-          link: "https://www.saturn.de/de/category/tv-beamer-1069.html",
-        },
-        {
-          name: "Küche",
-          link: "https://www.saturn.de/de/category/haushalt-küche-bad-1197.html",
-        },
-        {
-          name: "Haushalt + Garten",
-          link: "https://www.saturn.de/de/category/haushalt-garten-707.html",
-        },
-        {
-          name: "Gaming + VR",
-          link: "https://www.saturn.de/de/specials/gaming-welt",
-        },
-        {
-          name: "Audio",
-          link: "https://www.saturn.de/de/category/audio-2511.html",
-        },
-        {
-          name: "Kameras + Foto",
-          link: "https://www.saturn.de/de/category/kameras-foto-356.html",
-        },
-        {
-          name: "Fitness + Gesundheit",
-          link: "https://www.saturn.de/de/category/fitness-gesundheit-700.html",
-        },
-        {
-          name: "Beauty + Wellness",
-          link: "https://www.saturn.de/de/category/beauty-wellness-706.html",
-        },
-        {
-          name: "Spielzeug + Freizeit",
-          link: "https://www.saturn.de/de/category/spielzeug-freizeit-2492.html",
-        },
-        {
-          name: "Büro + Homeoffice",
-          link: "https://www.saturn.de/de/category/büro-kommunikation-2820.html",
-        },
-        {
-          name: "Filme + Musik",
-          link: "https://www.saturn.de/de/category/film-serien-musik-994.html",
-        },
-        {
-          name: "Smart Home",
-          link: "https://www.saturn.de/de/category/smart-home-5000.html",
-        },
-        {
-          name: "Erneuerbare Energien",
-          link: "https://www.saturn.de/de/category/erneuerbare-energien-9000.html",
-        },
-        {
-          name: "Refurbished",
-          link: "https://www.saturn.de/de/campaign/refurbished",
-        },
-      ],
+      {
+        name: "Angebote & Aktionen",
+        link: "https://www.saturn.de/de/campaign/angebote-aktionen",
+      },
+      {
+        name: "OUTLET%",
+        link: "https://www.saturn.de/de/campaign/restposten",
+      },
+      {
+        name: "Computer + Tablet",
+        link: "https://www.saturn.de/de/category/computer-tablet-1.html",
+      },
+      {
+        name: "Smartphone + Tarife",
+        link: "https://www.saturn.de/de/category/smartphones-tarife-467.html",
+      },
+      {
+        name: "TV + Beamer",
+        link: "https://www.saturn.de/de/category/tv-beamer-1069.html",
+      },
+      {
+        name: "Küche",
+        link: "https://www.saturn.de/de/category/haushalt-küche-bad-1197.html",
+      },
+      {
+        name: "Haushalt + Garten",
+        link: "https://www.saturn.de/de/category/haushalt-garten-707.html",
+      },
+      {
+        name: "Gaming + VR",
+        link: "https://www.saturn.de/de/specials/gaming-welt",
+      },
+      {
+        name: "Audio",
+        link: "https://www.saturn.de/de/category/audio-2511.html",
+      },
+      {
+        name: "Kameras + Foto",
+        link: "https://www.saturn.de/de/category/kameras-foto-356.html",
+      },
+      {
+        name: "Fitness + Gesundheit",
+        link: "https://www.saturn.de/de/category/fitness-gesundheit-700.html",
+      },
+      {
+        name: "Beauty + Wellness",
+        link: "https://www.saturn.de/de/category/beauty-wellness-706.html",
+      },
+      {
+        name: "Spielzeug + Freizeit",
+        link: "https://www.saturn.de/de/category/spielzeug-freizeit-2492.html",
+      },
+      {
+        name: "Büro + Homeoffice",
+        link: "https://www.saturn.de/de/category/büro-kommunikation-2820.html",
+      },
+      {
+        name: "Filme + Musik",
+        link: "https://www.saturn.de/de/category/film-serien-musik-994.html",
+      },
+      {
+        name: "Smart Home",
+        link: "https://www.saturn.de/de/category/smart-home-5000.html",
+      },
+      {
+        name: "Erneuerbare Energien",
+        link: "https://www.saturn.de/de/category/erneuerbare-energien-9000.html",
+      },
+      {
+        name: "Refurbished",
+        link: "https://www.saturn.de/de/campaign/refurbished",
+      },
     ],
-    // rules:[
-    //   {
-    //     description: "Abort if consent layer is present",
-    //     action: "abort",
-    //     conditions: [
-    //       {
-    //         type: "includes",
-    //         value:
-    //           "ConsentLayer",
-    //       },
-    //     ],
-    //   },
-    // ],
     resourceTypes: {
       crawl: [
         "media",
@@ -2525,7 +2510,7 @@ export const shops = {
     queryActions: [],
     categories: {
       exclude: ["mindstart", "actionen"],
-      sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
+      sel: "",
       type: "href",
       subCategories: [
         {

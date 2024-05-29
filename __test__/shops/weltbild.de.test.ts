@@ -167,8 +167,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         page,
         shops[shopDomain].paginationEl
       );
-      expect(pagination !== undefined).toBe(true);
-      expect(pagination !== "missing").toBe(true);
+      expect(pagination !== null).toBe(true);
 
       let nextUrl = `${initialProductPageUrl}${paginationEl.nav}${pageNo}`;
       if (paginationEl?.paginationUrlSchema) {
@@ -190,7 +189,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       products.push(product);
     };
     if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], pageNo, addProductCb, {
+      await crawlProducts(page, shops[shopDomain], addProductCb, {
         name: "",
         link: "",
       });

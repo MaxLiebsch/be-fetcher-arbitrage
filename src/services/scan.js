@@ -1,9 +1,12 @@
-import { CrawlerQueue, crawlShop, StatService } from "@dipmaxtech/clr-pkg";
+import {
+  ScanQueue,
+  scanShop,
+  StatService,
+} from "@dipmaxtech/clr-pkg";
 import { upsertSiteMap } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
-
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -13,7 +16,7 @@ import { checkProgress } from "../util/checkProgress.js";
 
 export default async function scan(task) {
   return new Promise(async (res, reject) => {
-    const { shopDomain, productLimit, limit } = task;
+    const { shopDomain, productLimit } = task;
     const shops = await getShops([{ d: shopDomain }]);
 
     let infos = {
@@ -48,7 +51,7 @@ export default async function scan(task) {
 
     if (shops === null) reject(new MissingShopError("", task));
 
-    const queue = new CrawlerQueue(
+    const queue = new ScanQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
@@ -71,23 +74,19 @@ export default async function scan(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    const addProduct = async (product) => {};
     const link = shops[shopDomain].entryPoints.length
       ? shops[shopDomain].entryPoints[0].url
       : "https://www." + shopDomain;
 
-    queue.pushTask(crawlShop, {
-      parent: null,
-      parentPath: "",
+    queue.pushTask(scanShop, {
+      parentPath: "sitemap",
       shop: shops[shopDomain],
-      addProduct,
+      infos,
       categoriesHeuristic: infos.categoriesHeuristic,
       productPageCountHeuristic: infos.productPageCountHeuristic,
-      limit,
       queue,
       retries: 0,
       prio: 0,
-      onlyCrawlCategories: true,
       pageInfo: {
         entryCategory: shopDomain,
         link,

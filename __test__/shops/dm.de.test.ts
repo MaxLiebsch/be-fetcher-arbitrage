@@ -92,7 +92,6 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       );
   }, 1000000);
 
-  
   test("Mimic for block detection is working", async () => {
     if (page && shops && shops[shopDomain]) {
       const blocked = await checkForBlockingSignals(
@@ -101,9 +100,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         shops[shopDomain].mimic,
         "test.de"
       );
-      if(blocked) {
+      if (blocked) {
         expect(blocked).toBe(true);
-      }else{
+      } else {
         expect(blocked).toBe(false);
       }
     }
@@ -217,7 +216,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       products.push(product);
     };
     if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], pageNo, addProductCb, {
+      await crawlProducts(page, shops[shopDomain], addProductCb, {
         name: "",
         link: "",
       });

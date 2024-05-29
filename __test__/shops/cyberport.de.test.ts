@@ -95,9 +95,9 @@ describe("Cyberport.de", () => {
         shops[shopDomain].mimic,
         "test.de"
       );
-      if(blocked) {
+      if (blocked) {
         expect(blocked).toBe(true);
-      }else{
+      } else {
         expect(blocked).toBe(false);
       }
     }
@@ -214,7 +214,7 @@ describe("Cyberport.de", () => {
       products.push(product);
     };
     if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], pageNo, addProductCb, {
+      await crawlProducts(page, shops[shopDomain], addProductCb, {
         name: "",
         link: "",
       });
