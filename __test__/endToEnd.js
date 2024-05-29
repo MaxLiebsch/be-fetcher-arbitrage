@@ -13,7 +13,7 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 30;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "reichelt.de";
+const shopDomain = "idealo.de";
 const crawlTask = {
   _id: "661a785dc801f69f2beb16d6",
   type: "CRAWL_SHOP",
@@ -26,13 +26,13 @@ const crawlTask = {
   },
   categories: [
     {
-      name: "Neu",
-      link: "https://www.reichelt.de/?PAGE=2",
+      "name": "Haus & Garten",
+      "link": "https://www.idealo.de/preisvergleich/SubProductCategory/3686.html"
     },
     {
-      name: "SALE",
-      link: "https://www.reichelt.de/sale-l2568.html",
-    },
+      "name": "Essen & Trinken",
+      "link": "https://www.idealo.de/preisvergleich/SubProductCategory/12913.html"
+    } 
   ],
   recurrent: true,
   executing: false,

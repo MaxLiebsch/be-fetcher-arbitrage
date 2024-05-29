@@ -1,7 +1,7 @@
 import { sub } from "date-fns";
-import crawl from "../src/services/crawl.js";
+import scan from "../src/services/scan.js";
 
-const shopDomain = "cyberport.de";
+const shopDomain = "mindfactory.de";
 
 const today = new Date();
 const productLimit = 500;
@@ -19,13 +19,13 @@ const task = {
   },
   categories: [
     {
-      name: "Haushalt",
-      link: "https://www.cyberport.de/haushalt.html",
+      name: "Neu",
+      link: "https://www.reichelt.de/?PAGE=2",
     },
     {
-      name: "Apple",
-      link: "https://www.cyberport.de/apple-und-zubehoer.html",
-    },  
+      name: "SALE",
+      link: "https://www.reichelt.de/sale-l2568.html",
+    },
   ],
   recurrent: true,
   executing: false,
@@ -41,6 +41,6 @@ const task = {
   weekday: today.getDay(),
 };
 
-crawl(task)
+scan(task)
   .then((r) => console.log(JSON.stringify(r, null, 2)))
   .catch((e) => console.log(e));

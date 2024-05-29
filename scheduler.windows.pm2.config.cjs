@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "Proxy",
+      name: `proxy_${process.env.NPM_PACKAGE_VERSION}`,
       script: "yarn",
       args: "proxy",
       interpreter: "none",
@@ -12,7 +12,7 @@ module.exports = {
       },
     },
     {
-      name: "Scheduler",
+      name: `scheduler_${process.env.NPM_PACKAGE_VERSION}`,
       script: "yarn",
       args: "scheduler:standalone",
       interpreter: "none",

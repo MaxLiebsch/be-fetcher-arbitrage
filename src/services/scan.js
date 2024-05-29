@@ -3,7 +3,6 @@ import { upsertSiteMap } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
-import { upsertCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
 
 import {
   CONCURRENCY,

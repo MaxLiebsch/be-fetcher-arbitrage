@@ -49,6 +49,13 @@ export const getNewTask = async () => {
     };
   }
 
+  const scanTaskQuery = [
+    { type: "SCAN_SHOP" },
+    { recurrent: { $eq: false } },
+    { completed: { $eq: false } },
+    { executing: { $eq: false } },
+  ];
+
   const crawlTaskQuery = [
     { type: "CRAWL_SHOP" },
     { recurrent: { $eq: true } },
@@ -111,6 +118,9 @@ export const getNewTask = async () => {
       },
       {
         $or: [
+          {
+            $and: scanTaskQuery,
+          },
           {
             $and: wholesaleTaskQuery,
           },

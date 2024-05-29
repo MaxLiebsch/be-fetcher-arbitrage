@@ -60,7 +60,7 @@ export default async function match(task) {
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
-      
+
     infos.locked = rawproducts.length;
 
     const startTime = Date.now();
@@ -107,6 +107,8 @@ export default async function match(task) {
         description,
         category: ctgry,
         nameSub,
+        hasMnfctr,
+        mnfctr: manufacturer,
         price: prc,
         promoPrice: prmPrc,
         image: img,
@@ -114,7 +116,17 @@ export default async function match(task) {
         shop: s,
       } = rawProd;
 
-      const { mnfctr, prodNm } = getManufacturer(name);
+      let mnfctr = "";
+      let prodNm = "";
+
+      if (hasMnfctr && manufacturer) {
+        mnfctr = manufacturer;
+        prodNm = name;
+      } else {
+        const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
+        mnfctr = _mnfctr;
+        prodNm = _prodNm;
+      }
       const dscrptnSegments = segmentString(description);
       const nmSubSegments = segmentString(nameSub);
 
