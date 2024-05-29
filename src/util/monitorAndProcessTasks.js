@@ -107,7 +107,7 @@ export async function monitorAndProcessTasks() {
       let newRetry = 0;
       let errored = false;
       let priority = "normal";
-      let subject = `${hostname}: ${type}: ${shopDomain}`;
+      let subject = `${hostname}: ${id}`;
 
       // Update progress for lookup stage
       if (isMatchLookup) {
@@ -172,7 +172,6 @@ export async function monitorAndProcessTasks() {
             ).toISOString();
           }
 
-          console.log("currentRetry:", currentRetry);
           const update = {
             cooldown,
             completedAt,

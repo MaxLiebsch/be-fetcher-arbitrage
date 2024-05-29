@@ -72,26 +72,7 @@ export default async function scan(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    const addProduct = async (product) => {
-      if (infos.total >= productLimit && !queue.idle()) {
-        await checkProgress({ queue, infos, startTime, productLimit }).catch(
-          async (r) => {
-            await upsertSiteMap(shopDomain, statService.getStatsFile());
-            clearInterval(interval);
-            handleResult(r, res, reject);
-          }
-        );
-      } else {
-        if (product.name) {
-          infos.total++;
-          await upsertCrawledProduct(shopDomain, {
-            ...product,
-            locked: false,
-            matched: false,
-          });
-        }
-      }
-    };
+    const addProduct = async (product) => {};
     const link = shops[shopDomain].entryPoints.length
       ? shops[shopDomain].entryPoints[0].url
       : "https://www." + shopDomain;
