@@ -1,7 +1,6 @@
 
-
 const main = async () => {
-
+ 
 };
 
-main().then();
+main().then(e => {process.exit(0);});

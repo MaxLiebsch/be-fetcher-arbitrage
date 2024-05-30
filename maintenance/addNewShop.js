@@ -1,5 +1,9 @@
-import { findTasks, getTasks } from "../src/services/db/util/tasks.js";
-import { createCrawlTasks } from "../src/task.js";
+import { findTasks } from "../src/services/db/util/tasks.js";
+import {
+  createCrawlTasks,
+  createSingleLookupTask,
+  createSingleMatchTask,
+} from "../src/task.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 
 const newShops = ["dm.de", "saturn.de", "fressnapf.de", "cyberport.de"];
@@ -38,10 +42,12 @@ const statsPerDay = {
 const main = async () => {
   const tasks = await findTasks({ type: "CRAWL_SHOP" });
 
-  const tasksCreated = Promise.all(
+  const tasksCreated = await Promise.all(
     newShops.map(async (shop) => {
       const task = tasks.find((task) => task.shopDomain === shop);
       if (!task) {
+        await createSingleLookupTask(shop);
+        await createSingleMatchTask(shop);
         return createCrawlTasks(shop);
       } else {
         console.log(`Tasks for ${shop} already exists!`);
@@ -52,10 +58,10 @@ const main = async () => {
   if (tasksCreated) {
     await distributeCrawlTasksToDays();
   }
-  
+
   const new_tasks = await findTasks({ type: "CRAWL_SHOP" });
   new_tasks.forEach((task) => {
-    console.log('task:', task.weekday)
+    console.log("task:", task.weekday);
     statsPerDay[task.weekday].total += task.productLimit;
     statsPerDay[task.weekday].ids.push(task.id);
   });
