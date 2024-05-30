@@ -71,6 +71,23 @@ async function checkForNewTask() {
   return null;
 }
 
+const getTaskSymbol = (type) => { 
+  switch (type){
+    case "CRAWL_SHOP":
+      return "🕷️"
+    case "WHOLESALE_SEARCH":
+      return "🔍"; 
+    case "SCAN_SHOP":
+      return "🔎";
+    case "MATCH_PRODUCTS":
+      return "🧩";
+    case "LOOKUP_PRODUCTS":
+      return "🔍";
+    default: 
+      return "🤷‍♂️";
+  }
+}
+
 export async function monitorAndProcessTasks() {
   const intervalId = setInterval(async () => {
     const task = await checkForNewTask(); // Implement this function to check for new tasks
@@ -107,7 +124,8 @@ export async function monitorAndProcessTasks() {
       let newRetry = 0;
       let errored = false;
       let priority = "normal";
-      let subject = `${hostname}: ${id}`;
+      
+      let subject = `${getTaskSymbol(type)} ${hostname}: ${id}`;
 
       // Update progress for lookup stage
       if (isMatchLookup) {

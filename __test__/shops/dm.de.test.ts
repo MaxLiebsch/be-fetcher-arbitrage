@@ -19,6 +19,7 @@ import testParameters from "./testParamter.js";
 import { Page } from "puppeteer";
 import { Browser } from "puppeteer";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination.js";
+import { extractProducts, findMainCategories, findPaginationAndNextPage, findSubCategories, mimicTest, productPageCount } from "./commonTests.js";
 
 const shopDomain = "dm.de";
 
@@ -93,142 +94,32 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
-    if (page && shops && shops[shopDomain]) {
-      const blocked = await checkForBlockingSignals(
-        page,
-        true,
-        shops[shopDomain].mimic,
-        "test.de"
-      );
-      if (blocked) {
-        expect(blocked).toBe(true);
-      } else {
-        expect(blocked).toBe(false);
-      }
-    }
-  });
+    await mimicTest(page, shops, shopDomain);
+  }, 1000000);
 
   test("Find mainCategories", async () => {
-    if (page && shops && shops[shopDomain]) {
-      await page.goto(shops[shopDomain].entryPoints[0].url);
-      const categories = await getCategories(page, {
-        // @ts-ignore
-        queue: new MockQueue(),
-        categoriesHeuristic: {
-          subCategories: {
-            0: 0,
-            "1-9": 0,
-            "10-19": 0,
-            "20-29": 0,
-            "30-39": 0,
-            "40-49": 0,
-            "+50": 0,
-          },
-          mainCategories: 0,
-        },
-        productPageCountHeuristic: {
-          0: 0,
-          "1-9": 0,
-          "10-49": 0,
-          "+50": 0,
-        },
-        shop: shops[shopDomain],
-      });
-      expect(categories !== undefined).toBe(true);
-      if (categories)
-        expect(categories.length).toBe(
-          testParameters[shopDomain].mainCategoriesCount
-        );
-    }
+    await findMainCategories(page, shops, shopDomain);
   }, 1000000);
 
   test("Find subCategories", async () => {
-    if (page && shops && shops[shopDomain]) {
-      await page.goto(initialProductPageUrl);
-      const categories = await getCategories(
-        page,
-        {
-          // @ts-ignore
-          queue: new MockQueue(),
-          categoriesHeuristic: {
-            subCategories: {
-              0: 0,
-              "1-9": 0,
-              "10-19": 0,
-              "20-29": 0,
-              "30-39": 0,
-              "40-49": 0,
-              "+50": 0,
-            },
-            mainCategories: 0,
-          },
-          productPageCountHeuristic: {
-            0: 0,
-            "1-9": 0,
-            "10-49": 0,
-            "+50": 0,
-          },
-          shop: shops[shopDomain],
-        },
-        true
-      );
-      expect(categories !== undefined).toBe(true);
-      if (categories)
-        expect(categories.length).toBe(
-          testParameters[shopDomain].subCategoriesCount
-        );
-    }
+    await findSubCategories(page, shops, shopDomain);
   }, 1000000);
 
   test("Find product in category count", async () => {
-    if (page && shops && shops[shopDomain]) {
-      await page.goto(initialProductPageUrl);
-      const count = await getProductCount(page, shops[shopDomain].productList);
-      expect(count !== null).toBe(true);
-      expect(count).toBeGreaterThan(0);
-    }
-  }, 1000000);
+    await productPageCount(page, shops, shopDomain);
+  });
 
   test("Find Pagination and generate page 2 link", async () => {
-    if (page && shops && shops[shopDomain]) {
-      const { pagination, paginationEl } = await findPagination(
-        page,
-        shops[shopDomain].paginationEl
-      );
-      expect(pagination !== null).toBe(true);
-
-      let nextUrl = `${initialProductPageUrl}${paginationEl.nav}${pageNo}`;
-      if (paginationEl?.paginationUrlSchema) {
-        nextUrl = paginationUrlBuilder(
-          initialProductPageUrl,
-          shops[shopDomain].paginationEl,
-          pageNo,
-          undefined
-        );
-      }
-      expect(nextUrl).toBe(nextPageUrl);
-    }
+    await findPaginationAndNextPage(
+      page,
+      shops,
+      shopDomain,
+      pageNo,
+    );
   }, 1000000);
 
   test("Extract Products from Product page", async () => {
-    const products: any[] = [];
-    const addProductCb = async (product: any) => {
-      products.push(product);
-    };
-    if (page && shops && shops[shopDomain]) {
-      await crawlProducts(page, shops[shopDomain], addProductCb, {
-        name: "",
-        link: "",
-      });
-    }
-    const properties = ["name", "price", "image", "link"];
-    const testProducts = products.every((product) =>
-      properties.every((prop) => product[prop] !== "")
-    );
-
-    expect(testProducts).toBe(true);
-    expect(products.length).toBe(productsPerPage);
-    if (products.length > 0) console.log(products[0]);
+    await extractProducts(page, shops, shopDomain);
   }, 1000000);
 
   test(`Extract min. ${productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
