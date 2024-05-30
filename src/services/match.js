@@ -1,7 +1,6 @@
 import {
   QueryQueue,
   getManufacturer,
-  getPrice,
   segmentString,
   prefixLink,
   queryTargetShops,
@@ -136,9 +135,7 @@ export default async function match(task) {
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
-        prc: prmPrc
-          ? parsePrice(getPrice(prmPrc ? prmPrc.replace(/\s+/g, "") : ""))
-          : parsePrice(getPrice(prc ? prc.replace(/\s+/g, "") : "")),
+        prc: prmPrc ? parsePrice(prmPrc) : parsePrice(prc),
       };
 
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);

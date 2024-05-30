@@ -1016,7 +1016,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.product-price",
+              sel: "div.product-price span[data-codecept=currentPrice]",
               type: "text",
             },
           ],
