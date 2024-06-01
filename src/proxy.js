@@ -3,8 +3,9 @@ import net from "net";
 
 import "dotenv/config";
 import { config } from "dotenv";
-import allowed from "./static/allowed.js";
+
 import os from "os";
+import allowed from "@dipmaxtech/clr-pkg";
 
 const osHostname = os.hostname();
 

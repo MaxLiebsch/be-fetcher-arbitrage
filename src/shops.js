@@ -1,4 +1,3 @@
-import { interval } from "date-fns";
 import { insertShop } from "./services/db/util/shops.js";
 
 export const shops = {
