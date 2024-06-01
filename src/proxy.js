@@ -4,9 +4,9 @@ import net from "net";
 import "dotenv/config";
 import { config } from "dotenv";
 import allowed from "./static/allowed.js";
-import os from "os"
+import os from "os";
 
-const osHostname = os.hostname()
+const osHostname = os.hostname();
 
 config({
   path: [
@@ -66,7 +66,12 @@ server.on("connect", (req, clientSocket, head) => {
   );
 
   clientSocket.on("error", (err) => {
-    console.log("ClientSocket", err);
+    if (err.code === "EPIPE") {
+      console.error("EPIPE error: attempted to write to a closed socket");
+      clientSocket.end();
+    } else {
+      console.error("Socket error:", err);
+    }
   });
 });
 

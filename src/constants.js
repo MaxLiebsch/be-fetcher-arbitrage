@@ -1,6 +1,6 @@
 export const MATCH_TIME_LIMIT = 480;
 export const CONCURRENCY = 4;
-export const DEFAULT_CHECK_PROGRESS_INTERVAL = 3 * 60 * 1000;
+export const DEFAULT_CHECK_PROGRESS_INTERVAL = 5 * 60 * 1000;
 export const COOLDOWN = 30 * 60 * 1000;
 export const COOLDOWN_LONG = 60 * 60 * 1000;
 export const COOLDOWN_MULTIPLIER = 3; // 3 hours from now
@@ -24,6 +24,10 @@ export const proxyAuth = {
 
 export const activeShops = [
   "alternate.de",
+  "cyberport.de",
+  "dm.de",
+  "fressnapf.de",
+  "saturn.de",
   "reichelt.de",
   "mueller.de",
   "bergfreunde.de",

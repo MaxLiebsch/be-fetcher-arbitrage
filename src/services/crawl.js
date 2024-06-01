@@ -81,7 +81,6 @@ export default async function crawl(task) {
           infos.old++;
         }
       };
-
       if (infos.total >= productLimit && !queue.idle()) {
         await checkProgress({
           queue,

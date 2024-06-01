@@ -1,26 +1,79 @@
 import { expect } from "@jest/globals";
 import {
   ShopObject,
+  browseProductPagesQueue,
   checkForBlockingSignals,
   crawlProducts,
   getCategories,
   getPage,
-  getPageNumberFromPagination,
   getProductCount,
+  mainBrowser,
   paginationUrlBuilder,
 } from "@dipmaxtech/clr-pkg";
 import { Page } from "puppeteer";
-import { Shops } from "./types";
-import { MockQueue } from "./MockQueue";
+import { MockQueue } from "./MockQueue.js";
+import { Browser } from "puppeteer";
 //@ts-ignore
 import testParameters from "./testParamter.js";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
+//@ts-ignore
+import { getShops } from "../../../src/services/db/util/shops.js";
+//@ts-ignore
+import { proxyAuth } from "../../../src/constants.js";
+import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
 
-export const mimicTest = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string
-) => {
+let browser: Browser | null = null;
+let shops: { [key: string]: ShopObject } | null = null;
+let page: Page | null = null;
+const pageNo = 2;
+let shopDomain = "";
+
+export const myBeforeAll = async (_shopDomain: string) => {
+  shopDomain = _shopDomain;
+  browser = await mainBrowser(
+    {
+      productLimit: 500,
+      statistics: {
+        estimatedProducts: 500,
+        statusHeuristic: {
+          "error-handled": 0,
+          "not-found": 0,
+          "page-completed": 0,
+          "limit-reached": 0,
+          total: 0,
+        },
+        retriesHeuristic: {
+          "0": 0,
+          "1-9": 0,
+          "10-49": 0,
+          "50-99": 0,
+          "100-499": 0,
+          "500+": 0,
+        },
+        resetedSession: 0,
+        errorTypeCount: {},
+        browserStarts: 0,
+      },
+    },
+    proxyAuth,
+    process.env.BROWSER_VERSION as Versions
+  );
+
+  shops = await getShops([{ d: shopDomain }]);
+  if (browser && shops && shops[shopDomain]) {
+    page = await getPage(
+      browser,
+      shops[shopDomain],
+      5,
+      shops[shopDomain].resourceTypes["crawl"],
+      shops[shopDomain].exceptions,
+      shops[shopDomain].rules
+    );
+    await page.goto(shops[shopDomain].entryPoints[0].url);
+  }
+};
+
+export const mimicTest = async () => {
   if (page && shops && shops[shopDomain]) {
     const blocked = await checkForBlockingSignals(
       page,
@@ -32,11 +85,7 @@ export const mimicTest = async (
     expect(blocked).toBe(false);
   }
 };
-export const findMainCategories = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string
-) => {
+export const findMainCategories = async () => {
   if (page && shops && shops[shopDomain]) {
     const categories = await getCategories(page, {
       // @ts-ignore
@@ -62,19 +111,17 @@ export const findMainCategories = async (
       shop: shops[shopDomain],
     });
     expect(categories !== undefined).toBe(true);
-    if (categories)
+    if (categories) {
+      console.log("categories:", categories.length);
       expect(categories.length).toBe(
         testParameters[shopDomain].mainCategoriesCount
       );
+    }
   }
 };
-export const findSubCategories = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string
-) => {
+export const findSubCategories = async () => {
   if (page && shops && shops[shopDomain]) {
-    await page.goto(testParameters[shopDomain].initialProductPageUrl);
+    await page.goto(testParameters[shopDomain].subCategoryUrl);
     const categories = await getCategories(
       page,
       {
@@ -109,11 +156,7 @@ export const findSubCategories = async (
       );
   }
 };
-export const productPageCount = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string
-) => {
+export const productPageCount = async () => {
   if (page && shops && shops[shopDomain]) {
     await page.goto(testParameters[shopDomain].initialProductPageUrl);
 
@@ -123,12 +166,7 @@ export const productPageCount = async (
     expect(count).toBeGreaterThan(0);
   }
 };
-export const findPaginationAndNextPage = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string,
-  pageNo: number
-) => {
+export const findPaginationAndNextPage = async () => {
   if (page && shops && shops[shopDomain]) {
     const initialProductPageUrl =
       testParameters[shopDomain].initialProductPageUrl;
@@ -153,11 +191,7 @@ export const findPaginationAndNextPage = async (
   }
 };
 
-export const extractProducts = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string
-) => {
+export const extractProducts = async () => {
   const products: any[] = [];
   const addProductCb = async (product: any) => {
     products.push(product);
@@ -179,18 +213,68 @@ export const extractProducts = async (
     console.log("Product: ", JSON.stringify(products[0], null, 2));
 };
 
-export const commonTests = async (
-  page: Page | null,
-  shops: Shops | null,
-  shopDomain: string,
-  pageNo: number
-) => {
+export const extractProductsFromSecondPage = async () => {
+  const initialProductPageUrl =
+    testParameters[shopDomain].initialProductPageUrl;
+  const productsPerPageAfterLoadMore =
+    testParameters[shopDomain].productsPerPageAfterLoadMore;
+  const products: any[] = [];
+  const addProductCb = async (product: any) => {
+    products.push(product);
+  };
+  if (page && shops && shops[shopDomain]) {
+    await page.goto(initialProductPageUrl);
+    await browseProductPagesQueue(page, {
+      // @ts-ignore
+      queue: new MockQueue(),
+      addProduct: addProductCb,
+      pageInfo: {
+        name: "",
+        link: "",
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      shop: shops[shopDomain],
+    });
+    expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
+    if (products.length > 0) console.log(products[0]);
+  }
+};
+
+export const commonTests = async () => {
   await Promise.all([
-    mimicTest(page, shops, shopDomain),
-    findMainCategories(page, shops, shopDomain),
-    findSubCategories(page, shops, shopDomain),
-    productPageCount(page, shops, shopDomain),
-    findPaginationAndNextPage(page, shops, shopDomain, pageNo),
-    extractProducts(page, shops, shopDomain),
-  ])
+    mimicTest(),
+    findMainCategories(),
+    findSubCategories(),
+    productPageCount(),
+    findPaginationAndNextPage(),
+    extractProducts(),
+  ]);
+};
+
+export const myAfterAll = async () => {
+  if (browser) {
+    await browser.close();
+  }
 };

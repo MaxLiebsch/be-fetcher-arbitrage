@@ -33,8 +33,7 @@ export default async function lookup(task) {
         link: 0,
         image: 0,
       },
-  
-    }
+    };
 
     const products = await lockArbispotterProducts(
       shopDomain,
@@ -112,8 +111,7 @@ export default async function lookup(task) {
             taskId: "",
           });
         }
-        infos.total++;
-        if (infos.total >= productLimit && !queue.idle()) {
+        if (infos.total >= productLimit - 1 && !queue.idle()) {
           await checkProgress({ queue, infos, startTime, productLimit }).catch(
             async (r) => {
               clearInterval(interval);
@@ -121,6 +119,7 @@ export default async function lookup(task) {
             }
           );
         }
+        infos.total++;
       };
       const handleNotFound = async () => {
         infos.notFound++;
@@ -135,8 +134,7 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        infos.total++;
-        if (infos.total >= productLimit && !queue.idle()) {
+        if (infos.total >= productLimit - 1 && !queue.idle()) {
           await checkProgress({ queue, infos, startTime, productLimit }).catch(
             async (r) => {
               clearInterval(interval);
@@ -144,6 +142,7 @@ export default async function lookup(task) {
             }
           );
         }
+        infos.total++;
       };
 
       if (rawProd.a_lnk) {

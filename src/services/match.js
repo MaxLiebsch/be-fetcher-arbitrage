@@ -4,12 +4,11 @@ import {
   segmentString,
   prefixLink,
   queryTargetShops,
-  matchTargetShopProdsWithRawProd,
   standardTargetRetailerList,
   reduceString,
+  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
-import parsePrice from "parse-price";
 import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
@@ -135,7 +134,7 @@ export default async function match(task) {
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
-        prc: prmPrc ? parsePrice(prmPrc) : parsePrice(prc),
+        prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
@@ -164,7 +163,7 @@ export default async function match(task) {
       );
 
       procProductsPromiseArr.push(
-        Promise.all(_shops).then(async (targetShopProds) => {
+        Promise.all(_shops).then(async (targetShopProducts) => {
           const infoCb = (isNewProduct) => {
             if (isNewProduct) {
               infos.new++;
@@ -172,7 +171,8 @@ export default async function match(task) {
               infos.old++;
             }
           };
-          if (infos.total >= productLimit && !queue.idle()) {
+
+          if (infos.total >= productLimit - 1 && !queue.idle()) {
             await checkProgress({
               queue,
               infos,
@@ -184,9 +184,9 @@ export default async function match(task) {
             });
           }
           infos.total++;
-          if (targetShopProds[0] && targetShopProds[0]?.procProd) {
-            const procProd = targetShopProds[0]?.procProd;
-
+          if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
+            const path = targetShopProducts[0].path;
+            const procProd = targetShopProducts[0]?.procProd;
             try {
               if (
                 procProd.a_lnk &&
@@ -213,6 +213,7 @@ export default async function match(task) {
             const update = {
               dscrptnSegments,
               nmSubSegments,
+              path,
               query: query.product.value,
               mnfctr,
               matched: true,
@@ -220,50 +221,10 @@ export default async function match(task) {
               taskId: "",
               matchedAt: new Date().toISOString(),
             };
-            if (targetShopProds[0]?.candidates) {
-              update.candidates = targetShopProds[0]?.candidates;
+            if (targetShopProducts[0]?.candidates) {
+              update.candidates = targetShopProducts[0]?.candidates;
             }
             await updateCrawledProduct(shopDomain, rawProd.link, update);
-            return procProd;
-          } else {
-            const { procProd, candidates } = matchTargetShopProdsWithRawProd(
-              targetShopProds,
-              prodInfo
-            );
-            try {
-              if (
-                procProd.a_lnk &&
-                procProd.a_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
-                procProd.a_lnk = redirectUrl;
-              }
-              if (
-                procProd.e_lnk &&
-                procProd.e_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
-                procProd.e_lnk = redirectUrl;
-              }
-            } catch (error) {
-              if (error instanceof AxiosError) {
-                if (error.response?.status === 404) {
-                  infos.notFound++;
-                }
-              }
-            }
-            await createOrUpdateProduct(collectionName, procProd, infoCb);
-            await updateCrawledProduct(shopDomain, rawProd.link, {
-              matched: true,
-              locked: false,
-              taskId: "",
-              query: query.product.value,
-              dscrptnSegments,
-              nmSubSegments,
-              matchedAt: new Date().toISOString(),
-              mnfctr,
-              candidates,
-            });
             return procProd;
           }
         })

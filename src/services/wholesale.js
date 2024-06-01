@@ -111,7 +111,6 @@ export default async function wholesale(task) {
       const addProduct = async (product) => {};
 
       const isFinished = async (interm) => {
-        infos.total++;
         if (
           interm &&
           interm.intermProcProd.a_nm &&
@@ -126,6 +125,7 @@ export default async function wholesale(task) {
                 prodInfo[key] = value;
               }
             });
+
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
               status: "complete",
@@ -133,18 +133,6 @@ export default async function wholesale(task) {
               locked: false,
               clrName: "",
             });
-
-            if (infos.total >= productLimit && !queue.idle()) {
-              await checkProgress({
-                queue,
-                infos,
-                startTime,
-                productLimit,
-              }).catch(async (r) => {
-                clearInterval(interval);
-                handleResult(r, resolve, reject);
-              });
-            }
           };
 
           const addProductInfo = async ({ productInfo, url }) => {
@@ -245,6 +233,18 @@ export default async function wholesale(task) {
             clrName: "",
           });
         }
+        if (infos.total >= productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
+        }
+        infos.total++;
       };
 
       queue.pushTask(queryShopQueue, {

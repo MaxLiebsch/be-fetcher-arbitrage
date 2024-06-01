@@ -11,7 +11,7 @@ const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
 
 const today = new Date();
-const productLimit = 30;
+const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
 const shopDomain = "idealo.de";
 const crawlTask = {

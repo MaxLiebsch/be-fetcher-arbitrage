@@ -1,15 +1,15 @@
 import {
   getManufacturer,
-  getPrice,
   prefixLink,
   queryTargetShops,
   segmentString,
   reduceString,
   targetRetailerList,
   QueryQueue,
+  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { getShops } from "../src/service/db/util/shops.js";
-import parsePrice from "parse-price";
+
 import { CONCURRENCY, proxyAuth } from "../src/constants.js";
 
 const rawProd = {
@@ -127,9 +127,7 @@ const main = async () => {
     nm: prodNm,
     img: prefixLink(img, s),
     lnk: prefixLink(lnk, s),
-    prc: prmPrc
-      ? parsePrice(getPrice(prmPrc ? prmPrc.replace(/\s+/g, "") : ""))
-      : parsePrice(getPrice(prc ? prc.replace(/\s+/g, "") : "")),
+    prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
   };
 
   const reducedName = mnfctr + " " + reduceString(prodNm, 55);
@@ -168,7 +166,7 @@ const main = async () => {
 
   procProductsPromiseArr.push(Promise.all(_shops));
 
-  return await Promise.all(procProductsPromiseArr)
+  return await Promise.all(procProductsPromiseArr);
 };
 
 main().then(async (r) => {});

@@ -43,6 +43,15 @@ const testParameters = {
     subCategoryUrl: "https://www.saturn.de/de/category/haushalt-k%C3%BCche-bad-1197.html",
     nextPageUrl: "https://www.saturn.de/de/promo-list/nat_dpl_pre_em_kuche?page=2",
   },
+  "gamestop.de": {
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 48,
+    subCategoriesCount: 6,
+    mainCategoriesCount: 9,
+    initialProductPageUrl: "https://www.gamestop.de/SearchResult/QuickSearch?platform=90",
+    subCategoryUrl: "https://www.gamestop.de/XboxOne/Index",
+    nextPageUrl: "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",
+  },
 };
 
 export default testParameters;

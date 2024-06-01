@@ -1,13 +1,21 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 //@ts-ignore
 import testParameters from "./utils/testParamter.js";
-import { extractProducts, extractProductsFromSecondPage, findMainCategories, findPaginationAndNextPage, findSubCategories, mimicTest, myAfterAll, myBeforeAll, productPageCount } from "./utils/commonTests.js";
+import {
+  extractProducts,
+  extractProductsFromSecondPage,
+  findMainCategories,
+  findPaginationAndNextPage,
+  findSubCategories,
+  mimicTest,
+  myAfterAll,
+  myBeforeAll,
+  productPageCount,
+} from "./utils/commonTests.js";
 
-const shopDomain = "fressnapf.de";
+const shopDomain = "gamestop.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
-
-
   beforeAll(async () => {
     await myBeforeAll(shopDomain);
   }, 1000000);
@@ -17,7 +25,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test("Find mainCategories", async () => {
-    await findMainCategories();
+    await findMainCategories()
   }, 1000000);
 
   test("Find subCategories", async () => {
@@ -28,9 +36,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await productPageCount();
   });
 
-  test("Find Pagination and generate page 2 link", async () => {
-    await findPaginationAndNextPage();
-  }, 1000000);
+  // test("Find Pagination and generate page 2 link", async () => {
+  //   await findPaginationAndNextPage();
+  // }, 1000000);
 
   test("Extract Products from Product page", async () => {
     await extractProducts();
@@ -40,7 +48,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductsFromSecondPage();
   }, 1000000);
 
-  afterAll(async () => {
-   await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

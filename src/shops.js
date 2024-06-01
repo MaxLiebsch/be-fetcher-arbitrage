@@ -227,8 +227,10 @@ export const shops = {
             },
             {
               content: "vendor",
-              sel: "img.productOffers-listItemOfferShopV2LogoImage",
-              type: "alt",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              attr: "data-dl-click",
+              key: "shop_name",
+              type: "parse_object_property",
             },
             {
               content: "name",
@@ -237,8 +239,10 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "a.productOffers-listItemOfferPrice",
-              type: "text",
+              attr: "data-dl-click",
+              key: "products[0].price",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              type: "parse_object_property",
             },
           ],
         },
@@ -745,6 +749,9 @@ export const shops = {
     ],
   },
   "gamestop.de": {
+    exceptions: [
+      "https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg",
+    ],
     manualCategories: [
       {
         name: "PS5",
@@ -775,15 +782,15 @@ export const shops = {
       crawl: [
         "media",
         "font",
-        "stylesheet",
-        "ping",
         "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
+        // "stylesheet",
+        // "ping",
+        // "xhr",
+        // "fetch",
+        // "imageset",
+        // "sub_frame",
+        // "script",
+        // "other",
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
@@ -799,28 +806,9 @@ export const shops = {
       },
     ],
     crawlActions: [],
-    queryActions: [
-      {
-        type: "shadowroot-button",
-        sel: "aside[id=usercentrics-cmp-ui]",
-        btn_sel: "button[id=deny]",
-        action: "click",
-        wait: false,
-      },
-      // {
-      //   type: "input",
-      //   sel: "input[id=i-search-input]",
-      //   wait: false,
-      //   what: ["product"],
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button.i-search-button--submit",
-      //   action: "click",
-      //   wait: false,
-      // },
-    ],
+    queryActions: [],
     categories: {
+      visible: false,
       exclude: [
         "gebraucht",
         "support",
@@ -836,6 +824,7 @@ export const shops = {
         {
           sel: "div[id=categories] li a",
           type: "href",
+          visible: false,
         },
       ],
     },
@@ -843,10 +832,28 @@ export const shops = {
       {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
-        nav: "?currentPage0=",
+        nav: "&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24",
         scrollToBottom: true,
+        paginationUrlSchema: {
+          withQuery: false,
+          calculation: {
+            method: "replace_append",
+            replace: [
+              {
+                search: "<skip>",
+                skip: 24,
+                use: "skip",
+              },
+              {
+                search: "QuickSearch",
+                replace: "QuicksearchAjax",
+              },
+            ],
+          },
+        },
         calculation: {
-          method: "match_text",
+          method: "product_count",
+          productsPerPage: 24,
           textToMatch: "Weitere Artikel laden",
           dynamic: true,
           last: "button.button-secondary.loadmoreBtn",
@@ -856,26 +863,30 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
+        sel: "div[id=productsList]",
+        productCntSel: ["strong.searchSumCount"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[id=productsList] div[id*=product_]",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "div.searchProductImage a",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
+              sel: "div.searchProductImage img",
+              type: "data-llsrc",
+            },
+            {
+              content: "mnfctr",
+              sel: "div[class*=SearchProductInfo] h4",
+              type: "text",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "h3.searchProductTitle a",
               type: "text",
             },
             {
@@ -885,38 +896,48 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div[class*=price-]",
               type: "text",
             },
           ],
         },
       },
       {
-        sel: "div.offerList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
+        sel: "div.prodList",
+
+        productCntSel: ["strong.searchSumCount"],
         product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
+          sel: "div.prodList div[id*=product_]",
+          type: "not_link",
           details: [
             {
+              content: "link",
+              sel: "div.searchProductImage a",
+              type: "href",
+            },
+            {
               content: "image",
-              sel: "img",
-              type: "src",
+              sel: "div.searchProductImage img",
+              type: "data-llsrc",
+            },
+            {
+              content: "mnfctr",
+              sel: "div[class*=SearchProductInfo] h4",
+              type: "text",
             },
             {
               content: "name",
-              sel: "div.offerList-item-description-title",
+              sel: "h3.searchProductTitle a",
               type: "text",
             },
             {
               content: "description",
-              sel: "span.description-part-one",
+              sel: "div.sr-productSummary__description",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.offerList-item-priceMin",
+              sel: "div[class*=price-]",
               type: "text",
             },
           ],
