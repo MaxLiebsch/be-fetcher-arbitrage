@@ -7,7 +7,6 @@ import {
   lockArbispotterProducts,
   updateProduct,
 } from "./db/util/crudArbispotterProduct.js";
-
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -47,6 +46,9 @@ export default async function lookup(task) {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
+    const _productLimit =
+      products.length < productLimit ? products.length : productLimit;
+
     infos.locked = products.length;
 
     const startTime = Date.now();
@@ -67,12 +69,15 @@ export default async function lookup(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, infos, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, resolve, reject);
-          }
-        ),
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, resolve, reject);
+        }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
@@ -111,13 +116,16 @@ export default async function lookup(task) {
             taskId: "",
           });
         }
-        if (infos.total >= productLimit - 1 && !queue.idle()) {
-          await checkProgress({ queue, infos, startTime, productLimit }).catch(
-            async (r) => {
-              clearInterval(interval);
-              handleResult(r, resolve, reject);
-            }
-          );
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
         }
         infos.total++;
       };
@@ -134,13 +142,16 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        if (infos.total >= productLimit - 1 && !queue.idle()) {
-          await checkProgress({ queue, infos, startTime, productLimit }).catch(
-            async (r) => {
-              clearInterval(interval);
-              handleResult(r, resolve, reject);
-            }
-          );
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
         }
         infos.total++;
       };

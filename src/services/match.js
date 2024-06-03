@@ -7,6 +7,7 @@ import {
   standardTargetRetailerList,
   reduceString,
   safeParsePrice,
+  matchTargetShopProdsWithRawProd,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { createArbispotterCollection } from "./db/mongo.js";
@@ -59,6 +60,9 @@ export default async function match(task) {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
+    const _productLimit =
+      rawproducts.length < productLimit ? rawproducts.length : productLimit;
+
     infos.locked = rawproducts.length;
 
     const startTime = Date.now();
@@ -84,12 +88,15 @@ export default async function match(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, infos, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, resolve, reject);
-          }
-        ),
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, resolve, reject);
+        }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
@@ -172,12 +179,12 @@ export default async function match(task) {
             }
           };
 
-          if (infos.total >= productLimit - 1 && !queue.idle()) {
+          if (infos.total >= _productLimit - 1 && !queue.idle()) {
             await checkProgress({
               queue,
               infos,
               startTime,
-              productLimit,
+              productLimit: _productLimit,
             }).catch(async (r) => {
               clearInterval(interval);
               handleResult(r, resolve, reject);
@@ -225,6 +232,47 @@ export default async function match(task) {
               update.candidates = targetShopProducts[0]?.candidates;
             }
             await updateCrawledProduct(shopDomain, rawProd.link, update);
+            return procProd;
+          } else {
+            const { procProd, candidates } = matchTargetShopProdsWithRawProd(
+              targetShopProducts,
+              prodInfo
+            );
+            try {
+              if (
+                procProd.a_lnk &&
+                procProd.a_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
+                procProd.a_lnk = redirectUrl;
+              }
+              if (
+                procProd.e_lnk &&
+                procProd.e_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
+                procProd.e_lnk = redirectUrl;
+              }
+            } catch (error) {
+              if (error instanceof AxiosError) {
+                if (error.response?.status === 404) {
+                  infos.notFound++;
+                }
+              }
+            }
+            await createOrUpdateProduct(collectionName, procProd, infoCb);
+            await updateCrawledProduct(shopDomain, rawProd.link, {
+              matched: true,
+              locked: false,
+              price: procProd.prc,
+              taskId: "",
+              query: query.product.value,
+              dscrptnSegments,
+              nmSubSegments,
+              matchedAt: new Date().toISOString(),
+              mnfctr,
+              candidates,
+            });
             return procProd;
           }
         })
