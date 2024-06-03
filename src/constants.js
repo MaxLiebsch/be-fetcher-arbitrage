@@ -6,6 +6,7 @@ export const COOLDOWN_LONG = 60 * 60 * 1000;
 export const COOLDOWN_MULTIPLIER = 3; // 3 hours from now
 export const PRODUCT_LIMIT = 10000;
 export const DANGLING_LOOKUP_THRESHOLD = 20;
+export const DANGLING_MATCH_THRESHOLD = 100;
 export const MATCH_LOOKUP_THRESHOLD = 0.8;
 export const SMALL_LOCKED_PRODUCT_CNT_THRESHOLD = 10;
 export const CRAWL_THRESHOLD = 0.9;

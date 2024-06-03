@@ -5,6 +5,7 @@ import { getProductsToMatchCount } from "./getMatchingProgress.js";
 import {
   COOLDOWN_LONG,
   DANGLING_LOOKUP_THRESHOLD,
+  DANGLING_MATCH_THRESHOLD,
 } from "../../../constants.js";
 
 export const getNewTask = async () => {
@@ -21,6 +22,9 @@ export const getNewTask = async () => {
 
   const danglingLookupThreshold =
     process.env.TEST === "endtoend" ? 2 : DANGLING_LOOKUP_THRESHOLD;
+
+  const danglingMatchThreshold =
+    process.env.TEST === "endtoend" ? 2 : DANGLING_MATCH_THRESHOLD;
 
   const lowerThenStartedAt =
     process.env.TEST === "endtoend"
@@ -86,7 +90,7 @@ export const getNewTask = async () => {
         {
           progress: { $exists: false },
         },
-        { "progress.pending": { $gt: 0 } },
+        { "progress.pending": { $gt: danglingMatchThreshold } },
       ],
     },
   ];
@@ -119,13 +123,13 @@ export const getNewTask = async () => {
       {
         $or: [
           {
+            $and: crawlTaskQuery,
+          },
+          {
             $and: scanTaskQuery,
           },
           {
             $and: wholesaleTaskQuery,
-          },
-          {
-            $and: crawlTaskQuery,
           },
           {
             $and: [
