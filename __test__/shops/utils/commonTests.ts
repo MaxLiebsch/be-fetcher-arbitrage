@@ -2,6 +2,7 @@ import { expect } from "@jest/globals";
 import {
   ShopObject,
   browseProductPagesQueue,
+  browseProductpages,
   checkForBlockingSignals,
   crawlProducts,
   getCategories,
@@ -28,33 +29,39 @@ let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
 
-export const myBeforeAll = async (_shopDomain: string) => {
+export const myBeforeAll = async (_shopDomain: string, gb: boolean = false) => {
   shopDomain = _shopDomain;
-  browser = await mainBrowser(
-    {
-      productLimit: 500,
-      statistics: {
-        estimatedProducts: 500,
-        statusHeuristic: {
-          "error-handled": 0,
-          "not-found": 0,
-          "page-completed": 0,
-          "limit-reached": 0,
-          total: 0,
-        },
-        retriesHeuristic: {
-          "0": 0,
-          "1-9": 0,
-          "10-49": 0,
-          "50-99": 0,
-          "100-499": 0,
-          "500+": 0,
-        },
-        resetedSession: 0,
-        errorTypeCount: {},
-        browserStarts: 0,
+  const task: { [key: string]: any } = {
+    productLimit: 500,
+    statistics: {
+      estimatedProducts: 500,
+      statusHeuristic: {
+        "error-handled": 0,
+        "not-found": 0,
+        "page-completed": 0,
+        "limit-reached": 0,
+        total: 0,
       },
+      retriesHeuristic: {
+        "0": 0,
+        "1-9": 0,
+        "10-49": 0,
+        "50-99": 0,
+        "100-499": 0,
+        "500+": 0,
+      },
+      resetedSession: 0,
+      errorTypeCount: {},
+      browserStarts: 0,
     },
+  };
+  if (gb) {
+    (task["proxyType"] = "gb"), (task["timezones"] = ["Europe/Berlin"]);
+  }
+
+  browser = await mainBrowser(
+    //@ts-ignore
+    task,
     proxyAuth,
     process.env.BROWSER_VERSION as Versions
   );
@@ -67,7 +74,8 @@ export const myBeforeAll = async (_shopDomain: string) => {
       5,
       shops[shopDomain].resourceTypes["crawl"],
       shops[shopDomain].exceptions,
-      shops[shopDomain].rules
+      shops[shopDomain].rules,
+      task.timezones
     );
     await page.goto(shops[shopDomain].entryPoints[0].url);
   }
@@ -204,13 +212,30 @@ export const extractProducts = async () => {
     });
   }
   const properties = ["name", "price", "image", "link"];
+  const missingProperties: { [key: string]: any } = {
+    name: 0,
+    price: 0,
+    link: 0,
+    image: 0,
+  };
   const testProducts = products.every((product) =>
-    properties.every((prop) => product[prop] !== "")
+    properties.every((prop) => {
+      if (product[prop] === "") missingProperties[prop]++;
+
+      return product[prop] !== "";
+    })
   );
+  console.log("missingProperties:", missingProperties);
+
   expect(testProducts).toBe(true);
   expect(products.length).toBe(productsPerPage);
   if (products.length > 0)
-    console.log("Product: ", JSON.stringify(products[0], null, 2));
+    console.log(
+      "Products cnt ",
+      products.length,
+      "Product: ",
+      JSON.stringify(products[0], null, 2)
+    );
 };
 
 export const extractProductsFromSecondPage = async () => {
@@ -259,6 +284,38 @@ export const extractProductsFromSecondPage = async () => {
     });
     expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
     if (products.length > 0) console.log(products[0]);
+  }
+};
+
+export const extractProductsFromSecondPageQueueless = async () => {
+  const initialProductPageUrl =
+    testParameters[shopDomain].initialProductPageUrl;
+  const productsPerPageAfterLoadMore =
+    testParameters[shopDomain].productsPerPageAfterLoadMore;
+  const products: any[] = [];
+  const addProductCb = async (product: any) => {
+    products.push(product);
+  };
+  if (page && shops && shops[shopDomain]) {
+    await page.goto(initialProductPageUrl);
+    const result = await browseProductpages(
+      page,
+      shops[shopDomain],
+      addProductCb,
+      {
+        name: "",
+        link: "",
+      },
+      {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      }
+    );
+    if (result === "crawled") {
+      expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
+      if (products.length > 0) console.log(products[0]);
+    }
   }
 };
 

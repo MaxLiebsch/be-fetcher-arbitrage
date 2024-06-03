@@ -13,7 +13,9 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "idealo.de";
+const shopDomain = "gamestop.de";
+const proxyType = "request";
+const timezones = ["Europe/Berlin"];
 const crawlTask = {
   _id: "661a785dc801f69f2beb16d6",
   type: "CRAWL_SHOP",
@@ -26,13 +28,13 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Haus & Garten",
-      "link": "https://www.idealo.de/preisvergleich/SubProductCategory/3686.html"
+      "name": "Switch",
+      "link": "https://www.gamestop.de/Switch/Index"
     },
     {
-      "name": "Essen & Trinken",
-      "link": "https://www.idealo.de/preisvergleich/SubProductCategory/12913.html"
-    } 
+      "name": "PC",
+      "link": "https://www.gamestop.de/PC/Index"
+    }
   ],
   recurrent: true,
   executing: false,
@@ -46,6 +48,11 @@ const crawlTask = {
   lastCrawler: [],
   weekday: today.getDay(),
 };
+
+if (proxyType === "gb") {
+  crawlTask["proxyType"] = proxyType;
+  crawlTask["timezones"] = timezones;
+}
 
 const matchTask = {
   _id: "66262c7ea4877eab871802b6",
@@ -114,7 +121,8 @@ const main = async () => {
   //empty DBs
   await deleteAllProducts(shopDomain);
   await deleteAllArbispotterProducts(shopDomain);
-  //create Tasks
+
+  // create Tasks
   const tasksCreated = await Promise.all(
     tasks.map(async (task) => await addTask(task))
   );

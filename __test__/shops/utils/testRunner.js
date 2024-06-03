@@ -11,7 +11,7 @@ async function runTests(retries = 0) {
 
   const result = await runCLI(
     {
-      testMatch: ["**/gamestop.de.test.ts"],
+      testMatch: ["**/weltbild.de.test.ts"],
       testPathIgnorePatterns: ["node_modules"],
       
       verbose: true,

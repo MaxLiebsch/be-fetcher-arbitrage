@@ -1,6 +1,4 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "./utils/testParamter.js";
 import {
   extractProducts,
   extractProductsFromSecondPage,
@@ -19,7 +17,7 @@ const shopDomain = "weltbild.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain);
+    await myBeforeAll(shopDomain, true);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

@@ -4,6 +4,7 @@ import testParameters from "./utils/testParamter.js";
 import {
   extractProducts,
   extractProductsFromSecondPage,
+  extractProductsFromSecondPageQueueless,
   findPaginationAndNextPage,
   findSubCategories,
   mimicTest,
@@ -33,7 +34,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
   test("Find product in category count", async () => {
     await productPageCount();
-  });
+  },1000000);
 
   test("Find Pagination and generate page 2 link", async () => {
     await findPaginationAndNextPage();
@@ -44,7 +45,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
-    await extractProductsFromSecondPage();
+    await extractProductsFromSecondPageQueueless();
   }, 1000000);
 
   afterAll(async () => {

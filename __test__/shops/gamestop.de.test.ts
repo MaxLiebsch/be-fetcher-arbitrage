@@ -3,9 +3,8 @@ import { describe, expect, test, beforeAll } from "@jest/globals";
 import testParameters from "./utils/testParamter.js";
 import {
   extractProducts,
-  extractProductsFromSecondPage,
+  extractProductsFromSecondPageQueueless,
   findMainCategories,
-  findPaginationAndNextPage,
   findSubCategories,
   mimicTest,
   myAfterAll,
@@ -45,10 +44,10 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
-    await extractProductsFromSecondPage();
+    await extractProductsFromSecondPageQueueless();
   }, 1000000);
 
-  // afterAll(async () => {
-  //   await myAfterAll();
-  // });
+  afterAll(async () => {
+    await myAfterAll();
+  });
 });
