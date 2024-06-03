@@ -15,44 +15,10 @@ import { all } from "axios";
 
 */
 
-export const distributeCrawlTasksToDays = async () => {
-  /*
-    max matches per day: 46574
-    productLimit
-    completedAt: '2024-05-02T09:15:10.830Z',
-    
-    mon 
-    tue
-    wed
-    thu
-    fri
-    sat
-    sun
-    
-    {
-        
-        mon: 0 
-        tue: 0
-        wed: 0
-        thu: 0
-        fri: 0
-        sat: 0
-        sun: 0
-    }
-    
-    
-    Iterate over tasks with crawl_products
-    
-    
-    when dayCount <= limitPerDay
-    then change completedAt to this weekday
-    add weekday to crawl task
-    else
-    next weekday
-*/
-  const limitPerDay = 15000;
+export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
+  const limitPerDay = 26000;
   let total = 0;
-  const weekdays = {
+  let weekdays = initalWeekdaysSplit || {
     0: {
       total: 0,
       ids: [],
@@ -82,15 +48,22 @@ export const distributeCrawlTasksToDays = async () => {
       ids: [],
     },
   };
+  
+  let ids = [];
+  
+  Object.values(weekdays).forEach((day) => {
+    ids.push(...day.ids);
+  });
+  
+  const tasks = await findTasks({ type: "CRAWL_SHOP", id: { $nin: ids } });
 
-  const tasks = await findTasks({ type: "CRAWL_SHOP" });
   let currentDay = 0;
   let today = new Date();
   today.setDate(today.getDate() - 7);
   today.setHours(2, 0, 0, 0);
   let allDaysFull = false;
 
-  await Promise.all[
+  return Promise.all[
     tasks.map(async (task) => {
       const { productLimit } = task;
       total += productLimit;
@@ -143,6 +116,7 @@ export const distributeCrawlTasksToDays = async () => {
         }
         weekdays[currentDay].total += productLimit;
         weekday = nextDay(today, currentDay).getDay();
+   
       }
       await updateTask(task._id, {
         weekday,
@@ -150,5 +124,4 @@ export const distributeCrawlTasksToDays = async () => {
       });
     })
   ];
-  console.log("total", total);
 };
