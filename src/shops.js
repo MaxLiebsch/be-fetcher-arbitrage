@@ -2513,6 +2513,11 @@ export const shops = {
     mimic: "img[data-test=styled-logo]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     entryPoints: [
       {
         url: "https://www.saturn.de",
@@ -2529,7 +2534,7 @@ export const shops = {
     ],
     queryActions: [],
     categories: {
-      exclude: ["mindstart", "actionen"],
+      exclude: ["mindstart", "actionen", "fotoparadies.de"],
       sel: "",
       type: "href",
       subCategories: [
@@ -2797,12 +2802,19 @@ export const shops = {
     crawlActions: [],
     queryActions: [],
     categories: {
-      exclude: ["Nur bei weltbild", "alles"],
+      exclude: ["nur-bei-weltbild", "alles"],
       sel: "nav.nav-container a.nav-link",
       type: "href",
+      visible: false,
       subCategories: [
         {
+          visible: false,
           sel: "section.sx-box.listnavigation a:not(.current)",
+          type: "href",
+        },
+        {
+          visible: false,
+          sel: "div.rb-linklist-image-text a",
           type: "href",
         },
       ],
@@ -2825,13 +2837,18 @@ export const shops = {
         sel: "div[property=list]",
         productCntSel: ["span.article-count"],
         product: {
-          sel: "div[property=list] div.sr-resultItemTile",
-          type: "link",
+          sel: "div[property=list] div.inner-flex-container",
+          type: "not_link",
           details: [
+            {
+              content: "link",
+              sel: "a[data-load-index]",
+              type: "href",
+            },
             {
               content: "image",
               sel: "div.image-container img",
-              type: "src",
+              type: "data-srcset",
             },
             {
               content: "name",
@@ -2851,36 +2868,6 @@ export const shops = {
           ],
         },
       },
-      // {
-      //   sel: "div.offerList",
-      //   productCntSel: ["span.article-count"],
-      //   product: {
-      //     sel: "div.offerList a.offerList-itemWrapper",
-      //     type: "link",
-      //     details: [
-      //       {
-      //         content: "image",
-      //         sel: "img",
-      //         type: "src",
-      //       },
-      //       {
-      //         content: "name",
-      //         sel: "div.offerList-item-description-title",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "description",
-      //         sel: "span.description-part-one",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "price",
-      //         sel: "div.offerList-item-priceMin",
-      //         type: "text",
-      //       },
-      //     ],
-      //   },
-      // },
     ],
   },
   "kaufland.de": {

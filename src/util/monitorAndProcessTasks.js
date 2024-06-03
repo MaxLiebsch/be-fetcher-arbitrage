@@ -12,7 +12,6 @@ import {
 import { sendMail } from "../email.js";
 import os from "os";
 import {
-  ProductLimitReachedStatus,
   TaskCompletedStatus,
   TimeLimitReachedStatus,
 } from "../status.js";
