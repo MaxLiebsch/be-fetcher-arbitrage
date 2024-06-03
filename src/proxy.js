@@ -1,11 +1,12 @@
 import http from "http";
+import url from "url";
 import net from "net";
 
 import "dotenv/config";
 import { config } from "dotenv";
 
 import os from "os";
-import allowed from "@dipmaxtech/clr-pkg";
+import { allowed } from "@dipmaxtech/clr-pkg";
 
 const osHostname = os.hostname();
 
@@ -18,11 +19,34 @@ config({
 
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
-const host = process.env.PROXY_GATEWAY_URL;
+let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 const PORT = 8080;
 
 // Create your custom server and define the logic
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  if (req.method === "GET" && parsedUrl.pathname === "/change-proxy") {
+    const query = parsedUrl.query;
+
+    if (!query.proxy) {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      return res.end("Bad Request");
+    }
+    if (query.proxy === "gb") {
+      host = process.env.PROXY_GATEWAY_URL_GB;
+    } else if (query.proxy === "request") {
+      host = process.env.PROXY_GATEWAY_URL;
+    }
+    // Set the response HTTP headers
+    res.writeHead(200, { "Content-Type": "application/json" });
+    // Send the health check response
+    res.end(JSON.stringify({ status: "ok", proxy: query.proxy }));
+  } else {
+    // Handle other requests with a 404 Not Found response
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found");
+  }
+});
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
@@ -53,7 +77,7 @@ server.on("connect", (req, clientSocket, head) => {
     `CONNECT ${targetHostPort} HTTP/1.1`,
     `Host: ${targetHostPort}`,
     `Proxy-Authorization: Basic ${proxyAuth}`,
-    "Connection: Keep-Alive",
+    "Connection: keep-alive",
     "",
     "",
   ].join("\r\n");
@@ -70,8 +94,15 @@ server.on("connect", (req, clientSocket, head) => {
     if (err.code === "EPIPE") {
       console.error("EPIPE error: attempted to write to a closed socket");
       clientSocket.end();
+    } else if (err.code === "ECONNABORTED") {
+      console.error("ECONNABORTED error: connection aborted");
+      clientSocket.end();
+    } else if (err.code === "ECONNRESET") {
+      console.error("ECONNRESET error: connection reset by peer");
+      clientSocket.end();
     } else {
       console.error("Socket error:", err);
+      clientSocket.end();
     }
   });
 });
