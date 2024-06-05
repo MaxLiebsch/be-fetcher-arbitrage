@@ -14,10 +14,12 @@ import {
 } from "../constants.js";
 import { getShops } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
+import { getAmazonLookupProgress } from "./db/util/getLookupProgress.js";
 
 export default async function lookup(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit } = task;
+    const { shopDomain, productLimit, _id, action } = task;
 
     let infos = {
       new: 0,
@@ -37,8 +39,8 @@ export default async function lookup(task) {
     const products = await lockArbispotterProducts(
       shopDomain,
       productLimit,
-      task._id,
-      task?.action
+      _id,
+      action
     );
 
     if (!products.length)
@@ -50,6 +52,12 @@ export default async function lookup(task) {
       products.length < productLimit ? products.length : productLimit;
 
     infos.locked = products.length;
+    
+     //Update task progress 
+    const progress = await getAmazonLookupProgress(shopDomain);
+    if (progress) {
+      await updateTaskWithQuery({ _id }, { progress });
+    }
 
     const startTime = Date.now();
 
@@ -158,9 +166,13 @@ export default async function lookup(task) {
 
       if (rawProd.a_lnk) {
         let link = rawProd.a_lnk;
-        if (!rawProd.a_lnk.includes("&language=")) {
+        if (
+          !rawProd.a_lnk.includes("&language=") &&
+          rawProd.a_lnk.includes("amazon.de")
+        ) {
           link = rawProd.a_lnk + "&language=de_DE";
         }
+
         queue.pushTask(lookupProductQueue, {
           retries: 0,
           shop,

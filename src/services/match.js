@@ -27,18 +27,20 @@ import {
 import { checkProgress } from "../util/checkProgress.js";
 import { getRedirectUrl } from "./head.js";
 import { AxiosError } from "axios";
+import { getMatchingProgress } from "./db/util/getMatchingProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, startShops, test } = task;
+    const { shopDomain, productLimit, startShops, test, _id, action } = task;
     const collectionName = test ? `test.${shopDomain}` : shopDomain;
     await createArbispotterCollection(collectionName);
 
     const rawproducts = await lockProducts(
       shopDomain,
       productLimit,
-      task._id,
-      task?.action
+      _id,
+      action
     );
 
     let infos = {
@@ -64,6 +66,10 @@ export default async function match(task) {
       rawproducts.length < productLimit ? rawproducts.length : productLimit;
 
     infos.locked = rawproducts.length;
+    
+    //Update task progress 
+    const progress = await getMatchingProgress(shopDomain);
+    if (progress) await updateTaskWithQuery({ _id }, { progress });
 
     const startTime = Date.now();
 

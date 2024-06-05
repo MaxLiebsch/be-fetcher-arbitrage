@@ -20,10 +20,12 @@ import {
 } from "./db/util/crudWholeSaleSearch.js";
 import { getRedirectUrl } from "./head.js";
 import { AxiosError } from "axios";
+import { getWholesaleProgress } from "./db/util/getWholesaleProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
 
 export default async function wholesale(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, limit, _id } = task;
+    const { shopDomain, productLimit, limit, _id, action } = task;
 
     const targetShops = [
       { d: "idealo.de", prefix: "i_", name: "idealo" },
@@ -31,7 +33,7 @@ export default async function wholesale(task) {
     ];
     const retailerTargetShop = { d: "amazon.de", prefix: "a_", name: "amazon" };
 
-    const rawproducts = await lockProducts(productLimit, _id, task?.action);
+    const rawproducts = await lockProducts(productLimit, _id, action);
 
     let infos = {
       new: 0,
@@ -52,6 +54,12 @@ export default async function wholesale(task) {
       );
 
     infos.locked = rawproducts.length;
+
+    //Update task progress
+    const progress = await getWholesaleProgress(_id, task.progress.total);
+    if (progress) {
+      await updateTaskWithQuery({ _id }, { progress });
+    }
 
     const startTime = Date.now();
 
