@@ -160,6 +160,7 @@ const establishedConnection = (
   });
 
   proxySocket.on("error", (err) => {
+    console.log('err:', err)
     const responseMessage = "Internal Proxy Server Error.";
     const responseHeaders = [
       "HTTP/1.1 500 Internal Server Error",

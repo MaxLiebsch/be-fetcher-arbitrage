@@ -2534,7 +2534,7 @@ export const shops = {
     ],
     queryActions: [],
     categories: {
-      exclude: ["mindstart", "actionen", "fotoparadies.de"],
+      exclude: ["mindstart", "actionen", "fotoparadies.de", 'brand', '/product/', 'b2b-business-solutions'],
       sel: "",
       type: "href",
       subCategories: [
