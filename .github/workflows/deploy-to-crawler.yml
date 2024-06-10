@@ -1,0 +1,40 @@
+name: Deploy to crawler
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+    build: 
+        name: Create image for crawler
+        runs-on: ubuntu-latest
+        steps:
+        - name: Execute image builder script
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: v2202406218838273157.luckysrv.de
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.DEPLOY_CRAWLER_PK }}
+            passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
+            script: |
+              cd /be-fetcher-arbitrage
+              pwd
+    deploy:
+        name: Deploy image to crawler
+        runs-on: ubuntu-latest
+        steps:
+        - name: executing remote ssh commands using password
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: |
+              v2202404218838264485.nicesrv.de
+              v2202403218838259442.quicksrv.de
+              v2202403218838259442.quicksrv.de
+              v2202403218838259442.quicksrv.de
+              v2202406218838272260.megasrv.de
+              v2202406218838272260.megasrv.de
+            sync: true
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.DEPLOY_CRAWLER_PK }}
+            passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
+            script: whoami
