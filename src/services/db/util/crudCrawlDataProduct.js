@@ -1,3 +1,4 @@
+import { createHash } from "../../../util/hash.js";
 import { getCrawlerDataDb, hostname } from "../mongo.js";
 
 //Add crawled product //crawler-data
@@ -5,9 +6,14 @@ export const upsertCrawledProduct = async (domain, product) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateOne(
+  product["createdAt"] = new Date().toISOString();
+  product["updatedAt"] = new Date().toISOString();
+
+  const s_hash = createHash(product.link);
+
+  return collection.updateOne(
     { link: product.link },
-    { $set: { ...product } },
+    { $set: { ...product, s_hash } },
     {
       upsert: true,
     }
@@ -18,22 +24,25 @@ export const findCrawledProductByName = async (domain, name) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.findOne({ name });
+  return collection.findOne({ name });
 };
 
 export const findCrawledProductByLink = async (domain, link) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.findOne({ link });
+  return collection.findOne({ link });
 };
 
 export const updateCrawledProduct = async (domain, link, update) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  await collection.updateOne(
-    { link: link },
+
+  update["updatedAt"] = new Date().toISOString();
+
+  return collection.updateOne(
+    { link },
     {
       $set: {
         ...update,
@@ -46,6 +55,9 @@ export const updateCrawlDataProducts = async (domain, query, update) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
+
+  update["updatedAt"] = new Date().toISOString();
+
   return collection.updateMany(
     { ...query },
     {
@@ -59,7 +71,7 @@ export const updateCrawlDataProducts = async (domain, query, update) => {
 export const unlockProduts = async (domain, products) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
-  await db.collection(collectionName).updateMany(
+  return db.collection(collectionName).updateMany(
     {
       _id: {
         $in: products.reduce((ids, product) => {

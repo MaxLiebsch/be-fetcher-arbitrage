@@ -125,10 +125,12 @@ export const shops = {
       sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
       type: "href",
       basepath: true,
-      subCategories: {
-        sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -224,8 +226,10 @@ export const shops = {
             },
             {
               content: "vendor",
-              sel: "img.productOffers-listItemOfferShopV2LogoImage",
-              type: "alt",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              attr: "data-dl-click",
+              key: "shop_name",
+              type: "parse_object_property",
             },
             {
               content: "name",
@@ -234,8 +238,10 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "a.productOffers-listItemOfferPrice",
-              type: "text",
+              attr: "data-dl-click",
+              key: "products[0].price",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              type: "parse_object_property",
             },
           ],
         },
@@ -326,6 +332,11 @@ export const shops = {
         "other",
       ],
     },
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     d: "alternate.de",
     action: [],
     category: [],
@@ -336,10 +347,12 @@ export const shops = {
       sel: "div[id=navigation-tree] a",
       type: "href",
       basepath: false,
-      subCategories: {
-        sel: "div[id=category] div.accordion a.font-weight-bold",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div[id=category] div.accordion a.font-weight-bold",
+          type: "href",
+        },
+      ],
     },
     entryPoints: [
       {
@@ -644,10 +657,12 @@ export const shops = {
       exclude: ["marken"],
       sel: "div.navigation--list-wrapper ul.navigation--list li.navigation--entry a",
       type: "href",
-      subCategories: {
-        sel: "ul.is--level1 a.navigation--link",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "ul.is--level1 a.navigation--link",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -733,6 +748,9 @@ export const shops = {
     ],
   },
   "gamestop.de": {
+    exceptions: [
+      "https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg",
+    ],
     manualCategories: [
       {
         name: "PS5",
@@ -763,15 +781,15 @@ export const shops = {
       crawl: [
         "media",
         "font",
-        "stylesheet",
-        "ping",
         "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
+        // "stylesheet",
+        // "ping",
+        // "xhr",
+        // "fetch",
+        // "imageset",
+        // "sub_frame",
+        // "script",
+        // "other",
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
@@ -787,28 +805,9 @@ export const shops = {
       },
     ],
     crawlActions: [],
-    queryActions: [
-      {
-        type: "shadowroot-button",
-        sel: "aside[id=usercentrics-cmp-ui]",
-        btn_sel: "button[id=deny]",
-        action: "click",
-        wait: false,
-      },
-      // {
-      //   type: "input",
-      //   sel: "input[id=i-search-input]",
-      //   wait: false,
-      //   what: ["product"],
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button.i-search-button--submit",
-      //   action: "click",
-      //   wait: false,
-      // },
-    ],
+    queryActions: [],
     categories: {
+      visible: false,
       exclude: [
         "gebraucht",
         "support",
@@ -820,19 +819,40 @@ export const shops = {
       ],
       sel: "a.accountSideMenuListLink",
       type: "href",
-      subCategories: {
-        sel: "div[id=categories] li a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div[id=categories] li a",
+          type: "href",
+          visible: false,
+        },
+      ],
     },
     paginationEl: [
       {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
-        nav: "?currentPage0=",
+        nav: "&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24",
         scrollToBottom: true,
+        paginationUrlSchema: {
+          withQuery: false,
+          calculation: {
+            method: "replace_append",
+            replace: [
+              {
+                search: "<skip>",
+                skip: 24,
+                use: "skip",
+              },
+              {
+                search: "QuickSearch",
+                replace: "QuicksearchAjax",
+              },
+            ],
+          },
+        },
         calculation: {
-          method: "match_text",
+          method: "product_count",
+          productsPerPage: 24,
           textToMatch: "Weitere Artikel laden",
           dynamic: true,
           last: "button.button-secondary.loadmoreBtn",
@@ -842,26 +862,30 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
+        sel: "div[id=productsList]",
+        productCntSel: ["strong.searchSumCount"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[id=productsList] div[id*=product_]",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "div.searchProductImage a",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
+              sel: "div.searchProductImage img",
+              type: "data-llsrc",
+            },
+            {
+              content: "mnfctr",
+              sel: "div[class*=SearchProductInfo] h4",
+              type: "text",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "h3.searchProductTitle a",
               type: "text",
             },
             {
@@ -871,38 +895,48 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div[class*=price-]",
               type: "text",
             },
           ],
         },
       },
       {
-        sel: "div.offerList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
+        sel: "div.prodList",
+
+        productCntSel: ["strong.searchSumCount"],
         product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
+          sel: "div.prodList div[id*=product_]",
+          type: "not_link",
           details: [
             {
+              content: "link",
+              sel: "div.searchProductImage a",
+              type: "href",
+            },
+            {
               content: "image",
-              sel: "img",
-              type: "src",
+              sel: "div.searchProductImage img",
+              type: "data-llsrc",
+            },
+            {
+              content: "mnfctr",
+              sel: "div[class*=SearchProductInfo] h4",
+              type: "text",
             },
             {
               content: "name",
-              sel: "div.offerList-item-description-title",
+              sel: "h3.searchProductTitle a",
               type: "text",
             },
             {
               content: "description",
-              sel: "span.description-part-one",
+              sel: "div.sr-productSummary__description",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.offerList-item-priceMin",
+              sel: "div[class*=price-]",
               type: "text",
             },
           ],
@@ -915,6 +949,11 @@ export const shops = {
       "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
     ],
     manualCategories: [],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     resourceTypes: {
       crawl: [
         "media",
@@ -930,7 +969,7 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "bergfreunde.de",
     mimic: "a[data-mapp-click='header.logo'] img",
@@ -949,10 +988,12 @@ export const shops = {
       visible: false,
       sel: "a.level-1-link",
       type: "href",
-      subCategories: {
-        sel: "div.list-box a.cat-title-link",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.list-box a.cat-title-link",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -995,7 +1036,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.product-price",
+              sel: "div.product-price span[data-codecept=currentPrice]",
               type: "text",
             },
           ],
@@ -1038,10 +1079,12 @@ export const shops = {
       exclude: [],
       sel: "li[data-section-type=CategoryMenuItem] a",
       type: "href",
-      subCategories: {
-        sel: "div[data-section-type=SubCategoryFilter] li a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div[data-testid=grid-navigation-links] a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -1171,10 +1214,12 @@ export const shops = {
       exclude: ["alle"],
       sel: "a.top-nav",
       type: "href",
-      subCategories: {
-        sel: "div.catalog-sub-menu div.ant-col a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.catalog-sub-menu div.ant-col a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -1290,13 +1335,8 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    queryUrlSchema: [
-      {
-        baseUrl: `https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>`,
-        category: "default",
-      },
-    ],
+    waitUntil: { product: "load", entryPoint: "load" },
+    queryUrlSchema: [],
     d: "cyberport.de",
     mimic: "svg.cpHeaderLogo__svg",
     purlschema: "Prod\\w*\\/\\d*",
@@ -1314,27 +1354,34 @@ export const shops = {
       exclude: [
         "service-garantien",
         "content-creator",
+        "tech-week",
         "nfl.html",
         "lexikon",
         "newsletter",
         "digitales-lernen",
         "kaufberatung",
+        "gutscheine",
+        "abo",
         "zurueck",
+        "konfiguration",
+        "service",
         "zurück",
         "stores",
         "kontakt",
         "einstellungen",
         "tipps zum stöbern",
         "newsletter",
-        "outlet",
       ],
       sel: "#top > header > div.mainNavigation > div > div:nth-child(1) > div > div > nav > ul > li.nav-main-primary.nav-main-md-plus-devices > ul > li > a",
       type: "href",
       basepath: true,
-      subCategories: {
-        sel: "li:is(.levelFirst,.levelSecond) a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          visible: false,
+          sel: "li:is(.levelFirst,.levelSecond) a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -1351,70 +1398,70 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
+        sel: "div.productsList",
         productCntSel: ["span.resultCount"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div.productsList article.productArticle",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "a.head.heading-level3",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
+              sel: "div.productImage img",
+              type: "srcset",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "h3.productTitleName",
               type: "text",
             },
             {
               content: "description",
-              sel: "div.sr-productSummary__description",
+              sel: "div[class=productinfobox] ul",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div.delivery-price",
               type: "text",
             },
           ],
         },
       },
-      {
-        sel: "div.offerList",
-        productCntSel: ["span.resultCount"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
+      // {
+      //   sel: "div.offerList",
+      //   productCntSel: ["span.resultCount"],
+      //   product: {
+      //     sel: "div.offerList a.offerList-itemWrapper",
+      //     type: "link",
+      //     details: [
+      //       {
+      //         content: "image",
+      //         sel: "img",
+      //         type: "src",
+      //       },
+      //       {
+      //         content: "name",
+      //         sel: "div.offerList-item-description-title",
+      //         type: "text",
+      //       },
+      //       {
+      //         content: "description",
+      //         sel: "span.description-part-one",
+      //         type: "text",
+      //       },
+      //       {
+      //         content: "price",
+      //         sel: "div.offerList-item-priceMin",
+      //         type: "text",
+      //       },
+      //     ],
+      //   },
+      // },
     ],
   },
   "dm.de": {
@@ -1426,15 +1473,15 @@ export const shops = {
         "stylesheet",
         "ping",
         "image",
-        "xhr",
+        // "xhr",
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
+        // "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "dm.de",
     mimic: "svg[data-dmid=dm-brand]",
@@ -1448,21 +1495,25 @@ export const shops = {
     ],
     crawlActions: [],
     queryActions: [],
-
     categories: {
       exclude: ["marken"],
       sel: "nav[id=categoryNavigationContainer] a",
+      visible: false,
       type: "href",
-      subCategories: {
-        sel: "a[data-dmid=on-page-navigation-item]",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "a[data-dmid=on-page-navigation-item]",
+          visible: false,
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
-        type: "pagination",
+        type: "recursive-more-button",
         sel: "button[data-dmid=load-more-products-button]",
         nav: "?currentPage0=",
+        wait: false,
         scrollToBottom: true,
         calculation: {
           method: "match_text",
@@ -1475,35 +1526,36 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
+        sel: "div[data-dmid=product-grid-container]",
         productCntSel: ["span[data-dmid=total-count]"],
+        awaitProductCntSel: true,
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[data-dmid=product-grid-container] div[data-dmid=product-tile-container]",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "a[class*=pdd_]",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              sel: "img[class*=pdd_]",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "div[data-dmid=product-description] a",
               type: "text",
             },
             {
-              content: "description",
-              sel: "div.sr-productSummary__description",
+              content: "mnfctr",
+              sel: "span[data-dmid=product-brand]",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "span[data-dmid=price-localized]",
               type: "text",
             },
           ],
@@ -1576,10 +1628,12 @@ export const shops = {
       exclude: ["aktivitäten", "marken", "service & beratung"],
       sel: "ul.menu-category li.li-level-1 a.a-level-1",
       type: "href",
-      subCategories: {
-        sel: "div[id=newcategorychips] a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div[id=newcategorychips] a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -1663,7 +1717,20 @@ export const shops = {
     ],
   },
   "fressnapf.de": {
-    manualCategories: [],
+    manualCategories: [
+      {
+        name: "Sale",
+        link: "https://www.fressnapf.de/aktionen-angebote/sale/",
+      },
+      {
+        name: "Preisknaller",
+        link: "https://www.fressnapf.de/aktionen-angebote/preiskraller/",
+      },
+      {
+        name: "Gutschein & Zubehör",
+        link: "https://www.fressnapf.de/aktionen-angebote/gutschein-zubehoer/",
+      },
+    ],
     resourceTypes: {
       crawl: [
         "media",
@@ -1675,14 +1742,19 @@ export const shops = {
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
+        // "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    javascript: {
+      sharedWorker: "enabled",
+      webWorker: "enabled",
+      serviceWorker: "disabled",
+    },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "fressnapf.de",
-    mimic: "div[data-v-45f6e4f9]",
+    mimic: "a[id=header-logo]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
     entryPoints: [
@@ -1696,18 +1768,20 @@ export const shops = {
 
     categories: {
       exclude: ["service", "magazin"],
-      sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
+      sel: "div[id=__navigation] ul.nav-level-1 a",
       type: "href",
-      subCategories: {
-        sel: "a.swiper-slide",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.teaser-slider-small div.swiper-wrapper a.swiper-slide",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
         type: "pagination",
         sel: "div.p-items",
-        nav: "?p=",
+        nav: "?currentPage=",
         calculation: {
           method: "count",
           last: "div.p-items a",
@@ -1717,71 +1791,72 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
-        productCntSel: ["div[data-v-0725ff23][data-v-133f7958]"],
+        sel: "div.grid-container.product-grid",
+        productCntSel: ["div.divider > div"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div.grid-container.product-grid div.product-teaser",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "div.pt-content a",
               type: "href",
             },
 
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              sel: "div.pt-figure img",
               type: "src",
             },
+
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "div.pt-head",
               type: "text",
             },
             {
-              content: "description",
-              sel: "div.sr-productSummary__description",
+              content: "mnfctr",
+              sel: "div.pt-subhead",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div.p-price",
               type: "text",
             },
           ],
         },
       },
-      {
-        sel: "div.offerList",
-        productCntSel: ["div[data-v-0725ff23][data-v-133f7958]"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
+      // {
+      //   sel: "div.offerList",
+      //   productCntSel: ["div[data-v-0725ff23][data-v-133f7958]"],
+      //   product: {
+      //     sel: "div.offerList a.offerList-itemWrapper",
+      //     type: "link",
+      //     details: [
+      //       {
+      //         content: "image",
+      //         sel: "img",
+      //         type: "src",
+      //       },
+      //       {
+      //         content: "name",
+      //         sel: "div.offerList-item-description-title",
+      //         type: "text",
+      //       },
+      //       {
+      //         content: "description",
+      //         sel: "span.description-part-one",
+      //         type: "text",
+      //       },
+      //       {
+      //         content: "price",
+      //         sel: "div.offerList-item-priceMin",
+      //         type: "text",
+      //       },
+      //     ],
+      //   },
+      // },
     ],
   },
   "mindfactory.de": {
@@ -1819,10 +1894,12 @@ export const shops = {
       exclude: ["mindstart", "actionen"],
       sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
       type: "href",
-      subCategories: {
-        sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -1925,7 +2002,7 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "mueller.de",
     mimic: "img.mu-header__logo",
@@ -1952,10 +2029,12 @@ export const shops = {
       visible: false,
       sel: "li:not(.mu-navigation__item--all) a:is(.mu-navigation__link,.mu-navigation__special-link)",
       type: "href",
-      subCategories: {
-        sel: "a.mu-category-overview-desktop__link.mu-category-overview-desktop__link--main",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "a.mu-category-overview-desktop__link.mu-category-overview-desktop__link--main",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -2044,10 +2123,12 @@ export const shops = {
       exclude: [],
       sel: "nav div[data-testid=stack] a.MuiTypography-root",
       type: "href",
-      subCategories: {
-        sel: "div.MuiGrid-root.MuiGrid-item.MuiGrid-grid-lg-1.css-15dky00 > ul > a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.MuiGrid-root.MuiGrid-item.MuiGrid-grid-lg-1.css-15dky00 > ul > a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -2179,16 +2260,22 @@ export const shops = {
       ],
       sel: "a:is(.rootgroups,.rtgrps,.nwmshp,.sale)",
       type: "href",
-      subCategories: {
-        sel: "div[id=gov_groupview] a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "ul[id=pictogramm] li.pre[class*=pictogramm_] a",
+          type: "href",
+        },
+        {
+          sel: "div[id=gov_groupview] a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
         type: "pagination",
-        sel: "div.div.PageLinksNavi",
-        nav: "?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
+        sel: "div.PageLinksNavi",
+        nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
         scrollToBottom: true,
         paginationUrlSchema: {
           replace: "\\.html",
@@ -2331,82 +2418,170 @@ export const shops = {
     ],
   },
   "saturn.de": {
-    manualCategories: [],
+    manualCategories: [
+      {
+        name: "Angebote & Aktionen",
+        link: "https://www.saturn.de/de/campaign/angebote-aktionen",
+      },
+      {
+        name: "OUTLET%",
+        link: "https://www.saturn.de/de/campaign/restposten",
+      },
+      {
+        name: "Computer + Tablet",
+        link: "https://www.saturn.de/de/category/computer-tablet-1.html",
+      },
+      {
+        name: "Smartphone + Tarife",
+        link: "https://www.saturn.de/de/category/smartphones-tarife-467.html",
+      },
+      {
+        name: "TV + Beamer",
+        link: "https://www.saturn.de/de/category/tv-beamer-1069.html",
+      },
+      {
+        name: "Küche",
+        link: "https://www.saturn.de/de/category/haushalt-küche-bad-1197.html",
+      },
+      {
+        name: "Haushalt + Garten",
+        link: "https://www.saturn.de/de/category/haushalt-garten-707.html",
+      },
+      {
+        name: "Gaming + VR",
+        link: "https://www.saturn.de/de/specials/gaming-welt",
+      },
+      {
+        name: "Audio",
+        link: "https://www.saturn.de/de/category/audio-2511.html",
+      },
+      {
+        name: "Kameras + Foto",
+        link: "https://www.saturn.de/de/category/kameras-foto-356.html",
+      },
+      {
+        name: "Fitness + Gesundheit",
+        link: "https://www.saturn.de/de/category/fitness-gesundheit-700.html",
+      },
+      {
+        name: "Beauty + Wellness",
+        link: "https://www.saturn.de/de/category/beauty-wellness-706.html",
+      },
+      {
+        name: "Spielzeug + Freizeit",
+        link: "https://www.saturn.de/de/category/spielzeug-freizeit-2492.html",
+      },
+      {
+        name: "Büro + Homeoffice",
+        link: "https://www.saturn.de/de/category/büro-kommunikation-2820.html",
+      },
+      {
+        name: "Filme + Musik",
+        link: "https://www.saturn.de/de/category/film-serien-musik-994.html",
+      },
+      {
+        name: "Smart Home",
+        link: "https://www.saturn.de/de/category/smart-home-5000.html",
+      },
+      {
+        name: "Erneuerbare Energien",
+        link: "https://www.saturn.de/de/category/erneuerbare-energien-9000.html",
+      },
+      {
+        name: "Refurbished",
+        link: "https://www.saturn.de/de/campaign/refurbished",
+      },
+    ],
     resourceTypes: {
       crawl: [
         "media",
         "font",
-        "stylesheet",
+        // "stylesheet",
         "ping",
         "image",
         "xhr",
-        "fetch",
+        // "fetch",
         "imageset",
         "sub_frame",
-        "script",
+        // "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
-    d: "mindfactory.de",
-    mimic: "#bToprow > div.row > div.col-logo > div > a > img",
+    d: "saturn.de",
+    mimic: "img[data-test=styled-logo]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     entryPoints: [
       {
-        url: "https://www.mindfactory.de",
+        url: "https://www.saturn.de",
         category: "default",
       },
     ],
-    crawlActions: [],
+    crawlActions: [
+      {
+        type: "element",
+        sel: "div[id=mms-consent-portal-container]",
+        action: "delete",
+        interval: 300,
+      },
+    ],
     queryActions: [],
     categories: {
-      exclude: ["mindstart", "actionen"],
-      sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
+      exclude: ["mindstart", "actionen", "fotoparadies.de", 'brand', '/product/', 'b2b-business-solutions'],
+      sel: "",
       type: "href",
-      subCategories: {
-        sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "a[data-test=mms-search-category-content-sidenav-link]",
+          type: "href",
+        },
+        {
+          sel: "a[data-test=mms-router-link]",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
-        type: "pagination",
-        sel: "ul.pagination",
-        nav: "/page/",
+        type: "recursive-more-button",
+        sel: "button[aria-label='Mehr Produkte anzeigen']",
+        nav: "?page=",
         scrollToBottom: true,
         calculation: {
           method: "find_highest",
-          last: "ul.pagination a",
-          sel: "ul.pagination a",
+          last: "button[aria-label='Mehr Produkte anzeigen']",
+          sel: "button[aria-label='Mehr Produkte anzeigen']",
         },
       },
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
-        productCntSel: [
-          "div.show-articles-per-page-top span.bold:nth-child(3)",
-        ],
+        sel: "div[data-test=mms-search-srp-productlist]",
+        productCntSel: ["section[data-test=mms-search-srp-headlayout] div"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[data-test=mms-search-srp-productlist] div[data-test=mms-product-card]",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "a[data-test=mms-product-list-item-link]",
               type: "href",
             },
-
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              sel: "picture[data-test=product-image] img",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "div[title] p",
               type: "text",
             },
             {
@@ -2416,7 +2591,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
+              sel: "div[data-test=product-price] span[spacing=base]",
               type: "text",
             },
           ],
@@ -2504,10 +2679,12 @@ export const shops = {
       exclude: ["sparclub", "service", "marken", "weitere"],
       sel: "nav.navigation-main li.navigation--entry.is--active.has--sub-categories.js--menu-scroller--item",
       type: "href",
-      subCategories: {
-        sel: "ul.sidebar--navigation li.navigation--entry > a.navigation--link.link--go-forward",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "ul.sidebar--navigation li.navigation--entry > a.navigation--link.link--go-forward",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -2610,7 +2787,7 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "weltbild.de",
     mimic: "img[alt=Weltbild]",
@@ -2625,13 +2802,22 @@ export const shops = {
     crawlActions: [],
     queryActions: [],
     categories: {
-      exclude: ["Nur bei weltbild", "alles"],
+      exclude: ["nur-bei-weltbild", "alles"],
       sel: "nav.nav-container a.nav-link",
       type: "href",
-      subCategories: {
-        sel: "section.sx-box.listnavigation a:not(.current)",
-        type: "href",
-      },
+      visible: false,
+      subCategories: [
+        {
+          visible: false,
+          sel: "section.sx-box.listnavigation a:not(.current)",
+          type: "href",
+        },
+        {
+          visible: false,
+          sel: "div.rb-linklist-image-text a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -2648,66 +2834,35 @@ export const shops = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
+        sel: "div[property=list]",
         productCntSel: ["span.article-count"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "div[property=list] div.inner-flex-container",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "a[data-load-index]",
               type: "href",
             },
-
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
+              sel: "div.image-container img",
+              type: "data-srcset",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "p.title",
               type: "text",
             },
             {
-              content: "description",
-              sel: "div.sr-productSummary__description",
+              content: "nmSub",
+              sel: "p.usp.shorten-long-text",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productCntSel: ["span.article-count"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
+              sel: "span[property=priceblock_el]",
               type: "text",
             },
           ],
@@ -2759,10 +2914,12 @@ export const shops = {
       exclude: ["ratgeber"],
       sel: "a.rh-menu-overlay__category",
       type: "href",
-      subCategories: {
-        sel: "a:is(.rd-link.rd-tile,.btn.-primary)",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "a:is(.rd-link.rd-tile,.btn.-primary)",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -2873,10 +3030,12 @@ export const shops = {
       exclude: ["marken"],
       sel: "a.nav_navi-elem",
       type: "href",
-      subCategories: {
-        sel: "ul.nav_local-links a.ts-link",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "ul.nav_local-links a.ts-link",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -3021,6 +3180,11 @@ export const shops = {
         "other",
       ],
     },
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     waitUntil: { product: "load", entryPoint: "load" },
     queryUrlSchema: [],
     d: "voelkner.de",
@@ -3039,10 +3203,12 @@ export const shops = {
       exclude: ["#", "voelkner-finds"],
       sel: "li.js_load_subcategories a",
       type: "href",
-      subCategories: {
-        sel: "div.grid_container div.category__box a",
-        type: "href",
-      },
+      subCategories: [
+        {
+          sel: "div.grid_container div.category__box a",
+          type: "href",
+        },
+      ],
     },
     paginationEl: [
       {
@@ -3092,7 +3258,6 @@ export const shops = {
       },
     ],
   },
-
   "amazon.de": {
     waitUntil: { product: "load", entryPoint: "load" },
     resourceTypes: {
@@ -3207,7 +3372,7 @@ export const shops = {
         category: "default",
       },
     ],
-    entryPoint: [{url: "https://www.ebay.de", category: "default"}],
+    entryPoint: [{ url: "https://www.ebay.de", category: "default" }],
     queryActions: [],
     paginationEl: [],
     productList: [

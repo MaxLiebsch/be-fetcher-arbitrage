@@ -1,7 +1,10 @@
+
+const version = process.env.APP_VERSION || require("./package.json").version;
+
 module.exports = {
   apps: [
     {
-      name: "proxy",
+      name: `proxy_${version}`,
       script: "yarn",
       args: "--cwd '/app' proxy",
       interpreter: "/bin/bash",
@@ -12,7 +15,7 @@ module.exports = {
       },
     },
     {
-      name: "scheduler",
+      name: `scheduler_${version}`,
       script: "yarn",
       args: "--cwd '/app' scheduler:standalone",
       interpreter: "/bin/bash",

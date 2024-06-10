@@ -1,7 +1,7 @@
 import { activeShops } from "../src/constants.js";
-import { getAmazonLookupProgress } from "../src/service/db/util/getLookupProgress.js";
-import { getMatchingProgress } from "../src/service/db/util/getMatchingProgress.js";
-import { updateTaskWithQuery } from "../src/service/db/util/tasks.js";
+import { getAmazonLookupProgress } from "../src/services/db/util/getLookupProgress.js";
+import { getMatchingProgress } from "../src/services/db/util/getMatchingProgress.js";
+import { updateTaskWithQuery } from "../src/services/db/util/tasks.js";
 
 const main = async () => {
   return await Promise.all(

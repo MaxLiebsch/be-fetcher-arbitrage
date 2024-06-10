@@ -5,6 +5,7 @@ import { getProductsToMatchCount } from "./getMatchingProgress.js";
 import {
   COOLDOWN_LONG,
   DANGLING_LOOKUP_THRESHOLD,
+  DANGLING_MATCH_THRESHOLD,
 } from "../../../constants.js";
 
 export const getNewTask = async () => {
@@ -21,6 +22,9 @@ export const getNewTask = async () => {
 
   const danglingLookupThreshold =
     process.env.TEST === "endtoend" ? 2 : DANGLING_LOOKUP_THRESHOLD;
+
+  const danglingMatchThreshold =
+    process.env.TEST === "endtoend" ? 2 : DANGLING_MATCH_THRESHOLD;
 
   const lowerThenStartedAt =
     process.env.TEST === "endtoend"
@@ -49,6 +53,13 @@ export const getNewTask = async () => {
     };
   }
 
+  const scanTaskQuery = [
+    { type: "SCAN_SHOP" },
+    { recurrent: { $eq: false } },
+    { completed: { $eq: false } },
+    { executing: { $eq: false } },
+  ];
+
   const crawlTaskQuery = [
     { type: "CRAWL_SHOP" },
     { recurrent: { $eq: true } },
@@ -60,7 +71,7 @@ export const getNewTask = async () => {
   ];
   const wholesaleTaskQuery = [
     { type: "WHOLESALE_SEARCH" },
-    { "progress.pending": { $ne: 0 } },
+    { "progress.pending": { $gt: 0 } },
   ];
 
   const matchTaskQuery = [
@@ -79,7 +90,7 @@ export const getNewTask = async () => {
         {
           progress: { $exists: false },
         },
-        { "progress.pending": { $gt: 0 } },
+        { "progress.pending": { $gt: danglingMatchThreshold } },
       ],
     },
   ];
@@ -112,10 +123,13 @@ export const getNewTask = async () => {
       {
         $or: [
           {
-            $and: wholesaleTaskQuery,
+            $and: crawlTaskQuery,
           },
           {
-            $and: crawlTaskQuery,
+            $and: scanTaskQuery,
+          },
+          {
+            $and: wholesaleTaskQuery,
           },
           {
             $and: [
@@ -269,7 +283,7 @@ export const updateTask = async (id, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateOne(
+  return collection.updateOne(
     { _id: id },
     {
       $set: {
@@ -283,7 +297,7 @@ export const updateTaskWithQuery = async (query, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateOne(
+  return collection.updateOne(
     { ...query },
     {
       $set: {
@@ -297,7 +311,7 @@ export const updateTasks = async (taskType, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.updateMany(
+  return collection.updateMany(
     { type: taskType },
     {
       $set: {

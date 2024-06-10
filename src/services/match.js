@@ -1,20 +1,19 @@
 import {
   QueryQueue,
   getManufacturer,
-  getPrice,
   segmentString,
   prefixLink,
   queryTargetShops,
-  matchTargetShopProdsWithRawProd,
   standardTargetRetailerList,
   reduceString,
+  safeParsePrice,
+  matchTargetShopProdsWithRawProd,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
-import parsePrice from "parse-price";
 import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import { createOrUpdateProduct } from "./db/util/findAndUpdateProduct.js";
+import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { getShops } from "./db/util/shops.js";
 import {
   lockProducts,
@@ -26,30 +25,55 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
+import { getRedirectUrl } from "./head.js";
+import { AxiosError } from "axios";
+import { getMatchingProgress } from "./db/util/getMatchingProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, startShops, test } = task;
+    const { shopDomain, productLimit, startShops, test, _id, action } = task;
     const collectionName = test ? `test.${shopDomain}` : shopDomain;
     await createArbispotterCollection(collectionName);
 
     const rawproducts = await lockProducts(
       shopDomain,
       productLimit,
-      task._id,
-      task?.action
+      _id,
+      action
     );
 
-    let done = 0;
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      notFound: 0,
+      locked: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     if (!rawproducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
+    const _productLimit =
+      rawproducts.length < productLimit ? rawproducts.length : productLimit;
+
+    infos.locked = rawproducts.length;
+    
+    //Update task progress 
+    const progress = await getMatchingProgress(shopDomain);
+    if (progress) await updateTaskWithQuery({ _id }, { progress });
+
     const startTime = Date.now();
 
-    let targetShops = standardTargetRetailerList
+    let targetShops = standardTargetRetailerList;
 
     if (startShops && startShops.length) {
       targetShops = [...targetShops, ...startShops];
@@ -70,12 +94,15 @@ export default async function match(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, resolve, reject);
-          }
-        ),
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, resolve, reject);
+        }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
@@ -91,6 +118,8 @@ export default async function match(task) {
         description,
         category: ctgry,
         nameSub,
+        hasMnfctr,
+        mnfctr: manufacturer,
         price: prc,
         promoPrice: prmPrc,
         image: img,
@@ -98,7 +127,17 @@ export default async function match(task) {
         shop: s,
       } = rawProd;
 
-      const { mnfctr, prodNm } = getManufacturer(name);
+      let mnfctr = "";
+      let prodNm = "";
+
+      if (hasMnfctr && manufacturer) {
+        mnfctr = manufacturer;
+        prodNm = name;
+      } else {
+        const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
+        mnfctr = _mnfctr;
+        prodNm = _prodNm;
+      }
       const dscrptnSegments = segmentString(description);
       const nmSubSegments = segmentString(nameSub);
 
@@ -108,9 +147,7 @@ export default async function match(task) {
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
-        prc: prmPrc
-          ? parsePrice(getPrice(prmPrc ? prmPrc.replace(/\s+/g, "") : ""))
-          : parsePrice(getPrice(prc ? prc.replace(/\s+/g, "") : "")),
+        prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
@@ -139,53 +176,105 @@ export default async function match(task) {
       );
 
       procProductsPromiseArr.push(
-        Promise.all(_shops).then(async (targetShopProds) => {
-          if (done >= productLimit && !queue.idle()) {
-            await checkProgress({ queue, done, startTime, productLimit }).catch(
-              async (r) => {
-                clearInterval(interval);
-                handleResult(r, resolve, reject);
-              }
-            );
+        Promise.all(_shops).then(async (targetShopProducts) => {
+          const infoCb = (isNewProduct) => {
+            if (isNewProduct) {
+              infos.new++;
+            } else {
+              infos.old++;
+            }
+          };
+
+          if (infos.total >= _productLimit - 1 && !queue.idle()) {
+            await checkProgress({
+              queue,
+              infos,
+              startTime,
+              productLimit: _productLimit,
+            }).catch(async (r) => {
+              clearInterval(interval);
+              handleResult(r, resolve, reject);
+            });
           }
-          done++;
-          if (targetShopProds[0] && targetShopProds[0]?.procProd) {
-            const procProd = targetShopProds[0]?.procProd;
-            await createOrUpdateProduct(collectionName, procProd);
+          infos.total++;
+          if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
+            const path = targetShopProducts[0].path;
+            const procProd = targetShopProducts[0]?.procProd;
+            try {
+              if (
+                procProd.a_lnk &&
+                procProd.a_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
+                procProd.a_lnk = redirectUrl;
+              }
+              if (
+                procProd.e_lnk &&
+                procProd.e_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
+                procProd.e_lnk = redirectUrl;
+              }
+            } catch (error) {
+              if (error instanceof AxiosError) {
+                if (error.response?.status === 404) {
+                  infos.notFound++;
+                }
+              }
+            }
+            await createOrUpdateProduct(collectionName, procProd, infoCb);
             const update = {
               dscrptnSegments,
               nmSubSegments,
+              path,
               query: query.product.value,
               mnfctr,
               matched: true,
               locked: false,
               taskId: "",
-              updatedAt: new Date().toISOString(),
               matchedAt: new Date().toISOString(),
             };
-            if (targetShopProds[0]?.candidates) {
-              update.candidates = targetShopProds[0]?.candidates;
+            if (targetShopProducts[0]?.candidates) {
+              update.candidates = targetShopProducts[0]?.candidates;
             }
-            await updateCrawledProduct(
-              shopDomain,
-              rawProd.link,
-              update
-            );
+            await updateCrawledProduct(shopDomain, rawProd.link, update);
             return procProd;
           } else {
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
-              targetShopProds,
+              targetShopProducts,
               prodInfo
             );
-            await createOrUpdateProduct(collectionName, procProd);
+            try {
+              if (
+                procProd.a_lnk &&
+                procProd.a_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
+                procProd.a_lnk = redirectUrl;
+              }
+              if (
+                procProd.e_lnk &&
+                procProd.e_lnk.includes("idealo.de/relocator/relocate")
+              ) {
+                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
+                procProd.e_lnk = redirectUrl;
+              }
+            } catch (error) {
+              if (error instanceof AxiosError) {
+                if (error.response?.status === 404) {
+                  infos.notFound++;
+                }
+              }
+            }
+            await createOrUpdateProduct(collectionName, procProd, infoCb);
             await updateCrawledProduct(shopDomain, rawProd.link, {
               matched: true,
               locked: false,
+              price: procProd.prc,
               taskId: "",
               query: query.product.value,
               dscrptnSegments,
               nmSubSegments,
-              updatedAt: new Date().toISOString(),
               matchedAt: new Date().toISOString(),
               mnfctr,
               candidates,

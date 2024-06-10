@@ -1,6 +1,24 @@
 import { MAX_EARNING_MARGIN } from "../../../constants.js";
 import { getArbispotterDb, hostname } from "../mongo.js";
 
+export const countProducts = async (domain, query = {}) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.countDocuments({ ...query});
+};
+
+export const findProducts = async (domain, query, limit = 500, page = 0) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection
+    .find({ ...query })
+    .limit(limit??500)
+    .skip(page * limit)
+    .toArray();
+};
+
 export const findProduct = async (domain, name) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
@@ -33,13 +51,19 @@ export const lockArbispotterProducts = async (
     query = {
       $and: [
         {
-          $and: [{ a_prc: { $gt: 0 } }, { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } }],
+          $and: [
+            { a_prc: { $gt: 0 } },
+            { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+          ],
         },
         {
           $or: [{ lckd: { $exists: false } }, { lckd: { $eq: false } }],
         },
         {
-          $or: [{ a_props: { $exists: false } }, { a_props: {$in: ["incomplete"]} }],
+          $or: [
+            { a_props: { $exists: false } },
+            { a_props: { $in: ["incomplete"] } },
+          ],
         },
       ],
     };
@@ -70,7 +94,11 @@ export const upsertProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  return await collection.replaceOne({ lnk: product.lnk }, product, {
+
+  product["createdAt"] = new Date().toISOString();
+  product["updatedAt"] = new Date().toISOString();
+
+  return collection.replaceOne({ lnk: product.lnk }, product, {
     upsert: true,
   });
 };
@@ -79,6 +107,7 @@ export const updateProduct = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
+  update["updatedAt"] = new Date().toISOString();
   return collection.updateOne(
     { lnk: link },
     {

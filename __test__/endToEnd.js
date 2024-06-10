@@ -1,11 +1,11 @@
 import { sub } from "date-fns";
-import { addTask, deleteTask } from "../src/service/db/util/tasks.js";
-import { deleteAllProducts } from "../src/service/db/util/crudCrawlDataProduct.js";
-import { deleteAllArbispotterProducts } from "../src/service/db/util/crudArbispotterProduct.js";
+import { addTask, deleteTask } from "../src/services/db/util/tasks.js";
+import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
+import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import os from "os"
+import os from "os";
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
-import { deleteLogs } from "../src/service/db/util/logs.js";
+import { deleteLogs } from "../src/services/db/util/logs.js";
 
 const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
@@ -13,7 +13,9 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "reichelt.de";
+const shopDomain = "gamestop.de";
+const proxyType = "request";
+const timezones = ["Europe/Berlin"];
 const crawlTask = {
   _id: "661a785dc801f69f2beb16d6",
   type: "CRAWL_SHOP",
@@ -26,13 +28,13 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Werkstatt und Löttechnik",
-      "link": "https://www.reichelt.de/de/de/messtechnik-und-werkstattbedarf-c536.html?&nbc=1"
+      "name": "Switch",
+      "link": "https://www.gamestop.de/Switch/Index"
     },
     {
-      "name": "Haustechnik Sicherheit",
-      "link": "https://www.reichelt.de/de/de/haus-und-sicherheitstechnik-c2712.html?&nbc=1"
-    } 
+      "name": "PC",
+      "link": "https://www.gamestop.de/PC/Index"
+    }
   ],
   recurrent: true,
   executing: false,
@@ -46,6 +48,12 @@ const crawlTask = {
   lastCrawler: [],
   weekday: today.getDay(),
 };
+
+if (proxyType === "gb") {
+  crawlTask["proxyType"] = proxyType;
+  crawlTask["timezones"] = timezones;
+}
+
 const matchTask = {
   _id: "66262c7ea4877eab871802b6",
   type: "MATCH_PRODUCTS",
@@ -108,12 +116,13 @@ const main = async () => {
   //empty tasks
   await Promise.all(tasks.map(async (task) => await deleteTask(task._id)));
   //empty tasks
-  await deleteLogs()
-  
+  await deleteLogs();
+
   //empty DBs
   await deleteAllProducts(shopDomain);
   await deleteAllArbispotterProducts(shopDomain);
-  //create Tasks
+
+  // create Tasks
   const tasksCreated = await Promise.all(
     tasks.map(async (task) => await addTask(task))
   );

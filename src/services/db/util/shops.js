@@ -1,6 +1,10 @@
 //getShop
 
-import { getArbispotterDb, getCrawlerDataDb, shopCollectionName } from "../mongo.js";
+import {
+  getArbispotterDb,
+  getCrawlerDataDb,
+  shopCollectionName,
+} from "../mongo.js";
 
 export const getAllShops = async (shopsDomains = []) => {
   const collectionName = shopCollectionName;
@@ -69,13 +73,11 @@ export const updateShopStats = async (shopDomain) => {
 };
 
 export const getActiveShops = async () => {
-  const collectionName = shopCollectionName
+  const collectionName = shopCollectionName;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
 
-  const shops = await collection
-    .find({ active: true })
-    .toArray();
+  const shops = await collection.find({ active: true }).toArray();
   if (shops.length) {
     return shops;
   } else {

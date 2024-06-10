@@ -1,14 +1,12 @@
 import {
-  CrawlerQueue,
-  crawlShop,
+  ScanQueue,
+  scanShop,
   StatService,
 } from "@dipmaxtech/clr-pkg";
-import {  upsertSiteMap } from "./db/mongo.js";
+import { upsertSiteMap } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
-import { upsertCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
-
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -18,17 +16,42 @@ import { checkProgress } from "../util/checkProgress.js";
 
 export default async function scan(task) {
   return new Promise(async (res, reject) => {
-    const {
-      shopDomain,
-      productLimit,
-      limit,
-    } = task;
+    const { shopDomain, productLimit } = task;
     const shops = await getShops([{ d: shopDomain }]);
-    let done = 0;
+
+    let infos = {
+      new: 0,
+      old: 0,
+      total: 0,
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     if (shops === null) reject(new MissingShopError("", task));
 
-    const queue = new CrawlerQueue(
+    const queue = new ScanQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
@@ -41,7 +64,7 @@ export default async function scan(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             await upsertSiteMap(shopDomain, statService.getStatsFile());
             clearInterval(interval);
@@ -51,40 +74,19 @@ export default async function scan(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    const addProduct = async (product) => {
-      if (done >= productLimit && !queue.idle()) {
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
-          async (r) => {
-            await upsertSiteMap(shopDomain, statService.getStatsFile());
-            clearInterval(interval);
-            handleResult(r, res, reject);
-          }
-        );
-      } else {
-        if (product.name) {
-          done++;
-          await upsertCrawledProduct(shopDomain, {
-            ...product,
-            locked: false,
-            matched: false,
-          });
-        }
-      }
-    };
     const link = shops[shopDomain].entryPoints.length
       ? shops[shopDomain].entryPoints[0].url
       : "https://www." + shopDomain;
 
-    queue.pushTask(crawlShop, {
-      parent: null,
-      parentPath: "",
+    queue.pushTask(scanShop, {
+      parentPath: "sitemap",
       shop: shops[shopDomain],
-      addProduct,
-      limit,
+      infos,
+      categoriesHeuristic: infos.categoriesHeuristic,
+      productPageCountHeuristic: infos.productPageCountHeuristic,
       queue,
       retries: 0,
       prio: 0,
-      onlyCrawlCategories: true,
       pageInfo: {
         entryCategory: shopDomain,
         link,

@@ -1,10 +1,19 @@
 export const MATCH_TIME_LIMIT = 480;
 export const CONCURRENCY = 4;
-export const DEFAULT_CHECK_PROGRESS_INTERVAL = 20000;
+export const DEFAULT_CHECK_PROGRESS_INTERVAL = 5 * 60 * 1000;
 export const COOLDOWN = 30 * 60 * 1000;
 export const COOLDOWN_LONG = 60 * 60 * 1000;
+export const COOLDOWN_MULTIPLIER = 3; // 3 hours from now
 export const PRODUCT_LIMIT = 10000;
-export const DANGLING_LOOKUP_THRESHOLD = 150;
+export const DANGLING_LOOKUP_THRESHOLD = 20;
+export const DANGLING_MATCH_THRESHOLD = 100;
+export const MATCH_LOOKUP_THRESHOLD = 0.8;
+export const SMALL_LOCKED_PRODUCT_CNT_THRESHOLD = 10;
+export const CRAWL_THRESHOLD = 0.9;
+export const MAX_TASK_RETRIES = 6;
+export const COMPLETE_FAILURE_THRESHOLD = 50;
+export const SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD = 50;
+export const DEFAULT_MAX_TASK_RETRIES = 3;
 export const MAX_EARNING_MARGIN = 150;
 export const NEW_TASK_CHECK_INTERVAL = 10000;
 
@@ -16,6 +25,10 @@ export const proxyAuth = {
 
 export const activeShops = [
   "alternate.de",
+  "cyberport.de",
+  "dm.de",
+  "fressnapf.de",
+  "saturn.de",
   "reichelt.de",
   "mueller.de",
   "bergfreunde.de",

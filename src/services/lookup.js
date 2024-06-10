@@ -7,7 +7,6 @@ import {
   lockArbispotterProducts,
   updateProduct,
 } from "./db/util/crudArbispotterProduct.js";
-
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -15,23 +14,50 @@ import {
 } from "../constants.js";
 import { getShops } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
+import { getAmazonLookupProgress } from "./db/util/getLookupProgress.js";
 
 export default async function lookup(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit } = task;
-    let done = 0;
+    const { shopDomain, productLimit, _id, action } = task;
+
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      notFound: 0,
+      locked: 0,
+      missingProperties: {
+        bsr: 0,
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     const products = await lockArbispotterProducts(
       shopDomain,
       productLimit,
-      task._id,
-      task?.action
+      _id,
+      action
     );
 
     if (!products.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
+
+    const _productLimit =
+      products.length < productLimit ? products.length : productLimit;
+
+    infos.locked = products.length;
+    
+     //Update task progress 
+    const progress = await getAmazonLookupProgress(shopDomain);
+    if (progress) {
+      await updateTaskWithQuery({ _id }, { progress });
+    }
 
     const startTime = Date.now();
 
@@ -51,12 +77,15 @@ export default async function lookup(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            handleResult(r, resolve, reject);
-          }
-        ),
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          handleResult(r, resolve, reject);
+        }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
@@ -64,7 +93,7 @@ export default async function lookup(task) {
       const rawProd = products[index];
 
       const addProduct = async (product) => {};
-      const addProductInfo = async (productInfo) => {
+      const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const bsr = productInfo.find((info) => info.key === "bsr");
           const asin = productInfo.find((info) => info.key === "asin");
@@ -77,6 +106,7 @@ export default async function lookup(task) {
             a_props: "complete",
             lckd: false,
             taskId: "",
+            a_lnk: url,
           };
           if (price && price > 0) {
             update["a_prc"] = price.value;
@@ -84,28 +114,31 @@ export default async function lookup(task) {
           if (img) {
             update["a_img"] = img.value;
           }
-          update["updatedAt"] = new Date().toISOString();
-
           await updateProduct(shopDomain, rawProd.lnk, update);
         } else {
+          infos.missingProperties.bsr++;
           await updateProduct(shopDomain, rawProd.lnk, {
             lckd: false,
             a_props: "missing",
+            a_lnk: url,
             taskId: "",
-            updatedAt: new Date().toISOString(),
           });
         }
-        done++;
-        if (done >= productLimit && !queue.idle()) {
-          await checkProgress({ queue, done, startTime, productLimit }).catch(
-            async (r) => {
-              clearInterval(interval);
-              handleResult(r, resolve, reject);
-            }
-          );
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
         }
+        infos.total++;
       };
       const handleNotFound = async () => {
+        infos.notFound++;
         await updateProduct(shopDomain, rawProd.lnk, {
           lckd: false,
           taskId: "",
@@ -117,18 +150,29 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        done++;
-        if (done >= productLimit && !queue.idle()) {
-          await checkProgress({ queue, done, startTime, productLimit }).catch(
-            async (r) => {
-              clearInterval(interval);
-              handleResult(r, resolve, reject);
-            }
-          );
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
         }
+        infos.total++;
       };
 
-      if (rawProd.a_lnk)
+      if (rawProd.a_lnk) {
+        let link = rawProd.a_lnk;
+        if (
+          !rawProd.a_lnk.includes("&language=") &&
+          rawProd.a_lnk.includes("amazon.de")
+        ) {
+          link = rawProd.a_lnk + "&language=de_DE";
+        }
+
         queue.pushTask(lookupProductQueue, {
           retries: 0,
           shop,
@@ -144,14 +188,13 @@ export default async function lookup(task) {
           prodInfo: undefined,
           isFinished: undefined,
           pageInfo: {
-            link: rawProd.a_lnk,
+            link,
             name: shop.d,
           },
         });
-      else {
+      } else {
         await updateProduct(shopDomain, rawProd.lnk, {
           lckd: false,
-          updatedAt: new Date().toISOString(),
           taskId: "",
           a_prc: 0,
           a_lnk: "",
@@ -161,7 +204,7 @@ export default async function lookup(task) {
           a_fat: false,
           a_nm: "",
         });
-        done++;
+        infos.total++;
       }
     }
   });

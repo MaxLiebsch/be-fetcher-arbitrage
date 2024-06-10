@@ -18,11 +18,14 @@ import {
   lockProducts,
   updateWholeSaleProduct,
 } from "./db/util/crudWholeSaleSearch.js";
+import { getRedirectUrl } from "./head.js";
+import { AxiosError } from "axios";
+import { getWholesaleProgress } from "./db/util/getWholesaleProgress.js";
+import { updateTaskWithQuery } from "./db/util/tasks.js";
 
 export default async function wholesale(task) {
-  console.log("wholesale started... ", task.id, task?.action);
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, limit, _id } = task;
+    const { shopDomain, productLimit, limit, _id, action } = task;
 
     const targetShops = [
       { d: "idealo.de", prefix: "i_", name: "idealo" },
@@ -30,14 +33,33 @@ export default async function wholesale(task) {
     ];
     const retailerTargetShop = { d: "amazon.de", prefix: "a_", name: "amazon" };
 
-    const rawproducts = await lockProducts(productLimit, _id, task?.action);
+    const rawproducts = await lockProducts(productLimit, _id, action);
 
-    let done = 0;
+    let infos = {
+      new: 0,
+      total: 0,
+      old: 0,
+      locked: 0,
+      missingProperties: {
+        name: 0,
+        price: 0,
+        link: 0,
+        image: 0,
+      },
+    };
 
     if (!rawproducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
+
+    infos.locked = rawproducts.length;
+
+    //Update task progress
+    const progress = await getWholesaleProgress(_id, task.progress.total);
+    if (progress) {
+      await updateTaskWithQuery({ _id }, { progress });
+    }
 
     const startTime = Date.now();
 
@@ -59,7 +81,7 @@ export default async function wholesale(task) {
 
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, done, startTime, productLimit }).catch(
+        await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             clearInterval(interval);
             handleResult(r, resolve, reject);
@@ -97,7 +119,6 @@ export default async function wholesale(task) {
       const addProduct = async (product) => {};
 
       const isFinished = async (interm) => {
-        done++;
         if (
           interm &&
           interm.intermProcProd.a_nm &&
@@ -112,30 +133,19 @@ export default async function wholesale(task) {
                 prodInfo[key] = value;
               }
             });
+
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
-              status: "completed",
-              updatedAt: new Date().toISOString(),
+              status: "complete",
               lookup_pending: false,
               locked: false,
               clrName: "",
             });
-            
-            if (done >= productLimit && !queue.idle()) {
-              await checkProgress({
-                queue,
-                done,
-                startTime,
-                productLimit,
-              }).catch(async (r) => {
-                clearInterval(interval);
-                handleResult(r, resolve, reject);
-              });
-            }
           };
 
-          const addProductInfo = async (productInfo) => {
+          const addProductInfo = async ({ productInfo, url }) => {
             const prodInfo = {};
+            prodInfo["a_lnk"] = url;
             if (productInfo) {
               const bsr = productInfo.find((info) => info.key === "bsr");
               const asin = productInfo.find((info) => info.key === "asin");
@@ -169,41 +179,80 @@ export default async function wholesale(task) {
             await updateWholeSaleProduct(rawProd._id, {
               ...prodInfo,
               status: "complete",
-              updatedAt: new Date().toISOString(),
               lookup_pending: false,
               locked: false,
               clrName: "",
             });
           };
 
-          queue.pushTask(lookupProductQueue, {
-            retries: 0,
-            shop: amazonShopInfo,
-            addProduct,
-            targetShop: retailerTargetShop,
-            onNotFound: handleNotFound,
-            addProductInfo,
-            queue,
-            query: {},
-            prio: 0,
-            extendedLookUp: false,
-            limit: undefined,
-            prodInfo: undefined,
-            isFinished: undefined,
-            pageInfo: {
-              link: intermProcProd.a_lnk,
-              name: amazonShopInfo.d,
-            },
-          });
+          let isOK = true;
+
+          try {
+            if (
+              intermProcProd.a_lnk &&
+              intermProcProd.a_lnk.includes("idealo.de/relocator/relocate")
+            ) {
+              const redirectUrl = await getRedirectUrl(intermProcProd.a_lnk);
+              intermProcProd.a_lnk = redirectUrl;
+            }
+          } catch (error) {
+            if (error instanceof AxiosError) {
+              if (error.response?.status === 404) {
+                isOK = false;
+              }
+            }
+          }
+
+          let link = intermProcProd.a_lnk;
+          if (
+            intermProcProd.a_lnk.startsWith("https://www.amazon.de") &&
+            !intermProcProd.a_lnk.includes("&language=")
+          ) {
+            link = intermProcProd.a_lnk + "&language=de_DE";
+          }
+          if (!isOK) {
+            handleNotFound();
+          } else {
+            queue.pushTask(lookupProductQueue, {
+              retries: 0,
+              shop: amazonShopInfo,
+              addProduct,
+              targetShop: retailerTargetShop,
+              onNotFound: handleNotFound,
+              addProductInfo,
+              queue,
+              query: {},
+              prio: 0,
+              extendedLookUp: false,
+              limit: undefined,
+              prodInfo: undefined,
+              isFinished: undefined,
+              pageInfo: {
+                link,
+                name: amazonShopInfo.d,
+              },
+            });
+          }
         } else {
           await updateWholeSaleProduct(rawProd._id, {
             status: "not found",
-            updatedAt: new Date().toISOString(),
             lookup_pending: false,
             locked: false,
             clrName: "",
           });
         }
+        if (infos.total >= productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            handleResult(r, resolve, reject);
+          });
+        }
+        infos.total++;
       };
 
       queue.pushTask(queryShopQueue, {
