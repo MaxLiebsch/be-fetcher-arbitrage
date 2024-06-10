@@ -17,7 +17,7 @@ jobs:
             key: ${{ secrets.DEPLOY_CRAWLER_PK }}
             passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
             script: |
-              cd /be-fetcher-arbitrage
+              cd ./be-fetcher-arbitrage
               pwd
     deploy:
         name: Deploy image to crawler
@@ -26,13 +26,7 @@ jobs:
         - name: executing remote ssh commands using password
           uses: appleboy/ssh-action@v1.0.3
           with:
-            host: |
-              v2202404218838264485.nicesrv.de
-              v2202403218838259442.quicksrv.de
-              v2202403218838259442.quicksrv.de
-              v2202403218838259442.quicksrv.de
-              v2202406218838272260.megasrv.de
-              v2202406218838272260.megasrv.de
+            host: ${{vars.HOSTS}}
             sync: true
             username: ${{ secrets.USERNAME }}
             key: ${{ secrets.DEPLOY_CRAWLER_PK }}
