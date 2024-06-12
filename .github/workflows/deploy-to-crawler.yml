@@ -41,8 +41,10 @@ jobs:
               cat > /root/update_crawler.sh <<'EOF'
               ${{vars.UPDATE_CRAWLER_SCRIPT}}
               EOF
+              apt-get install dos2unix
+              dos2unix /root/update_crawler.sh
               chmod +x /root/update_crawler.sh
-              ./update_crawler.sh
+              /root/update_crawler.sh
               docker logout
-#            rm /root/update_crawler.sh
+              rm /root/update_crawler.sh
 
