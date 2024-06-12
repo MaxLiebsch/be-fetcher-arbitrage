@@ -38,7 +38,7 @@ jobs:
             passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
             script: |
               echo ${{secrets.DOCKER_READ_TOKEN}} | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
-              cat << 'EOF' > /root/update_crawler.sh 
+              cat > /root/update_crawler.sh <<EOF
               ${{vars.UPDATE_CRAWLER_SCRIPT}}
               EOF
               chmod +x /root/update_crawler.sh
