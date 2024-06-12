@@ -19,6 +19,7 @@ jobs:
           script: |
             echo ${{secrets.DOCKER_TOKEN}} | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
             docker image prune -a -f
+            git --work-tree=/root/be-fetcher-arbitrage --git-dir=/root/be-fetcher-arbitrage/.git pull
             docker build --progress=plain --secret id=ssh_key,src=/root/.ssh/id_clr_pkg --no-cache -t be-fetcher-arbitrage /root/be-fetcher-arbitrage/.
             docker tag be-fetcher-arbitrage:latest maxliebsch/be-fetcher-arbitrage:latest
             docker push maxliebsch/be-fetcher-arbitrage:latest
