@@ -42,7 +42,7 @@ jobs:
               ${{vars.UPDATE_CRAWLER_SCRIPT}}
               EOF
               chmod +x /root/update_crawler.sh
-              /root/update_crawler.sh
-              rm /root/update_crawler.sh
+              ./update_crawler.sh
               docker logout
+#            rm /root/update_crawler.sh
 
