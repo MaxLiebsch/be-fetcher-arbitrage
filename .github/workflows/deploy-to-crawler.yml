@@ -43,6 +43,9 @@ jobs:
             cat > /root/update_crawler.sh <<'EOF'
             ${{vars.UPDATE_CRAWLER_SCRIPT}}
             EOF
+            export TERM=xterm
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y dialog apt-utils perl
             command -v dos2unix >/dev/null 2>&1 || { echo "Installing dos2unix..."; apt-get update && apt-get install -y dos2unix; }
             dos2unix /root/update_crawler.sh
             chmod +x /root/update_crawler.sh
