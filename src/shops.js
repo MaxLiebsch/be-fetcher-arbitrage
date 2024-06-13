@@ -2529,8 +2529,13 @@ export const shops = {
         type: "element",
         sel: "div[id=mms-consent-portal-container]",
         action: "delete",
-        interval: 300,
+        interval: 100,
       },
+      {
+        type: "scroll",
+        sel: 'none',
+        action: "scroll",
+      }
     ],
     queryActions: [],
     categories: {
@@ -2551,13 +2556,13 @@ export const shops = {
     paginationEl: [
       {
         type: "recursive-more-button",
-        sel: "button[aria-label='Mehr Produkte anzeigen']",
+        sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         nav: "?page=",
         scrollToBottom: true,
         calculation: {
           method: "find_highest",
-          last: "button[aria-label='Mehr Produkte anzeigen']",
-          sel: "button[aria-label='Mehr Produkte anzeigen']",
+          last: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
+          sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         },
       },
     ],
@@ -2571,7 +2576,7 @@ export const shops = {
           details: [
             {
               content: "link",
-              sel: "a[data-test=mms-product-list-item-link]",
+              sel: "a[data-test*=mms-product-list-item-link]",
               type: "href",
             },
             {
@@ -2598,32 +2603,32 @@ export const shops = {
         },
       },
       {
-        sel: "div.offerList",
+        sel: "section[id*=product-grid]",
         productCntSel: [
-          "div.show-articles-per-page-top span.bold:nth-child(3)",
+          "section[data-test=mms-search-srp-headlayout] div",
         ],
         product: {
-          sel: "div.offerList a.offerList-itemWrapper",
+          sel: "section[id*=product-grid] div[data-test=mms-campaigns-productGrid-product]",
           type: "link",
           details: [
             {
               content: "image",
-              sel: "img",
+              sel: "picture img",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.offerList-item-description-title",
+              sel: "p[data-test=product-title]",
               type: "text",
             },
             {
-              content: "description",
-              sel: "span.description-part-one",
+              content: "mnfctr",
+              sel: "p[data-test=product-manufacturer]",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.offerList-item-priceMin",
+              sel: "div[data-test=product-price] span[spacing=base]",
               type: "text",
             },
           ],
