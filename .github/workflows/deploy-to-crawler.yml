@@ -39,7 +39,7 @@ jobs:
           key: ${{ secrets.DEPLOY_CRAWLER_PK }}
           passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
           script: |
-            echo ${{secrets.DOCKER_READ_TOKEN}} | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
+            echo ${{secrets.DOCKER_READ_TOKEN}} | docker login registry.hub.docker.com/maxliebsch/be-fetcher-arbitrage:latest -u ${{secrets.DOCKER_USERNAME}} --password-stdin
             cat > /root/update_crawler.sh <<'EOF'
             ${{vars.UPDATE_CRAWLER_SCRIPT}}
             EOF
