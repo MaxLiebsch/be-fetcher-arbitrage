@@ -14,7 +14,7 @@ jobs:
         with:
           host: ${{secrets.BUILDER_HOST}}
           username: ${{ secrets.USERNAME }}
-          command_timeout: 120
+          command_timeout: 60m
           key: ${{ secrets.DEPLOY_CRAWLER_PK }}
           passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
           script: |
@@ -34,7 +34,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{vars.HOSTS}}
-          command_timeout: 120
+          command_timeout: 60m
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.DEPLOY_CRAWLER_PK }}
           passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
