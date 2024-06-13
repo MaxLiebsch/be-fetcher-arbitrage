@@ -92,7 +92,7 @@ export default async function crawl(task) {
           handleResult(r, res, reject);
         });
       } else {
-        if (product.name && product.price && product.link && product.image) {
+        if (product.name && product.price && product.link) {
           infos.total++;
           await createOrUpdateCrawlDataProduct(
             shopDomain,
@@ -104,7 +104,7 @@ export default async function crawl(task) {
             infoCb
           );
         } else {
-          const properties = ["name", "price", "link", "image"];
+          const properties = ["name", "price", "link", 'image'];
           properties.forEach((prop) => {
             if (!product[prop]) {
               infos.missingProperties[prop]++;
