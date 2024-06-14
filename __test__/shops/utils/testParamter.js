@@ -44,6 +44,15 @@ const testParameters = {
     subCategoryUrl: "https://www.saturn.de/de/category/haushalt-k%C3%BCche-bad-1197.html",
     nextPageUrl: "https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html?page=2",
   },
+  "alza.de": {
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 12,
+    subCategoriesCount: 48,
+    mainCategoriesCount: 14,
+    initialProductPageUrl: "https://www.alza.de/fernseher/18849604.htm",
+    subCategoryUrl: "https://www.alza.de/fernseher/18849604.htm",
+    nextPageUrl: "https://www.alza.de/fernseher/18849604.htm#f&cst=null&cud=0&pg=2",
+  },
   "gamestop.de": {
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 48,

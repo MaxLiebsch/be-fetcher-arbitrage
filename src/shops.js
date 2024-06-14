@@ -137,7 +137,6 @@ export const shops = {
         type: "pagination",
         sel: "div[class*=sr-pagination__numbers]",
         nav: "I16-<page>.html",
-        scrollToBottom: true,
         paginationUrlSchema: {
           replace: "\\.html",
           withQuery: false,
@@ -155,7 +154,6 @@ export const shops = {
       {
         type: "pagination",
         sel: "ul.pagination",
-        scrollToBottom: true,
         nav: "/100I16-<page>.html?q=<query>",
         paginationUrlSchema: {
           replace: "\\.html\\?q=\\S*",
@@ -669,7 +667,7 @@ export const shops = {
         type: "pagination",
         sel: "div.listing--bottom-paging",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div.listing--bottom-paging span.paging--display",
@@ -832,7 +830,7 @@ export const shops = {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
         nav: "&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24",
-        scrollToBottom: true,
+        
         paginationUrlSchema: {
           withQuery: false,
           calculation: {
@@ -944,6 +942,103 @@ export const shops = {
       },
     ],
   },
+  "alza.de": {
+    exceptions: [],
+    manualCategories: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "image",
+        // "stylesheet",
+        // "ping",
+        // "xhr",
+        // "fetch",
+        // "imageset",
+        // "sub_frame",
+        // "script",
+        // "other",
+      ],
+    },
+    waitUntil: { product: "load", entryPoint: "load" },
+    queryUrlSchema: [],
+    d: "alza.de",
+    mimic: "a.header-alz-42 img",
+    purlschema: "Prod\\w*\\/\\d*",
+    action: [],
+    entryPoints: [
+      {
+        url: "https://www.alza.de",
+        category: "default",
+      },
+    ],
+    crawlActions: [],
+    queryActions: [],
+    categories: {
+      visible: false,
+      exclude: [],
+      sel: "div.js-left-category-menu li a.l0-catLink",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.category-tiles__categories a.category-tiles__tile",
+          type: "href",
+          visible: false,
+        },
+      ],
+    },
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[id=pagerbottom]",
+        nav: "#f&cst=null&cud=0&pg=",
+        calculation: {
+          method: "product_count",
+          productsPerPage: 24,
+          dynamic: true,
+          last: "div[id=pagerbottom] a.pgn",
+          sel: "div[id=pagerbottom] a.pgn",
+        },
+      },
+    ],
+    productList: [
+      {
+        sel: "div[id=boxes]",
+        productCntSel: ["div[id=lblNumberItem0] span.numberItem"],
+        product: {
+          sel: "div[id=boxes] div.browsingitem",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.pc.browsinglink",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "a.pc.browsinglink img",
+              type: "srcset",
+            },
+            {
+              content: "name",
+              sel: "a.name.browsinglink",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.Description",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span.price-box__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+  },
   "bergfreunde.de": {
     exceptions: [
       "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
@@ -1000,7 +1095,7 @@ export const shops = {
         type: "pagination",
         sel: "div.paging",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1091,7 +1186,7 @@ export const shops = {
         type: "pagination",
         sel: "div[data-testid=grid-pagination-items-desktop]",
         nav: "?page=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div[data-testid=grid-pagination-items-desktop] a",
@@ -1226,7 +1321,7 @@ export const shops = {
         type: "pagination",
         sel: "div.pages",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           dynamic: true,
@@ -1388,7 +1483,7 @@ export const shops = {
         type: "pagination",
         sel: "div.paging",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1514,7 +1609,7 @@ export const shops = {
         sel: "button[data-dmid=load-more-products-button]",
         nav: "?currentPage0=",
         wait: false,
-        scrollToBottom: true,
+        
         calculation: {
           method: "match_text",
           textToMatch: "Mehr laden",
@@ -1906,7 +2001,7 @@ export const shops = {
         type: "pagination",
         sel: "ul.pagination",
         nav: "/page/",
-        scrollToBottom: true,
+        
         calculation: {
           method: "find_highest",
           last: "ul.pagination a",
@@ -2041,7 +2136,7 @@ export const shops = {
         type: "pagination",
         sel: "div.mu-pagination__pages",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div.mu-pagination__pages span.mu-button2__content",
@@ -2135,7 +2230,7 @@ export const shops = {
         type: "pagination",
         sel: "nav.MuiPagination-root",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "nav.MuiPagination-root li",
@@ -2276,7 +2371,7 @@ export const shops = {
         type: "pagination",
         sel: "div.PageLinksNavi",
         nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
-        scrollToBottom: true,
+        
         paginationUrlSchema: {
           replace: "\\.html",
           parseAndReplace: { regexp: "\\d+", replace: "<groupid>" },
@@ -2533,13 +2628,20 @@ export const shops = {
       },
       {
         type: "scroll",
-        sel: 'none',
+        sel: "none",
         action: "scroll",
-      }
+      },
     ],
     queryActions: [],
     categories: {
-      exclude: ["mindstart", "actionen", "fotoparadies.de", 'brand', '/product/', 'b2b-business-solutions'],
+      exclude: [
+        "mindstart",
+        "actionen",
+        "fotoparadies.de",
+        "brand",
+        "/product/",
+        "b2b-business-solutions",
+      ],
       sel: "",
       type: "href",
       subCategories: [
@@ -2558,7 +2660,7 @@ export const shops = {
         type: "recursive-more-button",
         sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         nav: "?page=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "find_highest",
           last: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
@@ -2604,9 +2706,7 @@ export const shops = {
       },
       {
         sel: "section[id*=product-grid]",
-        productCntSel: [
-          "section[data-test=mms-search-srp-headlayout] div",
-        ],
+        productCntSel: ["section[data-test=mms-search-srp-headlayout] div"],
         product: {
           sel: "section[id*=product-grid] div[data-test=mms-campaigns-productGrid-product]",
           type: "link",
@@ -2696,7 +2796,7 @@ export const shops = {
         type: "pagination",
         sel: "a.btn.is--primary.is--icon-right.js--load-more",
         nav: "?p=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "match_text",
           textToMatch: "Weitere Artikel laden",
@@ -2829,7 +2929,7 @@ export const shops = {
         type: "pagination",
         sel: "div.pagination",
         nav: "?seite=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "count",
           last: "div.pagination li a",
@@ -2938,7 +3038,7 @@ export const shops = {
         },
         sel: "nav.rd-pagination",
         nav: "p",
-        scrollToBottom: true,
+        
         calculation: {
           method: "estimate",
           productsPerPage: 35,
@@ -3047,7 +3147,7 @@ export const shops = {
         type: "pagination",
         sel: "ul.reptile_paging.reptile_paging--bottom",
         nav: "?l=gp&o=<page>",
-        scrollToBottom: true,
+        
         paginationUrlSchema: {
           replace: "attach_end",
           withQuery: false,
@@ -3220,7 +3320,7 @@ export const shops = {
         type: "pagination",
         sel: "div[id=js_search_pagination_bottom]",
         nav: "?page=",
-        scrollToBottom: true,
+        
         calculation: {
           method: "match_text",
           textToMatch: "Weitere Produkte anzeigen",
