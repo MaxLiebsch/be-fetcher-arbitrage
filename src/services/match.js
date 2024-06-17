@@ -29,6 +29,7 @@ import { getRedirectUrl } from "./head.js";
 import { AxiosError } from "axios";
 import { getMatchingProgress } from "./db/util/getMatchingProgress.js";
 import { updateTaskWithQuery } from "./db/util/tasks.js";
+import { parseAsinFromUrl } from "../util/parseAsin.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -66,8 +67,8 @@ export default async function match(task) {
       rawproducts.length < productLimit ? rawproducts.length : productLimit;
 
     infos.locked = rawproducts.length;
-    
-    //Update task progress 
+
+    //Update task progress
     const progress = await getMatchingProgress(shopDomain);
     if (progress) await updateTaskWithQuery({ _id }, { progress });
 
@@ -118,6 +119,7 @@ export default async function match(task) {
         description,
         category: ctgry,
         nameSub,
+        ean,
         hasMnfctr,
         mnfctr: manufacturer,
         price: prc,
@@ -143,19 +145,25 @@ export default async function match(task) {
 
       let procProd = {
         ctgry,
+        asin: "",
         mnfctr,
+        eanList: [],
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
         prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
+      if (ean) {
+        procProd.eanList.push(ean);
+      }
+
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
 
       const query = {
         product: {
           key: reducedName,
-          value: reducedName,
+          value: ean || reducedName,
         },
         category: "default",
       };
@@ -221,11 +229,17 @@ export default async function match(task) {
                   infos.notFound++;
                 }
               }
+              
+            }
+            const asin = parseAsinFromUrl(procProd.a_lnk);
+            if(asin){
+              procProd.asin = asin;
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
             const update = {
               dscrptnSegments,
               nmSubSegments,
+              asin: procProd.asin,
               path,
               query: query.product.value,
               mnfctr,
@@ -266,10 +280,15 @@ export default async function match(task) {
                 }
               }
             }
+            const asin = parseAsinFromUrl(procProd.a_lnk);
+            if(asin){
+              procProd.asin = asin;
+            }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
             await updateCrawledProduct(shopDomain, rawProd.link, {
               matched: true,
               locked: false,
+              asin: procProd.asin,
               price: procProd.prc,
               taskId: "",
               query: query.product.value,
