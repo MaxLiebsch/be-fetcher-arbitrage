@@ -1,3 +1,4 @@
+import { updateShopWithQuery } from "../src/services/db/util/shops.js";
 import { findTasks } from "../src/services/db/util/tasks.js";
 import {
   createCrawlTasks,
@@ -7,8 +8,13 @@ import {
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 
 const newShops = [
-  { d: "gamestop.de", gb: false, maxProducts: 3000 },
-  { d: "weltbild.de", gb: true, maxProducts: 20000 },
+  {
+    d: "alza.de",
+    gb: false,
+    maxProducts: 20000,
+    hasEan: true,
+    proxyType: "mix",
+  },
 ];
 
 const initStatsPerDay = {
@@ -92,18 +98,26 @@ const main = async () => {
     })
   );
 
+  await Promise.all(
+    newShops.map(async (shop) => {
+      await updateShopWithQuery(
+        { d: shop.d },
+        { active: true, hasEan: shop.hasEan, proxyType: shop.proxyType }
+      );
+    })
+  );
+
   if (tasksCreated) {
     await distributeCrawlTasksToDays(initStatsPerDay);
-    setTimeout(async ()=> {
+    setTimeout(async () => {
       const new_tasks = await findTasks({ type: "CRAWL_SHOP" });
       new_tasks.forEach((task) => {
         statsPerDay[task.weekday].total += task.productLimit;
         statsPerDay[task.weekday].ids.push(task.id);
       });
       console.log(statsPerDay);
-    },1000)
+    }, 1000);
   }
-
 };
 
 main().then();
