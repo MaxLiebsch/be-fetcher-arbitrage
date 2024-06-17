@@ -7,6 +7,7 @@
     "match": "node ./src/services/match.js",
     "dev:match:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/match.js\"",
     "dev:lookup:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/lookup.js\"",
+    "dev:eanlookup:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/eanLookup.js\"",
     "dev:crawl:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawl.js\"",
     "dev:wholesale:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"yarn start:test:wholesale\"",
     "dev:singlematch:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematch.js\"",
@@ -38,7 +39,8 @@
     "test:page": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/pageMode.js\"",
     "test:production:securemode": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true node ./__test__/secureMode.js",
     "test:mongoquery": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true nodemon ./__test__/mongo/testQueries.js",
-    "test:selector": "cross-env NODE_ENV=development DEBUG=true concurrently \"yarn proxy\" \"yarn jest\""
+    "test:selector": "cross-env NODE_ENV=development DEBUG=true concurrently \"yarn proxy\" \"yarn jest\"",
+    "test:fetch": "cross-env NODE_ENV=development DEBUG=true concurrently \"yarn proxy\" \"yarn jest fetch.test\""
   },
   "author": "",
   "license": "ISC",
@@ -63,7 +65,7 @@
     "parse-price": "^1.1.8",
     "pino": "^8.20.0",
     "pino-mongodb": "^4.3.0",
-    "puppeteer": "22.6.0",
+    "puppeteer": "22.6.3",
     "request": "^2.88.2",
     "underscore": "^1.13.6"
   },

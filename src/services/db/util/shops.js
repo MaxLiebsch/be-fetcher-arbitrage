@@ -1,36 +1,54 @@
-//getShop
-
 import {
   getArbispotterDb,
   getCrawlerDataDb,
   shopCollectionName,
 } from "../mongo.js";
 
-export const getAllShops = async (shopsDomains = []) => {
+export const getAllShops = async (shopDomains = []) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  const shops = await collection.find({ d: { $in: shopsDomains } }).toArray();
+  let query = {};
+  if (shopDomains.length) {
+    query = { d: { $in: shopDomains } };
+  }
+  const shops = await collection.find(query).toArray();
   return shops;
 };
+
+export const updateShopWithQuery = async (query, update) => {
+  const collectionName = shopCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return collection.updateOne(
+    { ...query },
+    {
+      $set: {
+        ...update,
+      },
+    }
+  );
+};
+
 
 export const getShops = async (retailerList) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
 
-  const retailerListQueryArr = retailerList.reduce((targetShops, shop) => {
-    targetShops.push(shop.d);
-    return targetShops;
-  }, []);
+  let query = {};
+  if (retailerList && retailerList.length) {
+    const retailerListQueryArr = retailerList.reduce((targetShops, shop) => {
+      targetShops.push(shop.d);
+      return targetShops;
+    }, []);
+    query = { d: { $in: retailerListQueryArr } };
+  }
 
-  const shops = await collection
-    .find({ d: { $in: retailerListQueryArr } })
-    .toArray();
+  const shops = await collection.find(query).toArray();
   if (shops.length) {
-    return retailerList.reduce((acc, val) => {
-      const shop = shops.find((shop) => shop.d === val.d);
-      acc[val.d] = shop;
+    return shops.reduce((acc, shop) => {
+      acc[shop.d] = shop
       return acc;
     }, {});
   } else {
@@ -71,6 +89,20 @@ export const updateShopStats = async (shopDomain) => {
     }
   );
 };
+
+export const getAllShopsAsArray = async () => {
+  const collectionName = shopCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+
+  const shops = await collection.find().toArray();
+  if (shops.length) {
+    return shops;
+  } else {
+    return null;
+  }
+};
+
 
 export const getActiveShops = async () => {
   const collectionName = shopCollectionName;

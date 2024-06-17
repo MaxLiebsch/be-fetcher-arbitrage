@@ -9,6 +9,27 @@ export const shops = {
         link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
       },
     ],
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "img",
+        parent: "div[class=simple-carousel-item][id=slide-0]",
+        type: "src",
+        content: "image",
+      },
+    ],
     resourceTypes: {
       crawl: [
         "media",
@@ -43,6 +64,8 @@ export const shops = {
       max: 800,
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [
       {
         baseUrl: `https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>`,
@@ -314,7 +337,23 @@ export const shops = {
       },
     ],
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     entryPoint: "https://www.alternate.de",
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin8",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+    ],
     resourceTypes: {
       crawl: [
         "media",
@@ -618,6 +657,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "actionsports.de",
     mimic: "a.logo--link img",
@@ -667,7 +708,7 @@ export const shops = {
         type: "pagination",
         sel: "div.listing--bottom-paging",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           last: "div.listing--bottom-paging span.paging--display",
@@ -748,6 +789,22 @@ export const shops = {
   "gamestop.de": {
     exceptions: [
       "https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg",
+      "https://www.gamestop.de/Views/Locale/Content/Images/maxDefault.jpg",
+    ],
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
     ],
     manualCategories: [
       {
@@ -791,6 +848,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "gamestop.de",
     mimic: "a.hamburgerLogo",
@@ -830,7 +889,7 @@ export const shops = {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
         nav: "&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24",
-        
+
         paginationUrlSchema: {
           withQuery: false,
           calculation: {
@@ -961,7 +1020,36 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        parent: "div[id=content0c]",
+        multiple: true,
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        parent: "div[id=content0c]",
+        multiple: true,
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "mku",
+        parent: "div[id=content0c]",
+        multiple: true,
+        path: "mpn",
+      },
+    ],
     d: "alza.de",
     mimic: "a.header-alz-42 img",
     purlschema: "Prod\\w*\\/\\d*",
@@ -1040,6 +1128,25 @@ export const shops = {
     ],
   },
   "bergfreunde.de": {
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        multiple: true,
+        parent: "div[id=details]",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        multiple: true,
+        parent: "div[id=details]",
+        path: "sku",
+      },
+    ],
     exceptions: [
       "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
     ],
@@ -1065,6 +1172,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "bergfreunde.de",
     mimic: "a[data-mapp-click='header.logo'] img",
@@ -1095,7 +1204,7 @@ export const shops = {
         type: "pagination",
         sel: "div.paging",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1157,6 +1266,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "action.com",
     mimic: "nav[data-testid='top-menu'] a svg.h-6",
@@ -1186,7 +1297,7 @@ export const shops = {
         type: "pagination",
         sel: "div[data-testid=grid-pagination-items-desktop]",
         nav: "?page=",
-        
+
         calculation: {
           method: "count",
           last: "div[data-testid=grid-pagination-items-desktop] a",
@@ -1291,6 +1402,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
 
     d: "costway.de",
@@ -1321,7 +1434,7 @@ export const shops = {
         type: "pagination",
         sel: "div.pages",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           dynamic: true,
@@ -1431,6 +1544,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "cyberport.de",
     mimic: "svg.cpHeaderLogo__svg",
@@ -1483,7 +1598,7 @@ export const shops = {
         type: "pagination",
         sel: "div.paging",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1559,7 +1674,23 @@ export const shops = {
       // },
     ],
   },
+
   "dm.de": {
+    hasEan: false,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+    ],
     manualCategories: [],
     resourceTypes: {
       crawl: [
@@ -1577,11 +1708,14 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "dm.de",
     mimic: "svg[data-dmid=dm-brand]",
     purlschema: "Prod\\w*\\/\\d*",
     action: [],
+    ean: "p[0-9]{12,13}",
     entryPoints: [
       {
         url: "https://www.dm.de",
@@ -1609,7 +1743,7 @@ export const shops = {
         sel: "button[data-dmid=load-more-products-button]",
         nav: "?currentPage0=",
         wait: false,
-        
+
         calculation: {
           method: "match_text",
           textToMatch: "Mehr laden",
@@ -1706,6 +1840,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "fahrrad.de",
     mimic: "a.logo",
@@ -1812,6 +1948,21 @@ export const shops = {
     ],
   },
   "fressnapf.de": {
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+    ],
     manualCategories: [
       {
         name: "Sale",
@@ -1847,6 +1998,8 @@ export const shops = {
       serviceWorker: "disabled",
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "fressnapf.de",
     mimic: "a[id=header-logo]",
@@ -1972,6 +2125,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "de",
+    active: false,
     queryUrlSchema: [],
     d: "mindfactory.de",
     mimic: "#bToprow > div.row > div.col-logo > div > a > img",
@@ -2001,7 +2156,7 @@ export const shops = {
         type: "pagination",
         sel: "ul.pagination",
         nav: "/page/",
-        
+
         calculation: {
           method: "find_highest",
           last: "ul.pagination a",
@@ -2083,6 +2238,27 @@ export const shops = {
     ],
   },
   "mueller.de": {
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "img.mu-image-magnify__preview-image",
+        parent: "div.mu-product-gallery__preview",
+        type: "src",
+        content: "image",
+      },
+    ],
     manualCategories: [],
     resourceTypes: {
       crawl: [
@@ -2098,6 +2274,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "mueller.de",
     mimic: "img.mu-header__logo",
@@ -2136,7 +2314,7 @@ export const shops = {
         type: "pagination",
         sel: "div.mu-pagination__pages",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           last: "div.mu-pagination__pages span.mu-button2__content",
@@ -2201,6 +2379,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "quelle.de",
     mimic: "header > a > svg",
@@ -2230,7 +2410,7 @@ export const shops = {
         type: "pagination",
         sel: "nav.MuiPagination-root",
         nav: "?p=",
-        
+
         calculation: {
           method: "count",
           last: "nav.MuiPagination-root li",
@@ -2326,6 +2506,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     query: {
       content: "van",
@@ -2342,6 +2524,15 @@ export const shops = {
     ],
     crawlActions: [],
     queryActions: [],
+    hasEan: true,
+    product: [
+      {
+        sel: "meta[itemprop=gtin13]",
+        parent: "div[id=av_articleheader]",
+        type: "content",
+        content: "ean",
+      },
+    ],
     categories: {
       categoryNameSegmentPos: 0,
       categoryRegexp: "\\/([^\\/]+?)-c\\d+",
@@ -2371,7 +2562,7 @@ export const shops = {
         type: "pagination",
         sel: "div.PageLinksNavi",
         nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
-        
+
         paginationUrlSchema: {
           replace: "\\.html",
           parseAndReplace: { regexp: "\\d+", replace: "<groupid>" },
@@ -2513,6 +2704,31 @@ export const shops = {
     ],
   },
   "saturn.de": {
+    hasEan: true,
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        parent: "head",
+        path: "object.gtin13",
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        parent: "head",
+        path: "object.sku",
+        multiple: true,
+      },
+      {
+        sel: "img",
+        parent: "div.pdp-gallery-image",
+        type: "src",
+        content: "image",
+      },
+    ],
     manualCategories: [
       {
         name: "Angebote & Aktionen",
@@ -2603,6 +2819,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     queryUrlSchema: [],
     d: "saturn.de",
     mimic: "img[data-test=styled-logo]",
@@ -2660,7 +2878,7 @@ export const shops = {
         type: "recursive-more-button",
         sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         nav: "?page=",
-        
+
         calculation: {
           method: "find_highest",
           last: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
@@ -2767,6 +2985,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "sportspar.de",
     mimic: "#bToprow > div.row > div.col-logo > div > a > img",
@@ -2796,7 +3016,7 @@ export const shops = {
         type: "pagination",
         sel: "a.btn.is--primary.is--icon-right.js--load-more",
         nav: "?p=",
-        
+
         calculation: {
           method: "match_text",
           textToMatch: "Weitere Artikel laden",
@@ -2893,6 +3113,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "de",
+    active: false,
     queryUrlSchema: [],
     d: "weltbild.de",
     mimic: "img[alt=Weltbild]",
@@ -2929,7 +3151,7 @@ export const shops = {
         type: "pagination",
         sel: "div.pagination",
         nav: "?seite=",
-        
+
         calculation: {
           method: "count",
           last: "div.pagination li a",
@@ -2976,6 +3198,7 @@ export const shops = {
     ],
   },
   "kaufland.de": {
+    ean: "_attribute;div[data-loadbee-apikey];data-loadbee-gtin",
     manualCategories: [
       {
         name: "B-Ware",
@@ -3002,6 +3225,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "kaufland.de",
     mimic: "span.svg-logo.rh-main__logo-normal svg",
@@ -3038,7 +3263,7 @@ export const shops = {
         },
         sel: "nav.rd-pagination",
         nav: "p",
-        
+
         calculation: {
           method: "estimate",
           productsPerPage: 35,
@@ -3118,6 +3343,8 @@ export const shops = {
       ],
     },
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "otto.de",
     mimic: "svg.pl_logo",
@@ -3147,7 +3374,7 @@ export const shops = {
         type: "pagination",
         sel: "ul.reptile_paging.reptile_paging--bottom",
         nav: "?l=gp&o=<page>",
-        
+
         paginationUrlSchema: {
           replace: "attach_end",
           withQuery: false,
@@ -3290,7 +3517,24 @@ export const shops = {
       min: 500,
       max: 800,
     },
+    hasEan: true,
+    product: [
+      {
+        sel: "meta[itemprop=gtin]",
+        parent: "div.grid_container.product",
+        type: "content",
+        content: "ean",
+      },
+      {
+        sel: "meta[itemprop=sku]",
+        parent: "div.grid_container.product",
+        type: "content",
+        content: "sku",
+      },
+    ],
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: false,
     queryUrlSchema: [],
     d: "voelkner.de",
     mimic: "a.head__wrapper__group__button svg",
@@ -3320,7 +3564,7 @@ export const shops = {
         type: "pagination",
         sel: "div[id=js_search_pagination_bottom]",
         nav: "?page=",
-        
+
         calculation: {
           method: "match_text",
           textToMatch: "Weitere Produkte anzeigen",
@@ -3365,6 +3609,8 @@ export const shops = {
   },
   "amazon.de": {
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     resourceTypes: {
       query: [
         "media",
@@ -3454,6 +3700,8 @@ export const shops = {
   },
   "ebay.de": {
     waitUntil: { product: "load", entryPoint: "load" },
+    proxyType: "mix",
+    active: true,
     resourceTypes: {
       query: [
         "media",

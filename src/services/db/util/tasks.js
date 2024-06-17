@@ -53,6 +53,26 @@ export const getNewTask = async () => {
     };
   }
 
+  const eanLookupTaskQuery = [
+    { type: "LOOKUP_EAN" },
+    {
+      $or: [
+        { startedAt: "" },
+        {
+          startedAt: { $lt: lowerThenStartedAt },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+    {
+      $or: [
+        { progress: { $size: 0 } },
+        { progress: { $exists: false } },
+        { progress: { $elemMatch: { pending: { $gt: 0 } } } },
+      ],
+    },
+  ];
+
   const scanTaskQuery = [
     { type: "SCAN_SHOP" },
     { recurrent: { $eq: false } },
@@ -123,6 +143,12 @@ export const getNewTask = async () => {
       {
         $or: [
           {
+            $and: [
+              ...eanLookupTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
+          },
+          {
             $and: crawlTaskQuery,
           },
           {
@@ -153,7 +179,12 @@ export const getNewTask = async () => {
   console.log("Primary:task:", task?.type, " ", task?.id);
 
   if (task) {
-    if (task.type === "CRAWL_SHOP" || task.type === "WHOLESALE_SEARCH") {
+    if (
+      task.type === "CRAWL_SHOP" ||
+      task.type === "WHOLESALE_SEARCH" ||
+      task.type === "SCAN_SHOP" ||
+      task.type === "LOOKUP_EAN"
+    ) {
       return task;
     }
     if (task.type === "MATCH_PRODUCTS") {

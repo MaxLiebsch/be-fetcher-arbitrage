@@ -1,5 +1,6 @@
 import { createHash } from "../../../util/hash.js";
 import { getCrawlerDataDb, hostname } from "../mongo.js";
+import { pendingEanLookupProductsQuery } from "./queries.js";
 
 //Add crawled product //crawler-data
 export const upsertCrawledProduct = async (domain, product) => {
@@ -123,9 +124,97 @@ export const lockProducts = async (domain, limit = 0, taskId, action) => {
   return documents;
 };
 
+export const lockProductsForEanLookup = async (domain, limit = 0, action,taskId) => {
+  const collectionName = domain + ".products";
+  const db = await getCrawlerDataDb();
+
+  const options = {};
+  let query = pendingEanLookupProductsQuery;
+
+  if (action === "recover") {
+    query["ean_taskId"] = `${hostname}:${taskId.toString()}`;
+  } else {
+    query["$or"] = [
+      { ean_lookup: { $exists: false } },
+      { ean_lookup: { $exists: true, $eq: false } },
+    ];
+    query["$or"] = [
+      { ean: { $exists: false } },
+      { ean: { $exists: true, $eq: "" } },
+    ];
+    if (limit) {
+      options["limit"] = limit;
+    }
+  }
+  const documents = await db
+    .collection(collectionName)
+    .find(query, options)
+    .toArray();
+
+  // Update documents to mark them as locked
+  await db.collection(collectionName).updateMany(
+    { _id: { $in: documents.map((doc) => doc._id) } },
+    {
+      $set: {
+        ean_locked: true,
+        ean_taskId: `${hostname}:${taskId.toString()}`,
+      },
+    }
+  );
+
+  return documents;
+};
+
 export const deleteAllProducts = async (domain) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
   return collection.deleteMany({});
+};
+
+export const findCrawlDataProducts = async (
+  domain,
+  query,
+  limit = 500,
+  page = 0
+) => {
+  const collectionName = domain + ".products";
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return collection
+    .find({ ...query })
+    .limit(limit ?? 500)
+    .skip(page * limit)
+    .toArray();
+};
+
+export const moveCrawledProduct = async (from, to, _id) => {
+  const fromCollectionName = from + ".products";
+  const toCollectionName = to;
+  const db = await getCrawlerDataDb();
+  const fromCollection = db.collection(fromCollectionName);
+  const toCollection = db.collection(toCollectionName);
+
+  const product = await fromCollection.findOne({ _id });
+
+  await toCollection.insertOne(product);
+  await fromCollection.deleteOne({ _id });
+
+  return product;
+};
+export const copyProducts = async (from, to, _id) => {
+  const fromCollectionName = from + ".products";
+  const toCollectionName = to;
+  const db = await getCrawlerDataDb();
+  const fromCollection = db.collection(fromCollectionName);
+  const toCollection = db.collection(toCollectionName);
+
+  const products = await fromCollection.find({ _id }).toArray();
+  const productsWithShop = products.map((product) => {
+    return { ...product, shop: from };
+  });
+
+  await toCollection.insertOne(productsWithShop);
+
+  return productsWithShop;
 };

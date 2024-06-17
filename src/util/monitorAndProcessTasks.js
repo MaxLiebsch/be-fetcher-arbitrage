@@ -11,10 +11,7 @@ import {
 } from "../services/db/util/tasks.js";
 import { sendMail } from "../email.js";
 import os from "os";
-import {
-  TaskCompletedStatus,
-  TimeLimitReachedStatus,
-} from "../status.js";
+import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import { updateShopStats } from "../services/db/util/shops.js";
 import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
@@ -32,6 +29,7 @@ import {
 import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
 import isTaskComplete from "../util/isTaskComplete.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
+import eanLookup from "../services/eanLookup.js";
 
 const hostname = os.hostname();
 const { errorLogger } = LoggerService.getSingleton();
@@ -55,6 +53,9 @@ async function executeTask(task) {
   if (type === "LOOKUP_PRODUCTS") {
     return await lookup(task);
   }
+  if (type === "LOOKUP_EAN") {
+    return await eanLookup(task);
+  }
 }
 
 async function checkForNewTask() {
@@ -70,22 +71,24 @@ async function checkForNewTask() {
   return null;
 }
 
-const getTaskSymbol = (type) => { 
-  switch (type){
+const getTaskSymbol = (type) => {
+  switch (type) {
     case "CRAWL_SHOP":
-      return "🕷️"
+      return "🕷️";
     case "WHOLESALE_SEARCH":
-      return "🔍"; 
+      return "🔍";
     case "SCAN_SHOP":
       return "🔎";
     case "MATCH_PRODUCTS":
       return "🧩";
     case "LOOKUP_PRODUCTS":
       return "🔍";
-    default: 
+    case "LOOKUP_EAN":
+      return "🆕";
+    default:
       return "🤷‍♂️";
   }
-}
+};
 
 export async function monitorAndProcessTasks() {
   const intervalId = setInterval(async () => {
@@ -107,6 +110,7 @@ export async function monitorAndProcessTasks() {
       type === "MATCH_PRODUCTS" || type === "LOOKUP_PRODUCTS";
     const isWholeSale = type === "WHOLESALE_SEARCH";
     const isCrawl = type === "CRAWL_SHOP";
+    const isEanLookup = type === "LOOKUP_EAN";
     const maxRetries =
       isMatchLookup || isWholeSale
         ? DEFAULT_MAX_TASK_RETRIES
@@ -123,7 +127,7 @@ export async function monitorAndProcessTasks() {
       let newRetry = 0;
       let errored = false;
       let priority = "normal";
-      
+
       let subject = `${getTaskSymbol(type)} ${hostname}: ${id}`;
 
       // Update progress for lookup stage
@@ -138,6 +142,7 @@ export async function monitorAndProcessTasks() {
             { progress: lookupProgress }
           );
       }
+
       // Update progress for match stage
       if (isCrawl || type === "MATCH_PRODUCTS") {
         const progress = await getMatchingProgress(shopDomain);
@@ -212,6 +217,9 @@ export async function monitorAndProcessTasks() {
               ...limit,
               pages: newPageLimit,
             };
+          }
+          if (isCrawl && newRetry === maxRetries) {
+            update.productLimit = result.infos.total;
           }
 
           if (isMatchLookup) {
