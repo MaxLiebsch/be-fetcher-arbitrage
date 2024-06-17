@@ -13,7 +13,7 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "gamestop.de";
+const shopDomain = "dm.de";
 const proxyType = "request";
 const timezones = ["Europe/Berlin"];
 const crawlTask = {
@@ -28,12 +28,12 @@ const crawlTask = {
   },
   categories: [
     {
-      "name": "Switch",
-      "link": "https://www.gamestop.de/Switch/Index"
+      "name": "Neu",
+      "link": "https://www.dm.de/neu"
     },
     {
-      "name": "PC",
-      "link": "https://www.gamestop.de/PC/Index"
+      "name": "Make-up",
+      "link": "https://www.dm.de/make-up"
     }
   ],
   recurrent: true,

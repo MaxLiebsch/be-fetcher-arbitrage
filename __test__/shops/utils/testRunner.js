@@ -11,9 +11,9 @@ async function runTests(retries = 0) {
 
   const result = await runCLI(
     {
-      testMatch: ["**/alza.de.test.ts"],
+      testMatch: ["**/productInfo.*.test.ts"],
       testPathIgnorePatterns: ["node_modules"],
-      
+      runInBand: true,
       verbose: true,
     },
     [process.cwd()]

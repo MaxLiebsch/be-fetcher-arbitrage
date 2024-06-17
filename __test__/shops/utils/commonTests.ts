@@ -1,5 +1,6 @@
 import { expect } from "@jest/globals";
 import {
+  ProductInfo,
   ShopObject,
   browseProductPagesQueue,
   browseProductpages,
@@ -10,6 +11,7 @@ import {
   getProductCount,
   mainBrowser,
   paginationUrlBuilder,
+  queryProductPageQueue,
 } from "@dipmaxtech/clr-pkg";
 import { Page } from "puppeteer";
 import { MockQueue } from "./MockQueue.js";
@@ -29,7 +31,7 @@ let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
 
-export const myBeforeAll = async (_shopDomain: string, gb: boolean = false) => {
+export const myBeforeAll = async (_shopDomain: string, gb: boolean = false, version?: Versions) => {
   shopDomain = _shopDomain;
   const task: { [key: string]: any } = {
     productLimit: 500,
@@ -63,7 +65,7 @@ export const myBeforeAll = async (_shopDomain: string, gb: boolean = false) => {
     //@ts-ignore
     task,
     proxyAuth,
-    process.env.BROWSER_VERSION as Versions
+    version || process.env.BROWSER_VERSION as Versions
   );
 
   shops = await getShops([{ d: shopDomain }]);
@@ -316,6 +318,47 @@ export const extractProductsFromSecondPageQueueless = async () => {
       expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
       if (products.length > 0) console.log(products[0]);
     }
+  }
+};
+
+export const extractProductInfos = async (addProductInfo: any) => {
+  
+  if (page && shops && shops[shopDomain]) {
+    const productPageUrl = testParameters[shopDomain].productPageUrl;
+    await page.goto(productPageUrl);
+    return await queryProductPageQueue(page, {
+      shop: shops[shopDomain],
+      addProductInfo,
+      // @ts-ignore
+      queue: new MockQueue(),
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      pageInfo: {
+        name: "",
+        link: productPageUrl,
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+    });
   }
 };
 

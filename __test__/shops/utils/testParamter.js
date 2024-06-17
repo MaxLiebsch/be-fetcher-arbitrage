@@ -1,6 +1,25 @@
 import { sub } from "date-fns";
 
 const testParameters = {
+  "bergfreunde.de": {
+    productPageUrl: "https://www.bergfreunde.de/stoic-womens-performance-merino150-bydalenst-shirt-merinoshirt",
+  },
+  "mueller.de": {
+    productPageUrl:
+      "https://www.mueller.de/p/mueller-toy-place-lern-und-sortierhaus-IPN2919475/",
+  },
+  "reichelt.de": {
+    productPageUrl:
+      "https://www.reichelt.de/netzwerktester-mit-digital-multimeter-peaktech-3365-p81095.html?&trstct=pol_11&nbc=1",
+  },
+  "voelkner.de": {
+    productPageUrl:
+      "https://www.voelkner.de/products/3033086/Maul-MAULjoy-touch-of-rose-8200623-LED-Tischlampe-7W-EEK-D-A-G-Touch-of-Rose.html?offer=2cd3f55cee8dd6c0af91e54672f0143b",
+  },
+  "alternate.de": {
+    productPageUrl:
+      "https://www.alternate.de/Ubiquiti/USW-16-POE-Switch/html/product/1617281",
+  },
   "cyberport.de": {
     productsPerPage: 15,
     subCategoriesCount: 27,
@@ -19,6 +38,7 @@ const testParameters = {
     nextPageUrl: "https://www.weltbild.de/buecher/dystopie?seite=2",
   },
   "dm.de": {
+    productPageUrl: "https://www.dm.de/dmbio-kichererbsen-p4066447443073.html",
     productsPerPage: 30,
     productsPerPageAfterLoadMore: 150,
     subCategoriesCount: 3,
@@ -27,40 +47,70 @@ const testParameters = {
     nextPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao?currentPage0=2",
   },
   "fressnapf.de": {
+    productPageUrl:
+      "https://www.fressnapf.de/p/quiko-hand-formula-3-kg-handaufzucht-fuer-papageien-und-sittiche---handfuetterung-von-jungvoegeln-1387817/",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
-    initialProductPageUrl: "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/",
+    initialProductPageUrl:
+      "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/",
     subCategoryUrl: "https://www.fressnapf.de/c/kleintier/",
-    nextPageUrl: "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/?currentPage=2",
+    nextPageUrl:
+      "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/?currentPage=2",
   },
   "saturn.de": {
+    productPageUrl:
+      "https://www.saturn.de/de/product/_philips-hr-1949-20-avance-2208438.html",
     productsPerPage: 12,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 30,
     mainCategoriesCount: 9,
-    initialProductPageUrl: "https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html",
-    subCategoryUrl: "https://www.saturn.de/de/category/haushalt-k%C3%BCche-bad-1197.html",
-    nextPageUrl: "https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html?page=2",
+    initialProductPageUrl:
+      "https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html",
+    subCategoryUrl:
+      "https://www.saturn.de/de/category/haushalt-k%C3%BCche-bad-1197.html",
+    nextPageUrl:
+      "https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html?page=2",
   },
   "alza.de": {
+    productPageUrl:
+      "https://www.alza.de/epson-workforce-pro-wf-3820dwf-d6204051.htm",
     productsPerPage: 24,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 48,
     mainCategoriesCount: 14,
     initialProductPageUrl: "https://www.alza.de/fernseher/18849604.htm",
     subCategoryUrl: "https://www.alza.de/fernseher/18849604.htm",
-    nextPageUrl: "https://www.alza.de/fernseher/18849604.htm#f&cst=null&cud=0&pg=2",
+    nextPageUrl:
+      "https://www.alza.de/fernseher/18849604.htm#f&cst=null&cud=0&pg=2",
   },
   "gamestop.de": {
+    productPageUrl:
+      "https://www.gamestop.de/Accessories/Games/63594/pulse-3d-wireless-headset-midnight-black",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 48,
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
-    initialProductPageUrl: "https://www.gamestop.de/SearchResult/QuickSearch?platform=90",
+    initialProductPageUrl:
+      "https://www.gamestop.de/SearchResult/QuickSearch?platform=90",
     subCategoryUrl: "https://www.gamestop.de/XboxOne/Index",
-    nextPageUrl: "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",
+    nextPageUrl:
+      "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",
+  },
+  "idealo.de": {
+    productsPerPage: 48,
+    productsPerPageAfterLoadMore: 7,
+    subCategoriesCount: 6,
+    mainCategoriesCount: 9,
+    productPageUrl:
+      "https://www.idealo.de/preisvergleich/OffersOfProduct/4563915_-bio-folgemilch-auf-ziegenmilchbasis-2-400g-holle.html#datasheet",
+    initialProductPageUrl:
+      "https://www.idealo.de/preisvergleich/ProductCategory/10832.html",
+    subCategoryUrl:
+      "https://www.idealo.de/preisvergleich/SubProductCategory/3932.html",
+    nextPageUrl:
+      "https://www.idealo.de/preisvergleich/ProductCategory/10832I16-15.html",
   },
 };
 
