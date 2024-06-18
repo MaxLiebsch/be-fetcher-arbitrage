@@ -1964,6 +1964,12 @@ export const shops = {
         content: "sku",
         path: "sku",
       },
+      { 
+        parent: "div.zoom-image.g-image",
+        sel: "img",
+        type: "src",
+        content: 'image',
+      }
     ],
     manualCategories: [
       {

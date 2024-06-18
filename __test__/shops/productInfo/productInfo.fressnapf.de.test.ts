@@ -28,10 +28,14 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
+        console.log('productInfo:', productInfo)
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
+        const image = productInfo.find((info) => info.key === "image");
+
         expect(ean.value).toBe("4019181201324");
         expect(sku.value).toBe("1387817");
+        expect(image.value).toBeDefined()
       } else {
         expect(1).toBe(2);
       }
