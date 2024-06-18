@@ -64,7 +64,12 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
       }
     }
 
-    if (product?.eanList && product?.eanList.length > 0) {
+    if (
+      product?.eanList &&
+      product?.eanList.length > 0 &&
+      procProd?.eanList &&
+      procProd?.eanList.length > 0
+    ) {
       let eanList = [...product.eanList, ...procProd.eanList];
       procProd.eanList = [...new Set(eanList)];
     }

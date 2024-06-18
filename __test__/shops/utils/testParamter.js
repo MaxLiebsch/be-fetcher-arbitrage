@@ -6,7 +6,7 @@ const testParameters = {
   },
   "mueller.de": {
     productPageUrl:
-      "https://www.mueller.de/p/mueller-toy-place-lern-und-sortierhaus-IPN2919475/",
+      "https://www.mueller.de/p/annemarie-boerlind-liquid-eyeliner-2849185/",
   },
   "reichelt.de": {
     productPageUrl:

@@ -2216,6 +2216,9 @@ export const shops = {
     ],
   },
   "mueller.de": {
+    exceptions: [
+      "https://static.mueller.de/6f23f1202b2a99aa40c25dfc48658c418d2c5bbd/assets/base/images/fallback_image.png"
+    ],
     hasEan: true,
     product: [
       {
