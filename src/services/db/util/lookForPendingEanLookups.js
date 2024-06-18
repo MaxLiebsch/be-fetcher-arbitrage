@@ -8,7 +8,7 @@ export async function lookForPendingEanLookups(
   taskId,
   proxyType,
   action,
-  productLimit,
+  productLimit
 ) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
@@ -25,6 +25,12 @@ export async function lookForPendingEanLookups(
   const pendingShops = eanLookupProgressPerShop.filter(
     (shop) => shop.pending > 0
   );
+
+  const stats = pendingShops.reduce((acc, { pending, shop }) => {
+    acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
+    return acc;
+  }, {});
+
   const numberOfShops = pendingShops.length;
   const productsPerShop = Math.round(productLimit / numberOfShops);
 
@@ -41,6 +47,7 @@ export async function lookForPendingEanLookups(
       const productsWithShop = products.map((product) => {
         return { shop, product };
       });
+      stats[shop.d].batch = productsWithShop.length;
       return productsWithShop;
     })
   );
@@ -53,7 +60,17 @@ export async function lookForPendingEanLookups(
     return acc;
   }, []);
 
+  console.log(
+    "Ean lookup:\n",
+    Object.values(stats)
+      .map((info) => `${info.shopDomain}: p: ${info.pending} b: ${info?.batch}\n`)
+      .join("")
+  );
+
   await updateTaskWithQuery({ _id: taskId }, { progress });
 
-  return {products: shuffle(products).flatMap((ps) => ps), shops: pendingShops };
+  return {
+    products: shuffle(products).flatMap((ps) => ps),
+    shops: pendingShops,
+  };
 }

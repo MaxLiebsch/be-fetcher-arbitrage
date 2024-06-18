@@ -5,7 +5,7 @@ const task = {
   type: "LOOKUP_EAN",
   id: `lookup_ean`,
   proxyType: "mix",
-  productLimit: 5000,
+  productLimit: 50,
   executing: false,
   lastCrawler: [],
   test: false,

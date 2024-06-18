@@ -338,6 +338,7 @@ export const shops = {
     ],
     waitUntil: { product: "load", entryPoint: "load" },
     proxyType: "mix",
+    hasEan: true,
     active: true,
     entryPoint: "https://www.alternate.de",
     product: [
@@ -1546,6 +1547,7 @@ export const shops = {
     waitUntil: { product: "load", entryPoint: "load" },
     proxyType: "mix",
     active: true,
+    hasEan: false,
     queryUrlSchema: [],
     d: "cyberport.de",
     mimic: "svg.cpHeaderLogo__svg",
@@ -2074,37 +2076,7 @@ export const shops = {
             },
           ],
         },
-      },
-      // {
-      //   sel: "div.offerList",
-      //   productCntSel: ["div[data-v-0725ff23][data-v-133f7958]"],
-      //   product: {
-      //     sel: "div.offerList a.offerList-itemWrapper",
-      //     type: "link",
-      //     details: [
-      //       {
-      //         content: "image",
-      //         sel: "img",
-      //         type: "src",
-      //       },
-      //       {
-      //         content: "name",
-      //         sel: "div.offerList-item-description-title",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "description",
-      //         sel: "span.description-part-one",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "price",
-      //         sel: "div.offerList-item-priceMin",
-      //         type: "text",
-      //       },
-      //     ],
-      //   },
-      // },
+      } 
     ],
   },
   "mindfactory.de": {
@@ -3518,6 +3490,8 @@ export const shops = {
       max: 800,
     },
     hasEan: true,
+    proxyType: "mix",
+    active: false,
     product: [
       {
         sel: "meta[itemprop=gtin]",
@@ -3533,8 +3507,6 @@ export const shops = {
       },
     ],
     waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: false,
     queryUrlSchema: [],
     d: "voelkner.de",
     mimic: "a.head__wrapper__group__button svg",
