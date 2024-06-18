@@ -36,6 +36,10 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         };
       }
     }
+    if (product?.eanList && product?.eanList.length > 0) {
+      let eanList = [...product.eanList, ...procProd.eanList];
+      procProd.eanList = [...new Set(eanList)];
+    }
     await updateProduct(domain, procProd.lnk, procProd);
   } else {
     const newProduct = {
@@ -70,7 +74,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
       const e_hash = createHash(newProduct.e_lnk);
       newProduct.e_hash = e_hash;
     }
-    
+
     await upsertProduct(domain, newProduct);
   }
   infoCb(isNewProduct);
