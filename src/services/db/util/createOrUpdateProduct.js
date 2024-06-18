@@ -15,7 +15,34 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
       if (!verifyHash(procProd.a_lnk, product.a_hash)) {
         procProd.a_props = "incomplete";
         procProd.bsr = [];
-        procProd.asin = "";
+        const keepaProperties = [
+          { name: "categories" },
+          { name: "eanList" },
+          { name: "brand" },
+          { name: "numberOfItems" },
+          { name: "availabilityAmazon" },
+          { name: "categoryTree" },
+          { name: "salesRanks" }, // Sales Rank nullable
+          { name: "monthlySold" },
+          { name: "ahstprcs" }, // Amazon history prices
+          { name: "anhstprcs" }, // Amazon new history prices
+          { name: "auhstprcs" }, // Amazon used history prices
+          { name: "curr_ahsprcs" },
+          { name: "curr_ansprcs" },
+          { name: "curr_ausprcs" },
+          { name: "curr_salesRank" },
+          { name: "avg90_ahsprcs" }, // Average of the Amazon history prices of the last 90 days
+          { name: "avg90_ansprcs" }, // Average of the Amazon history prices of the last 90 days
+          { name: "avg90_ausprcs" }, // Average of the Amazon history prices of the last 90 days
+          { name: "avg90_salesRank" }, // Average of the Amazon history prices of the last 90 days
+          { name: "buyBoxIsAmazon" },
+          { name: "stockAmount" }, //  The stock of the Amazon offer, if available. Otherwise undefined.
+          { name: "stockBuyBox" }, // he stock of the buy box offer, if available. Otherwise undefined.
+          { name: "totalOfferCount" }, // The total count of offers for this product (all conditions combined). The offer count per condition can be found in the current field.
+        ];
+        keepaProperties.forEach((prop) => {
+          procProd[prop.name] = null;
+        });
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
           vrfd: false,
@@ -36,6 +63,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         };
       }
     }
+
     if (product?.eanList && product?.eanList.length > 0) {
       let eanList = [...product.eanList, ...procProd.eanList];
       procProd.eanList = [...new Set(eanList)];
