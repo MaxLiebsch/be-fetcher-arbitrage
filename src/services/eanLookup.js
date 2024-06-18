@@ -1,6 +1,5 @@
 import {
   QueryQueue,
-  lookupProductQueue,
   queryProductPageQueue,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -18,8 +17,7 @@ import {
   moveCrawledProduct,
   updateCrawledProduct,
 } from "./db/util/crudCrawlDataProduct.js";
-import { getMatchingProgress } from "./db/util/getMatchingProgress.js";
-import { updateTaskWithQuery } from "./db/util/tasks.js";
+import { updateMatchingTasks } from "../util/updateMatchingTasks.js";
 
 export default async function eanLookup(task) {
   return new Promise(async (resolve, reject) => {
@@ -73,21 +71,8 @@ export default async function eanLookup(task) {
           startTime,
           productLimit: _productLimit,
         }).catch(async (r) => {
-          await Promise.all(
-            shops.map(async (shop) => {
-              const shopDomain = shop.d;
-              const progress = await getMatchingProgress(shopDomain);
-              if (progress)
-                await updateTaskWithQuery(
-                  {
-                    type: "MATCH_PRODUCTS",
-                    id: `match_products_${shopDomain}`,
-                  },
-                  { progress }
-                );
-            })
-          );
           clearInterval(interval);
+          await updateMatchingTasks(shops); // update matching tasks
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -142,25 +127,8 @@ export default async function eanLookup(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            await Promise.all(
-              shops.map(async (shop) => {
-                try {
-                  const shopDomain = shop.d;
-                  const progress = await getMatchingProgress(shopDomain);
-                  if (progress)
-                    return updateTaskWithQuery(
-                      {
-                        type: "MATCH_PRODUCTS",
-                        id: `match_products_${shopDomain}`,
-                      },
-                      { progress }
-                    );
-                } catch (error) {
-                  console.error(`Error processing shop ${shop.d}:`, error);
-                }
-              })
-            );
             clearInterval(interval);
+            await updateMatchingTasks(shops); // update matching tasks
             handleResult(r, resolve, reject);
           });
         }
@@ -176,25 +144,8 @@ export default async function eanLookup(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            await Promise.all(
-              shops.map(async (shop) => {
-                try {
-                  const shopDomain = shop.d;
-                  const progress = await getMatchingProgress(shopDomain);
-                  if (progress)
-                    return updateTaskWithQuery(
-                      {
-                        type: "MATCH_PRODUCTS",
-                        id: `match_products_${shopDomain}`,
-                      },
-                      { progress }
-                    );
-                } catch (error) {
-                  console.error(`Error processing shop ${shop.d}:`, error);
-                }
-              })
-            );
             clearInterval(interval);
+            await updateMatchingTasks(shops); // update matching tasks
             handleResult(r, resolve, reject);
           });
         }
