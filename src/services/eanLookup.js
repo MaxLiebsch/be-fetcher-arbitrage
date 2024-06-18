@@ -111,7 +111,7 @@ export default async function eanLookup(task) {
             ean_locked: false,
             matched: false,
             matchedAt: new Date(
-              Date.now() - 1000 * 60 * 60 * 24 * 2
+              Date.now() - 1000 * 60 * 60 * 24 * 7
             ).toISOString(),
             ean_taskId: "",
           };
@@ -132,7 +132,7 @@ export default async function eanLookup(task) {
           infos.missingProperties.ean++;
           await updateCrawledProduct(shopDomain, link, {
             ean_locked: false,
-            taskId: "",
+            ean_taskId: "",
           });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
@@ -144,16 +144,20 @@ export default async function eanLookup(task) {
           }).catch(async (r) => {
             await Promise.all(
               shops.map(async (shop) => {
-                const shopDomain = shop.d;
-                const progress = await getMatchingProgress(shopDomain);
-                if (progress)
-                  await updateTaskWithQuery(
-                    {
-                      type: "MATCH_PRODUCTS",
-                      id: `match_products_${shopDomain}`,
-                    },
-                    { progress }
-                  );
+                try {
+                  const shopDomain = shop.d;
+                  const progress = await getMatchingProgress(shopDomain);
+                  if (progress)
+                    return updateTaskWithQuery(
+                      {
+                        type: "MATCH_PRODUCTS",
+                        id: `match_products_${shopDomain}`,
+                      },
+                      { progress }
+                    );
+                } catch (error) {
+                  console.error(`Error processing shop ${shop.d}:`, error);
+                }
               })
             );
             clearInterval(interval);
@@ -174,16 +178,20 @@ export default async function eanLookup(task) {
           }).catch(async (r) => {
             await Promise.all(
               shops.map(async (shop) => {
-                const shopDomain = shop.d;
-                const progress = await getMatchingProgress(shopDomain);
-                if (progress)
-                  await updateTaskWithQuery(
-                    {
-                      type: "MATCH_PRODUCTS",
-                      id: `match_products_${shopDomain}`,
-                    },
-                    { progress }
-                  );
+                try {
+                  const shopDomain = shop.d;
+                  const progress = await getMatchingProgress(shopDomain);
+                  if (progress)
+                    return updateTaskWithQuery(
+                      {
+                        type: "MATCH_PRODUCTS",
+                        id: `match_products_${shopDomain}`,
+                      },
+                      { progress }
+                    );
+                } catch (error) {
+                  console.error(`Error processing shop ${shop.d}:`, error);
+                }
               })
             );
             clearInterval(interval);
