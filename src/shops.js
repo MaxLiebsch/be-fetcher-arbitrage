@@ -3491,7 +3491,7 @@ export const shops = {
     },
     hasEan: true,
     proxyType: "mix",
-    active: false,
+    active: true,
     product: [
       {
         sel: "meta[itemprop=gtin]",

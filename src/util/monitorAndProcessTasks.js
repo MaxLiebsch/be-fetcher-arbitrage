@@ -228,7 +228,9 @@ export async function monitorAndProcessTasks() {
           await updateTask(_id, update);
         } else {
           //states are only relevant for match, lookup and crawl
-          !isWholeSale && (await updateShopStats(shopDomain));
+          if (!isWholeSale && !isEanLookup) {
+            await updateShopStats(shopDomain);
+          }
           subject = "🆗 " + subject + " " + completionPercentage;
 
           const update = {
