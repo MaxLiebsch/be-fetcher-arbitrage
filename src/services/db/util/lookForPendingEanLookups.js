@@ -15,8 +15,18 @@ export async function lookForPendingEanLookups(
   productLimit
 ) {
   if (action === "recover") {
-    console.log("Recovery Ean Lookup");
-    return await getRecoveryEanLookups(taskId, proxyType, productLimit);
+    const recoveryProducts = await getRecoveryEanLookups(
+      taskId,
+      proxyType,
+      productLimit
+    );
+    console.log(
+      "Ean lookup:\n",
+      recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
+        .join("")
+    );
+    return recoveryProducts;
   } else {
     const pendingShops = await getPendingShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {

@@ -1,9 +1,9 @@
 import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
 import { updateTaskWithQuery } from "../services/db/util/tasks.js";
 
-export const updateMatchingTasks = async (shops) =>
+export const updateMatchingTasks = async (infos) =>
   Promise.all(
-    shops.map(async (shop) => {
+    infos.map(async ({ shop, pending }) => {
       try {
         const shopDomain = shop.d;
         const progress = await getMatchingProgress(shopDomain);
