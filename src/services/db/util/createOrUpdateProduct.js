@@ -1,3 +1,4 @@
+import { proxies } from "@dipmaxtech/clr-pkg";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
   findProductByLink,
@@ -15,6 +16,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
       if (!verifyHash(procProd.a_lnk, product.a_hash)) {
         procProd.a_props = "incomplete";
         procProd.bsr = [];
+        // Remove keepa properties
         const keepaProperties = [
           { name: "categories" },
           { name: "eanList" },
@@ -43,6 +45,9 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         keepaProperties.forEach((prop) => {
           procProd[prop.name] = null;
         });
+        procProd["keepaUpdatedAt"] = new Date(
+          Date.now() - 1000 * 60 * 60 * 24 * 14
+        );
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
           vrfd: false,
