@@ -124,7 +124,12 @@ export const lockProducts = async (domain, limit = 0, taskId, action) => {
   return documents;
 };
 
-export const lockProductsForEanLookup = async (domain, limit = 0, action,taskId) => {
+export const lockProductsForEanLookup = async (
+  domain,
+  limit = 0,
+  action,
+  taskId
+) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
 
@@ -152,15 +157,16 @@ export const lockProductsForEanLookup = async (domain, limit = 0, action,taskId)
     .toArray();
 
   // Update documents to mark them as locked
-  await db.collection(collectionName).updateMany(
-    { _id: { $in: documents.map((doc) => doc._id) } },
-    {
-      $set: {
-        ean_locked: true,
-        ean_taskId: `${hostname}:${taskId.toString()}`,
-      },
-    }
-  );
+  if (action !== "recover")
+    await db.collection(collectionName).updateMany(
+      { _id: { $in: documents.map((doc) => doc._id) } },
+      {
+        $set: {
+          ean_locked: true,
+          ean_taskId: `${hostname}:${taskId.toString()}`,
+        },
+      }
+    );
 
   return documents;
 };

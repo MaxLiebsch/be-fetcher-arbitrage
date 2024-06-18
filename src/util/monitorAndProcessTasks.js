@@ -169,7 +169,10 @@ export async function monitorAndProcessTasks() {
         if (isMatchLookup) {
           update.cooldown = cooldown;
         }
-        await updateTask(_id, update);
+        await updateTask(_id, {
+          $set: update,
+          $pull: { lastCrawler: hostname },
+        });
       }
 
       if (taskResult instanceof TaskCompletedStatus) {
@@ -197,7 +200,6 @@ export async function monitorAndProcessTasks() {
           const update = {
             cooldown,
             completedAt,
-            lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
             executing: false,
             completed,
             retry: newRetry,
@@ -225,7 +227,10 @@ export async function monitorAndProcessTasks() {
           if (isMatchLookup) {
             update.cooldown = cooldown;
           }
-          await updateTask(_id, update);
+          await updateTask(_id, {
+            $set: update,
+            $pull: { lastCrawler: hostname },
+          });
         } else {
           //states are only relevant for match, lookup and crawl
           if (!isWholeSale && !isEanLookup) {
@@ -235,7 +240,6 @@ export async function monitorAndProcessTasks() {
 
           const update = {
             completedAt,
-            lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
             executing: false,
             completed,
             retry: newRetry,
@@ -244,7 +248,10 @@ export async function monitorAndProcessTasks() {
           if (isMatchLookup) {
             update.cooldown = cooldown;
           }
-          await updateTask(_id, update);
+          await updateTask(_id, {
+            $set: update,
+            $pull: { lastCrawler: hostname },
+          });
         }
       }
 
@@ -280,24 +287,28 @@ export async function monitorAndProcessTasks() {
           completed: true,
           executing: false,
           completedAt: new Date().toISOString(),
-          lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
           errored: false,
         };
         if (isMatchLookup) {
           update.cooldown = cooldown;
         }
-        await updateTask(_id, update);
+        await updateTask(_id, {
+          $set: update,
+          $pull: { lastCrawler: hostname },
+        });
       } else {
         const update = {
           completed: true,
           executing: false,
-          lastCrawler: lastCrawler.filter((crawler) => crawler !== hostname),
           errored: true,
         };
         if (isMatchLookup) {
           update.cooldown = cooldown;
         }
-        await updateTask(_id, update);
+        await updateTask(_id, {
+          $set: update,
+          $pull: { lastCrawler: hostname },
+        });
       }
       const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${type}\n${id}\n\n`;
       await sendMail({

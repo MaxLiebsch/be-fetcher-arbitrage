@@ -143,10 +143,7 @@ export const getNewTask = async () => {
       {
         $or: [
           {
-            $and: [
-              ...eanLookupTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
-            ],
+            $and: eanLookupTaskQuery,
           },
           {
             $and: crawlTaskQuery,
@@ -192,11 +189,11 @@ export const getNewTask = async () => {
       const pending = await getProductsToMatchCount(shopProductCollectionName);
       if (pending === 0) {
         await updateTask(task._id, {
-          executing: false,
-          cooldown: new Date(Date.now() + +COOLDOWN_LONG).toISOString(),
-          lastCrawler: task.lastCrawler.filter(
-            (crawler) => crawler !== hostname
-          ),
+          $set: {
+            executing: false,
+            cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+          },
+          $pull: { lastCrawler: hostname },
         });
         return null;
       } else {
@@ -210,11 +207,11 @@ export const getNewTask = async () => {
       );
       if (pending < danglingLookupThreshold) {
         await updateTask(task._id, {
-          executing: false,
-          cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
-          lastCrawler: task.lastCrawler.filter(
-            (crawler) => crawler !== hostname
-          ),
+          $set: {
+            executing: false,
+            cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+          },
+          $pull: { lastCrawler: hostname },
         });
         return null;
       } else {
@@ -253,11 +250,11 @@ export const getNewTask = async () => {
         );
         if (pending === 0) {
           await updateTask(task._id, {
-            executing: false,
-            cooldown: new Date(Date.now() + +COOLDOWN_LONG).toISOString(),
-            lastCrawler: task.lastCrawler.filter(
-              (crawler) => crawler !== hostname
-            ),
+            $set: {
+              executing: false,
+              cooldown: new Date(Date.now() + +COOLDOWN_LONG).toISOString(),
+            },
+            $pull: { lastCrawler: hostname },
           });
           return null;
         } else {
@@ -271,11 +268,11 @@ export const getNewTask = async () => {
         );
         if (pending < danglingLookupThreshold) {
           await updateTask(task._id, {
-            executing: false,
-            cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
-            lastCrawler: task.lastCrawler.filter(
-              (crawler) => crawler !== hostname
-            ),
+            $set: {
+              executing: false,
+              cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+            },
+            $pull: { lastCrawler: hostname },
           });
           return null;
         } else {
@@ -310,32 +307,22 @@ export const getTasks = async () => {
   return collection.find().toArray();
 };
 
-export const updateTask = async (id, update) => {
+export const updateTask = async (id, updateQuery) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return collection.updateOne(
-    { _id: id },
-    {
-      $set: {
-        ...update,
-      },
-    }
-  );
+  return collection.updateOne({ _id: id }, updateQuery);
 };
 
 export const updateTaskWithQuery = async (query, update) => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return collection.updateOne(
-    { ...query },
-    {
-      $set: {
-        ...update,
-      },
-    }
-  );
+  return collection.updateOne(query, {
+    $set: {
+      ...update,
+    },
+  });
 };
 
 export const updateTasks = async (taskType, update) => {
