@@ -147,19 +147,15 @@ export default async function match(task) {
         ctgry,
         asin: "",
         mnfctr,
-        eanList: [],
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
         prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
-      if (ean) {
-        procProd.eanList.push(ean);
-      }
-
+      
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
-
+      
       const query = {
         product: {
           key: reducedName,
@@ -167,6 +163,11 @@ export default async function match(task) {
         },
         category: "default",
       };
+
+      if (ean) {
+        procProd["eanList"] = [ean];
+      }
+
       const prodInfo = {
         procProd,
         rawProd,
@@ -229,10 +230,9 @@ export default async function match(task) {
                   infos.notFound++;
                 }
               }
-              
             }
             const asin = parseAsinFromUrl(procProd.a_lnk);
-            if(asin){
+            if (asin) {
               procProd.asin = asin;
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
@@ -281,7 +281,7 @@ export default async function match(task) {
               }
             }
             const asin = parseAsinFromUrl(procProd.a_lnk);
-            if(asin){
+            if (asin) {
               procProd.asin = asin;
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
