@@ -118,6 +118,22 @@ export const updateProduct = async (domain, link, update) => {
   );
 };
 
+
+export const moveArbispotterProduct = async (from, to, _id) => {
+  const fromCollectionName = from;
+  const toCollectionName = to;
+  const db = await getArbispotterDb();
+  const fromCollection = db.collection(fromCollectionName);
+  const toCollection = db.collection(toCollectionName);
+
+  const product = await fromCollection.findOne({ _id });
+
+  await toCollection.insertOne(product);
+  await fromCollection.deleteOne({ _id });
+
+  return product;
+};
+
 export const updateProducts = async (domain, query, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();

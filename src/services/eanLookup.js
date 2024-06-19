@@ -1,7 +1,4 @@
-import {
-  QueryQueue,
-  queryProductPageQueue,
-} from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -18,6 +15,7 @@ import {
   updateCrawledProduct,
 } from "./db/util/crudCrawlDataProduct.js";
 import { updateMatchingTasks } from "../util/updateMatchingTasks.js";
+import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 
 export default async function eanLookup(task) {
   return new Promise(async (resolve, reject) => {
@@ -29,14 +27,8 @@ export default async function eanLookup(task) {
       old: 0,
       notFound: 0,
       locked: 0,
-      missingProperties: {
-        bsr: 0,
-        ean: 0,
-        name: 0,
-        price: 0,
-        link: 0,
-        image: 0,
-      },
+      shops: {},
+      missingProperties: {},
     };
 
     const { products, shops } = await lookForPendingEanLookups(
@@ -45,6 +37,14 @@ export default async function eanLookup(task) {
       action,
       productLimit
     );
+
+    shops.forEach((info) => {
+      infos.shops[info.shop.d] = 0;
+      infos.missingProperties[info.shop.d] = {
+        ean: 0,
+        image: 0,
+      };
+    });
 
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
@@ -114,7 +114,12 @@ export default async function eanLookup(task) {
           }
           await updateCrawledProduct(shopDomain, link, update);
         } else {
-          infos.missingProperties.ean++;
+          const properties = ["ean", "image"];
+          properties.forEach((prop) => {
+            if (!product[prop]) {
+              infos.missingProperties[shopDomain][prop]++;
+            }
+          });
           await updateCrawledProduct(shopDomain, link, {
             ean_locked: false,
             ean_taskId: "",
@@ -132,11 +137,13 @@ export default async function eanLookup(task) {
             handleResult(r, resolve, reject);
           });
         }
+        infos.shops[shopDomain]++
         infos.total++;
       };
       const handleNotFound = async () => {
         infos.notFound++;
         await moveCrawledProduct(shopDomain, "grave", _id);
+        await moveArbispotterProduct(shopDomain, "grave", _id);
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
             queue,
@@ -149,6 +156,7 @@ export default async function eanLookup(task) {
             handleResult(r, resolve, reject);
           });
         }
+        infos.shops[shopDomain]++
         infos.total++;
       };
 
@@ -172,7 +180,9 @@ export default async function eanLookup(task) {
           },
         });
       } else {
+        await moveArbispotterProduct(shopDomain, "grave", _id)
         await moveCrawledProduct(shopDomain, "grave", _id);
+        infos.shops[shopDomain]++
         infos.total++;
       }
     }

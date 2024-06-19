@@ -47,7 +47,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         });
         procProd["keepaUpdatedAt"] = new Date(
           Date.now() - 1000 * 60 * 60 * 24 * 14
-        ).toISOString();
+        ).toISOString()
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
           vrfd: false,
@@ -67,17 +67,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
           flag_cnt: 0,
         };
       }
-    }
-
-    if (
-      product?.eanList &&
-      product?.eanList.length > 0 &&
-      procProd?.eanList &&
-      procProd?.eanList.length > 0
-    ) {
-      let eanList = [...product.eanList, ...procProd.eanList];
-      procProd.eanList = [...new Set(eanList)];
-    }
+    } 
     await updateProduct(domain, procProd.lnk, procProd);
   } else {
     const newProduct = {
