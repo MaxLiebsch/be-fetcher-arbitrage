@@ -11,7 +11,7 @@ async function runTests(retries = 0) {
 
   const result = await runCLI(
     {
-      testMatch: ["**/productInfo.mueller.de.test.ts"],
+      testMatch: ["**/productInfo.bergfreunde.de.test.ts"],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
       verbose: true,

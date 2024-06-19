@@ -1147,6 +1147,12 @@ export const shops = {
         parent: "div[id=details]",
         path: "sku",
       },
+      { 
+        parent: "li[itemprop=associatedMedia]",
+        sel: "img",
+        type: "src",
+        content: 'image',
+      }
     ],
     exceptions: [
       "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",

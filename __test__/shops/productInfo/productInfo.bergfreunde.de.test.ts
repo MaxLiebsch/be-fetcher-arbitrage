@@ -30,7 +30,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     }) => {
       if (productInfo) {
         const ean = productInfo.find((info) => info.key === "ean");
+        const image = productInfo.find((info) => info.key === "image");
         expect(ean.value).toBe("4262402599902");
+        expect(image.value).toBeDefined();
       } else {
         expect(1).toBe(2);
       }
@@ -38,7 +40,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductInfos(addProductInfo);
   },60000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

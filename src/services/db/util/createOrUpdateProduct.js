@@ -19,7 +19,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         // Remove keepa properties
         const keepaProperties = [
           { name: "categories" },
-          { name: "eanList" },
+          { name: "k_eanList" },
           { name: "brand" },
           { name: "numberOfItems" },
           { name: "availabilityAmazon" },
@@ -47,7 +47,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         });
         procProd["keepaUpdatedAt"] = new Date(
           Date.now() - 1000 * 60 * 60 * 24 * 14
-        );
+        ).toISOString();
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
           vrfd: false,
