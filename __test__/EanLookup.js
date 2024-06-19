@@ -23,4 +23,7 @@ const task = {
   },
 };
 
-eanLookup(task).then();
+eanLookup(task).then((r) => {
+  console.log(JSON.stringify(r, 2, null));
+  process.exit(0);
+});
