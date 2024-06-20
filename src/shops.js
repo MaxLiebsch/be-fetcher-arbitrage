@@ -1,112 +1,9 @@
+import pkg from "fs-jetpack";
+const { write } = pkg;
 import { insertShop } from "./services/db/util/shops.js";
 
 export const shops = {
   "idealo.de": {
-    exceptions: ["https://www.idealo.de/offerpage/offerlist/product/"],
-    manualCategories: [
-      {
-        name: "Sale",
-        link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
-      },
-    ],
-    hasEan: true,
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
-      },
-      {
-        sel: "img",
-        parent: "div[class=simple-carousel-item][id=slide-0]",
-        type: "src",
-        content: "image",
-      },
-    ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
-      ],
-      query: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        // "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
-        "other",
-      ],
-    },
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
-    },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [
-      {
-        baseUrl: `https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>`,
-        category: "default",
-      },
-    ],
-    d: "idealo.de",
-    mimic: "svg.i-header-logo-image",
-    purlschema: "Prod\\w*\\/\\d*",
-    rules: [
-      {
-        description:
-          "Block all .js files except those containing 'vendor' or 'idealo-'",
-        action: "abort",
-        conditions: [
-          {
-            type: "endsWith",
-            value: ".js",
-          },
-          {
-            type: "notIncludes",
-            value: "vendor",
-          },
-          {
-            type: "notIncludes",
-            value: "idealo-",
-          },
-        ],
-      },
-      {
-        description: "Block URLs matching a specific UUID pattern",
-        action: "abort",
-        conditions: [
-          {
-            type: "regexMatch",
-            value:
-              "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
-          },
-        ],
-      },
-    ],
     actions: [
       {
         type: "recursive-button",
@@ -116,33 +13,7 @@ export const shops = {
         wait: false,
       },
     ],
-    entryPoints: [
-      {
-        url: "https://www.idealo.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [
-      // {
-      //   type: "button",
-      //   sel: "div.sr-resultItemTile",
-      //   action: "click",
-      //   wait: true,
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button.productOffers-listLoadMore",
-      //   action: "click",
-      //   wait: true,
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button.productOffers-listLoadMore",
-      //   action: "click",
-      //   wait: false,
-      // },
-    ],
+    active: true,
     categories: {
       exclude: ["flug", "flüge", "hotel"],
       sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
@@ -155,6 +26,30 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [
+      {
+        type: "button",
+        sel: "a.productVariants-listItemWrapper",
+        action: "click",
+        wait: true,
+      },
+    ],
+    d: "idealo.de",
+    entryPoints: [
+      {
+        url: "https://www.idealo.de",
+        category: "default",
+      },
+    ],
+    exceptions: ["https://www.idealo.de/offerpage/offerlist/product/"],
+    hasEan: true,
+    manualCategories: [
+      {
+        name: "Sale",
+        link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
+      },
+    ],
+    mimic: "svg.i-header-logo-image",
     paginationEl: [
       {
         type: "pagination",
@@ -191,6 +86,31 @@ export const shops = {
           last: "li.pagination-item a",
           sel: "li.pagination-item a",
         },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "img",
+        parent: "div[class=simple-carousel-item][id=slide-0]",
+        type: "src",
+        content: "image",
       },
     ],
     productList: [
@@ -328,31 +248,14 @@ export const shops = {
         },
       },
     ],
-  },
-  "alternate.de": {
-    manualCategories: [
-      {
-        name: "Tages Deals",
-        link: "https://www.alternate.de/TagesDeals",
-      },
-    ],
-    waitUntil: { product: "load", entryPoint: "load" },
     proxyType: "mix",
-    hasEan: true,
-    active: true,
-    entryPoint: "https://www.alternate.de",
-    product: [
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [
       {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin8",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
+        baseUrl:
+          "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>",
+        category: "default",
       },
     ],
     resourceTypes: {
@@ -369,18 +272,58 @@ export const shops = {
         "script",
         "other",
       ],
+      query: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
     },
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
+    rules: [
+      {
+        description:
+          "Block all .js files except those containing 'vendor' or 'idealo-'",
+        action: "abort",
+        conditions: [
+          {
+            type: "endsWith",
+            value: ".js",
+          },
+          {
+            type: "notIncludes",
+            value: "vendor",
+          },
+          {
+            type: "notIncludes",
+            value: "idealo-",
+          },
+        ],
+      },
+      {
+        description: "Block URLs matching a specific UUID pattern",
+        action: "abort",
+        conditions: [
+          {
+            type: "regexMatch",
+            value:
+              "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+          },
+        ],
+      },
+    ],
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
     },
-    d: "alternate.de",
+  },
+  "alternate.de": {
     action: [],
-    category: [],
-    queryUrlSchema: [],
-    mimic: "img.header-logo",
-    queryActions: [],
+    active: true,
     categories: {
       sel: "div[id=navigation-tree] a",
       type: "href",
@@ -392,12 +335,24 @@ export const shops = {
         },
       ],
     },
+    category: [],
+    crawlActions: [],
+    d: "alternate.de",
+    entryPoint: "https://www.alternate.de",
     entryPoints: [
       {
         url: "https://www.alternate.de",
         category: "default",
       },
     ],
+    hasEan: true,
+    manualCategories: [
+      {
+        name: "Tages Deals",
+        link: "https://www.alternate.de/TagesDeals",
+      },
+    ],
+    mimic: "img.header-logo",
     paginationEl: [
       {
         type: "pagination",
@@ -409,7 +364,31 @@ export const shops = {
         },
       },
     ],
-    crawlActions: [],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin8",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "table > tbody > tr:nth-child(3) > td.c4",
+        type: "text",
+        parent: "div[id=product-details-tab]",
+        content: "ean",
+      },
+    ],
     productList: [
       {
         sel: "div[id=dailyDeals]",
@@ -639,9 +618,9 @@ export const shops = {
         },
       },
     ],
-  },
-  "actionsports.de": {
-    manualCategories: [],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -657,156 +636,48 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "actionsports.de",
-    mimic: "a.logo--link img",
-    purlschema: "Prod\\w*\\/\\d*",
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "gamestop.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.actionsports.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [
-      {
-        type: "shadowroot-button",
-        sel: "aside[id=usercentrics-cmp-ui]",
-        btn_sel: "button[id=deny]",
-        action: "click",
-        wait: false,
-      },
-      // {
-      //   type: "input",
-      //   sel: "input[id=i-search-input]",
-      //   wait: false,
-      //   what: ["product"],
-      // },
-      // {
-      //   type: "button",
-      //   sel: "button.i-search-button--submit",
-      //   action: "click",
-      //   wait: false,
-      // },
-    ],
+    active: true,
     categories: {
-      exclude: ["marken"],
-      sel: "div.navigation--list-wrapper ul.navigation--list li.navigation--entry a",
+      visible: false,
+      exclude: [
+        "gebraucht",
+        "support",
+        "trading",
+        "steam",
+        "streaming",
+        "account",
+        "merchandise",
+      ],
+      sel: "a.accountSideMenuListLink",
       type: "href",
       subCategories: [
         {
-          sel: "ul.is--level1 a.navigation--link",
+          sel: "div[id=categories] li a",
           type: "href",
+          visible: false,
         },
       ],
     },
-    paginationEl: [
+    crawlActions: [],
+    d: "gamestop.de",
+    entryPoints: [
       {
-        type: "pagination",
-        sel: "div.listing--bottom-paging",
-        nav: "?p=",
-
-        calculation: {
-          method: "count",
-          last: "div.listing--bottom-paging span.paging--display",
-          sel: "div.listing--bottom-paging span.paging--display",
-        },
+        url: "https://www.gamestop.de",
+        category: "default",
       },
     ],
-    productList: [
-      {
-        sel: "div.sr-resultList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
-        product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.sr-resultItemLink a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.sr-productSummary__title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productsPerPage: 60,
-        productCntSel: ["span.paging--display"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
-  "gamestop.de": {
     exceptions: [
       "https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg",
       "https://www.gamestop.de/Views/Locale/Content/Images/maxDefault.jpg",
     ],
     hasEan: true,
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin13",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
-      },
-    ],
     manualCategories: [
       {
         name: "PS5",
@@ -833,64 +704,12 @@ export const shops = {
         link: "https://www.gamestop.de/PC/Index",
       },
     ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "image",
-        // "stylesheet",
-        // "ping",
-        // "xhr",
-        // "fetch",
-        // "imageset",
-        // "sub_frame",
-        // "script",
-        // "other",
-      ],
-    },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "gamestop.de",
     mimic: "a.hamburgerLogo",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.gamestop.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      visible: false,
-      exclude: [
-        "gebraucht",
-        "support",
-        "trading",
-        "steam",
-        "streaming",
-        "account",
-        "merchandise",
-      ],
-      sel: "a.accountSideMenuListLink",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div[id=categories] li a",
-          type: "href",
-          visible: false,
-        },
-      ],
-    },
     paginationEl: [
       {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
         nav: "&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24",
-
         paginationUrlSchema: {
           withQuery: false,
           calculation: {
@@ -916,6 +735,20 @@ export const shops = {
           last: "button.button-secondary.loadmoreBtn",
           sel: "button.button-secondary.loadmoreBtn",
         },
+      },
+    ],
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
       },
     ],
     productList: [
@@ -961,7 +794,6 @@ export const shops = {
       },
       {
         sel: "div.prodList",
-
         productCntSel: ["strong.searchSumCount"],
         product: {
           sel: "div.prodList div[id*=product_]",
@@ -1001,30 +833,65 @@ export const shops = {
         },
       },
     ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: ["media", "font", "image"],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
   },
   "alza.de": {
-    exceptions: [],
-    manualCategories: [],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "image",
-        // "stylesheet",
-        // "ping",
-        // "xhr",
-        // "fetch",
-        // "imageset",
-        // "sub_frame",
-        // "script",
-        // "other",
+    action: [],
+    active: true,
+    categories: {
+      visible: false,
+      exclude: [],
+      sel: "div.js-left-category-menu li a.l0-catLink",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.category-tiles__categories a.category-tiles__tile",
+          type: "href",
+          visible: false,
+        },
       ],
     },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
+    crawlActions: [],
+    d: "alza.de",
+    entryPoints: [
+      {
+        url: "https://www.alza.de",
+        category: "default",
+      },
+    ],
+    exceptions: [],
     hasEan: true,
+    manualCategories: [],
+    mimic: "a.header-alz-42 img",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[id=pagerbottom]",
+        nav: "#f&cst=null&cud=0&pg=",
+        calculation: {
+          method: "product_count",
+          productsPerPage: 24,
+          dynamic: true,
+          last: "div[id=pagerbottom] a.pgn",
+          sel: "div[id=pagerbottom] a.pgn",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     product: [
       {
         sel: "script[type='application/ld+json']",
@@ -1049,45 +916,6 @@ export const shops = {
         parent: "div[id=content0c]",
         multiple: true,
         path: "mpn",
-      },
-    ],
-    d: "alza.de",
-    mimic: "a.header-alz-42 img",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.alza.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      visible: false,
-      exclude: [],
-      sel: "div.js-left-category-menu li a.l0-catLink",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.category-tiles__categories a.category-tiles__tile",
-          type: "href",
-          visible: false,
-        },
-      ],
-    },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "div[id=pagerbottom]",
-        nav: "#f&cst=null&cud=0&pg=",
-        calculation: {
-          method: "product_count",
-          productsPerPage: 24,
-          dynamic: true,
-          last: "div[id=pagerbottom] a.pgn",
-          sel: "div[id=pagerbottom] a.pgn",
-        },
       },
     ],
     productList: [
@@ -1127,9 +955,64 @@ export const shops = {
         },
       },
     ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: ["media", "font", "image"],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
   },
   "bergfreunde.de": {
+    action: [],
+    active: true,
+    categories: {
+      exclude: [],
+      visible: false,
+      sel: "a.level-1-link",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.list-box a.cat-title-link",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "bergfreunde.de",
+    entryPoints: [
+      {
+        url: "https://www.bergfreunde.de",
+        category: "default",
+      },
+    ],
+    exceptions: [
+      "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
+    ],
     hasEan: true,
+    manualCategories: [],
+    mimic: "a[data-mapp-click='header.logo'] img",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div.paging",
+        nav: "?p=",
+        calculation: {
+          method: "count",
+          last: "div.paging a",
+          sel: "div.paging a",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
     product: [
       {
         sel: "script[type='application/ld+json']",
@@ -1147,76 +1030,11 @@ export const shops = {
         parent: "div[id=details]",
         path: "sku",
       },
-      { 
+      {
         parent: "li[itemprop=associatedMedia]",
         sel: "img",
         type: "src",
-        content: 'image',
-      }
-    ],
-    exceptions: [
-      "https://www.bergfreunde.de/out/pictures/img/bergfreunde-logo.png",
-    ],
-    manualCategories: [],
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
-    },
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        // "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
-        "other",
-      ],
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "bergfreunde.de",
-    mimic: "a[data-mapp-click='header.logo'] img",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.bergfreunde.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      exclude: [],
-      visible: false,
-      sel: "a.level-1-link",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.list-box a.cat-title-link",
-          type: "href",
-        },
-      ],
-    },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "div.paging",
-        nav: "?p=",
-
-        calculation: {
-          method: "count",
-          last: "div.paging a",
-          sel: "div.paging a",
-        },
+        content: "image",
       },
     ],
     productList: [
@@ -1254,320 +1072,31 @@ export const shops = {
         },
       },
     ],
-  },
-  "action.com": {
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
         "font",
-        "stylesheet",
         "ping",
         "image",
         "xhr",
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "action.com",
-    mimic: "nav[data-testid='top-menu'] a svg.h-6",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.action.com/de-de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      exclude: [],
-      sel: "li[data-section-type=CategoryMenuItem] a",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div[data-testid=grid-navigation-links] a",
-          type: "href",
-        },
-      ],
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
     },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "div[data-testid=grid-pagination-items-desktop]",
-        nav: "?page=",
-
-        calculation: {
-          method: "count",
-          last: "div[data-testid=grid-pagination-items-desktop] a",
-          sel: "div[data-testid=grid-pagination-items-desktop] a",
-        },
-      },
-    ],
-    productList: [
-      {
-        sel: "div.sr-resultList",
-        productsPerPage: 28,
-        productCntSel: ["p.text-center.text-xs"],
-        product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.sr-resultItemLink a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.sr-productSummary__title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productsPerPage: 28,
-        productCntSel: ["p.text-center.text-xs"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
-  "costway.de": {
-    manualCategories: [
-      {
-        name: "Mega Woche",
-        link: "https://www.costway.de/mega-woche?entrypoint=hotwords",
-      },
-      {
-        name: "Ausverkauf",
-        link: "https://www.costway.de/ausverkauf?entrypoint=hotwords",
-      },
-    ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
-      ],
-    },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-
-    d: "costway.de",
-    mimic: "img[title='COSTWAY']",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.costway.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      exclude: ["alle"],
-      sel: "a.top-nav",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.catalog-sub-menu div.ant-col a",
-          type: "href",
-        },
-      ],
-    },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "div.pages",
-        nav: "?p=",
-
-        calculation: {
-          method: "count",
-          dynamic: true,
-          last: "div.pages li.item a.page",
-          sel: "div.pages li.item a.page",
-        },
-      },
-    ],
-    productList: [
-      {
-        sel: "div.products-grid",
-        productCntSel: [
-          "ul.items.pages-items li:not(.page-item-next):nth-last-child(2)",
-        ],
-        product: {
-          sel: "div.products-grid li.product-item",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.imgage-box a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "div.imgage-box img",
-              type: "data-original",
-            },
-            {
-              content: "name",
-              proprietaryProducts: "COSTWAY",
-              sel: "a.product-item-link",
-              type: "title",
-            },
-            {
-              content: "price",
-              sel: "span.price",
-              type: "text",
-            },
-          ],
-        },
-      },
-
-      {
-        sel: "div.seemore-fivelist",
-        productCntSel: [
-          "ul.items.pages-items li:not(.page-item-next):nth-last-child(2)",
-        ],
-        product: {
-          sel: "div.seemore-fivelist li.pro_sku",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "a.pro_link",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "img.pro_img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "p.productText",
-              proprietaryProducts: "COSTWAY",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "span.now-price",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
   },
   "cyberport.de": {
-    manualCategories: [
-      {
-        name: "Angebote",
-        link: "https://www.cyberport.de/angebote.html",
-      },
-      {
-        name: "Restposten (A-Ware)",
-        link: "https://www.cyberport.de/markenshops/outlet/restposten-a-ware-.html",
-      },
-      {
-        name: "Gebrauchtware (B-Ware)",
-        link: "https://www.cyberport.de/markenshops/outlet/gebrauchtware-b-ware-.html",
-      },
-    ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
-      ],
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    hasEan: false,
-    queryUrlSchema: [],
-    d: "cyberport.de",
-    mimic: "svg.cpHeaderLogo__svg",
-    purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.cyberport.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-
+    active: true,
     categories: {
       exclude: [
         "service-garantien",
@@ -1601,12 +1130,35 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "cyberport.de",
+    entryPoints: [
+      {
+        url: "https://www.cyberport.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    manualCategories: [
+      {
+        name: "Angebote",
+        link: "https://www.cyberport.de/angebote.html",
+      },
+      {
+        name: "Restposten (A-Ware)",
+        link: "https://www.cyberport.de/markenshops/outlet/restposten-a-ware-.html",
+      },
+      {
+        name: "Gebrauchtware (B-Ware)",
+        link: "https://www.cyberport.de/markenshops/outlet/gebrauchtware-b-ware-.html",
+      },
+    ],
+    mimic: "svg.cpHeaderLogo__svg",
     paginationEl: [
       {
         type: "pagination",
         sel: "div.paging",
         nav: "?p=",
-
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1650,56 +1202,11 @@ export const shops = {
           ],
         },
       },
-      // {
-      //   sel: "div.offerList",
-      //   productCntSel: ["span.resultCount"],
-      //   product: {
-      //     sel: "div.offerList a.offerList-itemWrapper",
-      //     type: "link",
-      //     details: [
-      //       {
-      //         content: "image",
-      //         sel: "img",
-      //         type: "src",
-      //       },
-      //       {
-      //         content: "name",
-      //         sel: "div.offerList-item-description-title",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "description",
-      //         sel: "span.description-part-one",
-      //         type: "text",
-      //       },
-      //       {
-      //         content: "price",
-      //         sel: "div.offerList-item-priceMin",
-      //         type: "text",
-      //       },
-      //     ],
-      //   },
-      // },
     ],
-  },
-
-  "dm.de": {
-    hasEan: false,
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
-      },
-    ],
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -1707,31 +1214,22 @@ export const shops = {
         "stylesheet",
         "ping",
         "image",
-        // "xhr",
+        "xhr",
         "fetch",
         "imageset",
         "sub_frame",
-        // "script",
+        "script",
         "other",
       ],
     },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "dm.de",
-    mimic: "svg[data-dmid=dm-brand]",
-    purlschema: "Prod\\w*\\/\\d*",
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "dm.de": {
     action: [],
-    ean: "p[0-9]{12,13}",
-    entryPoints: [
-      {
-        url: "https://www.dm.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: true,
     categories: {
       exclude: ["marken"],
       sel: "nav[id=categoryNavigationContainer] a",
@@ -1745,13 +1243,24 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "dm.de",
+    ean: "p[0-9]{12,13}",
+    entryPoints: [
+      {
+        url: "https://www.dm.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    manualCategories: [],
+    mimic: "svg[data-dmid=dm-brand]",
     paginationEl: [
       {
         type: "recursive-more-button",
         sel: "button[data-dmid=load-more-products-button]",
         nav: "?currentPage0=",
         wait: false,
-
         calculation: {
           method: "match_text",
           textToMatch: "Mehr laden",
@@ -1759,6 +1268,20 @@ export const shops = {
           last: "button[data-dmid=load-more-products-button]",
           sel: "button[data-dmid=load-more-products-button]",
         },
+      },
+    ],
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
       },
     ],
     productList: [
@@ -1829,9 +1352,10 @@ export const shops = {
         },
       },
     ],
-  },
-  "fahrrad.de": {
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -1839,144 +1363,45 @@ export const shops = {
         "stylesheet",
         "ping",
         "image",
-        "xhr",
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "fahrrad.de",
-    mimic: "a.logo",
-    purlschema: "Prod\\w*\\/\\d*",
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "fressnapf.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.fahrrad.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: true,
     categories: {
-      exclude: ["aktivitäten", "marken", "service & beratung"],
-      sel: "ul.menu-category li.li-level-1 a.a-level-1",
+      exclude: ["service", "magazin"],
+      sel: "div[id=__navigation] ul.nav-level-1 a",
       type: "href",
       subCategories: [
         {
-          sel: "div[id=newcategorychips] a",
+          sel: "div.teaser-slider-small div.swiper-wrapper a.swiper-slide",
           type: "href",
         },
       ],
     },
-    paginationEl: [
+    crawlActions: [],
+    d: "fressnapf.de",
+    entryPoints: [
       {
-        type: "pagination",
-        sel: "ul.pagination__list",
-        nav: "?page=",
-        calculation: {
-          method: "count",
-          last: "ul.pagination__list a",
-          sel: "ul.pagination__list a",
-        },
+        url: "https://www.fressnapf.de",
+        category: "default",
       },
     ],
-    productList: [
-      {
-        sel: "div.sr-resultList",
-        productCntSel: ["span.js-articleAmount"],
-        product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.sr-resultItemLink a",
-              type: "href",
-            },
-
-            {
-              content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.sr-productSummary__title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productCntSel: ["span.js-articleAmount"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
-  },
-  "fressnapf.de": {
     hasEan: true,
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
-      },
-      { 
-        parent: "div.zoom-image.g-image",
-        sel: "img",
-        type: "src",
-        content: 'image',
-      }
-    ],
+    javascript: {
+      sharedWorker: "enabled",
+      webWorker: "enabled",
+      serviceWorker: "disabled",
+    },
     manualCategories: [
       {
         name: "Sale",
@@ -1991,54 +1416,7 @@ export const shops = {
         link: "https://www.fressnapf.de/aktionen-angebote/gutschein-zubehoer/",
       },
     ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
-        "other",
-      ],
-    },
-    javascript: {
-      sharedWorker: "enabled",
-      webWorker: "enabled",
-      serviceWorker: "disabled",
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "fressnapf.de",
     mimic: "a[id=header-logo]",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.fressnapf.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-
-    categories: {
-      exclude: ["service", "magazin"],
-      sel: "div[id=__navigation] ul.nav-level-1 a",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.teaser-slider-small div.swiper-wrapper a.swiper-slide",
-          type: "href",
-        },
-      ],
-    },
     paginationEl: [
       {
         type: "pagination",
@@ -2049,6 +1427,31 @@ export const shops = {
           last: "div.p-items a",
           sel: "div.p-items a",
         },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 1000,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        parent: "div.zoom-image.g-image",
+        sel: "img",
+        type: "src",
+        content: "image",
       },
     ],
     productList: [
@@ -2064,13 +1467,11 @@ export const shops = {
               sel: "div.pt-content a",
               type: "href",
             },
-
             {
               content: "image",
               sel: "div.pt-figure img",
               type: "src",
             },
-
             {
               content: "name",
               sel: "div.pt-head",
@@ -2088,11 +1489,12 @@ export const shops = {
             },
           ],
         },
-      } 
+      },
     ],
-  },
-  "mindfactory.de": {
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -2104,178 +1506,17 @@ export const shops = {
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "de",
-    active: false,
-    queryUrlSchema: [],
-    d: "mindfactory.de",
-    mimic: "#bToprow > div.row > div.col-logo > div > a > img",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.mindfactory.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      exclude: ["mindstart", "actionen"],
-      sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
-          type: "href",
-        },
-      ],
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
     },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "ul.pagination",
-        nav: "/page/",
-
-        calculation: {
-          method: "find_highest",
-          last: "ul.pagination a",
-          sel: "ul.pagination a",
-        },
-      },
-    ],
-    productList: [
-      {
-        sel: "div.sr-resultList",
-        productCntSel: [
-          "div.show-articles-per-page-top span.bold:nth-child(3)",
-        ],
-        product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.sr-resultItemLink a",
-              type: "href",
-            },
-
-            {
-              content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.sr-productSummary__title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productCntSel: [
-          "div.show-articles-per-page-top span.bold:nth-child(3)",
-        ],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
   },
   "mueller.de": {
-    exceptions: [
-      "https://static.mueller.de/6f23f1202b2a99aa40c25dfc48658c418d2c5bbd/assets/base/images/fallback_image.png"
-    ],
-    hasEan: true,
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        path: "gtin13",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        path: "sku",
-      },
-      {
-        sel: "img.mu-image-magnify__preview-image",
-        parent: "div.mu-product-gallery__preview",
-        type: "src",
-        content: "image",
-      },
-    ],
-    manualCategories: [],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "mueller.de",
-    mimic: "img.mu-header__logo",
-    purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.mueller.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: true,
     categories: {
       exclude: [
         "marken",
@@ -2296,17 +1537,55 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "mueller.de",
+    entryPoints: [
+      {
+        url: "https://www.mueller.de",
+        category: "default",
+      },
+    ],
+    exceptions: [
+      "https://static.mueller.de/6f23f1202b2a99aa40c25dfc48658c418d2c5bbd/assets/base/images/fallback_image.png",
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "img.mu-header__logo",
     paginationEl: [
       {
         type: "pagination",
         sel: "div.mu-pagination__pages",
         nav: "?p=",
-
         calculation: {
           method: "count",
           last: "div.mu-pagination__pages span.mu-button2__content",
           sel: "div.mu-pagination__pages span.mu-button2__content",
         },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 1000,
+      max: 1500,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "img.mu-image-magnify__preview-image",
+        parent: "div.mu-product-gallery__preview",
+        type: "src",
+        content: "image",
       },
     ],
     productList: [
@@ -2327,7 +1606,6 @@ export const shops = {
               sel: "div.mu-product-tile__name",
               type: "text",
             },
-
             {
               content: "price",
               sel: "span.mu-product-tile__price",
@@ -2342,184 +1620,31 @@ export const shops = {
         },
       },
     ],
-  },
-  "quelle.de": {
-    manualCategories: [
-      {
-        name: "Deals des Monats",
-        link: "https://www.quelle.de/themen-aktionen/sale/deals-des-monats",
-      },
-    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
         "font",
-        "stylesheet",
         "ping",
         "image",
         "xhr",
         "fetch",
         "imageset",
         "sub_frame",
-        "script",
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "quelle.de",
-    mimic: "header > a > svg",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    entryPoints: [
-      {
-        url: "https://www.quelle.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    categories: {
-      exclude: [],
-      sel: "nav div[data-testid=stack] a.MuiTypography-root",
-      type: "href",
-      subCategories: [
-        {
-          sel: "div.MuiGrid-root.MuiGrid-item.MuiGrid-grid-lg-1.css-15dky00 > ul > a",
-          type: "href",
-        },
-      ],
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
     },
-    paginationEl: [
-      {
-        type: "pagination",
-        sel: "nav.MuiPagination-root",
-        nav: "?p=",
-
-        calculation: {
-          method: "count",
-          last: "nav.MuiPagination-root li",
-          sel: "nav.MuiPagination-root li",
-        },
-      },
-    ],
-    productList: [
-      {
-        sel: "div.sr-resultList",
-        productCntSel: ["ol.MuiBreadcrumbs-ol li:last-child"],
-        product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "div.sr-resultItemLink a",
-              type: "href",
-            },
-
-            {
-              content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.sr-productSummary__title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productCntSel: ["ol.MuiBreadcrumbs-ol li:last-child"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-    ],
   },
   "reichelt.de": {
-    ece: ["/&SID=(\\d|\\w)+/g"],
-    manualCategories: [],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
-        "other",
-      ],
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    query: {
-      content: "van",
-    },
-    d: "reichelt.de",
-    mimic: "label[for=loginb]",
-    purlschema: "Prod\\w*\\/\\d*",
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.reichelt.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
-    hasEan: true,
-    product: [
-      {
-        sel: "meta[itemprop=gtin13]",
-        parent: "div[id=av_articleheader]",
-        type: "content",
-        content: "ean",
-      },
-    ],
+    active: true,
     categories: {
       categoryNameSegmentPos: 0,
       categoryRegexp: "\\/([^\\/]+?)-c\\d+",
@@ -2544,15 +1669,29 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "reichelt.de",
+    ece: ["/&SID=(\\d|\\w)+/g"],
+    entryPoints: [
+      {
+        url: "https://www.reichelt.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "label[for=loginb]",
     paginationEl: [
       {
         type: "pagination",
         sel: "div.PageLinksNavi",
         nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
-
         paginationUrlSchema: {
           replace: "\\.html",
-          parseAndReplace: { regexp: "\\d+", replace: "<groupid>" },
+          parseAndReplace: {
+            regexp: "\\d+",
+            replace: "<groupid>",
+          },
           withQuery: false,
           calculation: {
             method: "offset",
@@ -2564,6 +1703,19 @@ export const shops = {
           last: "div.PageLinksNavi button:is(.SiteLinks,.SiteLinksDouble)",
           sel: "div.PageLinksNavi button:is(.SiteLinks,.SiteLinksDouble)",
         },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 1000,
+      max: 1500,
+    },
+    product: [
+      {
+        sel: "meta[itemprop=gtin13]",
+        parent: "div[id=av_articleheader]",
+        type: "content",
+        content: "ean",
       },
     ],
     productList: [
@@ -2689,33 +1841,78 @@ export const shops = {
         },
       },
     ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    query: {
+      content: "van",
+    },
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
   },
   "saturn.de": {
-    hasEan: true,
-    product: [
+    action: [],
+    active: true,
+    categories: {
+      exclude: [
+        "mindstart",
+        "actionen",
+        "fotoparadies.de",
+        "brand",
+        "/product/",
+        "b2b-business-solutions",
+      ],
+      sel: "",
+      type: "href",
+      subCategories: [
+        {
+          sel: "a[data-test=mms-search-category-content-sidenav-link]",
+          type: "href",
+        },
+        {
+          sel: "a[data-test=mms-router-link]",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [
       {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "ean",
-        parent: "head",
-        path: "object.gtin13",
-        multiple: true,
+        type: "element",
+        sel: "div[id=mms-consent-portal-container]",
+        action: "delete",
+        interval: 100,
       },
       {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "sku",
-        parent: "head",
-        path: "object.sku",
-        multiple: true,
-      },
-      {
-        sel: "img",
-        parent: "div.pdp-gallery-image",
-        type: "src",
-        content: "image",
+        type: "scroll",
+        sel: "none",
+        action: "scroll",
       },
     ],
+    d: "saturn.de",
+    entryPoints: [
+      {
+        url: "https://www.saturn.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
     manualCategories: [
       {
         name: "Angebote & Aktionen",
@@ -2790,87 +1987,46 @@ export const shops = {
         link: "https://www.saturn.de/de/campaign/refurbished",
       },
     ],
-    resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        // "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        // "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
-        "other",
-      ],
-    },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: true,
-    queryUrlSchema: [],
-    d: "saturn.de",
     mimic: "img[data-test=styled-logo]",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
-    },
-    entryPoints: [
-      {
-        url: "https://www.saturn.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [
-      {
-        type: "element",
-        sel: "div[id=mms-consent-portal-container]",
-        action: "delete",
-        interval: 100,
-      },
-      {
-        type: "scroll",
-        sel: "none",
-        action: "scroll",
-      },
-    ],
-    queryActions: [],
-    categories: {
-      exclude: [
-        "mindstart",
-        "actionen",
-        "fotoparadies.de",
-        "brand",
-        "/product/",
-        "b2b-business-solutions",
-      ],
-      sel: "",
-      type: "href",
-      subCategories: [
-        {
-          sel: "a[data-test=mms-search-category-content-sidenav-link]",
-          type: "href",
-        },
-        {
-          sel: "a[data-test=mms-router-link]",
-          type: "href",
-        },
-      ],
-    },
     paginationEl: [
       {
         type: "recursive-more-button",
         sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         nav: "?page=",
-
         calculation: {
           method: "find_highest",
           last: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
           sel: "button:is([aria-label='Mehr Produkte anzeigen'], [aria-label='Mehr Angebote'])",
         },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 1200,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        parent: "head",
+        path: "object.gtin13",
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        parent: "head",
+        path: "object.sku",
+        multiple: true,
+      },
+      {
+        sel: "img",
+        parent: "div.pdp-gallery-image",
+        type: "src",
+        content: "image",
       },
     ],
     productList: [
@@ -2940,22 +2096,158 @@ export const shops = {
         },
       },
     ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "xhr",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
   },
-  "sportspar.de": {
-    manualCategories: [
+  "voelkner.de": {
+    action: [],
+    active: true,
+    categories: {
+      exclude: ["#", "voelkner-finds"],
+      sel: "li.js_load_subcategories a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.grid_container div.category__box a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "voelkner.de",
+    entryPoints: [
       {
-        name: "Neuheiten",
-        link: "https://www.sportspar.de/neuheiten",
-      },
-      {
-        name: "Topseller",
-        link: "https://www.sportspar.de/topseller",
-      },
-      {
-        name: "Top-100",
-        link: "https://sportspar.de/top-100",
+        url: "https://www.voelkner.de",
+        category: "default",
       },
     ],
+    hasEan: true,
+    manualCategories: [
+      {
+        name: "Computer & Büro",
+        link: "https://www.voelkner.de/categories/13140/computer-buero.html",
+      },
+      {
+        name: "Multimedia",
+        link: "https://www.voelkner.de/categories/13141/multimedia.html",
+      },
+      {
+        name: "Haus & Garten",
+        link: "https://www.voelkner.de/categories/13146/haus-garten.html",
+      },
+      {
+        name: "Beleuchtung",
+        link: "https://www.voelkner.de/categories/13147/beleuchtung.html",
+      },
+      {
+        name: "Stromversorgung",
+        link: "https://www.voelkner.de/categories/13145/stromversorgung.html",
+      },
+      {
+        name: "Auto & Navigation",
+        link: "https://www.voelkner.de/categories/13144/auto-amp-navigation.html",
+      },
+      {
+        name: "Werkstatt",
+        link: "https://www.voelkner.de/categories/13148/werkstatt.html",
+      },
+      {
+        name: "Bauelemente",
+        link: "https://www.voelkner.de/categories/13149/bauelemente.html",
+      },
+      {
+        name: "Freizeit & Hobby",
+        link: "https://www.voelkner.de/categories/13150/freizeit-hobby.html",
+      },
+    ],
+    mimic: "a.head__wrapper__group__button svg",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[id=js_search_pagination_bottom]",
+        nav: "?page=",
+        calculation: {
+          method: "match_text",
+          textToMatch: "Weitere Produkte anzeigen",
+          dynamic: true,
+          last: "button.button--solid.js_load_results",
+          sel: "button.button--solid.js_load_results",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 1000,
+      max: 1500,
+    },
+    product: [
+      {
+        sel: "meta[itemprop=gtin]",
+        parent: "div.grid_container.product",
+        type: "content",
+        content: "ean",
+      },
+      {
+        sel: "meta[itemprop=sku]",
+        parent: "div.grid_container.product",
+        type: "content",
+        content: "sku",
+      },
+    ],
+    productList: [
+      {
+        sel: "div[id=js_search_listing_results]",
+        productCntSel: ["span.reptile_tilelist__itemCount"],
+        product: {
+          sel: "div.search_results__result",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.product_row__pic",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "a.product_row__pic img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "a.product__title",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.product__price__wrapper",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -2971,22 +2263,295 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "sportspar.de",
-    mimic: "#bToprow > div.row > div.col-logo > div > a > img",
-    purlschema: "Prod\\w*\\/\\d*",
-    action: [],
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "amazon.de": {
+    active: true,
+    d: "amazon.de",
     entryPoints: [
       {
-        url: "https://www.sportspar.de",
+        url: "https://www.amazon.de/?language=de_DE",
         category: "default",
       },
     ],
-    crawlActions: [],
+    mimic: "a[id=nav-logo-sprites]",
+    paginationEl: [],
+    productList: [
+      {
+        sel: "span[data-component-type=s-search-results]",
+        type: "container",
+        product: {
+          sel: "div[data-component-type=s-search-result]",
+          type: "container",
+          details: [
+            {
+              content: "link",
+              sel: "h2 a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "img.s-image",
+              type: "src",
+            },
+            {
+              content: "prime",
+              sel: "i.a-icon-prime",
+              type: "exist",
+            },
+            {
+              content: "name",
+              sel: "h2 span",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div[data-cy=secondary-offer-recipe] span.a-color-base",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span.a-price span.a-offscreen",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
     queryActions: [],
+    queryUrlSchema: [
+      {
+        baseUrl: "https://www.amazon.de/s?k=<query>&language=de_DE",
+        category: "default",
+      },
+    ],
+    resourceTypes: {
+      query: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "other",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "ebay.de": {
+    active: true,
+    d: "ebay.de",
+    entryPoint: [
+      {
+        url: "https://www.ebay.de",
+        category: "default",
+      },
+    ],
+    mimic: "a[id=gh-la]",
+    paginationEl: [],
+    productList: [
+      {
+        sel: "ul.srp-results",
+        type: "container",
+        product: {
+          sel: "ul.srp-results li.s-item",
+          type: "container",
+          details: [
+            {
+              content: "link",
+              sel: "div.s-item__info a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.s-item__image-wrapper img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.s-item__title span[role=heading]",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span.s-item__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [
+      {
+        baseUrl: "https://www.ebay.de/sch/i.html?_nkw=<query>",
+        category: "default",
+      },
+    ],
+    resourceTypes: {
+      query: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "other",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "action.com": {
+    action: [],
+    active: false,
+    categories: {
+      exclude: [],
+      sel: "li[data-section-type=CategoryMenuItem] a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[data-testid=grid-navigation-links] a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "action.com",
+    entryPoints: [
+      {
+        url: "https://www.action.com/de-de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "nav[data-testid='top-menu'] a svg.h-6",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[data-testid=grid-pagination-items-desktop]",
+        nav: "?page=",
+        calculation: {
+          method: "count",
+          last: "div[data-testid=grid-pagination-items-desktop] a",
+          sel: "div[data-testid=grid-pagination-items-desktop] a",
+        },
+      },
+    ],
+    productList: [
+      {
+        sel: "div.sr-resultList",
+        productsPerPage: 28,
+        productCntSel: ["p.text-center.text-xs"],
+        product: {
+          sel: "div.sr-resultList div.sr-resultItemTile",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "div.sr-resultItemLink a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.sr-productSummary__title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.sr-productSummary__description",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.sr-detailedPriceInfo__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.offerList",
+        productsPerPage: 28,
+        productCntSel: ["p.text-center.text-xs"],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.offerList-item-priceMin",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "sportspar.de": {
+    action: [],
+    active: false,
     categories: {
       exclude: ["sparclub", "service", "marken", "weitere"],
       sel: "nav.navigation-main li.navigation--entry.is--active.has--sub-categories.js--menu-scroller--item",
@@ -2998,12 +2563,34 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "sportspar.de",
+    entryPoints: [
+      {
+        url: "https://www.sportspar.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [
+      {
+        name: "Neuheiten",
+        link: "https://www.sportspar.de/neuheiten",
+      },
+      {
+        name: "Topseller",
+        link: "https://www.sportspar.de/topseller",
+      },
+      {
+        name: "Top-100",
+        link: "https://sportspar.de/top-100",
+      },
+    ],
+    mimic: "#bToprow > div.row > div.col-logo > div > a > img",
     paginationEl: [
       {
         type: "pagination",
         sel: "a.btn.is--primary.is--icon-right.js--load-more",
         nav: "?p=",
-
         calculation: {
           method: "match_text",
           textToMatch: "Weitere Artikel laden",
@@ -3026,7 +2613,6 @@ export const shops = {
               sel: "div.sr-resultItemLink a",
               type: "href",
             },
-
             {
               content: "image",
               sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
@@ -3081,9 +2667,10 @@ export const shops = {
         },
       },
     ],
-  },
-  "weltbild.de": {
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -3099,22 +2686,14 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "de",
-    active: false,
-    queryUrlSchema: [],
-    d: "weltbild.de",
-    mimic: "img[alt=Weltbild]",
-    purlschema: "",
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "weltbild.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.weltbild.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: false,
     categories: {
       exclude: ["nur-bei-weltbild", "alles"],
       sel: "nav.nav-container a.nav-link",
@@ -3133,12 +2712,21 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "weltbild.de",
+    entryPoints: [
+      {
+        url: "https://www.weltbild.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "img[alt=Weltbild]",
     paginationEl: [
       {
         type: "pagination",
         sel: "div.pagination",
         nav: "?seite=",
-
         calculation: {
           method: "count",
           last: "div.pagination li a",
@@ -3183,19 +2771,10 @@ export const shops = {
         },
       },
     ],
-  },
-  "kaufland.de": {
-    ean: "_attribute;div[data-loadbee-apikey];data-loadbee-gtin",
-    manualCategories: [
-      {
-        name: "B-Ware",
-        link: "https://www.kaufland.de/shops/kaufland_b-ware",
-      },
-      {
-        name: "Restposten",
-        link: "https://www.kaufland.de/campaigns/2019/kw_18/kw18_restposten",
-      },
-    ],
+    proxyType: "de",
+    purlschema: "",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -3211,22 +2790,14 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "domcontentloaded", entryPoint: "domcontentloaded" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "kaufland.de",
-    mimic: "span.svg-logo.rh-main__logo-normal svg",
-    purlschema: "",
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "kaufland.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.kaufland.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: false,
     categories: {
       exclude: ["ratgeber"],
       sel: "a.rh-menu-overlay__category",
@@ -3238,6 +2809,26 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "kaufland.de",
+    ean: "_attribute;div[data-loadbee-apikey];data-loadbee-gtin",
+    entryPoints: [
+      {
+        url: "https://www.kaufland.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [
+      {
+        name: "B-Ware",
+        link: "https://www.kaufland.de/shops/kaufland_b-ware",
+      },
+      {
+        name: "Restposten",
+        link: "https://www.kaufland.de/campaigns/2019/kw_18/kw18_restposten",
+      },
+    ],
+    mimic: "span.svg-logo.rh-main__logo-normal svg",
     paginationEl: [
       {
         type: "pagination",
@@ -3250,7 +2841,6 @@ export const shops = {
         },
         sel: "nav.rd-pagination",
         nav: "p",
-
         calculation: {
           method: "estimate",
           productsPerPage: 35,
@@ -3311,9 +2901,10 @@ export const shops = {
         },
       },
     ],
-  },
-  "otto.de": {
-    manualCategories: [],
+    proxyType: "mix",
+    purlschema: "",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -3329,22 +2920,14 @@ export const shops = {
         "other",
       ],
     },
-    waitUntil: { product: "load", entryPoint: "load" },
-    proxyType: "mix",
-    active: false,
-    queryUrlSchema: [],
-    d: "otto.de",
-    mimic: "svg.pl_logo",
-    purlschema: "Prod\\w*\\/\\d*",
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "otto.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.otto.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: false,
     categories: {
       exclude: ["marken"],
       sel: "a.nav_navi-elem",
@@ -3356,12 +2939,21 @@ export const shops = {
         },
       ],
     },
+    crawlActions: [],
+    d: "otto.de",
+    entryPoints: [
+      {
+        url: "https://www.otto.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "svg.pl_logo",
     paginationEl: [
       {
         type: "pagination",
         sel: "ul.reptile_paging.reptile_paging--bottom",
         nav: "?l=gp&o=<page>",
-
         paginationUrlSchema: {
           replace: "attach_end",
           withQuery: false,
@@ -3444,46 +3036,10 @@ export const shops = {
         },
       },
     ],
-  },
-  "voelkner.de": {
-    manualCategories: [
-      {
-        name: "Computer & Büro",
-        link: "https://www.voelkner.de/categories/13140/computer-buero.html",
-      },
-      {
-        name: "Multimedia",
-        link: "https://www.voelkner.de/categories/13141/multimedia.html",
-      },
-      {
-        name: "Haus & Garten",
-        link: "https://www.voelkner.de/categories/13146/haus-garten.html",
-      },
-      {
-        name: "Beleuchtung",
-        link: "https://www.voelkner.de/categories/13147/beleuchtung.html",
-      },
-      {
-        name: "Stromversorgung",
-        link: "https://www.voelkner.de/categories/13145/stromversorgung.html",
-      },
-      {
-        name: "Auto & Navigation",
-        link: "https://www.voelkner.de/categories/13144/auto-amp-navigation.html",
-      },
-      {
-        name: "Werkstatt",
-        link: "https://www.voelkner.de/categories/13148/werkstatt.html",
-      },
-      {
-        name: "Bauelemente",
-        link: "https://www.voelkner.de/categories/13149/bauelemente.html",
-      },
-      {
-        name: "Freizeit & Hobby",
-        link: "https://www.voelkner.de/categories/13150/freizeit-hobby.html",
-      },
-    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
       crawl: [
         "media",
@@ -3499,254 +3055,675 @@ export const shops = {
         "other",
       ],
     },
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
     },
-    hasEan: true,
-    proxyType: "mix",
-    active: true,
-    product: [
-      {
-        sel: "meta[itemprop=gtin]",
-        parent: "div.grid_container.product",
-        type: "content",
-        content: "ean",
-      },
-      {
-        sel: "meta[itemprop=sku]",
-        parent: "div.grid_container.product",
-        type: "content",
-        content: "sku",
-      },
-    ],
-    waitUntil: { product: "load", entryPoint: "load" },
-    queryUrlSchema: [],
-    d: "voelkner.de",
-    mimic: "a.head__wrapper__group__button svg",
-    purlschema: "Prod\\w*\\/\\d*",
+  },
+  "costway.de": {
     action: [],
-    entryPoints: [
-      {
-        url: "https://www.voelkner.de",
-        category: "default",
-      },
-    ],
-    crawlActions: [],
-    queryActions: [],
+    active: false,
     categories: {
-      exclude: ["#", "voelkner-finds"],
-      sel: "li.js_load_subcategories a",
+      exclude: ["alle"],
+      sel: "a.top-nav",
       type: "href",
       subCategories: [
         {
-          sel: "div.grid_container div.category__box a",
+          sel: "div.catalog-sub-menu div.ant-col a",
           type: "href",
         },
       ],
     },
+    crawlActions: [],
+    d: "costway.de",
+    entryPoints: [
+      {
+        url: "https://www.costway.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [
+      {
+        name: "Mega Woche",
+        link: "https://www.costway.de/mega-woche?entrypoint=hotwords",
+      },
+      {
+        name: "Ausverkauf",
+        link: "https://www.costway.de/ausverkauf?entrypoint=hotwords",
+      },
+    ],
+    mimic: "img[title='COSTWAY']",
     paginationEl: [
       {
         type: "pagination",
-        sel: "div[id=js_search_pagination_bottom]",
-        nav: "?page=",
-
+        sel: "div.pages",
+        nav: "?p=",
         calculation: {
-          method: "match_text",
-          textToMatch: "Weitere Produkte anzeigen",
+          method: "count",
           dynamic: true,
-          last: "button.button--solid.js_load_results",
-          sel: "button.button--solid.js_load_results",
+          last: "div.pages li.item a.page",
+          sel: "div.pages li.item a.page",
         },
       },
     ],
     productList: [
       {
-        sel: "div[id=js_search_listing_results]",
-        productCntSel: ["span.reptile_tilelist__itemCount"],
+        sel: "div.products-grid",
+        productCntSel: [
+          "ul.items.pages-items li:not(.page-item-next):nth-last-child(2)",
+        ],
         product: {
-          sel: "div.search_results__result",
+          sel: "div.products-grid li.product-item",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "a.product_row__pic",
+              sel: "div.imgage-box a",
               type: "href",
             },
             {
               content: "image",
-              sel: "a.product_row__pic img",
+              sel: "div.imgage-box img",
+              type: "data-original",
+            },
+            {
+              content: "name",
+              proprietaryProducts: "COSTWAY",
+              sel: "a.product-item-link",
+              type: "title",
+            },
+            {
+              content: "price",
+              sel: "span.price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.seemore-fivelist",
+        productCntSel: [
+          "ul.items.pages-items li:not(.page-item-next):nth-last-child(2)",
+        ],
+        product: {
+          sel: "div.seemore-fivelist li.pro_sku",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.pro_link",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "img.pro_img",
               type: "src",
             },
             {
               content: "name",
-              sel: "a.product__title",
+              sel: "p.productText",
+              proprietaryProducts: "COSTWAY",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.product__price__wrapper",
+              sel: "span.now-price",
               type: "text",
             },
           ],
         },
       },
     ],
-  },
-  "amazon.de": {
-    waitUntil: { product: "load", entryPoint: "load" },
     proxyType: "mix",
-    active: true,
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
-      query: [
+      crawl: [
         "media",
         "font",
         "stylesheet",
         "ping",
-        "other",
         "image",
         "xhr",
         "fetch",
         "imageset",
         "sub_frame",
         "script",
+        "other",
       ],
     },
-    d: "amazon.de",
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "quelle.de": {
+    action: [],
+    active: false,
+    categories: {
+      exclude: [],
+      sel: "nav div[data-testid=stack] a.MuiTypography-root",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.MuiGrid-root.MuiGrid-item.MuiGrid-grid-lg-1.css-15dky00 > ul > a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "quelle.de",
     entryPoints: [
       {
-        url: "https://www.amazon.de/?language=de_DE",
+        url: "https://www.quelle.de",
         category: "default",
       },
     ],
-    queryUrlSchema: [
+    manualCategories: [
       {
-        baseUrl: `https://www.amazon.de/s?k=<query>&language=de_DE`,
-        category: "default",
+        name: "Deals des Monats",
+        link: "https://www.quelle.de/themen-aktionen/sale/deals-des-monats",
       },
     ],
-    mimic: "a[id=nav-logo-sprites]",
-    queryActions: [
-      // {
-      //   type: "input",
-      //   sel: "input[id=twotabsearchtextbox]",
-      //   wait: false,
-      //   what: ["product"],
-      // },
-      // {
-      //   type: "button",
-      //   sel: "input[id=nav-search-submit-button]",
-      //   action: "click",
-      //   wait: false,
-      // },
+    mimic: "header > a > svg",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "nav.MuiPagination-root",
+        nav: "?p=",
+        calculation: {
+          method: "count",
+          last: "nav.MuiPagination-root li",
+          sel: "nav.MuiPagination-root li",
+        },
+      },
     ],
-    paginationEl: [],
     productList: [
       {
-        sel: "span[data-component-type=s-search-results]",
-        type: "container",
+        sel: "div.sr-resultList",
+        productCntSel: ["ol.MuiBreadcrumbs-ol li:last-child"],
         product: {
-          sel: "div[data-component-type=s-search-result]",
-          type: "container",
+          sel: "div.sr-resultList div.sr-resultItemTile",
+          type: "not_link",
           details: [
             {
               content: "link",
-              sel: "h2 a",
+              sel: "div.sr-resultItemLink a",
               type: "href",
             },
             {
               content: "image",
-              sel: "img.s-image",
+              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
               type: "src",
             },
             {
-              content: "prime",
-              sel: "i.a-icon-prime",
-              type: "exist",
+              content: "name",
+              sel: "div.sr-productSummary__title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.sr-productSummary__description",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.sr-detailedPriceInfo__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.offerList",
+        productCntSel: ["ol.MuiBreadcrumbs-ol li:last-child"],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
             },
             {
               content: "name",
-              sel: "h2 span",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
               type: "text",
             },
             {
               content: "price",
-              sel: "div[data-cy=secondary-offer-recipe] span.a-color-base",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "span.a-price span.a-offscreen",
+              sel: "div.offerList-item-priceMin",
               type: "text",
             },
           ],
         },
       },
     ],
-  },
-  "ebay.de": {
-    waitUntil: { product: "load", entryPoint: "load" },
     proxyType: "mix",
-    active: true,
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
     resourceTypes: {
-      query: [
+      crawl: [
         "media",
         "font",
         "stylesheet",
         "ping",
         "image",
-        "other",
         "xhr",
         "fetch",
         "imageset",
         "sub_frame",
         "script",
+        "other",
       ],
     },
-    d: "ebay.de",
-    mimic: "a[id=gh-la]",
-    queryUrlSchema: [
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "actionsports.de": {
+    action: [],
+    active: false,
+    categories: {
+      exclude: ["marken"],
+      sel: "div.navigation--list-wrapper ul.navigation--list li.navigation--entry a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "ul.is--level1 a.navigation--link",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "actionsports.de",
+    entryPoints: [
       {
-        baseUrl: `https://www.ebay.de/sch/i.html?_nkw=<query>`,
+        url: "https://www.actionsports.de",
         category: "default",
       },
     ],
-    entryPoint: [{ url: "https://www.ebay.de", category: "default" }],
-    queryActions: [],
-    paginationEl: [],
+    manualCategories: [],
+    mimic: "a.logo--link img",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div.listing--bottom-paging",
+        nav: "?p=",
+        calculation: {
+          method: "count",
+          last: "div.listing--bottom-paging span.paging--display",
+          sel: "div.listing--bottom-paging span.paging--display",
+        },
+      },
+    ],
     productList: [
       {
-        sel: "ul.srp-results",
-        type: "container",
+        sel: "div.sr-resultList",
+        productsPerPage: 60,
+        productCntSel: ["span.paging--display"],
         product: {
-          sel: "ul.srp-results li.s-item",
-          type: "container",
+          sel: "div.sr-resultList div.sr-resultItemTile",
+          type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.s-item__info a",
+              sel: "div.sr-resultItemLink a",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.s-item__image-wrapper img",
+              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.s-item__title span[role=heading]",
+              sel: "div.sr-productSummary__title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.sr-productSummary__description",
               type: "text",
             },
             {
               content: "price",
-              sel: "span.s-item__price",
+              sel: "div.sr-detailedPriceInfo__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.offerList",
+        productsPerPage: 60,
+        productCntSel: ["span.paging--display"],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.offerList-item-priceMin",
               type: "text",
             },
           ],
         },
       },
     ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [
+      {
+        type: "shadowroot-button",
+        sel: "aside[id=usercentrics-cmp-ui]",
+        btn_sel: "button[id=deny]",
+        action: "click",
+        wait: false,
+      },
+    ],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "mindfactory.de": {
+    action: [],
+    active: false,
+    categories: {
+      exclude: ["mindstart", "actionen"],
+      sel: "div[id=navbar-menu-topcategories] a[data-toggle=load-category]",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "mindfactory.de",
+    entryPoints: [
+      {
+        url: "https://www.mindfactory.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "#bToprow > div.row > div.col-logo > div > a > img",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "ul.pagination",
+        nav: "/page/",
+        calculation: {
+          method: "find_highest",
+          last: "ul.pagination a",
+          sel: "ul.pagination a",
+        },
+      },
+    ],
+    productList: [
+      {
+        sel: "div.sr-resultList",
+        productCntSel: [
+          "div.show-articles-per-page-top span.bold:nth-child(3)",
+        ],
+        product: {
+          sel: "div.sr-resultList div.sr-resultItemTile",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "div.sr-resultItemLink a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.sr-productSummary__title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.sr-productSummary__description",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.sr-detailedPriceInfo__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.offerList",
+        productCntSel: [
+          "div.show-articles-per-page-top span.bold:nth-child(3)",
+        ],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.offerList-item-priceMin",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
+  "fahrrad.de": {
+    action: [],
+    active: false,
+    categories: {
+      exclude: ["aktivitäten", "marken", "service & beratung"],
+      sel: "ul.menu-category li.li-level-1 a.a-level-1",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[id=newcategorychips] a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "fahrrad.de",
+    entryPoints: [
+      {
+        url: "https://www.fahrrad.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "a.logo",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "ul.pagination__list",
+        nav: "?page=",
+        calculation: {
+          method: "count",
+          last: "ul.pagination__list a",
+          sel: "ul.pagination__list a",
+        },
+      },
+    ],
+    productList: [
+      {
+        sel: "div.sr-resultList",
+        productCntSel: ["span.js-articleAmount"],
+        product: {
+          sel: "div.sr-resultList div.sr-resultItemTile",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "div.sr-resultItemLink a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.sr-productSummary__title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div.sr-productSummary__description",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.sr-detailedPriceInfo__price",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.offerList",
+        productCntSel: ["span.js-articleAmount"],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.offerList-item-priceMin",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
   },
 };
 
