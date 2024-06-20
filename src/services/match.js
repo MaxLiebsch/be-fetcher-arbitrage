@@ -9,12 +9,12 @@ import {
   safeParsePrice,
   matchTargetShopProdsWithRawProd,
 } from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
+import { shuffle } from "underscore";
 import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
-import { getShops } from "./db/util/shops.js";
+import { getShop, getShops } from "./db/util/shops.js";
 import {
   lockProducts,
   updateCrawledProduct,
@@ -37,11 +37,16 @@ export default async function match(task) {
     const collectionName = test ? `test.${shopDomain}` : shopDomain;
     await createArbispotterCollection(collectionName);
 
+    const shop = await getShop(shopDomain);
+
+    if (!shop) return reject(new MissingShopError("", task));
+
     const rawproducts = await lockProducts(
       shopDomain,
       productLimit,
       _id,
-      action
+      action,
+      shop.hasEan
     );
 
     let infos = {
@@ -69,7 +74,7 @@ export default async function match(task) {
     infos.locked = rawproducts.length;
 
     //Update task progress
-    const progress = await getMatchingProgress(shopDomain);
+    const progress = await getMatchingProgress(shopDomain, shop.hasEan);
     if (progress) await updateTaskWithQuery({ _id }, { progress });
 
     const startTime = Date.now();
@@ -107,7 +112,7 @@ export default async function match(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    const shuffled = _.shuffle(rawproducts);
+    const shuffled = shuffle(rawproducts);
 
     const sliced = shuffled;
 
@@ -153,9 +158,8 @@ export default async function match(task) {
         prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
-      
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
-      
+
       const query = {
         product: {
           key: reducedName,

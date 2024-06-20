@@ -6,7 +6,7 @@ export const updateMatchingTasks = async (infos) =>
     infos.map(async ({ shop, pending }) => {
       try {
         const shopDomain = shop.d;
-        const progress = await getMatchingProgress(shopDomain);
+        const progress = await getMatchingProgress(shopDomain, shop.hasEan);
         if (progress)
           return updateTaskWithQuery(
             {

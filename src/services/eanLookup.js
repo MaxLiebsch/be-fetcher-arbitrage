@@ -16,6 +16,7 @@ import {
 } from "./db/util/crudCrawlDataProduct.js";
 import { updateMatchingTasks } from "../util/updateMatchingTasks.js";
 import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
+import { createHash } from "../util/hash.js";
 
 export default async function eanLookup(task) {
   return new Promise(async (resolve, reject) => {
@@ -92,15 +93,18 @@ export default async function eanLookup(task) {
           const sku = productInfo.find((info) => info.key === "sku");
           const image = productInfo.find((info) => info.key === "image");
           const mku = productInfo.find((info) => info.key === "mku");
-
           const update = {
             ean_locked: false,
             matched: false,
             matchedAt: new Date(
-              Date.now() - 1000 * 60 * 60 * 24 * 7
+              Date.now() - 1000 * 60 * 60 * 24 * 10
             ).toISOString(),
             ean_taskId: "",
           };
+          if (url !== link) {
+            update["link"] = url;
+            update["s_hash"] = createHash(url);
+          }
           if (ean) {
             update["ean"] = ean.value;
           }

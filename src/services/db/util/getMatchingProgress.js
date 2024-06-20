@@ -1,12 +1,15 @@
 import { getCrawlerDataDb } from "../mongo.js";
 
 //crawler-data
-export const getProductsToMatchCount = async (shopProductCollectionName) => {
+export const getProductsToMatchCount = async (
+  shopProductCollectionName,
+  hasEan
+) => {
   const twentyFourAgo = new Date();
   twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
   const db = await getCrawlerDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
-  return shopProductCollection.count({
+  let query = {
     $and: [
       { matched: false, locked: false },
       {
@@ -16,32 +19,37 @@ export const getProductsToMatchCount = async (shopProductCollectionName) => {
         ],
       },
     ],
-  });
+  };
+
+  if (hasEan) {
+    query.$and.push({ ean: { $exists: true, $ne: "" } });
+  }
+
+  return shopProductCollection.count(query);
 };
 
-export const getProductCount = async (shopProductCollectionName) => {
+export const getProductCount = async (shopProductCollectionName, hasEan) => {
   const db = await getCrawlerDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
-  return shopProductCollection.count();
+  let query = {};
+
+  if (hasEan) {
+    query["ean"] = {
+      $exists: true,
+      $ne: "",
+    };
+  }
+
+  return shopProductCollection.count(query);
 };
 
-export const getMatchedProductCount = async (shopProductCollectionName) => {
-  const twentyFourAgo = new Date();
-  twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
-  const db = await getCrawlerDataDb();
-  const shopProductCollection = db.collection(shopProductCollectionName);
-  return shopProductCollection.count({
-    $and: [
-      { matched: true },
-      { matchedAt: { $gt: twentyFourAgo.toISOString() } },
-    ],
-  });
-};
-
-export const getMatchingProgress = async (shopDomain) => {
+export const getMatchingProgress = async (shopDomain, hasEan) => {
   const shopProductCollectionName = shopDomain + ".products";
-  const pending = await getProductsToMatchCount(shopProductCollectionName);
-  const total = await getProductCount(shopProductCollectionName);
+  const pending = await getProductsToMatchCount(
+    shopProductCollectionName,
+    hasEan
+  );
+  const total = await getProductCount(shopProductCollectionName, hasEan);
 
   return {
     percentage: `${(((total - pending) / total) * 100).toFixed(2)} %`,

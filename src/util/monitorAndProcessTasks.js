@@ -13,7 +13,7 @@ import { sendMail } from "../email.js";
 import os from "os";
 import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import { updateShopStats } from "../services/db/util/shops.js";
+import { getShop, updateShopStats } from "../services/db/util/shops.js";
 import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
 import { getAmazonLookupProgress } from "../services/db/util/getLookupProgress.js";
 import { MissingProductsError } from "../errors.js";
@@ -145,7 +145,8 @@ export async function monitorAndProcessTasks() {
 
       // Update progress for match stage
       if (isCrawl || type === "MATCH_PRODUCTS") {
-        const progress = await getMatchingProgress(shopDomain);
+        const shop = await getShop(shopDomain);
+        const progress = await getMatchingProgress(shopDomain, shop.hasEan);
         if (progress)
           await updateTaskWithQuery(
             { type: "MATCH_PRODUCTS", id: `match_products_${shopDomain}` },

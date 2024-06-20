@@ -90,7 +90,13 @@ export const unlockProduts = async (domain, products) => {
   );
 };
 
-export const lockProducts = async (domain, limit = 0, taskId, action) => {
+export const lockProducts = async (
+  domain,
+  limit = 0,
+  taskId,
+  action,
+  hasEan
+) => {
   const collectionName = domain + ".products";
   const db = await getCrawlerDataDb();
 
@@ -102,6 +108,7 @@ export const lockProducts = async (domain, limit = 0, taskId, action) => {
   } else {
     query["locked"] = { $exists: true, $eq: false };
     query["matched"] = { $exists: true, $eq: false };
+    if (hasEan) query["ean"] = { $exists: true, $ne: "" };
     if (limit) {
       options["limit"] = limit;
     }
