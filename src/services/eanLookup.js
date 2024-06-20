@@ -90,7 +90,8 @@ export default async function eanLookup(task) {
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const ean = productInfo.find((info) => info.key === "ean");
-          const isEan = ean && /\b[0-9]{12,13}\b/.test(ean.value);
+          const isEan =
+            ean && /\b[0-9]{12,13}\b/.test(ean.value) && ean.value !== "99";
           const sku = productInfo.find((info) => info.key === "sku");
           const image = productInfo.find((info) => info.key === "image");
           const mku = productInfo.find((info) => info.key === "mku");
