@@ -43,6 +43,7 @@ export default async function eanLookup(task) {
       infos.missingProperties[info.shop.d] = {
         ean: 0,
         image: 0,
+        hashes: [],
       };
     });
 
@@ -112,8 +113,21 @@ export default async function eanLookup(task) {
           if (mku) {
             update["mku"] = mku.value;
           }
+          const properties = ["ean", "image"];
+          properties.forEach((prop) => {
+            if (!product[prop]) {
+              infos.missingProperties[shopDomain][prop]++;
+            }
+          });
+          if (ean) {
+            update.ean_prop = "found";
+          } else {
+            infos.missingProperties[shopDomain].hashes.push(_id.toString());
+            update.ean_prop = "missing";
+          }
           await updateCrawledProduct(shopDomain, link, update);
         } else {
+          infos.missingProperties[shopDomain].hashes.push(_id.toString());
           const properties = ["ean", "image"];
           properties.forEach((prop) => {
             if (!product[prop]) {
@@ -122,6 +136,7 @@ export default async function eanLookup(task) {
           });
           await updateCrawledProduct(shopDomain, link, {
             ean_locked: false,
+            ean_prop: "missing",
             ean_taskId: "",
           });
         }
@@ -137,7 +152,7 @@ export default async function eanLookup(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.shops[shopDomain]++
+        infos.shops[shopDomain]++;
         infos.total++;
       };
       const handleNotFound = async () => {
@@ -156,7 +171,7 @@ export default async function eanLookup(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.shops[shopDomain]++
+        infos.shops[shopDomain]++;
         infos.total++;
       };
 
@@ -180,9 +195,9 @@ export default async function eanLookup(task) {
           },
         });
       } else {
-        await moveArbispotterProduct(shopDomain, "grave", _id)
+        await moveArbispotterProduct(shopDomain, "grave", _id);
         await moveCrawledProduct(shopDomain, "grave", _id);
-        infos.shops[shopDomain]++
+        infos.shops[shopDomain]++;
         infos.total++;
       }
     }

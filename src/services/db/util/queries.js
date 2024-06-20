@@ -6,5 +6,8 @@ export const pendingEanLookupProductsQuery = {
     {
       $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
     },
+    {
+      ean_prop: { $exists: false },
+    },
   ],
 };
