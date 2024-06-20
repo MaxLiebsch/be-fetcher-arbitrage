@@ -131,7 +131,7 @@ export default async function eanLookup(task) {
             update["ean_prop"] = "found";
           } else {
             infos.missingProperties[shopDomain].hashes.push(_id.toString());
-            update["ean_prop"] = "missing";
+            update["ean_prop"] = ean ? "invalid" : "missing";
           }
           await updateCrawledProduct(shopDomain, link, update);
         } else {
