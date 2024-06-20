@@ -120,10 +120,10 @@ export default async function eanLookup(task) {
             }
           });
           if (ean) {
-            update.ean_prop = "found";
+            update["ean_prop"] = "found";
           } else {
             infos.missingProperties[shopDomain].hashes.push(_id.toString());
-            update.ean_prop = "missing";
+            update["ean_prop"] = "missing";
           }
           await updateCrawledProduct(shopDomain, link, update);
         } else {
