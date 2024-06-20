@@ -90,6 +90,7 @@ export default async function eanLookup(task) {
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const ean = productInfo.find((info) => info.key === "ean");
+          const isEan = ean && /\b[0-9]{12,13}\b/.test(ean.value);
           const sku = productInfo.find((info) => info.key === "sku");
           const image = productInfo.find((info) => info.key === "image");
           const mku = productInfo.find((info) => info.key === "mku");
@@ -105,7 +106,7 @@ export default async function eanLookup(task) {
             update["link"] = url;
             update["s_hash"] = createHash(url);
           }
-          if (ean) {
+          if (isEan) {
             update["ean"] = ean.value;
           }
           if (sku) {
@@ -119,11 +120,11 @@ export default async function eanLookup(task) {
           }
           const properties = ["ean", "image"];
           properties.forEach((prop) => {
-            if (!product[prop]) {
+            if (!update[prop]) {
               infos.missingProperties[shopDomain][prop]++;
             }
           });
-          if (ean) {
+          if (isEan) {
             update["ean_prop"] = "found";
           } else {
             infos.missingProperties[shopDomain].hashes.push(_id.toString());
