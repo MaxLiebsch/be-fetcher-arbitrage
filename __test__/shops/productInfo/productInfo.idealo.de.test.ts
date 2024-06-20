@@ -37,8 +37,8 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
-        expect(ean.value).toBe("4150105524850");
-        expect(sku.value).toBe("4150105524850");
+        expect(ean.value).toBe("0730143312745");
+        expect(sku.value).toBe("0730143312745");
       } else {
         expect(1).toBe(2);
       } 
@@ -46,7 +46,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductInfos(addProductInfo);
   },60000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

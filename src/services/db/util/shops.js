@@ -30,6 +30,12 @@ export const updateShopWithQuery = async (query, update) => {
   );
 };
 
+export const getShop = async (shopDomain) => {
+  const collectionName = shopCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return collection.findOne({ d: shopDomain });
+};
 
 export const getShops = async (retailerList) => {
   const collectionName = shopCollectionName;
@@ -48,7 +54,7 @@ export const getShops = async (retailerList) => {
   const shops = await collection.find(query).toArray();
   if (shops.length) {
     return shops.reduce((acc, shop) => {
-      acc[shop.d] = shop
+      acc[shop.d] = shop;
       return acc;
     }, {});
   } else {
@@ -60,7 +66,7 @@ export const insertShop = async (shop) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
-  return await collection.replaceOne({ d: shop.d }, shop, { upsert: true });
+  return collection.replaceOne({ d: shop.d }, shop, { upsert: true });
 };
 
 export const updateShopStats = async (shopDomain) => {
@@ -102,7 +108,6 @@ export const getAllShopsAsArray = async () => {
     return null;
   }
 };
-
 
 export const getActiveShops = async () => {
   const collectionName = shopCollectionName;

@@ -18,7 +18,7 @@ const testParameters = {
   },
   "alternate.de": {
     productPageUrl:
-      "https://www.alternate.de/Ubiquiti/USW-16-POE-Switch/html/product/1617281",
+      "https://www.alternate.de/Hisense/AX3120G-Soundbar/html/product/100051975",
   },
   "cyberport.de": {
     productsPerPage: 15,
@@ -104,7 +104,7 @@ const testParameters = {
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
     productPageUrl:
-      "https://www.idealo.de/preisvergleich/OffersOfProduct/4563915_-bio-folgemilch-auf-ziegenmilchbasis-2-400g-holle.html#datasheet",
+      "https://www.idealo.de/preisvergleich/OffersOfProduct/200732946_-ryzen-9-5950x-amd.html",
     initialProductPageUrl:
       "https://www.idealo.de/preisvergleich/ProductCategory/10832.html",
     subCategoryUrl:

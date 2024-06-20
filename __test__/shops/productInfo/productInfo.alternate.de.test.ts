@@ -30,8 +30,8 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
-        expect(ean.value).toBe("0817882028547");
-        expect(sku.value).toBe(1617281);
+        expect(ean.value).toBe("888143015217");
+        expect(sku.value).toBe(100051975);
       } else {
         expect(1).toBe(2);
       }
