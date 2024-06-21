@@ -93,7 +93,8 @@ export default async function eanLookup(task) {
           const isEan =
             ean &&
             /\b[0-9]{12,13}\b/.test(ean.value) &&
-            !ean.value.toString().startWith("99");
+            !ean.value.toString().startsWith("99");
+
           const sku = productInfo.find((info) => info.key === "sku");
           const image = productInfo.find((info) => info.key === "image");
           const mku = productInfo.find((info) => info.key === "mku");
