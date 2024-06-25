@@ -1,12 +1,15 @@
-import { QueryQueue, lookupProductQueue } from "@dipmaxtech/clr-pkg";
+import {
+  QueryQueue,
+  calculateAznArbitrage,
+  calculateOnlyArbitrage,
+  lookupProductQueue,
+  safeParsePrice,
+} from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import {
-  lockArbispotterProducts,
-  updateProduct,
-} from "./db/util/crudArbispotterProduct.js";
+import { updateProduct } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -14,10 +17,10 @@ import {
 } from "../constants.js";
 import { getShops } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateTaskWithQuery } from "./db/util/tasks.js";
-import { getAmazonLookupProgress } from "./db/util/getLookupProgress.js";
+import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
+import { lockProductsForCrawlAznListings } from "./db/util/lockProductsForCrawlAznListings.js";
 
-export default async function lookup(task) {
+export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
     const { shopDomain, productLimit, _id, action } = task;
 
@@ -36,7 +39,7 @@ export default async function lookup(task) {
       },
     };
 
-    const products = await lockArbispotterProducts(
+    const products = await lockProductsForCrawlAznListings(
       shopDomain,
       productLimit,
       _id,
@@ -52,12 +55,9 @@ export default async function lookup(task) {
       products.length < productLimit ? products.length : productLimit;
 
     infos.locked = products.length;
-    
-     //Update task progress 
-    const progress = await getAmazonLookupProgress(shopDomain);
-    if (progress) {
-      await updateTaskWithQuery({ _id }, { progress });
-    }
+
+    //Update task progress
+    await updateCrawlAznListingsProgress(shopDomain);
 
     const startTime = Date.now();
 
@@ -84,6 +84,7 @@ export default async function lookup(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
+          await updateCrawlAznListingsProgress(shopDomain);
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -95,31 +96,47 @@ export default async function lookup(task) {
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
-          const bsr = productInfo.find((info) => info.key === "bsr");
-          const asin = productInfo.find((info) => info.key === "asin");
-          const price = productInfo.find((info) => info.key === "a_prc");
-          const img = productInfo.find((info) => info.key === "a_img");
-
+          const infoMap = new Map();
+          productInfo.forEach((info) => infoMap.set(info.key, info.value));
+          const price = infoMap.get("a_prc");
+          const bsr = infoMap.get("bsr");
           const update = {
-            bsr: bsr?.value ?? [],
-            asin: asin?.value ?? "",
-            a_props: "complete",
+            aznUpdatedAt: new Date().toISOString(),
             lckd: false,
             taskId: "",
             a_lnk: url,
           };
-          if (price && price > 0) {
-            update["a_prc"] = price.value;
+          if (price) {
+            const parsedPrice = safeParsePrice(price);
+            if (rawProd?.costs) {
+              const arbitrage = calculateAznArbitrage(
+                rawProd.prc,
+                parsedPrice,
+                rawProd.costs
+              );
+              Object.entries(arbitrage).forEach(([key, val]) => {
+                update[key] = val;
+              });
+            } else {
+              const arbitrage = calculateOnlyArbitrage(
+                rawProd.prc,
+                parsedPrice
+              );
+              Object.entries(arbitrage).forEach(([key, val]) => {
+                update[`a_${key}`] = val;
+              });
+            }
+            update["a_prc"] = parsedPrice;
           }
-          if (img) {
-            update["a_img"] = img.value;
+          if(bsr){
+            update["bsr"] = bsr;
           }
+
           await updateProduct(shopDomain, rawProd.lnk, update);
         } else {
           infos.missingProperties.bsr++;
           await updateProduct(shopDomain, rawProd.lnk, {
             lckd: false,
-            a_props: "missing",
             a_lnk: url,
             taskId: "",
           });
@@ -132,6 +149,7 @@ export default async function lookup(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
+            await updateCrawlAznListingsProgress(shopDomain);
             handleResult(r, resolve, reject);
           });
         }
@@ -147,7 +165,6 @@ export default async function lookup(task) {
           a_img: "",
           a_mrgn: 0,
           a_mrgn_pct: 0,
-          a_fat: false,
           a_nm: "",
         });
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
@@ -158,6 +175,7 @@ export default async function lookup(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
+            await updateCrawlAznListingsProgress(shopDomain);
             handleResult(r, resolve, reject);
           });
         }
@@ -201,7 +219,6 @@ export default async function lookup(task) {
           a_img: "",
           a_mrgn: 0,
           a_mrgn_pct: 0,
-          a_fat: false,
           a_nm: "",
         });
         infos.total++;

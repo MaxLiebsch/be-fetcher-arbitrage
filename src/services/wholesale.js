@@ -20,8 +20,7 @@ import {
 } from "./db/util/crudWholeSaleSearch.js";
 import { getRedirectUrl } from "./head.js";
 import { AxiosError } from "axios";
-import { getWholesaleProgress } from "./db/util/getWholesaleProgress.js";
-import { updateTaskWithQuery } from "./db/util/tasks.js";
+import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
 
 export default async function wholesale(task) {
   return new Promise(async (resolve, reject) => {
@@ -56,10 +55,7 @@ export default async function wholesale(task) {
     infos.locked = rawproducts.length;
 
     //Update task progress
-    const progress = await getWholesaleProgress(_id, task.progress.total);
-    if (progress) {
-      await updateTaskWithQuery({ _id }, { progress });
-    }
+    await updateWholesaleProgress(_id, task.progress.total)
 
     const startTime = Date.now();
 
@@ -84,6 +80,7 @@ export default async function wholesale(task) {
         await checkProgress({ queue, infos, startTime, productLimit }).catch(
           async (r) => {
             clearInterval(interval);
+            await updateWholesaleProgress(_id, task.progress.total)
             handleResult(r, resolve, reject);
           }
         ),
@@ -165,7 +162,6 @@ export default async function wholesale(task) {
               }
               prodInfo["a_mrgn"] = intermProcProd.a_mrgn;
               prodInfo["a_mrgn_pct"] = intermProcProd.a_mrgn_pct;
-              prodInfo["a_fat"] = intermProcProd.a_fat;
               prodInfo["a_nm"] = intermProcProd.a_nm;
               prodInfo["a_lnk"] = intermProcProd.a_lnk;
             } else {
@@ -249,6 +245,7 @@ export default async function wholesale(task) {
             productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
+            await updateWholesaleProgress(_id, task.progress.total)
             handleResult(r, resolve, reject);
           });
         }

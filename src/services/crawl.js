@@ -10,12 +10,16 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
+import { updateMatchProgress, updateProgressInCrawlEanTask } from "../util/updateProgressInTasks.js";
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
     const { shopDomain, productLimit, limit, recurrent, categories } = task;
 
     const shops = await getShops([{ d: shopDomain }]);
+
+    const shop = shops[shopDomain];
+    const { entryPoints } = shop;
 
     let infos = {
       new: 0,
@@ -69,6 +73,8 @@ export default async function crawl(task) {
           productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
+          await updateProgressInCrawlEanTask(shop.proxyType);
+          await updateMatchProgress(shopDomain, shop.hasEan);
           handleResult(r, res, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -89,6 +95,8 @@ export default async function crawl(task) {
           productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
+          await updateProgressInCrawlEanTask(shop.proxyType);
+          await updateMatchProgress(shopDomain, shop.hasEan);
           handleResult(r, res, reject);
         });
       } else {
@@ -104,7 +112,7 @@ export default async function crawl(task) {
             infoCb
           );
         } else {
-          const properties = ["name", "price", "link", 'image'];
+          const properties = ["name", "price", "link", "image"];
           properties.forEach((prop) => {
             if (!product[prop]) {
               infos.missingProperties[prop]++;
@@ -113,14 +121,14 @@ export default async function crawl(task) {
         }
       }
     };
-    const link = shops[shopDomain].entryPoints.length
-      ? shops[shopDomain].entryPoints[0].url
+    const link = entryPoints.length
+      ? entryPoints[0].url
       : "https://www." + shopDomain;
 
     if (recurrent) {
       categories.map((category) => {
         queue.pushTask(crawlSubpage, {
-          shop: shops[shopDomain],
+          shop,
           addProduct,
           categoriesHeuristic: infos.categoriesHeuristic,
           productPageCountHeuristic: infos.productPageCountHeuristic,
@@ -136,8 +144,8 @@ export default async function crawl(task) {
         });
       });
     } else {
-      queue.pushTask(crawlShop, { 
-        shop: shops[shopDomain],
+      queue.pushTask(crawlShop, {
+        shop,
         addProduct,
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,

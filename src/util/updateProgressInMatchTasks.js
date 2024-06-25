@@ -1,12 +1,12 @@
-import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
+import { getMatchProgress } from "../services/db/util/getMatchProgress.js";
 import { updateTaskWithQuery } from "../services/db/util/tasks.js";
 
-export const updateMatchingTasks = async (infos) =>
+export const updateProgressInMatchTasks = async (infos) =>
   Promise.all(
     infos.map(async ({ shop, pending }) => {
       try {
         const shopDomain = shop.d;
-        const progress = await getMatchingProgress(shopDomain, shop.hasEan);
+        const progress = await getMatchProgress(shopDomain, shop.hasEan);
         if (progress)
           return updateTaskWithQuery(
             {
@@ -20,3 +20,4 @@ export const updateMatchingTasks = async (infos) =>
       }
     })
   );
+

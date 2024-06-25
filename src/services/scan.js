@@ -68,6 +68,7 @@ export default async function scan(task) {
           async (r) => {
             await upsertSiteMap(shopDomain, statService.getStatsFile());
             clearInterval(interval);
+          
             handleResult(r, res, reject);
           }
         ),

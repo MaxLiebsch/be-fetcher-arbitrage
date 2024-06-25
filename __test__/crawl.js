@@ -1,10 +1,10 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
 
-const shopDomain = "saturn.de";
+const shopDomain = "cyberport.de";
 
 const today = new Date();
-const productLimit = 500;
+const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -19,12 +19,12 @@ const task = {
   },
   categories: [
     {
-      "name": "Fitness + Gesundheit",
-      "link": "https://www.saturn.de/de/category/fitness-gesundheit-700.html"
+      "name": "Notebook",
+      "link": "https://www.cyberport.de/notebook-und-tablet.html"
     },
     {
-      "name": "Beauty + Wellness",
-      "link": "https://www.saturn.de/de/category/beauty-wellness-706.html"
+      "name": "PC&Zubehör",
+      "link": "https://www.cyberport.de/pc-und-zubehoer.html"
     }
   ],
   recurrent: true,

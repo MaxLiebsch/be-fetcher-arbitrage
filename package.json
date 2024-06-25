@@ -1,13 +1,14 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.83",
+  "version": "0.0.84",
   "description": "",
   "type": "module",
   "scripts": {
     "match": "node ./src/services/match.js",
     "dev:match:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/match.js\"",
-    "dev:lookup:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/lookup.js\"",
-    "dev:eanlookup:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/eanLookup.js\"",
+    "dev:aznListings:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawlAznListings.js\"",
+    "dev:lookupInfo:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/lookupInfo.js\"",
+    "dev:crawlEan:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawlEan.js\"",
     "dev:crawl:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawl.js\"",
     "dev:wholesale:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"yarn start:test:wholesale\"",
     "dev:singlematch:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematch.js\"",

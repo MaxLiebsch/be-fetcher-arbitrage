@@ -15,10 +15,7 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { getShop, getShops } from "./db/util/shops.js";
-import {
-  lockProducts,
-  updateCrawledProduct,
-} from "./db/util/crudCrawlDataProduct.js";
+import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -27,9 +24,12 @@ import {
 import { checkProgress } from "../util/checkProgress.js";
 import { getRedirectUrl } from "./head.js";
 import { AxiosError } from "axios";
-import { getMatchingProgress } from "./db/util/getMatchingProgress.js";
-import { updateTaskWithQuery } from "./db/util/tasks.js";
 import { parseAsinFromUrl } from "../util/parseAsin.js";
+import {
+  updateCrawlAznListingsProgress,
+  updateMatchProgress,
+} from "../util/updateProgressInTasks.js";
+import { lockProductsForMatch } from "./db/util/lockProductsForMatch.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -37,16 +37,16 @@ export default async function match(task) {
     const collectionName = test ? `test.${shopDomain}` : shopDomain;
     await createArbispotterCollection(collectionName);
 
-    const shop = await getShop(shopDomain);
+    const srcShop = await getShop(shopDomain);
 
-    if (!shop) return reject(new MissingShopError("", task));
+    if (!srcShop) return reject(new MissingShopError("", task));
 
-    const rawproducts = await lockProducts(
+    const rawproducts = await lockProductsForMatch(
       shopDomain,
       productLimit,
       _id,
       action,
-      shop.hasEan
+      srcShop.hasEan || srcShop?.ean
     );
 
     let infos = {
@@ -74,8 +74,7 @@ export default async function match(task) {
     infos.locked = rawproducts.length;
 
     //Update task progress
-    const progress = await getMatchingProgress(shopDomain, shop.hasEan);
-    if (progress) await updateTaskWithQuery({ _id }, { progress });
+    await updateMatchProgress(shopDomain, srcShop.hasEan);
 
     const startTime = Date.now();
 
@@ -107,6 +106,8 @@ export default async function match(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
+          await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
+          await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -185,7 +186,8 @@ export default async function match(task) {
         shops,
         query,
         task,
-        prodInfo
+        prodInfo,
+        srcShop
       );
 
       procProductsPromiseArr.push(
@@ -197,7 +199,7 @@ export default async function match(task) {
               infos.old++;
             }
           };
-
+          infos.total++;
           if (infos.total >= _productLimit - 1 && !queue.idle()) {
             await checkProgress({
               queue,
@@ -206,10 +208,11 @@ export default async function match(task) {
               productLimit: _productLimit,
             }).catch(async (r) => {
               clearInterval(interval);
+              await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
+              await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
               handleResult(r, resolve, reject);
             });
           }
-          infos.total++;
           if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
             const path = targetShopProducts[0].path;
             const procProd = targetShopProducts[0]?.procProd;
@@ -239,8 +242,11 @@ export default async function match(task) {
             if (asin) {
               procProd.asin = asin;
             }
+            if (procProd.a_prc) {
+              procProd["aznUpdatedAt"] = new Date().toISOString();
+            }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
-            const update = {
+            const crawlDataProductUpdate = {
               dscrptnSegments,
               nmSubSegments,
               asin: procProd.asin,
@@ -249,13 +255,18 @@ export default async function match(task) {
               mnfctr,
               matched: true,
               locked: false,
-              taskId: "",
               matchedAt: new Date().toISOString(),
+              taskId: "",
             };
             if (targetShopProducts[0]?.candidates) {
-              update.candidates = targetShopProducts[0]?.candidates;
+              crawlDataProductUpdate.candidates =
+                targetShopProducts[0]?.candidates;
             }
-            await updateCrawledProduct(shopDomain, rawProd.link, update);
+            await updateCrawledProduct(
+              shopDomain,
+              rawProd.link,
+              crawlDataProductUpdate
+            );
             return procProd;
           } else {
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
@@ -287,6 +298,9 @@ export default async function match(task) {
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
               procProd.asin = asin;
+            }
+            if (procProd.a_prc) {
+              procProd["aznUpdatedAt"] = new Date().toISOString();
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
             await updateCrawledProduct(shopDomain, rawProd.link, {

@@ -1,9 +1,11 @@
+import match from "../src/services/match.js";
+const domain = 'cyberport.de'
 const task = {
   _id: "661a78dbc9c982a8567efac1",
   type: "MATCH_PRODUCTS",
-  id: "lookup_shop_voelkner.de",
-  shopDomain: "voelkner.de",
-  productLimit: 1,
+  id: `"match_products_${domain}`,
+  shopDomain: domain,
+  productLimit: 20,
   executing: true,
   recurrent: true,
   completed: false,
@@ -19,14 +21,7 @@ const task = {
   maintenance: false,
   lastCrawler: "love",
   reason: "COMPLETED",
-  result: {
-    products_cnt: 1000,
-    endTime: "2024-04-14T14:12:22.735Z",
-    elapsedTime: "1.11 h",
-    crawledPages: 1992,
-  },
   retry: 0,
-  test: true,
   extendedLookUp: true,
   startShops: [
     {
@@ -37,4 +32,6 @@ const task = {
   ],
 };
 
-match(task).then();
+match(task).then((r) => {
+  console.log(r);
+});

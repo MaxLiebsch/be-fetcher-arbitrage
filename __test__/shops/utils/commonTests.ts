@@ -9,9 +9,11 @@ import {
   getCategories,
   getPage,
   getProductCount,
+  lookupProductQueue,
   mainBrowser,
   paginationUrlBuilder,
   queryProductPageQueue,
+  querySellerInfosQueue,
 } from "@dipmaxtech/clr-pkg";
 import { Page } from "puppeteer";
 import { MockQueue } from "./MockQueue.js";
@@ -24,6 +26,7 @@ import { getShops } from "../../../src/services/db/util/shops.js";
 //@ts-ignore
 import { proxyAuth } from "../../../src/constants.js";
 import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
+import { Query } from "@dipmaxtech/clr-pkg/lib/types/query.js";
 
 let browser: Browser | null = null;
 let shops: { [key: string]: ShopObject } | null = null;
@@ -31,7 +34,11 @@ let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
 
-export const myBeforeAll = async (_shopDomain: string, gb: boolean = false, version?: Versions) => {
+export const myBeforeAll = async (
+  _shopDomain: string,
+  gb: boolean = false,
+  version?: Versions
+) => {
   shopDomain = _shopDomain;
   const task: { [key: string]: any } = {
     productLimit: 500,
@@ -65,7 +72,7 @@ export const myBeforeAll = async (_shopDomain: string, gb: boolean = false, vers
     //@ts-ignore
     task,
     proxyAuth,
-    version || process.env.BROWSER_VERSION as Versions
+    version || (process.env.BROWSER_VERSION as Versions)
   );
 
   shops = await getShops([{ d: shopDomain }]);
@@ -79,7 +86,9 @@ export const myBeforeAll = async (_shopDomain: string, gb: boolean = false, vers
       shops[shopDomain].rules,
       task.timezones
     );
-    await page.goto(shops[shopDomain].entryPoints[0].url);
+    await page.goto(shops[shopDomain].entryPoints[0].url, {
+      timeout: 120000,
+    });
   }
 };
 
@@ -322,7 +331,6 @@ export const extractProductsFromSecondPageQueueless = async () => {
 };
 
 export const extractProductInfos = async (addProductInfo: any) => {
-  
   if (page && shops && shops[shopDomain]) {
     const productPageUrl = testParameters[shopDomain].productPageUrl;
     await page.goto(productPageUrl);
@@ -352,6 +360,106 @@ export const extractProductInfos = async (addProductInfo: any) => {
       pageInfo: {
         name: "",
         link: productPageUrl,
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+    });
+  }
+};
+
+export const querySellerInfos = async (addProductInfo: any, ean: string) => {
+  if (page && shops && shops[shopDomain]) {
+    return await querySellerInfosQueue(page, {
+      shop: shops[shopDomain],
+      addProductInfo,
+      query: {
+        brand: { key: "", value: "" },
+        year: { min: 0, max: 0 },
+        model: { key: "", value: "" },
+        category: "",
+        product: {
+          value: ean,
+          key: ean,
+        },
+      },
+      // @ts-ignore
+      queue: new MockQueue(),
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      pageInfo: {
+        name: "",
+        link: shops[shopDomain].entryPoints[0].url,
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+    });
+  }
+};
+
+export const queryAznListing = async (
+  addProductInfo: any,
+  offer: string
+) => {
+  if (page && shops && shops[shopDomain]) {
+    await page.goto(offer);
+    return await lookupProductQueue(page, {
+      shop: shops[shopDomain],
+      addProductInfo,
+      query: {
+        brand: { key: "", value: "" },
+        year: { min: 0, max: 0 },
+        model: { key: "", value: "" },
+        category: "",
+        product: {
+          value: "",
+          key: "",
+        },
+      },
+      // @ts-ignore
+      queue: new MockQueue(),
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      pageInfo: {
+        name: "",
+        link: offer,
       },
       limit: {
         pages: 5,

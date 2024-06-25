@@ -6,14 +6,6 @@ import {
 } from "../src/services/db/util/tasks.js";
 import { all } from "axios";
 
-/*
-
-    TODO:
-    - lookup tasks can be done by multiple servers
-
-    crawler: ['clr1', 'clr2', 'clr3']
-
-*/
 
 export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
   const limitPerDay = 26000;

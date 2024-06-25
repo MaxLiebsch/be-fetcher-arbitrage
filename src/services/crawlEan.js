@@ -9,16 +9,18 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { lookForPendingEanLookups } from "./db/util/lookForPendingEanLookups.js";
+import { lookForMissingEans } from "./db/util/lookForMissingEans.js";
 import {
   moveCrawledProduct,
   updateCrawledProduct,
 } from "./db/util/crudCrawlDataProduct.js";
-import { updateMatchingTasks } from "../util/updateMatchingTasks.js";
+import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import { createHash } from "../util/hash.js";
+import { subDateDaysISO } from "../util/dates.js";
+import { updateProgressInCrawlEanTask, updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 
-export default async function eanLookup(task) {
+export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, proxyType, type } = task;
 
@@ -31,8 +33,8 @@ export default async function eanLookup(task) {
       shops: {},
       missingProperties: {},
     };
-
-    const { products, shops } = await lookForPendingEanLookups(
+    
+    const { products, shops } = await lookForMissingEans(
       _id,
       proxyType,
       action,
@@ -74,7 +76,9 @@ export default async function eanLookup(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateMatchingTasks(shops); // update matching tasks
+          await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
+          await updateProgressInMatchTasks(shops); // update matching tasks
+          await updateProgressInLookupInfoTask() // update lookup info task
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -89,38 +93,38 @@ export default async function eanLookup(task) {
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
-          const ean = productInfo.find((info) => info.key === "ean");
-          const isEan =
-            ean &&
-            /\b[0-9]{12,13}\b/.test(ean.value) &&
-            !ean.value.toString().startsWith("99");
-
-          const sku = productInfo.find((info) => info.key === "sku");
-          const image = productInfo.find((info) => info.key === "image");
-          const mku = productInfo.find((info) => info.key === "mku");
+          const infoMap = new Map();
+          productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const update = {
             ean_locked: false,
             matched: false,
-            matchedAt: new Date(
-              Date.now() - 1000 * 60 * 60 * 24 * 10
-            ).toISOString(),
+            matchedAt: subDateDaysISO(10),
             ean_taskId: "",
           };
+          const ean = infoMap.get("ean");
+          const isEan =
+            ean &&
+            /\b[0-9]{12,13}\b/.test(ean) &&
+            !ean.toString().startsWith("99");
+            
+          const sku = infoMap.get("sku");
+          const image = infoMap.get("image");
+          const mku = infoMap.get("mku");
           if (url !== link) {
             update["link"] = url;
             update["s_hash"] = createHash(url);
           }
           if (isEan) {
-            update["ean"] = ean.value;
+            update["ean"] = ean;
           }
           if (sku) {
-            update["sku"] = sku.value;
+            update["sku"] = sku;
           }
           if (image) {
-            update["image"] = image.value;
+            update["image"] = image;
           }
           if (mku) {
-            update["mku"] = mku.value;
+            update["mku"] = mku;
           }
           const properties = ["ean", "image"];
           properties.forEach((prop) => {
@@ -157,7 +161,9 @@ export default async function eanLookup(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateMatchingTasks(shops); // update matching tasks
+            await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
+            await updateProgressInMatchTasks(shops); // update matching tasks
+            await updateProgressInLookupInfoTask() // update lookup info task
             handleResult(r, resolve, reject);
           });
         }
@@ -176,7 +182,9 @@ export default async function eanLookup(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateMatchingTasks(shops); // update matching tasks
+            
+            await updateProgressInMatchTasks(shops); // update matching tasks
+            await updateProgressInLookupInfoTask() // update lookup info task
             handleResult(r, resolve, reject);
           });
         }

@@ -14,6 +14,7 @@ describe("Price Picker", () => {
     { str: "EUR1.136,2", expect: 1136.2 },
     { str: "EUR1.136,22", expect: 1136.22 },
     { str: "3,99..", expect: 3.99 },
+    { str: "€1.019", expect : 1029.0 },
     { str: "€1.029,00", expect: 1029.0 },
     { str: "€ 1.029,00", expect: 1029.0 },
     { str: "389,99€", expect: 389.99 },

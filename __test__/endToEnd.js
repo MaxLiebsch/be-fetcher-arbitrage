@@ -1,11 +1,21 @@
 import { sub } from "date-fns";
-import { addTask, deleteTask } from "../src/services/db/util/tasks.js";
+import {
+  addTask,
+  deleteTask,
+  deleteTasks,
+  findTask,
+  findTasks,
+  updateTask,
+} from "../src/services/db/util/tasks.js";
 import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
 import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import os from "os";
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
 import { deleteLogs } from "../src/services/db/util/logs.js";
+import { ObjectId } from "mongodb";
+import { getAllShops } from "../src/services/db/util/shops.js";
+import { shuffle } from "underscore";
 
 const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
@@ -13,84 +23,77 @@ const logger = LoggerService.getSingleton().logger;
 const today = new Date();
 const productLimit = 20;
 const yesterday = sub(today, { days: 1 });
-const shopDomain = "gamestop.de";
-const proxyType = "request";
+const proxyType = "mix";
 const timezones = ["Europe/Berlin"];
-const crawlTask = {
-  _id: "661a785dc801f69f2beb16d6",
-  type: "CRAWL_SHOP",
-  id: `crawl_shop_${shopDomain}_1_of_5`,
-  shopDomain,
-  limit: {
-    mainCategory: 2,
-    subCategory: 100,
-    pages: 2,
-  },
-  categories: [
-    {
-      name: "PS5",
-      link: "https://www.gamestop.de#",
+const shopDomain = "gamestop.de";
+
+const createCrawlTask = (shopDomain, categories, proxyType) => {
+  const task = {
+    type: "CRAWL_SHOP",
+    id: `crawl_shop_${shopDomain}_1_of_5`,
+    shopDomain,
+    limit: {
+      mainCategory: 2,
+      subCategory: 100,
+      pages: 2,
     },
-    {
-      name: "Xbox Series",
-      link: "https://www.gamestop.de/XboxSeries/Index",
-    },
-  ],
-  recurrent: true,
-  executing: false,
-  completed: false,
-  errored: false,
-  startedAt: yesterday.toISOString(),
-  completedAt: yesterday.toISOString(),
-  productLimit,
-  retry: 0,
-  maintenance: false,
-  lastCrawler: [],
-  weekday: today.getDay(),
+    categories,
+    recurrent: true,
+    executing: false,
+    completed: false,
+    errored: false,
+    startedAt: yesterday.toISOString(),
+    completedAt: yesterday.toISOString(),
+    productLimit,
+    retry: 0,
+    maintenance: false,
+    lastCrawler: [],
+    weekday: today.getDay(),
+  };
+  if (proxyType === "de") {
+    task["proxyType"] = proxyType;
+    task["timezones"] = timezones;
+  }
+  return task;
 };
 
-if (proxyType === "gb") {
-  crawlTask["proxyType"] = proxyType;
-  crawlTask["timezones"] = timezones;
-}
-
-const matchTask = {
-  _id: "66262c7ea4877eab871802b6",
-  type: "MATCH_PRODUCTS",
-  id: `match_products_${shopDomain}`,
-  shopDomain,
-  productLimit,
-  executing: true,
-  maintenance: false,
-  recurrent: true,
-  completed: false,
-  errored: false,
-  startedAt: yesterday.toISOString(),
-  completedAt: yesterday.toISOString(),
-  limit: {
-    mainCategory: 0,
-    subCategory: 0,
-    pages: 0,
-  },
-  test: false,
-  extendedLookUp: true,
-  startShops: [
-    {
-      d: "idealo.de",
-      prefix: "i_",
-      name: "Idealo",
+const createMatchTask = (shopDomain) => {
+  return {
+    type: "MATCH_PRODUCTS",
+    id: `match_products_${shopDomain}`,
+    shopDomain,
+    productLimit,
+    executing: true,
+    maintenance: false,
+    recurrent: true,
+    completed: false,
+    errored: false,
+    startedAt: yesterday.toISOString(),
+    completedAt: yesterday.toISOString(),
+    limit: {
+      mainCategory: 0,
+      subCategory: 0,
+      pages: 0,
     },
-  ],
-  lastCrawler: [],
-  concurrency: 4,
-  retry: 0,
+    test: false,
+    extendedLookUp: true,
+    startShops: [
+      {
+        d: "idealo.de",
+        prefix: "i_",
+        name: "Idealo",
+      },
+    ],
+    lastCrawler: [],
+    concurrency: 4,
+    retry: 0,
+  };
 };
 
-const lookupTask = {
-  _id: "6638a7ec547aabce6f1708cc",
-  type: "LOOKUP_PRODUCTS",
-  id: `lookup_products_${shopDomain}`,
-  shopDomain,
+const lookupInfoTask = {
+  type: "LOOKUP_INFO",
+  id: `lookup_info`,
+  proxyType: "mix",
   productLimit,
   executing: false,
   lastCrawler: [],
@@ -101,26 +104,111 @@ const lookupTask = {
   errored: false,
   startedAt: yesterday.toISOString(),
   completedAt: yesterday.toISOString(),
+  createdAt: "2024-05-06T07:10:51.942Z",
   limit: {
     mainCategory: 0,
     subCategory: 0,
     pages: 0,
   },
-  retry: 0,
-  concurrency: 4,
 };
 
-const tasks = [crawlTask, matchTask, lookupTask];
+const crawlEanTask = {
+  type: "CRAWL_EAN",
+  id: `crawl_ean`,
+  proxyType: "mix",
+  productLimit: 20,
+  executing: false,
+  lastCrawler: [],
+  test: false,
+  maintenance: false,
+  concurreny: 4,
+  recurrent: true,
+  completed: false,
+  errored: false,
+  completedAt: "",
+  startedAt: "",
+  createdAt: "2024-06-18T07:10:51.942Z",
+  limit: {
+    mainCategory: 0,
+    subCategory: 0,
+    pages: 0,
+  },
+};
+
+const createCrawlAznListingsTask = (shopDomain) => {
+  return {
+    type: "CRAWL_AZN_LISTINGS",
+    id: `crawl_azn_listings_${shopDomain}`,
+    shopDomain,
+    productLimit,
+    executing: false,
+    lastCrawler: [],
+    test: false,
+    maintenance: false,
+    recurrent: true,
+    completed: false,
+    errored: false,
+    startedAt: yesterday.toISOString(),
+    completedAt: yesterday.toISOString(),
+    limit: {
+      mainCategory: 0,
+      subCategory: 0,
+      pages: 0,
+    },
+    retry: 0,
+    concurrency: 4,
+  };
+};
+
+const tasks = [lookupInfoTask, crawlEanTask];
+
+const shopsToTest = ["alternate.de", "dm.de", "cyberport.de"];
 
 const main = async () => {
+  const allTasks = await findTasks({}, true);
+  const shops = await getAllShops();
+  await Promise.all(
+    shops.map(async ({ d }) => {
+      //empty DBs
+      await deleteAllProducts(d);
+      await deleteAllArbispotterProducts(d);
+    })
+  );
+  const selectedShops = shops.filter((shop) => shopsToTest.includes(shop.d));
+
   //empty tasks
-  await Promise.all(tasks.map(async (task) => await deleteTask(task._id)));
+  await deleteTasks();
+
+  selectedShops.forEach((shop) => {
+    const crawlTask = shuffle(allTasks).find(
+      (task) => task.type === "CRAWL_SHOP" && task.shopDomain === shop.d
+    );
+    const matchTask = allTasks.find(
+      (task) => task.type === "MATCH_PRODUCTS" && task.shopDomain === shop.d
+    );
+    const crawlAznListingsTask = createCrawlAznListingsTask(shop.d);
+    tasks.push(
+      {
+        ...crawlTask,
+        productLimit,
+        weekday: today.getDay(),
+        maintenance: false,
+        startedAt: yesterday.toISOString(),
+        completedAt: yesterday.toISOString(),
+      },
+      {
+        ...matchTask,
+        productLimit,
+        startedAt: yesterday.toISOString(),
+        completedAt: yesterday.toISOString(),
+        maintenance: false,
+      },
+      crawlAznListingsTask
+    );
+  });
+
   //empty tasks
   await deleteLogs();
-
-  //empty DBs
-  await deleteAllProducts(shopDomain);
-  await deleteAllArbispotterProducts(shopDomain);
 
   // create Tasks
   const tasksCreated = await Promise.all(

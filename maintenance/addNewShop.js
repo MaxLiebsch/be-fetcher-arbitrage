@@ -1,8 +1,9 @@
 import { updateShopWithQuery } from "../src/services/db/util/shops.js";
 import { findTasks } from "../src/services/db/util/tasks.js";
 import {
+  createCrawlAznListingsTask,
   createCrawlTasks,
-  createSingleLookupTask,
+  createSingleCrawlAznListingsTask,
   createSingleMatchTask,
 } from "../src/task.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
@@ -89,8 +90,9 @@ const main = async () => {
     newShops.map(async (shop) => {
       const task = tasks.find((task) => task.shopDomain === shop.d);
       if (!task) {
-        await createSingleLookupTask(shop.d);
+        await createSingleCrawlAznListingsTask(shop.d);
         await createSingleMatchTask(shop.d);
+        await createCrawlAznListingsTask(shop.d);
         return createCrawlTasks(shop.d, shop.gb, shop.maxProducts);
       } else {
         console.log(`Tasks for ${shop.d} already exists!`);

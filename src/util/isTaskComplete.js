@@ -16,9 +16,10 @@ const isTaskComplete = (type, infos, productLimit) => {
   const { total, locked } = infos;
   if (
     type === "MATCH_PRODUCTS" ||
-    type === "LOOKUP_PRODUCTS" ||
+    type === "CRAWL_AZN_LISTINGS" ||
     type === "WHOLESALE_SEARCH" ||
-    type === "LOOKUP_EAN"
+    type === "CRAWL_EAN" ||
+    type === "LOOKUP_INFO"
   ) {
     completionPercentage = total / locked;
     taskCompleted =

@@ -1,14 +1,12 @@
 import { shuffle } from "underscore";
-import {
-  findCrawlDataProducts,
-  lockProductsForEanLookup,
-} from "./crudCrawlDataProduct.js";
-import { getEanLookupProgress } from "./getEanLookupProgress.js";
+import { findCrawlDataProducts } from "./crudCrawlDataProduct.js";
 import { getAllShopsAsArray } from "./shops.js";
 import { updateTaskWithQuery } from "./tasks.js";
 import { hostname } from "../mongo.js";
+import { getLookupInfoProgress } from "./getLookupInfoProgress.js";
+import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
 
-export async function lookForPendingEanLookups(
+export async function lookForUnmatchedEans(
   taskId,
   proxyType,
   action,
@@ -21,14 +19,14 @@ export async function lookForPendingEanLookups(
       productLimit
     );
     console.log(
-      "Ean lookup:\n",
+      "Lookup Info:\n",
       recoveryProducts.shops
         .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
         .join("")
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getPendingShops(proxyType);
+    const pendingShops = await getUnmatchecEanShops();
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -40,7 +38,7 @@ export async function lookForPendingEanLookups(
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const limit = Math.min(pending, productsPerShop);
-        const products = await lockProductsForEanLookup(
+        const products = await lockProductsForLookupInfo(
           shop.d,
           limit,
           action,
@@ -64,7 +62,7 @@ export async function lookForPendingEanLookups(
     }, []);
 
     console.log(
-      "Ean lookup:\n",
+      "Lookup Info:\n",
       Object.values(stats)
         .map(
           (info) => `${info.shopDomain}: p: ${info.pending} b: ${info?.batch}\n`
@@ -84,7 +82,7 @@ export async function lookForPendingEanLookups(
 export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
+    (shop) => (shop.hasEan || shop?.ean) && shop.active && shop.proxyType === proxyType
   );
   let pendingShops = [];
   const products = await Promise.all(
@@ -92,7 +90,7 @@ export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
       const products = await findCrawlDataProducts(
         shop.d,
         {
-          ean_taskId: `${hostname}:${taskId.toString()}`,
+          info_taskId: `${hostname}:${taskId.toString()}`,
         },
         productLimit
       );
@@ -111,20 +109,17 @@ export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
   };
 }
 
-export async function getPendingShops(proxyType) {
+export async function getUnmatchecEanShops() {
   const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
-  );
-
-  const eanLookupProgressPerShop = await Promise.all(
+  const filteredShops = shops.filter((shop) => (shop.hasEan || shop?.ean) && shop.active);
+  const lookupInfoProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getEanLookupProgress(shop.d);
+      const progress = await getLookupInfoProgress(shop.d);
       return { pending: progress.pending, shop: shop };
     })
   );
 
-  const pendingShops = eanLookupProgressPerShop.filter(
+  const pendingShops = lookupInfoProgressPerShop.filter(
     (shop) => shop.pending > 0
   );
   return pendingShops;

@@ -12,7 +12,7 @@ const main = async () => {
       const lookupProgress = await getAmazonLookupProgress(shop.d);
       return Promise.all([
         updateTaskWithQuery(
-          { type: "LOOKUP_PRODUCTS", id: `lookup_products_${shop.d}` },
+          { type: "CRAWL_AZN_LISTINGS", id: `crawl_azn_listings_${shop.d}` },
           { progress: lookupProgress }
         ),
         updateTaskWithQuery(

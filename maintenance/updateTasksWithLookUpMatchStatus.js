@@ -16,7 +16,7 @@ const updateTasksWithLookUpMatchStatus = async () => {
       const progress = await getMatchingProgress(shopDomain);
       const lookupProgress = await getAmazonLookupProgress(shopDomain);
       await updateTaskWithQuery(
-        { type: "LOOKUP_PRODUCTS", id: `lookup_products_${shopDomain}` },
+        { type: "CRAWL_AZN_LISTINGS", id: `crawl_azn_listings_${shopDomain}` },
         { progress: lookupProgress}
       );
       await updateTaskWithQuery(

@@ -1,21 +1,8 @@
-import match from "../services/match.js";
-import lookup from "../services/lookup.js";
-import crawl from "../services/crawl.js";
-import scan from "../services/scan.js";
-import wholesale from "../services/wholesale.js";
-import {
-  findTasks,
-  getNewTask,
-  updateTask,
-  updateTaskWithQuery,
-} from "../services/db/util/tasks.js";
+import { updateTask } from "../services/db/util/tasks.js";
 import { sendMail } from "../email.js";
-import os from "os";
 import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import { getShop, updateShopStats } from "../services/db/util/shops.js";
-import { getMatchingProgress } from "../services/db/util/getMatchingProgress.js";
-import { getAmazonLookupProgress } from "../services/db/util/getLookupProgress.js";
+import { updateShopStats } from "../services/db/util/shops.js";
 import { MissingProductsError } from "../errors.js";
 import {
   COOLDOWN,
@@ -26,69 +13,16 @@ import {
   COMPLETE_FAILURE_THRESHOLD,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
-import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
 import isTaskComplete from "../util/isTaskComplete.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
-import eanLookup from "../services/eanLookup.js";
+import { executeTask } from "./executeTask.js";
+import { getTaskSymbol } from "./getTaskSymbol.js";
+import { checkForNewTask } from "./checkForNewTask.js";
+import { hostname } from "../services/db/mongo.js";
 
-const hostname = os.hostname();
 const { errorLogger } = LoggerService.getSingleton();
 
 let taskId = "";
-
-async function executeTask(task) {
-  const { type } = task;
-  if (type === "CRAWL_SHOP") {
-    return await crawl(task);
-  }
-  if (type === "WHOLESALE_SEARCH") {
-    return await wholesale(task);
-  }
-  if (type === "SCAN_SHOP") {
-    return await scan(task);
-  }
-  if (type === "MATCH_PRODUCTS") {
-    return await match(task);
-  }
-  if (type === "LOOKUP_PRODUCTS") {
-    return await lookup(task);
-  }
-  if (type === "LOOKUP_EAN") {
-    return await eanLookup(task);
-  }
-}
-
-async function checkForNewTask() {
-  const remainingTask = await findTasks({
-    lastCrawler: hostname,
-    maintenance: false,
-  });
-  if (remainingTask.length) {
-    return { ...remainingTask[0], action: "recover" };
-  }
-  const task = await getNewTask();
-  if (task) return task;
-  return null;
-}
-
-const getTaskSymbol = (type) => {
-  switch (type) {
-    case "CRAWL_SHOP":
-      return "🕷️";
-    case "WHOLESALE_SEARCH":
-      return "🔍";
-    case "SCAN_SHOP":
-      return "🔎";
-    case "MATCH_PRODUCTS":
-      return "🧩";
-    case "LOOKUP_PRODUCTS":
-      return "🔍";
-    case "LOOKUP_EAN":
-      return "🆕";
-    default:
-      return "🤷‍♂️";
-  }
-};
 
 export async function monitorAndProcessTasks() {
   const intervalId = setInterval(async () => {
@@ -106,16 +40,22 @@ export async function monitorAndProcessTasks() {
       _id,
     } = task;
 
-    const isMatchLookup =
-      type === "MATCH_PRODUCTS" || type === "LOOKUP_PRODUCTS";
-    const isWholeSale = type === "WHOLESALE_SEARCH";
     const isCrawl = type === "CRAWL_SHOP";
-    const isEanLookup = type === "LOOKUP_EAN";
+    const isCrawlEan = type === "CRAWL_EAN";
+    const isMatch = type === "MATCH_PRODUCTS";
+    const isLookupInfo = type === "LOOKUP_INFO";
+    const isCrawlAznListings = type === "CRAWL_AZN_LISTINGS";
+    const isMatchLookup =
+      type === "MATCH_PRODUCTS" || type === "CRAWL_AZN_LISTINGS";
+    const isWholeSale = type === "WHOLESALE_SEARCH";
+    const isScan = type === "SCAN_SHOP";
     const maxRetries =
       isMatchLookup || isWholeSale
         ? DEFAULT_MAX_TASK_RETRIES
         : MAX_TASK_RETRIES;
-    const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+    const cooldown = new Date(
+      Date.now() + process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN
+    ).toISOString(); // 30 min from now
     clearInterval(intervalId); // Stop checking while executing the task
     taskId = id;
 
@@ -129,36 +69,6 @@ export async function monitorAndProcessTasks() {
       let priority = "normal";
 
       let subject = `${getTaskSymbol(type)} ${hostname}: ${id}`;
-
-      // Update progress for lookup stage
-      if (isMatchLookup) {
-        const lookupProgress = await getAmazonLookupProgress(shopDomain);
-        if (lookupProgress)
-          await updateTaskWithQuery(
-            {
-              type: "LOOKUP_PRODUCTS",
-              id: `lookup_products_${shopDomain}`,
-            },
-            { progress: lookupProgress }
-          );
-      }
-
-      // Update progress for match stage
-      if (isCrawl || type === "MATCH_PRODUCTS") {
-        const shop = await getShop(shopDomain);
-        const progress = await getMatchingProgress(shopDomain, shop.hasEan);
-        if (progress)
-          await updateTaskWithQuery(
-            { type: "MATCH_PRODUCTS", id: `match_products_${shopDomain}` },
-            { progress }
-          );
-      }
-      if (isWholeSale) {
-        const progress = await getWholesaleProgress(_id, task.progress.total);
-        if (progress) {
-          await updateTaskWithQuery({ _id }, { progress });
-        }
-      }
 
       if (taskResult instanceof TimeLimitReachedStatus) {
         const update = {
@@ -206,6 +116,7 @@ export async function monitorAndProcessTasks() {
             retry: newRetry,
             errored,
           };
+
           if (
             isCrawl &&
             result.infos.total > COMPLETE_FAILURE_THRESHOLD &&
@@ -234,7 +145,7 @@ export async function monitorAndProcessTasks() {
           });
         } else {
           //states are only relevant for match, lookup and crawl
-          if (!isWholeSale && !isEanLookup) {
+          if (!isWholeSale && !isCrawlEan) {
             await updateShopStats(shopDomain);
           }
           subject = "🆗 " + subject + " " + completionPercentage;

@@ -1,192 +1,75 @@
-import { startOfDay } from "date-fns";
 import { getCrawlerDataDb, hostname, tasksCollectionName } from "../mongo.js";
-import { getAmazonProductsToLookupCount } from "./getLookupProgress.js";
-import { getProductsToMatchCount } from "./getMatchingProgress.js";
-import {
-  COOLDOWN_LONG,
-  DANGLING_LOOKUP_THRESHOLD,
-  DANGLING_MATCH_THRESHOLD,
-} from "../../../constants.js";
+import { countPendingProductsForCrawlAznListings } from "./getCrawlAznListingsProgress.js";
+import { countPendingProductsForMatch } from "./getMatchProgress.js";
+import { COOLDOWN_LONG } from "../../../constants.js";
+import { findTasksQuery } from "./queries.js";
+import { findMissingEanShops } from "./lookForMissingEans.js";
+import { getUnmatchecEanShops } from "./lookForUnmatchedEans.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlerDataDb();
   const taskCollection = db.collection(collectionName);
-  const today = new Date();
-
-  const fiveMinutesAgo = new Date();
-  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-
-  const oneMinuteAgo = new Date();
-  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
-
-  const danglingLookupThreshold =
-    process.env.TEST === "endtoend" ? 2 : DANGLING_LOOKUP_THRESHOLD;
-
-  const danglingMatchThreshold =
-    process.env.TEST === "endtoend" ? 2 : DANGLING_MATCH_THRESHOLD;
-
-  const lowerThenStartedAt =
-    process.env.TEST === "endtoend"
-      ? oneMinuteAgo.toISOString()
-      : fiveMinutesAgo.toISOString();
-
-  const weekday = today.getDay();
-
-  const start = startOfDay(today);
-
-  let update = {};
-
-  if (false) {
-    update = {
-      $set: {},
-    };
-  } else {
-    update = {
-      $push: {
-        lastCrawler: hostname,
-      },
-      $set: {
-        executing: true,
-        startedAt: new Date().toISOString(),
-      },
-    };
-  }
-
-  const eanLookupTaskQuery = [
-    { type: "LOOKUP_EAN" },
-    {
-      $or: [
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
-    { recurrent: { $eq: true } },
-    {
-      $or: [
-        { progress: { $size: 0 } },
-        { progress: { $exists: false } },
-        { progress: { $elemMatch: { pending: { $gt: 0 } } } },
-      ],
-    },
-  ];
-
-  const scanTaskQuery = [
-    { type: "SCAN_SHOP" },
-    { recurrent: { $eq: false } },
-    { completed: { $eq: false } },
-    { executing: { $eq: false } },
-  ];
-
-  const crawlTaskQuery = [
-    { type: "CRAWL_SHOP" },
-    { recurrent: { $eq: true } },
-    { executing: { $eq: false } },
-    { weekday: { $eq: weekday } },
-    {
-      $or: [{ completedAt: "" }, { completedAt: { $lt: start.toISOString() } }],
-    },
-  ];
-  const wholesaleTaskQuery = [
-    { type: "WHOLESALE_SEARCH" },
-    { "progress.pending": { $gt: 0 } },
-  ];
-
-  const matchTaskQuery = [
-    { type: "MATCH_PRODUCTS" },
-    {
-      $or: [
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
-    { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        { "progress.pending": { $gt: danglingMatchThreshold } },
-      ],
-    },
-  ];
-  const lookupTaskQuery = [
-    { type: "LOOKUP_PRODUCTS" },
-    {
-      $or: [
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
-    { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        { "progress.pending": { $gt: danglingLookupThreshold } },
-      ],
-    },
-  ];
-
-  const query = {
-    $and: [
-      {
-        maintenance: false,
-      },
-      {
-        $or: [
-          {
-            $and: eanLookupTaskQuery,
-          },
-          {
-            $and: crawlTaskQuery,
-          },
-          {
-            $and: scanTaskQuery,
-          },
-          {
-            $and: wholesaleTaskQuery,
-          },
-          {
-            $and: [
-              ...matchTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
-            ],
-          },
-          {
-            $and: [
-              ...lookupTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
-            ],
-          },
-        ],
-      },
-    ],
-  };
+  const {
+    query,
+    update,
+    lookupInfoTaskQuery,
+    matchTaskQuery,
+    danglingLookupThreshold,
+    danglingMatchThreshold,
+    crawlAznListingsTaskQuery,
+    crawlEanTaskQuery,
+  } = findTasksQuery();
   const task = await taskCollection.findOneAndUpdate(query, update, {
     returnNewDocument: true,
   });
-  console.log("Primary:task:", task?.type, " ", task?.id);
+  task?.type && console.log("Primary:task:", task?.type, " ", task?.id);
 
   if (task) {
     if (
       task.type === "CRAWL_SHOP" ||
       task.type === "WHOLESALE_SEARCH" ||
-      task.type === "SCAN_SHOP" ||
-      task.type === "LOOKUP_EAN"
+      task.type === "SCAN_SHOP"
     ) {
       return task;
     }
+    if (task.type === "CRAWL_EAN") {
+      const pendingShops = await findMissingEanShops(task.proxyType);
+      console.log('pendingShops:', pendingShops)
+      if (pendingShops.length === 0) {
+        await updateTask(task._id, {
+          $set: {
+            executing: false,
+            cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+          },
+          $pull: { lastCrawler: hostname },
+        });
+        return null;
+      } else {
+        return task;
+      }
+    }
+    if (task.type === "LOOKUP_INFO") {
+      const pendingShops = await getUnmatchecEanShops();
+      console.log('pendingShops:', pendingShops)
+      if (pendingShops.length === 0) {
+        await updateTask(task._id, {
+          $set: {
+            executing: false,
+            cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+          },
+          $pull: { lastCrawler: hostname },
+        });
+        return null;
+      } else {
+        return task;
+      }
+    }
     if (task.type === "MATCH_PRODUCTS") {
       const shopProductCollectionName = task.shopDomain + ".products";
-      const pending = await getProductsToMatchCount(shopProductCollectionName);
+      const pending = await countPendingProductsForMatch(
+        shopProductCollectionName
+      );
       if (pending === 0) {
         await updateTask(task._id, {
           $set: {
@@ -200,9 +83,9 @@ export const getNewTask = async () => {
         return task;
       }
     }
-    if (task.type === "LOOKUP_PRODUCTS") {
+    if (task.type === "CRAWL_AZN_LISTINGS") {
       const shopProductCollectionName = task.shopDomain;
-      const pending = await getAmazonProductsToLookupCount(
+      const pending = await countPendingProductsForCrawlAznListings(
         shopProductCollectionName
       );
       if (pending < danglingLookupThreshold) {
@@ -231,8 +114,10 @@ export const getNewTask = async () => {
               $and: matchTaskQuery,
             },
             {
-              $and: lookupTaskQuery,
+              $and: crawlAznListingsTaskQuery,
             },
+            { $and: crawlEanTaskQuery },
+            { $and: lookupInfoTaskQuery },
           ],
         },
       ],
@@ -241,11 +126,11 @@ export const getNewTask = async () => {
     const task = await taskCollection.findOneAndUpdate(query, update, {
       returnNewDocument: true,
     });
-    console.log("Fallback:task:", task?.type, " ", task?.id);
+    task?.type && console.log("Fallback:task:", task?.type, " ", task?.id);
     if (task) {
       if (task.type === "MATCH_PRODUCTS") {
         const shopProductCollectionName = task.shopDomain + ".products";
-        const pending = await getProductsToMatchCount(
+        const pending = await countPendingProductsForMatch(
           shopProductCollectionName
         );
         if (pending === 0) {
@@ -261,12 +146,43 @@ export const getNewTask = async () => {
           return task;
         }
       }
-      if (task.type === "LOOKUP_PRODUCTS") {
+      if (task.type === "CRAWL_AZN_LISTINGS") {
         const shopProductCollectionName = task.shopDomain;
-        const pending = await getAmazonProductsToLookupCount(
+        const pending = await countPendingProductsForCrawlAznListings(
           shopProductCollectionName
         );
-        if (pending < danglingLookupThreshold) {
+        if (pending < danglingLookupThreshold
+        ) {
+          await updateTask(task._id, {
+            $set: {
+              executing: false,
+              cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+            },
+            $pull: { lastCrawler: hostname },
+          });
+          return null;
+        } else {
+          return task;
+        }
+      }
+      if (task.type === "CRAWL_EAN") {
+        const pendingShops = await findMissingEanShops(task.proxyType);
+        if (pendingShops.length === 0) {
+          await updateTask(task._id, {
+            $set: {
+              executing: false,
+              cooldown: new Date(Date.now() + COOLDOWN_LONG).toISOString(),
+            },
+            $pull: { lastCrawler: hostname },
+          });
+          return null;
+        } else {
+          return task;
+        }
+      }
+      if (task.type === "LOOKUP_INFO") {
+        const pendingShops = await getUnmatchecEanShops();
+        if (pendingShops.length === 0) {
           await updateTask(task._id, {
             $set: {
               executing: false,
@@ -284,8 +200,10 @@ export const getNewTask = async () => {
   }
 };
 
-export const findTasks = async (query) => {
-  const collectionName = tasksCollectionName;
+export const findTasks = async (query, test = false) => {
+  const collectionName = test
+    ? `test_${tasksCollectionName}`
+    : tasksCollectionName;
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
 
@@ -351,4 +269,18 @@ export const deleteTask = async (id) => {
   const db = await getCrawlerDataDb();
   const collection = db.collection(collectionName);
   return collection.findOneAndDelete({ _id: id });
+};
+
+export const deleteTasks = async () => {
+  const collectionName = tasksCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return collection.deleteMany({});
+};
+
+export const deleteTaskwithQuery = async (query) => {
+  const collectionName = tasksCollectionName;
+  const db = await getCrawlerDataDb();
+  const collection = db.collection(collectionName);
+  return collection.findOneAndDelete(query);
 };

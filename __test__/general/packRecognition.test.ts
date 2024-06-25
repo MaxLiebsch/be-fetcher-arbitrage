@@ -4,6 +4,8 @@ import { parseAsinFromUrl } from "../../src/util/parseAsin.js";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 
 describe("Parse Packete", () => {
+  // Packung mit 2
+  // 3 Stück
   const examples = [
      {
        nm: "HOLLE Bio-Folgemilch auf Ziegenmilchbasis 2 (400g)",

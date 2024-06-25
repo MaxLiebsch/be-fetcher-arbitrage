@@ -1,4 +1,4 @@
-import { proxies } from "@dipmaxtech/clr-pkg";
+import { subDateDaysISO } from "../../../util/dates.js";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
   findProductByLink,
@@ -12,10 +12,11 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
 
   if (product) {
     isNewProduct = false;
-    if (procProd.a_lnk) {
+    if (procProd.a_lnk && product.a_hash) {
       if (!verifyHash(procProd.a_lnk, product.a_hash)) {
-        procProd.a_props = "incomplete";
-        procProd.bsr = [];
+        if (!procProd.bsr || !procProd.bsr.length) {
+          procProd["bsr"] = [];
+        }
         // Remove keepa properties
         const keepaProperties = [
           { name: "categories" },
@@ -45,9 +46,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         keepaProperties.forEach((prop) => {
           procProd[prop.name] = null;
         });
-        procProd["keepaUpdatedAt"] = new Date(
-          Date.now() - 1000 * 60 * 60 * 24 * 14
-        ).toISOString()
+        procProd["keepaUpdatedAt"] = subDateDaysISO(14);
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
           vrfd: false,
@@ -57,7 +56,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         };
       }
     }
-    if (procProd.e_lnk) {
+    if (procProd.e_lnk && product.a_hash) {
       if (!verifyHash(procProd.e_lnk, product.e_hash)) {
         procProd.e_hash = createHash(procProd.e_lnk);
         procProd.e_vrfd = {
@@ -67,7 +66,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
           flag_cnt: 0,
         };
       }
-    } 
+    }
     await updateProduct(domain, procProd.lnk, procProd);
   } else {
     const newProduct = {
@@ -86,10 +85,6 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
       },
       lckd: false,
       taskId: "",
-      a_props: "incomplete",
-      ean: "",
-      asin: "",
-      bsr: [],
       ...procProd,
     };
 
