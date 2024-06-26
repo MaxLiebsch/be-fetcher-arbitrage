@@ -26,7 +26,6 @@ import { getShops } from "../../../src/services/db/util/shops.js";
 //@ts-ignore
 import { proxyAuth } from "../../../src/constants.js";
 import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
-import { Query } from "@dipmaxtech/clr-pkg/lib/types/query.js";
 
 let browser: Browser | null = null;
 let shops: { [key: string]: ShopObject } | null = null;
