@@ -2501,7 +2501,7 @@ export const shops = {
       {
         type: "button",
         sel: "kat-option[value='DE']",
-        action: "click",
+        action: "waitBefore",
         step: 1,
         wait: false,
       },
@@ -2562,8 +2562,8 @@ export const shops = {
       ],
     },
     waitUntil: {
-      product: "load",
-      entryPoint: "load",
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
     },
   },
   "ebay.de": {

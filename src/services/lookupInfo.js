@@ -57,6 +57,7 @@ export default async function lookupInfo(task) {
 
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
+    console.log("products.lengt:", products.length);
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;
@@ -152,13 +153,11 @@ export default async function lookupInfo(task) {
           const crawlDataProductUpdate = {
             info_looked: false,
             info_taskId: "",
+            info_prop: "complete",
             asin: processedProductUpdate.asin,
           };
-          await createOrUpdateProduct(
-            shopDomain,
-            { ...procProd, ...processedProductUpdate },
-            infoCb
-          );
+          const updatedProduct = { ...procProd, ...processedProductUpdate };
+          await createOrUpdateProduct(shopDomain, updatedProduct, infoCb);
           await updateCrawledProduct(shopDomain, lnk, crawlDataProductUpdate);
         } else {
           infos.missingProperties[shopDomain].hashes.push(_id.toString());
@@ -167,6 +166,22 @@ export default async function lookupInfo(task) {
             if (!product[prop]) {
               infos.missingProperties[shopDomain][prop]++;
             }
+          });
+          await updateProduct(shopDomain, lnk, {
+            asin: "",
+            info_prop: "missing",
+            a_prc: 0,
+            a_lnk: "",
+            a_img: "",
+            a_mrgn: 0,
+            a_mrgn_pct: 0,
+            a_w_mrgn: 0,
+            a_w_mrgn_pct: 0,
+            a_w_p_mrgn: 0,
+            a_w_p_mrgn_pct: 0,
+            a_p_mrgn: 0,
+            a_p_mrgn_pct: 0,
+            a_nm: "",
           });
           const update = {
             info_locked: false,
@@ -193,8 +208,9 @@ export default async function lookupInfo(task) {
       const handleNotFound = async () => {
         infos.notFound++;
         console.log("not found: about to update crawled product");
-        await updateProduct(shopDomain, rawProd.lnk, {
+        await updateProduct(shopDomain, lnk, {
           asin: "",
+          info_prop: "missing",
           a_prc: 0,
           a_lnk: "",
           a_img: "",
