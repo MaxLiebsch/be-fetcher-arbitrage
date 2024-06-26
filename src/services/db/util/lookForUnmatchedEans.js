@@ -34,10 +34,9 @@ export async function lookForUnmatchedEans(
 
     const numberOfShops = pendingShops.length;
     const productsPerShop = Math.round(productLimit / numberOfShops);
-
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
-        const limit = Math.min(pending, productsPerShop);
+        const limit = productsPerShop < pending ? productsPerShop : pending;
         const products = await lockProductsForLookupInfo(
           shop.d,
           limit,
@@ -118,7 +117,7 @@ export async function getUnmatchecEanShops() {
   const lookupInfoProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
       const progress = await getLookupInfoProgress(shop.d);
-      return { pending: progress.pending, shop: shop };
+      return { pending: progress.pending, shop };
     })
   );
 
