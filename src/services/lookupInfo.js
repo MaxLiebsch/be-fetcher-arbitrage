@@ -17,15 +17,12 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
-import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
 import { lookForUnmatchedEans } from "./db/util/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
-import {
-  updateLookupInfoProgress,
-  updateProgressInLookupInfoTask,
-} from "../util/updateProgressInTasks.js";
+import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
+import { updateProduct } from "./db/util/crudArbispotterProduct.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -150,6 +147,7 @@ export default async function lookupInfo(task) {
           processedProductUpdate["aznUpdatedAt"] = new Date().toISOString();
 
           processedProductUpdate["eanList"] = [ean];
+          processedProductUpdate["a_orgn"] = "a";
 
           const crawlDataProductUpdate = {
             info_looked: false,
@@ -194,7 +192,22 @@ export default async function lookupInfo(task) {
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        console.log('not found: about to update crawled product')
+        console.log("not found: about to update crawled product");
+        await updateProduct(shopDomain, rawProd.lnk, {
+          asin: "",
+          a_prc: 0,
+          a_lnk: "",
+          a_img: "",
+          a_mrgn: 0,
+          a_mrgn_pct: 0,
+          a_w_mrgn: 0,
+          a_w_mrgn_pct: 0,
+          a_w_p_mrgn: 0,
+          a_w_p_mrgn_pct: 0,
+          a_p_mrgn: 0,
+          a_p_mrgn_pct: 0,
+          a_nm: "",
+        });
         const update = {
           info_locked: false,
           info_prop: "missing",

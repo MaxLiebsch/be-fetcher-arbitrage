@@ -128,7 +128,7 @@ export default async function crawlAznListings(task) {
             }
             update["a_prc"] = parsedPrice;
           }
-          if(bsr){
+          if (bsr) {
             update["bsr"] = bsr;
           }
 
@@ -214,11 +214,18 @@ export default async function crawlAznListings(task) {
         await updateProduct(shopDomain, rawProd.lnk, {
           lckd: false,
           taskId: "",
+          asin: "",
           a_prc: 0,
           a_lnk: "",
           a_img: "",
           a_mrgn: 0,
           a_mrgn_pct: 0,
+          a_w_mrgn: 0,
+          a_w_mrgn_pct: 0,
+          a_w_p_mrgn: 0,
+          a_w_p_mrgn_pct: 0,
+          a_p_mrgn: 0,
+          a_p_mrgn_pct: 0,
           a_nm: "",
         });
         infos.total++;
