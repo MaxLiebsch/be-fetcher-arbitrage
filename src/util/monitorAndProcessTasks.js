@@ -145,7 +145,7 @@ export async function monitorAndProcessTasks() {
           });
         } else {
           //states are only relevant for match, lookup and crawl
-          if (!isWholeSale && !isCrawlEan) {
+          if (!isWholeSale && !isCrawlEan && !isLookupInfo) {
             await updateShopStats(shopDomain);
           }
           subject = "🆗 " + subject + " " + completionPercentage;
