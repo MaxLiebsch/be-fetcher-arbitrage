@@ -56,8 +56,7 @@ export default async function lookupInfo(task) {
     });
 
     if (!products.length)
-      return reject(new MissingProductsError(`No products ${type}`, task));
-    console.log("products.lengt:", products.length);
+      return reject(new MissingProductsError(`No products ${type}`, task)); 
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;

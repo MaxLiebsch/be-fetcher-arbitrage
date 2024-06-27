@@ -4,17 +4,6 @@ import {
   setProductsLockedForCrawlAznListingsQuery,
 } from "./queries.js";
 
-/*
-  conditons:
-  default:
-   - lckd: false, undefined
-   - taskId: ""
-   - a_prc: 0
-   - a_mrgn_pct: 0, <= MAX_EARNING_MARGIN
-   - a_props: undefined, incomplete
-  recover:
-    - taskId: <hostname>:<taskId>
-*/
 
 export const lockProductsForCrawlAznListings = async (
   domain,

@@ -2526,7 +2526,7 @@ export const shops = {
         type: "shadowroot-button-test",
         sel: "kat-box[id=product-item] kat-button",
         btn_sel: "button",
-        action: "click",
+        action: "waitBefore",
         step: 1,
         wait: true,
       },
