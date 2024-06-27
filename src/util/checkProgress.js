@@ -23,8 +23,23 @@ export const checkProgress = async (args) => {
       statistics: task.statistics,
     });
   }
-  if (queue.workload() === 0) {
+  if (queue instanceof Array) {
     await sleep(15000);
+    const tasks = await Promise.all(
+      queue.map((q) => q.clearQueue("TASK_COMPLETED", infos))
+    );
+    const task = {
+      ...tasks[0],
+      others: tasks.slice(1).reduce((acc, task, i) => {
+        acc[`task${i + 1}`] = task;
+        return acc;
+      }, {}),
+    };
+    throw new TaskCompletedStatus("", task, {
+      infos,
+      statistics: task.statistics,
+    });
+  } else if (queue.workload() === 0) {
     const task = await queue.clearQueue("TASK_COMPLETED", infos);
     throw new TaskCompletedStatus("", task, {
       infos,

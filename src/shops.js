@@ -2376,11 +2376,11 @@ export const shops = {
     actions: [],
     paginationEl: [],
     productList: [],
-    pauseOnProductPage: {
-      pause: true,
-      min: 500,
-      max: 800,
-    },
+    // pauseOnProductPage: {
+    //   pause: true,
+    //   min: 500,
+    //   max: 800,
+    // },
     product: [
       {
         sel: "img",
@@ -2501,7 +2501,7 @@ export const shops = {
       {
         type: "button",
         sel: "kat-option[value='DE']",
-        action: "waitBefore",
+        action: "click",
         step: 1,
         wait: false,
       },
@@ -2526,7 +2526,7 @@ export const shops = {
         type: "shadowroot-button-test",
         sel: "kat-box[id=product-item] kat-button",
         btn_sel: "button",
-        action: "waitBefore",
+        action: "click",
         step: 1,
         wait: true,
       },

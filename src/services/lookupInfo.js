@@ -5,6 +5,7 @@ import {
   prefixLink,
   querySellerInfosQueue,
   safeParsePrice,
+  yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -26,7 +27,8 @@ import { updateProduct } from "./db/util/crudArbispotterProduct.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, proxyType, type } = task;
+    const { productLimit, _id, action, proxyType, type, browserConcurrency } =
+      task;
 
     let infos = {
       new: 0,
@@ -56,7 +58,7 @@ export default async function lookupInfo(task) {
     });
 
     if (!products.length)
-      return reject(new MissingProductsError(`No products ${type}`, task)); 
+      return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;
@@ -67,17 +69,29 @@ export default async function lookupInfo(task) {
 
     const startTime = Date.now();
 
-    const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
-      proxyAuth,
-      task
-    );
-    await queue.connect();
+    const queues = [];
 
-    const interval = setInterval(
-      async () =>
+    await Promise.all(
+      Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
+        async () => {
+          const queue = new QueryQueue(
+            task?.concurrency ? task.concurrency : CONCURRENCY,
+            proxyAuth,
+            task
+          );
+          queues.push(queue);
+          return queue.connect();
+        }
+      )
+    );
+
+    const queueIterator = yieldQueues(queues);
+
+    const interval = setInterval(async () => {
+      const isDone = queues.every((q) => q.workload() === 0);
+      if (isDone) {
         await checkProgress({
-          queue,
+          queues,
           infos,
           startTime,
           productLimit: _productLimit,
@@ -85,11 +99,12 @@ export default async function lookupInfo(task) {
           clearInterval(interval);
           await updateProgressInLookupInfoTask();
           handleResult(r, resolve, reject);
-        }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
+        });
+      }
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     for (let index = 0; index < products.length; index++) {
+      const queue = queueIterator.next().value;
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const {
@@ -191,7 +206,7 @@ export default async function lookupInfo(task) {
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
-            queue,
+            queue: queues,
             infos,
             startTime,
             productLimit: _productLimit,
@@ -206,7 +221,6 @@ export default async function lookupInfo(task) {
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        console.log("not found: about to update crawled product");
         await updateProduct(shopDomain, lnk, {
           asin: "",
           info_prop: "missing",
@@ -231,7 +245,7 @@ export default async function lookupInfo(task) {
         await updateCrawledProduct(shopDomain, lnk, update);
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
-            queue,
+            queue: queues,
             infos,
             startTime,
             productLimit: _productLimit,
