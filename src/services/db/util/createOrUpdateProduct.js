@@ -6,6 +6,7 @@ import {
   upsertProduct,
 } from "./crudArbispotterProduct.js";
 
+//ARBISPOTTER DB UTILS
 export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
   let isNewProduct = true;
   const product = await findProductByLink(domain, procProd.lnk);
@@ -46,6 +47,7 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
         keepaProperties.forEach((prop) => {
           procProd[prop.name] = null;
         });
+        procProd["a_pblsh"] = false;
         procProd["keepaUpdatedAt"] = subDateDaysISO(14);
         procProd.a_hash = createHash(procProd.a_lnk);
         procProd.a_vrfd = {
@@ -58,8 +60,9 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
     }
     if (procProd.e_lnk && product.a_hash) {
       if (!verifyHash(procProd.e_lnk, product.e_hash)) {
-        procProd.e_hash = createHash(procProd.e_lnk);
-        procProd.e_vrfd = {
+        procProd["e_hash"] = createHash(procProd.e_lnk);
+        procProd["e_pblsh"] = false;
+        procProd["e_vrfd"] = {
           vrfd: false,
           vrfn_pending: true,
           flags: [],
@@ -70,13 +73,14 @@ export const createOrUpdateProduct = async (domain, procProd, infoCb) => {
     await updateProduct(domain, procProd.lnk, procProd);
   } else {
     const newProduct = {
-      pblsh: false,
+      a_pblsh: false,
       a_vrfd: {
         vrfd: false,
         vrfn_pending: true,
         flags: [],
         flag_cnt: 0,
       },
+      e_pblsh: false,
       e_vrfd: {
         vrfd: false,
         vrfn_pending: true,
