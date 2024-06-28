@@ -245,6 +245,13 @@ export default async function match(task) {
             if (procProd.a_prc) {
               procProd["aznUpdatedAt"] = new Date().toISOString();
             }
+            //Publish the product if it has a price && margin
+            if (procProd.e_prc && procProd.e_mrgn) {
+              procProd["e_pblsh"] = true;
+            }
+            if (procProd.a_prc && procProd.a_mrgn) {
+              procProd["a_pblsh"] = true;
+            }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
             const crawlDataProductUpdate = {
               dscrptnSegments,
@@ -301,6 +308,13 @@ export default async function match(task) {
             }
             if (procProd.a_prc) {
               procProd["aznUpdatedAt"] = new Date().toISOString();
+            }
+            //Publish the product if it has a price
+            if (procProd.e_prc && procProd.e_mrgn) {
+              procProd["e_pblsh"] = true;
+            }
+            if (procProd.a_prc && procProd.a_mrgn) {
+              procProd["a_pblsh"] = true;
             }
             await createOrUpdateProduct(collectionName, procProd, infoCb);
             await updateCrawledProduct(shopDomain, rawProd.link, {

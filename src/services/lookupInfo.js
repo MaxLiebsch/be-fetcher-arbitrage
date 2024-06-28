@@ -158,14 +158,14 @@ export default async function lookupInfo(task) {
           const processedProductUpdate = generateUpdate(productInfo, prc);
           await upsertAsin(processedProductUpdate.asin, [ean]);
 
-          processedProductUpdate["info_prop"] = "complete";
           processedProductUpdate["aznUpdatedAt"] = new Date().toISOString();
 
           processedProductUpdate["eanList"] = [ean];
           processedProductUpdate["a_orgn"] = "a";
+          processedProductUpdate["a_pblsh"] = true;
 
           const crawlDataProductUpdate = {
-            info_looked: false,
+            info_locked: false,
             info_taskId: "",
             info_prop: "complete",
             asin: processedProductUpdate.asin,
@@ -183,7 +183,7 @@ export default async function lookupInfo(task) {
           });
           await updateProduct(shopDomain, lnk, {
             asin: "",
-            info_prop: "missing",
+            a_pblsh: false,
             a_prc: 0,
             a_lnk: "",
             a_img: "",

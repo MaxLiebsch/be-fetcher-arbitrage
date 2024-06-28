@@ -122,10 +122,13 @@ export const lockProductsForLookupInfoQuery = (taskId, limit, action) => {
     query["info_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
     query["$or"] = [
-      { info_looked: { $exists: false } },
-      { info_looked: { $exists: true, $eq: false } },
+      { info_locked: { $exists: false } },
+      { info_locked: { $exists: true, $eq: false } },
     ];
-    query["info_prop"] = { $exists: false };
+    query["$or"] = [
+      { info_prop: { $eq: "" } },
+      { info_prop: { $exists: false } },
+    ];
     query["ean"] = { $exists: true, $ne: "" };
     if (limit) {
       options["limit"] = limit;
