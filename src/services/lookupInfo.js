@@ -91,7 +91,7 @@ export default async function lookupInfo(task) {
       const isDone = queues.every((q) => q.workload() === 0);
       if (isDone) {
         await checkProgress({
-          queues,
+          queue: queues,
           infos,
           startTime,
           productLimit: _productLimit,
