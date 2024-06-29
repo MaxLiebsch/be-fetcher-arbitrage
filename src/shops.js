@@ -374,14 +374,21 @@ export const shops = {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "ean",
-        path: ["gtin8", '[0].gtin8'],
+        path: ["gtin8", "[0].gtin8"],
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "sku",
-        path: ["sku", '[0].sku'],
-      }, 
+        path: ["sku", "[0].sku"],
+      },
+      {
+        sel: "div.nav-product-details table",
+        head: "td.c1",
+        row: "td.c4",
+        type: "table",
+        content: "ean",
+      },
     ],
     productList: [
       {
@@ -612,6 +619,7 @@ export const shops = {
         },
       },
     ],
+    purlschema: "/product/\\d+",
     proxyType: "mix",
     queryActions: [],
     queryUrlSchema: [],
@@ -2280,17 +2288,17 @@ export const shops = {
     },
     product: [
       {
-        type: 'src',
-        parent: '#imgTagWrapperId',
-        sel: 'img',
-        content: 'a_img',
+        type: "src",
+        parent: "#imgTagWrapperId",
+        sel: "img",
+        content: "a_img",
       },
       {
-        type: 'value',
-        parent: 'div[id=prodDetails]',
-        sel: 'input[name=priceValue]',
-        content: 'a_prc',
-      }
+        type: "value",
+        parent: "div[id=prodDetails]",
+        sel: "input[name=priceValue]",
+        content: "a_prc",
+      },
     ],
     productList: [
       {
@@ -2388,7 +2396,7 @@ export const shops = {
         type: "src",
         content: "a_img",
         step: 1,
-      }, 
+      },
       {
         sel: "thead tr td kat-link",
         parent: "table.product-detail-table-left",
@@ -2412,7 +2420,8 @@ export const shops = {
       },
       {
         sel: "span[part=label-text]",
-        parent: "kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency",
+        parent:
+          "kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency",
         type: "text",
         shadowRoot: true,
         content: "a_prc",
