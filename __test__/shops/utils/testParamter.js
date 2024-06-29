@@ -18,7 +18,7 @@ const testParameters = {
   },
   "alternate.de": {
     productPageUrl:
-      "https://www.alternate.de/Hisense/AX3120G-Soundbar/html/product/100051975",
+      "https://www.alternate.de/Ubiquiti/UniFi-Switch-Pro-Max-48/html/product/100047357",
   },
   "cyberport.de": {
     productsPerPage: 15,

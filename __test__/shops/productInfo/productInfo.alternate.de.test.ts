@@ -12,7 +12,7 @@ const shopDomain = "alternate.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '123.0.6312.105');
+    await myBeforeAll(shopDomain, false, '124.0.6367.207');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -30,8 +30,8 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
-        expect(ean.value).toBe("888143015217");
-        expect(sku.value).toBe(100051975);
+        expect(ean.value).toBe("0810084692745");
+        expect(sku.value).toBe(100047357);
       } else {
         expect(1).toBe(2);
       }
