@@ -1,5 +1,8 @@
-import { getCrawlerDataDb } from "../mongo.js";
-import { countTotalProductsForMatchQuery, countPendingProductsForMatchQuery } from "./queries.js";
+import { getCrawlDataDb } from "../mongo.js";
+import {
+  countTotalProductsForMatchQuery,
+  countPendingProductsForMatchQuery,
+} from "./queries.js";
 
 //crawler-data
 export const countPendingProductsForMatch = async (
@@ -8,25 +11,31 @@ export const countPendingProductsForMatch = async (
 ) => {
   const twentyFourAgo = new Date();
   twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
 
   return shopProductCollection.count(countPendingProductsForMatchQuery(hasEan));
 };
 
-export const countTotalProductsForMatch = async (shopProductCollectionName, hasEan) => {
-  const db = await getCrawlerDataDb();
-  const shopProductCollection = db.collection(shopProductCollectionName); 
+export const countTotalProductsForMatch = async (
+  shopProductCollectionName,
+  hasEan
+) => {
+  const db = await getCrawlDataDb();
+  const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countTotalProductsForMatchQuery(hasEan));
 };
 
 export const getMatchProgress = async (shopDomain, hasEan) => {
-  const shopProductCollectionName = shopDomain + ".products";
+  const shopProductCollectionName = shopDomain;
   const pending = await countPendingProductsForMatch(
     shopProductCollectionName,
     hasEan
   );
-  const total = await countTotalProductsForMatch(shopProductCollectionName, hasEan);
+  const total = await countTotalProductsForMatch(
+    shopProductCollectionName,
+    hasEan
+  );
 
   return {
     percentage: `${(((total - pending) / total) * 100).toFixed(2)} %`,

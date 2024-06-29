@@ -1,4 +1,4 @@
-import { getCrawlerDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../mongo.js";
 import {
   lockProductsForLookupInfoQuery,
   setProductsLockedForLookupInfoQuery,
@@ -10,8 +10,8 @@ export const lockProductsForLookupInfo = async (
   action,
   taskId
 ) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain  ;
+  const db = await getCrawlDataDb();
 
   const { query, options } = lockProductsForLookupInfoQuery(taskId, limit, action);
 
@@ -23,6 +23,7 @@ export const lockProductsForLookupInfo = async (
   // Update documents to mark them as locked
   if (action !== "recover") {
     const query = setProductsLockedForLookupInfoQuery(taskId);
+    console.log('query:', query)
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

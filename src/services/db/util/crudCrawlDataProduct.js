@@ -1,39 +1,43 @@
 import { createHash } from "../../../util/hash.js";
-import { getCrawlerDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../mongo.js";
 
 //Add crawled product //crawler-data
 export const upsertCrawledProduct = async (domain, product) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   product["createdAt"] = new Date().toISOString();
   product["updatedAt"] = new Date().toISOString();
 
   const s_hash = createHash(product.link);
+  try {
+    return collection.updateOne(
+      { link: product.link },
+      { $set: { ...product, s_hash } },
+      {
+        upsert: true,
+      }
+    );
+  } catch (error) {
+    console.log('error:', error)
 
-  return collection.updateOne(
-    { link: product.link },
-    { $set: { ...product, s_hash } },
-    {
-      upsert: true,
-    }
-  );
+  }
 };
 export const findCrawledProductByName = async (domain, name) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.findOne({ name });
 };
 export const findCrawledProductByLink = async (domain, link) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.findOne({ link });
 };
 export const updateCrawledProduct = async (domain, link, update) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
   update["updatedAt"] = new Date().toISOString();
@@ -48,8 +52,8 @@ export const updateCrawledProduct = async (domain, link, update) => {
   );
 };
 export const updateCrawlDataProducts = async (domain, query, update) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
   update["updatedAt"] = new Date().toISOString();
@@ -64,8 +68,8 @@ export const updateCrawlDataProducts = async (domain, query, update) => {
   );
 };
 export const deleteAllProducts = async (domain) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.deleteMany({});
 };
@@ -75,8 +79,8 @@ export const findCrawlDataProducts = async (
   limit = 500,
   page = 0
 ) => {
-  const collectionName = domain + ".products";
-  const db = await getCrawlerDataDb();
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection
     .find({ ...query })
@@ -85,9 +89,9 @@ export const findCrawlDataProducts = async (
     .toArray();
 };
 export const moveCrawledProduct = async (from, to, _id) => {
-  const fromCollectionName = from + ".products";
+  const fromCollectionName = from;
   const toCollectionName = to;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const fromCollection = db.collection(fromCollectionName);
   const toCollection = db.collection(toCollectionName);
 
@@ -99,9 +103,9 @@ export const moveCrawledProduct = async (from, to, _id) => {
   return product;
 };
 export const copyProducts = async (from, to, _id) => {
-  const fromCollectionName = from + ".products";
+  const fromCollectionName = from;
   const toCollectionName = to;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const fromCollection = db.collection(fromCollectionName);
   const toCollection = db.collection(toCollectionName);
 

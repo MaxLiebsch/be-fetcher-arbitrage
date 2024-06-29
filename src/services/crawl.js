@@ -1,5 +1,5 @@
 import { CrawlerQueue, crawlShop, crawlSubpage } from "@dipmaxtech/clr-pkg";
-import { createCollection } from "./db/mongo.js";
+import { createCrawlDataCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
@@ -10,7 +10,10 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
-import { updateMatchProgress, updateProgressInCrawlEanTask } from "../util/updateProgressInTasks.js";
+import {
+  updateMatchProgress,
+  updateProgressInCrawlEanTask,
+} from "../util/updateProgressInTasks.js";
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
@@ -25,6 +28,7 @@ export default async function crawl(task) {
       new: 0,
       old: 0,
       total: 0,
+      failedSave: 0,
       categoriesHeuristic: {
         subCategories: {
           0: 0,
@@ -60,7 +64,7 @@ export default async function crawl(task) {
     );
     await queue.connect();
 
-    await createCollection(`${shopDomain}.products`);
+    await createCrawlDataCollection(`${shopDomain}`);
 
     const startTime = Date.now();
 
@@ -80,13 +84,6 @@ export default async function crawl(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product) => {
-      const infoCb = (isNewProduct) => {
-        if (isNewProduct) {
-          infos.new++;
-        } else {
-          infos.old++;
-        }
-      };
       if (infos.total >= productLimit && !queue.idle()) {
         await checkProgress({
           queue,
@@ -102,15 +99,17 @@ export default async function crawl(task) {
       } else {
         if (product.name && product.price && product.link) {
           infos.total++;
-          await createOrUpdateCrawlDataProduct(
-            shopDomain,
-            {
-              ...product,
-              locked: false,
-              matched: false,
-            },
-            infoCb
-          );
+          const result = await createOrUpdateCrawlDataProduct(shopDomain, {
+            ...product,
+            locked: false,
+            matched: false,
+          });
+          if (result.acknowledged) {
+            if (result.upsertedId) infos.new++;
+            else infos.old++;
+          } else {
+            infos.failedSave++;
+          }
         } else {
           const properties = ["name", "price", "link", "image"];
           properties.forEach((prop) => {

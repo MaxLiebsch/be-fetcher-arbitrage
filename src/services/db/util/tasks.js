@@ -1,4 +1,4 @@
-import { getCrawlerDataDb, hostname, tasksCollectionName } from "../mongo.js";
+import { getCrawlDataDb, hostname, tasksCollectionName } from "../mongo.js";
 import { countPendingProductsForCrawlAznListings } from "./getCrawlAznListingsProgress.js";
 import { countPendingProductsForMatch } from "./getMatchProgress.js";
 import { COOLDOWN_LONG } from "../../../constants.js";
@@ -8,7 +8,7 @@ import { getUnmatchecEanShops } from "./lookForUnmatchedEans.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const taskCollection = db.collection(collectionName);
   const {
     query,
@@ -16,14 +16,13 @@ export const getNewTask = async () => {
     lookupInfoTaskQuery,
     matchTaskQuery,
     danglingLookupThreshold,
-    danglingMatchThreshold,
     crawlAznListingsTaskQuery,
     crawlEanTaskQuery,
   } = findTasksQuery();
   const task = await taskCollection.findOneAndUpdate(query, update, {
     returnNewDocument: true,
   });
-  task?.type && console.log("Primary:task:", task?.type, " ", task?.id);
+  console.log("Primary:task:", task?.type, " ", task?.id);
 
   if (task) {
     if (
@@ -35,7 +34,6 @@ export const getNewTask = async () => {
     }
     if (task.type === "CRAWL_EAN") {
       const pendingShops = await findMissingEanShops(task.proxyType);
-      console.log('pendingShops:', pendingShops)
       if (pendingShops.length === 0) {
         await updateTask(task._id, {
           $set: {
@@ -51,7 +49,6 @@ export const getNewTask = async () => {
     }
     if (task.type === "LOOKUP_INFO") {
       const pendingShops = await getUnmatchecEanShops();
-      console.log('pendingShops:', pendingShops)
       if (pendingShops.length === 0) {
         await updateTask(task._id, {
           $set: {
@@ -66,7 +63,7 @@ export const getNewTask = async () => {
       }
     }
     if (task.type === "MATCH_PRODUCTS") {
-      const shopProductCollectionName = task.shopDomain + ".products";
+      const shopProductCollectionName = task.shopDomain;
       const pending = await countPendingProductsForMatch(
         shopProductCollectionName
       );
@@ -126,10 +123,10 @@ export const getNewTask = async () => {
     const task = await taskCollection.findOneAndUpdate(query, update, {
       returnNewDocument: true,
     });
-    task?.type && console.log("Fallback:task:", task?.type, " ", task?.id);
+    console.log("Fallback:task:", task?.type, " ", task?.id);
     if (task) {
       if (task.type === "MATCH_PRODUCTS") {
-        const shopProductCollectionName = task.shopDomain + ".products";
+        const shopProductCollectionName = task.shopDomain  ;
         const pending = await countPendingProductsForMatch(
           shopProductCollectionName
         );
@@ -204,7 +201,7 @@ export const findTasks = async (query, test = false) => {
   const collectionName = test
     ? `test_${tasksCollectionName}`
     : tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
   return collection.find(query).toArray();
@@ -212,7 +209,7 @@ export const findTasks = async (query, test = false) => {
 
 export const findTask = async (query) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
   return collection.findOne(query);
@@ -220,21 +217,21 @@ export const findTask = async (query) => {
 
 export const getTasks = async () => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.find().toArray();
 };
 
 export const updateTask = async (id, updateQuery) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.updateOne({ _id: id }, updateQuery);
 };
 
 export const updateTaskWithQuery = async (query, update) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.updateOne(query, {
     $set: {
@@ -245,7 +242,7 @@ export const updateTaskWithQuery = async (query, update) => {
 
 export const updateTasks = async (taskType, update) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.updateMany(
     { type: taskType },
@@ -259,28 +256,28 @@ export const updateTasks = async (taskType, update) => {
 
 export const addTask = async (task) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.insertOne(task);
 };
 
 export const deleteTask = async (id) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.findOneAndDelete({ _id: id });
 };
 
 export const deleteTasks = async () => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.deleteMany({});
 };
 
 export const deleteTaskwithQuery = async (query) => {
   const collectionName = tasksCollectionName;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.findOneAndDelete(query);
 };

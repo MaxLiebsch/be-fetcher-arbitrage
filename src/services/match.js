@@ -13,7 +13,6 @@ import { shuffle } from "underscore";
 import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { getShop, getShops } from "./db/util/shops.js";
 import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
@@ -30,6 +29,7 @@ import {
   updateMatchProgress,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForMatch } from "./db/util/lockProductsForMatch.js";
+import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -53,6 +53,7 @@ export default async function match(task) {
       new: 0,
       total: 0,
       old: 0,
+      failedSave: 0,
       notFound: 0,
       locked: 0,
       missingProperties: {
@@ -192,13 +193,6 @@ export default async function match(task) {
 
       procProductsPromiseArr.push(
         Promise.all(_shops).then(async (targetShopProducts) => {
-          const infoCb = (isNewProduct) => {
-            if (isNewProduct) {
-              infos.new++;
-            } else {
-              infos.old++;
-            }
-          };
           infos.total++;
           if (infos.total >= _productLimit - 1 && !queue.idle()) {
             await checkProgress({
@@ -252,7 +246,16 @@ export default async function match(task) {
             if (procProd.a_prc && procProd.a_mrgn) {
               procProd["a_pblsh"] = true;
             }
-            await createOrUpdateProduct(collectionName, procProd, infoCb);
+            const result = await createOrUpdateArbispotterProduct(
+              collectionName,
+              procProd
+            );
+            if (result.acknowledged) {
+              if (result.upsertedId) infos.new++;
+              else infos.old++;
+            } else {
+              infos.failedSave++;
+            }
             const crawlDataProductUpdate = {
               dscrptnSegments,
               nmSubSegments,
@@ -316,7 +319,16 @@ export default async function match(task) {
             if (procProd.a_prc && procProd.a_mrgn) {
               procProd["a_pblsh"] = true;
             }
-            await createOrUpdateProduct(collectionName, procProd, infoCb);
+            const result = await createOrUpdateArbispotterProduct(
+              collectionName,
+              procProd
+            );
+            if (result.acknowledged) {
+              if (result.upsertedId) infos.new++;
+              else infos.old++;
+            } else {
+              infos.failedSave++;
+            }
             await updateCrawledProduct(shopDomain, rawProd.link, {
               matched: true,
               locked: false,

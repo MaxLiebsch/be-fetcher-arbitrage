@@ -18,12 +18,12 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
-import { createOrUpdateProduct } from "./db/util/createOrUpdateProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
 import { lookForUnmatchedEans } from "./db/util/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import { updateProduct } from "./db/util/crudArbispotterProduct.js";
+import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -35,6 +35,7 @@ export default async function lookupInfo(task) {
       total: 0,
       old: 0,
       new: 0,
+      failedSave: 0,
       notFound: 0,
       locked: 0,
       shops: {},
@@ -147,13 +148,6 @@ export default async function lookupInfo(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        const infoCb = (isNewProduct) => {
-          if (isNewProduct) {
-            infos.new++;
-          } else {
-            infos.old++;
-          }
-        };
         if (productInfo) {
           const processedProductUpdate = generateUpdate(productInfo, prc);
           await upsertAsin(processedProductUpdate.asin, [ean]);
@@ -171,16 +165,19 @@ export default async function lookupInfo(task) {
             asin: processedProductUpdate.asin,
           };
           const updatedProduct = { ...procProd, ...processedProductUpdate };
-          await createOrUpdateProduct(shopDomain, updatedProduct, infoCb);
+          const result = await createOrUpdateArbispotterProduct(
+            shopDomain,
+            updatedProduct
+          );
+          if (result.acknowledged) {
+            if (result.upsertedId) infos.new++;
+            else infos.old++;
+          } else {
+            infos.failedSave++;
+          }
           await updateCrawledProduct(shopDomain, lnk, crawlDataProductUpdate);
         } else {
           infos.missingProperties[shopDomain].hashes.push(_id.toString());
-          const properties = ["ean", "image"];
-          properties.forEach((prop) => {
-            if (!product[prop]) {
-              infos.missingProperties[shopDomain][prop]++;
-            }
-          });
           await updateProduct(shopDomain, lnk, {
             asin: "",
             a_pblsh: false,
@@ -197,12 +194,11 @@ export default async function lookupInfo(task) {
             a_p_mrgn_pct: 0,
             a_nm: "",
           });
-          const update = {
+          await updateCrawledProduct(shopDomain, lnk, {
             info_locked: false,
             info_prop: "missing",
             info_taskId: "",
-          };
-          await updateCrawledProduct(shopDomain, lnk, update);
+          });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
@@ -223,7 +219,6 @@ export default async function lookupInfo(task) {
         infos.notFound++;
         await updateProduct(shopDomain, lnk, {
           asin: "",
-          info_prop: "missing",
           a_prc: 0,
           a_lnk: "",
           a_img: "",

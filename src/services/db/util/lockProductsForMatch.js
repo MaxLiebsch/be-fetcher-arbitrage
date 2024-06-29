@@ -8,7 +8,7 @@ export const lockProductsForMatch = async (
   action,
   hasEan
 ) => {
-  const collectionName = domain + ".products";
+  const collectionName = domain  ;
   const db = await getCrawlerDataDb();
 
   const { query, options } = lockProductsForMatchQuery(
@@ -35,7 +35,7 @@ export const lockProductsForMatch = async (
 };
 
 export const unlockProduts = async (domain, products) => {
-  const collectionName = domain + ".products";
+  const collectionName = domain  ;
   const db = await getCrawlerDataDb();
   return db.collection(collectionName).updateMany(
     {

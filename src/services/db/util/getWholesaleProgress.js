@@ -1,9 +1,9 @@
-import { getCrawlerDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../mongo.js";
 
 const collectionName = "wholesale";
 
 export const getProductsToLookupCount = async (taskId) => {
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   const wholesaleCollection = db.collection(collectionName);
   return wholesaleCollection.count({
     taskId: taskId.toString(),
