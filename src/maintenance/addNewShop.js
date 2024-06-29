@@ -1,11 +1,11 @@
-import { updateShopWithQuery } from "../src/services/db/util/shops.js";
-import { findTasks } from "../src/services/db/util/tasks.js";
+import { updateShopWithQuery } from "../services/db/util/shops.js";
+import { findTasks } from "../services/db/util/tasks.js";
 import {
   createCrawlAznListingsTask,
   createCrawlTasks,
   createSingleCrawlAznListingsTask,
   createSingleMatchTask,
-} from "../src/task.js";
+} from "../task.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 
 const newShops = [

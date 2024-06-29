@@ -3,7 +3,7 @@ import {
   findTasks,
   getTasks,
   updateTask,
-} from "../src/services/db/util/tasks.js";
+} from "../services/db/util/tasks.js";
 import { all } from "axios";
 
 
