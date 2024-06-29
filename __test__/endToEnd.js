@@ -140,7 +140,7 @@ const crawlEanTask = {
 const createCrawlAznListingsTask = (shopDomain) => {
   return {
     type: "CRAWL_AZN_LISTINGS",
-    id: `crawl_azn_listings_${shopDomain}`,
+    id: `crawl_azn_listings_idealo.de`,
     shopDomain,
     productLimit,
     executing: false,
@@ -150,8 +150,9 @@ const createCrawlAznListingsTask = (shopDomain) => {
     recurrent: true,
     completed: false,
     errored: false,
-    startedAt: yesterday.toISOString(),
-    completedAt: yesterday.toISOString(),
+    startedAt: "",
+    createdAt: "",
+    completedAt: "",
     limit: {
       mainCategory: 0,
       subCategory: 0,

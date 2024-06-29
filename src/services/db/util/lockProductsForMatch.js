@@ -1,4 +1,4 @@
-import { getCrawlerDataDb, hostname } from "../mongo.js";
+import { getCrawlDataDb, hostname } from "../mongo.js";
 import { lockProductsForMatchQuery, setProductsLockedForMatchQuery } from "./queries.js";
 
 export const lockProductsForMatch = async (
@@ -9,7 +9,7 @@ export const lockProductsForMatch = async (
   hasEan
 ) => {
   const collectionName = domain  ;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
 
   const { query, options } = lockProductsForMatchQuery(
     limit,
@@ -36,7 +36,7 @@ export const lockProductsForMatch = async (
 
 export const unlockProduts = async (domain, products) => {
   const collectionName = domain  ;
-  const db = await getCrawlerDataDb();
+  const db = await getCrawlDataDb();
   return db.collection(collectionName).updateMany(
     {
       _id: {
