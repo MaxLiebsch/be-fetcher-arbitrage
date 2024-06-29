@@ -57,7 +57,10 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
       { ean: { $exists: false } },
       { ean: { $exists: true, $eq: "" } },
     ];
-    query["ean_prop"] = { $exists: false };
+    query["$or"] = [
+      { info_prop: { $exists: false } },
+      { info_prop: { $eq: "" } },
+    ];
 
     if (limit) {
       options["limit"] = limit;
@@ -82,7 +85,7 @@ export const countPendingProductsForCrawlEanQuery = {
       $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
     },
     {
-      ean_prop: { $exists: false },
+      $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: "" } }],
     },
   ],
 };
