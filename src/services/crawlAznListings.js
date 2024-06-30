@@ -99,6 +99,7 @@ export default async function crawlAznListings(task) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const price = infoMap.get("a_prc");
+          const image = infoMat.get('a_img');
           const bsr = infoMap.get("bsr");
           const update = {
             aznUpdatedAt: new Date().toISOString(),
@@ -127,6 +128,9 @@ export default async function crawlAznListings(task) {
               });
             }
             update["a_prc"] = parsedPrice;
+          }
+          if(image){
+            update["a_img"] = image;
           }
           if (bsr) {
             update["bsr"] = bsr;

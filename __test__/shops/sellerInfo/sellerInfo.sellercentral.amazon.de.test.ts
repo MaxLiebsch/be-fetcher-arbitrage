@@ -20,7 +20,7 @@ const shopDomain = "sellercentral.amazon.de";
 //TODO : make sure mimic does not create fake block
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "124.0.6367.60");
+    await myBeforeAll(shopDomain, false, '124.0.6367.207');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
