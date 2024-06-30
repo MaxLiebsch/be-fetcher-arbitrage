@@ -2061,7 +2061,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div[data-test=product-price] span[spacing=base]",
+              sel: "div[data-test*=product-price] span[spacing=base]",
               type: "text",
             },
           ],
@@ -2091,7 +2091,7 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div[data-test=product-price] span[spacing=base]",
+              sel: "div[data-test*=product-price] span[spacing=base]",
               type: "text",
             },
           ],
