@@ -18,7 +18,11 @@ import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.j
 import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import { createHash } from "../util/hash.js";
 import { subDateDaysISO } from "../util/dates.js";
-import { updateProgressInCrawlEanTask, updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
+import {
+  updateProgressInCrawlEanTask,
+  updateProgressInLookupInfoTask,
+} from "../util/updateProgressInTasks.js";
+import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
@@ -33,7 +37,7 @@ export default async function crawlEan(task) {
       shops: {},
       missingProperties: {},
     };
-    
+
     const { products, shops } = await lookForMissingEans(
       _id,
       proxyType,
@@ -78,7 +82,7 @@ export default async function crawlEan(task) {
           clearInterval(interval);
           await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
           await updateProgressInMatchTasks(shops); // update matching tasks
-          await updateProgressInLookupInfoTask() // update lookup info task
+          await updateProgressInLookupInfoTask(); // update lookup info task
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -97,16 +101,16 @@ export default async function crawlEan(task) {
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const update = {
             ean_locked: false,
+            ean_taskId: "",
             matched: false,
             matchedAt: subDateDaysISO(10),
-            ean_taskId: "",
           };
           const ean = infoMap.get("ean");
           const isEan =
             ean &&
             /\b[0-9]{12,13}\b/.test(ean) &&
             !ean.toString().startsWith("99");
-            
+
           const sku = infoMap.get("sku");
           const image = infoMap.get("image");
           const mku = infoMap.get("mku");
@@ -138,7 +142,11 @@ export default async function crawlEan(task) {
             infos.missingProperties[shopDomain].hashes.push(_id.toString());
             update["ean_prop"] = ean ? "invalid" : "missing";
           }
-          await updateCrawledProduct(shopDomain, link, update);
+          delete product._id;
+          await createOrUpdateCrawlDataProduct(shopDomain, {
+            ...product,
+            ...update,
+          });
         } else {
           infos.missingProperties[shopDomain].hashes.push(_id.toString());
           const properties = ["ean", "image"];
@@ -163,7 +171,7 @@ export default async function crawlEan(task) {
             clearInterval(interval);
             await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
             await updateProgressInMatchTasks(shops); // update matching tasks
-            await updateProgressInLookupInfoTask() // update lookup info task
+            await updateProgressInLookupInfoTask(); // update lookup info task
             handleResult(r, resolve, reject);
           });
         }
@@ -182,9 +190,9 @@ export default async function crawlEan(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            
+
             await updateProgressInMatchTasks(shops); // update matching tasks
-            await updateProgressInLookupInfoTask() // update lookup info task
+            await updateProgressInLookupInfoTask(); // update lookup info task
             handleResult(r, resolve, reject);
           });
         }
