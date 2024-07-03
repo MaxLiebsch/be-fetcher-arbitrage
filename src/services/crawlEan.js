@@ -178,23 +178,31 @@ export default async function crawlEan(task) {
         infos.shops[shopDomain]++;
         infos.total++;
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
-        await moveCrawledProduct(shopDomain, "grave", _id);
-        await moveArbispotterProduct(shopDomain, "grave", _id);
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-
-            await updateProgressInMatchTasks(shops); // update matching tasks
-            await updateProgressInLookupInfoTask(); // update lookup info task
-            handleResult(r, resolve, reject);
+        if (cause === "timeout") {
+          await updateCrawledProduct(shopDomain, link, {
+            ean_locked: false,
+            ean_prop: "timeout",
+            ean_taskId: "",
           });
+        } else {
+          await moveCrawledProduct(shopDomain, "grave", _id);
+          await moveArbispotterProduct(shopDomain, "grave", _id);
+          if (infos.total >= _productLimit - 1 && !queue.idle()) {
+            await checkProgress({
+              queue,
+              infos,
+              startTime,
+              productLimit: _productLimit,
+            }).catch(async (r) => {
+              clearInterval(interval);
+
+              await updateProgressInMatchTasks(shops); // update matching tasks
+              await updateProgressInLookupInfoTask(); // update lookup info task
+              handleResult(r, resolve, reject);
+            });
+          }
         }
         infos.shops[shopDomain]++;
         infos.total++;
