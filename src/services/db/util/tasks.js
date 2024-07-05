@@ -8,7 +8,7 @@ import { getUnmatchedQueryEansOnEbyShops } from "../util/queryEansOnEby/getUnmat
 import { getUnmatchedEanShops } from "../util/lookupInfo/getUnmatchedEanShops.js";
 import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
-import { countPendingProductsForWholesaleSearch } from "./wholesale/getWholesaleProgress.js";
+import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;

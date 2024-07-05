@@ -21,7 +21,7 @@ export const countPendingProductsForWholesaleSearch = async (taskId) => {
   );
 };
 
-export const getWholesaleProgress = async (taskId, total) => {
+export const getWholesaleSearchProgress = async (taskId, total) => {
   const pending = await countPendingProductsForWholesaleSearch(taskId);
   const completed = await getCompletedProductsCount(taskId);
   return {

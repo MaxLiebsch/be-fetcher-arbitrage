@@ -1,6 +1,6 @@
 import { getCrawlAznListingsProgress } from "../services/db/util/crawlAznListings/getCrawlAznListingsProgress.js";
 import { getMatchProgress } from "../services/db/util/match/getMatchProgress.js";
-import { getWholesaleProgress } from "../services/db/util/wholesale/getWholesaleProgress.js";
+import { getWholesaleSearchProgress } from "../services/db/util/wholesaleSearch/getWholesaleProgress.js";
 import { getMissingEanShops } from "../services/db/util/crawlEan/getMissingEanShops.js";
 import { getUnmatchedEanShops } from "../services/db/util/lookupInfo/getUnmatchedEanShops.js";
 import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
@@ -97,7 +97,7 @@ export const updateProgressInLookupInfoTask = async () => {
 };
 
 export const updateWholesaleProgress = async (taskId, total) => {
-  const progress = await getWholesaleProgress(taskId, total);
+  const progress = await getWholesaleSearchProgress(taskId, total);
 
   await updateTaskWithQuery({ _id: taskId }, { progress });
   return progress;

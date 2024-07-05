@@ -4,7 +4,7 @@ import { getMissingEanShops } from "../services/db/util/crawlEan/getMissingEanSh
 import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
 import { getLookupInfoProgress } from "../services/db/util/lookupInfo/getLookupInfoProgress.js";
 import { getUnmatchedEanShops } from "../services/db/util/lookupInfo/getUnmatchedEanShops.js";
-import { getProductsToLookupCount, getWholesaleProgress } from "../services/db/util/wholesale/getWholesaleProgress.js";
+import { getProductsToLookupCount, getWholesaleSearchProgress } from "../services/db/util/wholesaleSearch/getWholesaleProgress.js";
 import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
 
 const main = async () => {
