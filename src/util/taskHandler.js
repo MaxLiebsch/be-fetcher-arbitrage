@@ -52,7 +52,7 @@ async function handleCrawlTask({
         pages: newPageLimit,
       };
     }
-    if (newRetry === MAX_TASK_RETRIES && result.infos.total > 0) {
+    if (retry === MAX_TASK_RETRIES && result.infos.total > 0) {
       update["productLimit"] = result.infos.total;
     }
     await updateTask(_id, {
