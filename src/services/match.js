@@ -42,7 +42,7 @@ export default async function match(task) {
 
     if (!srcShop) return reject(new MissingShopError("", task));
 
-    const rawproducts = await lockProductsForMatch(
+    const lockedProducts = await lockProductsForMatch(
       shopDomain,
       productLimit,
       _id,
@@ -65,15 +65,15 @@ export default async function match(task) {
       },
     };
 
-    if (!rawproducts.length)
+    if (!lockedProducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
     const _productLimit =
-      rawproducts.length < productLimit ? rawproducts.length : productLimit;
+      lockedProducts.length < productLimit ? lockedProducts.length : productLimit;
 
-    infos.locked = rawproducts.length;
+    infos.locked = lockedProducts.length;
 
     //Update task progress
     await updateMatchProgress(shopDomain, srcShop.hasEan);
@@ -116,7 +116,7 @@ export default async function match(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    const shuffled = shuffle(rawproducts);
+    const shuffled = shuffle(lockedProducts);
 
     const sliced = shuffled;
 

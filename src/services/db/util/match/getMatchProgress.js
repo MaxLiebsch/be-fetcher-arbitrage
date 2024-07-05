@@ -8,8 +8,6 @@ export const countPendingProductsForMatch = async (
   shopProductCollectionName,
   hasEan
 ) => {
-  const twentyFourAgo = new Date();
-  twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
   const db = await getCrawlDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
 

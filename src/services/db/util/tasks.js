@@ -9,6 +9,7 @@ import { getUnmatchedEanShops } from "../util/lookupInfo/getUnmatchedEanShops.js
 import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
+import { getShop } from "./shops.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
@@ -93,7 +94,8 @@ export const getNewTask = async () => {
     if (task.type === "MATCH_PRODUCTS") {
       const shopProductCollectionName = task.shopDomain;
       const pending = await countPendingProductsForMatch(
-        shopProductCollectionName
+        shopProductCollectionName,
+        false
       );
       console.log("MATCH_PRODUCTS: pending:", pending);
       if (pending === 0) {
@@ -191,7 +193,8 @@ export const getNewTask = async () => {
       if (task.type === "MATCH_PRODUCTS") {
         const shopProductCollectionName = task.shopDomain;
         const pending = await countPendingProductsForMatch(
-          shopProductCollectionName
+          shopProductCollectionName,
+          false
         );
         console.log("MATCH_PRODUCTS: pending:", pending);
         if (pending === 0) {

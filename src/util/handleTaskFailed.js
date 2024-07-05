@@ -1,10 +1,14 @@
-import { COOLDOWN, COOLDOWN_MULTIPLIER } from "../constants.js";
+import {
+  COOLDOWN,
+  COOLDOWN_MULTIPLIER,
+  MAX_TASK_RETRIES,
+} from "../constants.js";
 import { hostname } from "../services/db/mongo.js";
 
 export const handleTaskFailed = async (id, retry) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
   const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
-  
+
   const update = {
     cooldown,
     executing: false,
