@@ -8,7 +8,7 @@ import { getUnmatchedQueryEansOnEbyShops } from "../util/queryEansOnEby/getUnmat
 import { getUnmatchedEanShops } from "../util/lookupInfo/getUnmatchedEanShops.js";
 import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
-import { getWholesaleProgress } from "./wholesale/getWholesaleProgress.js";
+import { countPendingProductsForWholesaleSearch } from "./wholesale/getWholesaleProgress.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
@@ -27,8 +27,8 @@ export const getNewTask = async () => {
       return task;
     }
     if (task.type === "WHOLESALE_SEARCH") {
-      const pending = await getWholesaleProgress(task._id, task.progress.total);
-      console.log("WHOLESALE_SEARCH: pendingShops:", pendingShops.length);
+      const pending = await countPendingProductsForWholesaleSearch(task._id);
+      console.log("WHOLESALE_SEARCH: pending:", pending);
       if (pending === 0) {
         await updateTask(task._id, {
           $set: {
@@ -173,11 +173,8 @@ export const getNewTask = async () => {
     const cooldown = new Date(Date.now() + coolDownFactor).toISOString();
     if (task) {
       if (task.type === "WHOLESALE_SEARCH") {
-        const pending = await getWholesaleProgress(
-          task._id,
-          task.progress.total
-        );
-        console.log("WHOLESALE_SEARCH: pendingShops:", pendingShops.length);
+        const pending = await countPendingProductsForWholesaleSearch(task._id);
+        console.log("WHOLESALE_SEARCH: pending:", pending);
         if (pending === 0) {
           await updateTask(task._id, {
             $set: {

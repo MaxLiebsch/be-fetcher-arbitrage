@@ -727,6 +727,32 @@ const scanTaskQuery = [
 ];
 
 /*               Queries: Wholesale                            */
+export const countPendingProductsForWholesaleSearchQuery = (taskId) => {
+  const query = {
+    taskId: taskId.toString(),
+    lookup_pending: true,
+    locked: false,
+  };
+  return query;
+};
+export const countCompletedProductsForWholesaleSearchQuery = (taskId) => {
+  return {
+    taskId: taskId.toString(),
+    status: { $exists: true },
+    $or: [
+      {
+        status: {
+          $eq: "complete",
+        },
+      },
+      {
+        status: {
+          $eq: "not found",
+        },
+      },
+    ],
+  };
+};
 
 const wholesaleTaskQuery = [
   { type: "WHOLESALE_SEARCH" },
