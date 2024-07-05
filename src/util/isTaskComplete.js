@@ -4,12 +4,6 @@ import {
   SMALL_LOCKED_PRODUCT_CNT_THRESHOLD,
 } from "../constants.js";
 
-/*
-    #match, lookup, wholsale 
-      total / locked products  >= match_lookup_threshold 
-    #crawl
-      total / estimatedProducts >= crawl_threshold              
-*/
 const isTaskComplete = (type, infos, productLimit) => {
   let taskCompleted = false;
   let completionPercentage = 0;
@@ -17,9 +11,12 @@ const isTaskComplete = (type, infos, productLimit) => {
   if (
     type === "MATCH_PRODUCTS" ||
     type === "CRAWL_AZN_LISTINGS" ||
+    type === "CRAWL_EBY_LISTINGS" ||
     type === "WHOLESALE_SEARCH" ||
     type === "CRAWL_EAN" ||
-    type === "LOOKUP_INFO"
+    type === "LOOKUP_INFO" ||
+    type === "QUERY_EANS_EBY" ||
+    type === "LOOKUP_CATEGORY"
   ) {
     completionPercentage = total / locked;
     taskCompleted =

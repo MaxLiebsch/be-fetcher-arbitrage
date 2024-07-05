@@ -6,7 +6,6 @@ const task = {
   recurrent: false,
   startedAt: "2024-05-22T11:36:24.703Z",
   completedAt: "2024-05-22T11:36:14.274Z",
-  errored: false,
   maintenance: false,
   lastCrawler: [],
   productLimit: 20,

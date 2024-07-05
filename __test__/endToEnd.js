@@ -1,11 +1,8 @@
 import { sub } from "date-fns";
 import {
   addTask,
-  deleteTask,
   deleteTasks,
-  findTask,
   findTasks,
-  updateTask,
 } from "../src/services/db/util/tasks.js";
 import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
 import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
@@ -13,15 +10,15 @@ import { LoggerService } from "@dipmaxtech/clr-pkg";
 import os from "os";
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
 import { deleteLogs } from "../src/services/db/util/logs.js";
-import { ObjectId } from "mongodb";
-import { getAllShops } from "../src/services/db/util/shops.js";
+import { getAllShops, updateShopStats } from "../src/services/db/util/shops.js";
 import { shuffle } from "underscore";
 
 const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
 
 const today = new Date();
-const productLimit = 20;
+const productLimit = 30;
+const lookupsProductLimit = 50;
 const yesterday = sub(today, { days: 1 });
 const proxyType = "mix";
 const timezones = ["Europe/Berlin"];
@@ -41,7 +38,6 @@ const createCrawlTask = (shopDomain, categories, proxyType) => {
     recurrent: true,
     executing: false,
     completed: false,
-    errored: false,
     startedAt: yesterday.toISOString(),
     completedAt: yesterday.toISOString(),
     productLimit,
@@ -67,7 +63,6 @@ const createMatchTask = (shopDomain) => {
     maintenance: false,
     recurrent: true,
     completed: false,
-    errored: false,
     startedAt: yesterday.toISOString(),
     completedAt: yesterday.toISOString(),
     limit: {
@@ -94,7 +89,7 @@ const lookupInfoTask = {
   type: "LOOKUP_INFO",
   id: `lookup_info`,
   proxyType: "mix",
-  productLimit,
+  productLimit: lookupsProductLimit,
   executing: false,
   lastCrawler: [],
   test: false,
@@ -103,7 +98,6 @@ const lookupInfoTask = {
   concurrency: 1,
   browserConcurrency: 4,
   completed: false,
-  errored: false,
   startedAt: yesterday.toISOString(),
   completedAt: yesterday.toISOString(),
   createdAt: "2024-05-06T07:10:51.942Z",
@@ -118,7 +112,7 @@ const crawlEanTask = {
   type: "CRAWL_EAN",
   id: `crawl_ean`,
   proxyType: "mix",
-  productLimit: 10,
+  productLimit: lookupsProductLimit,
   executing: false,
   lastCrawler: [],
   test: false,
@@ -126,9 +120,29 @@ const crawlEanTask = {
   concurreny: 4,
   recurrent: true,
   completed: false,
-  errored: false,
   completedAt: "",
   startedAt: "",
+  createdAt: "2024-06-18T07:10:51.942Z",
+  limit: {
+    mainCategory: 0,
+    subCategory: 0,
+    pages: 0,
+  },
+};
+
+const lookupCategory = {
+  type: "LOOKUP_CATEGORY",
+  id: `lookup_category`,
+  proxyType: "mix",
+  productLimit: lookupsProductLimit,
+  executing: false,
+  lastCrawler: [],
+  test: false,
+  maintenance: false,
+  concurreny: 6,
+  recurrent: true,
+  completed: false,
+  completedAt: "",
   createdAt: "2024-06-18T07:10:51.942Z",
   limit: {
     mainCategory: 0,
@@ -140,16 +154,62 @@ const crawlEanTask = {
 const createCrawlAznListingsTask = (shopDomain) => {
   return {
     type: "CRAWL_AZN_LISTINGS",
-    id: `crawl_azn_listings_idealo.de`,
+    id: `crawl_azn_listings_${shopDomain}`,
     shopDomain,
-    productLimit,
+    productLimit: lookupsProductLimit,
     executing: false,
     lastCrawler: [],
     test: false,
     maintenance: false,
     recurrent: true,
     completed: false,
-    errored: false,
+    startedAt: "",
+    createdAt: "",
+    completedAt: "",
+    limit: {
+      mainCategory: 0,
+      subCategory: 0,
+      pages: 0,
+    },
+    retry: 0,
+    concurrency: 4,
+  };
+};
+const queryEansOnEbyTask = {
+  type: "QUERY_EANS_EBY",
+  id: `query_eans_eby`,
+  proxyType: "mix",
+  productLimit: lookupsProductLimit,
+  executing: false,
+  lastCrawler: [],
+  test: false,
+  maintenance: false,
+  concurreny: 4,
+  recurrent: true,
+  completed: false,
+  completedAt: "",
+  createdAt: "2024-06-18T07:10:51.942Z",
+  limit: {
+    mainCategory: 0,
+    subCategory: 0,
+    pages: 0,
+  },
+};
+export const createCrawlEbyListingsTask = (
+  shopDomain,
+  limit = lookupsProductLimit
+) => {
+  return {
+    type: "CRAWL_EBY_LISTINGS",
+    id: `crawl_eby_listings_${shopDomain}`,
+    shopDomain,
+    productLimit: limit,
+    executing: false,
+    lastCrawler: [],
+    test: false,
+    maintenance: false,
+    recurrent: true,
+    completed: false,
     startedAt: "",
     createdAt: "",
     completedAt: "",
@@ -163,9 +223,21 @@ const createCrawlAznListingsTask = (shopDomain) => {
   };
 };
 
-const tasks = [lookupInfoTask, crawlEanTask];
+const tasks = [
+  lookupInfoTask,
+  crawlEanTask,
+  lookupCategory,
+  queryEansOnEbyTask,
+];
 
-const shopsToTest = ["alternate.de", "dm.de", "cyberport.de"];
+const shopsToTest = [
+  "alternate.de",
+  "dm.de",
+  "fressnapf.de",
+  "cyberport.de",
+  "idealo.de",
+  "alza.de",
+];
 
 const main = async () => {
   const allTasks = await findTasks({}, true);
@@ -173,8 +245,11 @@ const main = async () => {
   await Promise.all(
     shops.map(async ({ d }) => {
       //empty DBs
-      await deleteAllProducts(d);
-      await deleteAllArbispotterProducts(d);
+      return Promise.all([
+        deleteAllProducts(d),
+        deleteAllArbispotterProducts(d),
+        updateShopStats(d),
+      ]);
     })
   );
   const selectedShops = shops.filter((shop) => shopsToTest.includes(shop.d));
@@ -190,6 +265,7 @@ const main = async () => {
       (task) => task.type === "MATCH_PRODUCTS" && task.shopDomain === shop.d
     );
     const crawlAznListingsTask = createCrawlAznListingsTask(shop.d);
+    const crawlEbyListingsTask = createCrawlEbyListingsTask(shop.d);
     tasks.push(
       {
         ...crawlTask,
@@ -199,15 +275,18 @@ const main = async () => {
         startedAt: yesterday.toISOString(),
         completedAt: yesterday.toISOString(),
       },
-      {
+      crawlAznListingsTask,
+      crawlEbyListingsTask
+    );
+    if (!shop.hasEan && !shop.ean) {
+      tasks.push({
         ...matchTask,
         productLimit,
         startedAt: yesterday.toISOString(),
         completedAt: yesterday.toISOString(),
         maintenance: false,
-      },
-      crawlAznListingsTask
-    );
+      });
+    }
   });
 
   //empty tasks

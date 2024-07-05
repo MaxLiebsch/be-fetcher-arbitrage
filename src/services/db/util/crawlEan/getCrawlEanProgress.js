@@ -1,5 +1,5 @@
-import { getCrawlDataDb } from "../mongo.js";
-import { countPendingProductsForCrawlEanQuery, countTotalProductsForCrawlEanQuery } from "./queries.js";
+import { getCrawlDataDb } from "../../mongo.js";
+import { countPendingProductsForCrawlEanQuery, countTotalProductsForCrawlEanQuery } from "../queries.js";
 
 export const countTotalProductsForCrawlEan = async (shopProductCollectionName) => {
   const db = await getCrawlDataDb();

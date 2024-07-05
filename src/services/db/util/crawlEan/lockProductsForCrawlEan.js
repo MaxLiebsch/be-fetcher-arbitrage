@@ -1,8 +1,8 @@
-import { getCrawlDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../../mongo.js";
 import {
   lockProductsForCrawlEanQuery,
   setProductsLockedForCrawlEanQuery,
-} from "./queries.js";
+} from "../../util/queries.js";
 
 export const lockProductsForCrawlEan = async (
   domain,

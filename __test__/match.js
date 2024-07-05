@@ -9,7 +9,6 @@ const task = {
   executing: true,
   recurrent: true,
   completed: false,
-  errored: false,
   startedAt: "2024-04-14T19:22:11.479Z",
   completedAt: "2024-04-14T14:12:23.386Z",
   createdAt: "2024-04-13T12:21:47.620Z",

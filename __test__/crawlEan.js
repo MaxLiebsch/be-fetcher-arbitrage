@@ -13,7 +13,6 @@ const task = {
   concurreny: 6,
   recurrent: true,
   completed: false,
-  errored: false,
   completedAt: "",
   createdAt: "2024-06-18T07:10:51.942Z",
   limit: {

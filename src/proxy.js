@@ -160,7 +160,7 @@ const establishedConnection = (
   });
 
   proxySocket.on("error", (err) => {
-    console.log('err:', err)
+    console.log("err:", err);
     const responseMessage = "Internal Proxy Server Error.";
     const responseHeaders = [
       "HTTP/1.1 500 Internal Server Error",
@@ -172,3 +172,7 @@ const establishedConnection = (
     clientSocket.end(`${responseHeaders}${responseMessage}`);
   });
 };
+
+process.on("uncaughtException", function (err) {
+  console.log("Proxy Server uncaught Error", err.stack);
+});

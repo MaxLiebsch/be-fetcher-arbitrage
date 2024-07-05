@@ -9,16 +9,17 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import { updateProduct } from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
 } from "../constants.js";
-import { getShops } from "./db/util/shops.js";
+import { getShop, getShops } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
-import { lockProductsForCrawlAznListings } from "./db/util/lockProductsForCrawlAznListings.js";
+import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
+import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -61,12 +62,7 @@ export default async function crawlAznListings(task) {
 
     const startTime = Date.now();
 
-    const targetShop = { d: "amazon.de", n: "Amazon" };
-
-    const shops = await getShops([targetShop]);
-    const shop = shops["amazon.de"];
-
-    if (shops === null) return reject(new MissingShopError("", task));
+    const shop = await getShop("amazon.de");
 
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
@@ -91,58 +87,71 @@ export default async function crawlAznListings(task) {
     );
 
     for (let index = 0; index < products.length; index++) {
-      const rawProd = products[index];
-
+      const crawlDataProduct = products[index];
+      const productLink = crawlDataProduct.link;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const price = infoMap.get("a_prc");
-          const image = infoMap.get('a_img');
+          const image = infoMap.get("a_img");
           const bsr = infoMap.get("bsr");
-          const update = {
-            aznUpdatedAt: new Date().toISOString(),
-            lckd: false,
-            taskId: "",
+          const arbispotterProductUpdate = {
             a_lnk: url,
+          };
+          const crawlDataProductUpdate = {
+            aznUpdatedAt: new Date().toISOString(),
+            azn_locked: false,
+            azn_taskId: "",
           };
           if (price) {
             const parsedPrice = safeParsePrice(price);
-            if (rawProd?.costs) {
+            if (crawlDataProduct?.costs) {
               const arbitrage = calculateAznArbitrage(
-                rawProd.prc,
+                crawlDataProduct.price,
                 parsedPrice,
-                rawProd.costs
+                crawlDataProduct.costs
               );
               Object.entries(arbitrage).forEach(([key, val]) => {
-                update[key] = val;
+                arbispotterProductUpdate[key] = val;
               });
             } else {
               const arbitrage = calculateOnlyArbitrage(
-                rawProd.prc,
+                crawlDataProduct.price,
                 parsedPrice
               );
               Object.entries(arbitrage).forEach(([key, val]) => {
-                update[`a_${key}`] = val;
+                arbispotterProductUpdate[`a_${key}`] = val;
               });
             }
-            update["a_prc"] = parsedPrice;
+            arbispotterProductUpdate["a_prc"] = parsedPrice;
           }
-          if(image){
-            update["a_img"] = image;
+          if (image) {
+            arbispotterProductUpdate["a_img"] = image;
           }
           if (bsr) {
-            update["bsr"] = bsr;
+            arbispotterProductUpdate["bsr"] = bsr;
           }
 
-          await updateProduct(shopDomain, rawProd.lnk, update);
+          await updateArbispotterProduct(
+            shopDomain,
+            productLink,
+            arbispotterProductUpdate
+          );
+          await updateCrawlDataProduct(
+            shopDomain,
+            productLink,
+            crawlDataProductUpdate
+          );
         } else {
           infos.missingProperties.bsr++;
-          await updateProduct(shopDomain, rawProd.lnk, {
-            lckd: false,
+          await updateCrawlDataProduct(shopDomain, productLink, {
+            azn_locked: false,
+            azn_taskId: "",
+          });
+          await updateArbispotterProduct(shopDomain, productLink, {
             a_lnk: url,
-            taskId: "",
           });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
@@ -161,10 +170,15 @@ export default async function crawlAznListings(task) {
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        await updateProduct(shopDomain, rawProd.lnk, {
+        await updateCrawlDataProduct(shopDomain, productLink, {
+          azn_locked: false,
+          azn_taskId: "",
+        });
+        await updateArbispotterProduct(shopDomain, productLink, {
           lckd: false,
           taskId: "",
           a_prc: 0,
+          asin: "",
           a_lnk: "",
           a_img: "",
           a_mrgn: 0,
@@ -186,54 +200,26 @@ export default async function crawlAznListings(task) {
         infos.total++;
       };
 
-      if (rawProd.a_lnk) {
-        let link = rawProd.a_lnk;
-        if (
-          !rawProd.a_lnk.includes("&language=") &&
-          rawProd.a_lnk.includes("amazon.de")
-        ) {
-          link = rawProd.a_lnk + "&language=de_DE";
-        }
+      let aznLink =
+        "https://www.amazon.de/dp/product/" +
+        crawlDataProduct.asin +
+        "?language=de_DE";
 
-        queue.pushTask(lookupProductQueue, {
-          retries: 0,
-          shop,
-          addProduct,
-          targetShop,
-          onNotFound: handleNotFound,
-          addProductInfo,
-          queue,
-          query: {},
-          prio: 0,
-          extendedLookUp: false,
-          limit: undefined,
-          prodInfo: undefined,
-          isFinished: undefined,
-          pageInfo: {
-            link,
-            name: shop.d,
-          },
-        });
-      } else {
-        await updateProduct(shopDomain, rawProd.lnk, {
-          lckd: false,
-          taskId: "",
-          asin: "",
-          a_prc: 0,
-          a_lnk: "",
-          a_img: "",
-          a_mrgn: 0,
-          a_mrgn_pct: 0,
-          a_w_mrgn: 0,
-          a_w_mrgn_pct: 0,
-          a_w_p_mrgn: 0,
-          a_w_p_mrgn_pct: 0,
-          a_p_mrgn: 0,
-          a_p_mrgn_pct: 0,
-          a_nm: "",
-        });
-        infos.total++;
-      }
+      queue.pushTask(lookupProductQueue, {
+        retries: 0,
+        shop,
+        addProduct,
+        onNotFound: handleNotFound,
+        addProductInfo,
+        queue,
+        query: {},
+        prio: 0,
+        extendedLookUp: false,
+        pageInfo: {
+          link: aznLink,
+          name: shop.d,
+        },
+      });
     }
   });
 }

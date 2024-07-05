@@ -1,5 +1,5 @@
-import { getCrawlDataDb, hostname } from "../mongo.js";
-import { lockProductsForMatchQuery, setProductsLockedForMatchQuery } from "./queries.js";
+import { getCrawlDataDb, hostname } from "../../mongo.js";
+import { lockProductsForMatchQuery, setProductsLockedForMatchQuery } from "../../util/queries.js";
 
 export const lockProductsForMatch = async (
   domain,

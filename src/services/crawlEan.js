@@ -9,10 +9,11 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { lookForMissingEans } from "./db/util/lookForMissingEans.js";
+import { lookForMissingEans } from "./db/util/crawlEan/lookForMissingEans.js";
 import {
+  deleteProduct,
   moveCrawledProduct,
-  updateCrawledProduct,
+  updateCrawlDataProduct,
 } from "./db/util/crudCrawlDataProduct.js";
 import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
@@ -21,6 +22,7 @@ import { subDateDaysISO } from "../util/dates.js";
 import {
   updateProgressInCrawlEanTask,
   updateProgressInLookupInfoTask,
+  updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
 import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
 
@@ -62,6 +64,9 @@ export default async function crawlEan(task) {
 
     infos.locked = products.length;
 
+    //Update task progress
+    await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
+
     const startTime = Date.now();
 
     const queue = new QueryQueue(
@@ -80,9 +85,12 @@ export default async function crawlEan(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
-          await updateProgressInMatchTasks(shops); // update matching tasks
-          await updateProgressInLookupInfoTask(); // update lookup info task
+          await Promise.all([
+            updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+            updateProgressInMatchTasks(shops), // update matching tasks
+            updateProgressInLookupInfoTask(), // update lookup info task
+            updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
+          ]);
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -90,76 +98,80 @@ export default async function crawlEan(task) {
 
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
-      const link = product.link;
+      let crawlDataProductLink = product.link;
       const shopDomain = shop.d;
-      const _id = product._id;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const update = {
+          const crawlDataProductUpdate = {
             ean_locked: false,
             ean_taskId: "",
-            matched: false,
-            matchedAt: subDateDaysISO(10),
           };
-          const ean = infoMap.get("ean");
-          const isEan =
+          let ean = infoMap.get("ean");
+          let isEan =
             ean &&
             /\b[0-9]{12,13}\b/.test(ean) &&
             !ean.toString().startsWith("99");
 
+          if (ean && Number(ean) && ean.length === 11) {
+            ean = "00" + ean;
+            isEan = true;
+          }
+
           const sku = infoMap.get("sku");
           const image = infoMap.get("image");
           const mku = infoMap.get("mku");
-          if (url !== link) {
-            update["link"] = url;
-            update["s_hash"] = createHash(url);
+          if (url !== crawlDataProductLink) {
+            await deleteProduct(shopDomain, crawlDataProductLink);
+            crawlDataProductLink = url;
+            crawlDataProductUpdate["link"] = url;
+            crawlDataProductUpdate["s_hash"] = createHash(url);
           }
           if (isEan) {
-            update["ean"] = ean;
+            crawlDataProductUpdate["ean"] = ean;
           }
           if (sku) {
-            update["sku"] = sku;
+            crawlDataProductUpdate["sku"] = sku;
           }
           if (image) {
-            update["image"] = image;
+            crawlDataProductUpdate["image"] = image;
           }
           if (mku) {
-            update["mku"] = mku;
+            crawlDataProductUpdate["mku"] = mku;
           }
           const properties = ["ean", "image"];
           properties.forEach((prop) => {
-            if (!update[prop]) {
+            if (!crawlDataProductUpdate[prop]) {
               infos.missingProperties[shopDomain][prop]++;
             }
           });
           if (isEan) {
-            update["ean_prop"] = "found";
+            crawlDataProductUpdate["ean_prop"] = "found";
           } else {
-            infos.missingProperties[shopDomain].hashes.push(_id.toString());
-            update["ean_prop"] = ean ? "invalid" : "missing";
+            infos.missingProperties[shopDomain].hashes.push(
+              crawlDataProductUpdate["s_hash"]
+            );
+            crawlDataProductUpdate["ean_prop"] = ean ? "invalid" : "missing";
           }
           delete product._id;
           await createOrUpdateCrawlDataProduct(shopDomain, {
             ...product,
-            ...update,
+            ...crawlDataProductUpdate,
           });
         } else {
-          infos.missingProperties[shopDomain].hashes.push(_id.toString());
-          const properties = ["ean", "image"];
-          properties.forEach((prop) => {
-            if (!product[prop]) {
-              infos.missingProperties[shopDomain][prop]++;
-            }
-          });
-          await updateCrawledProduct(shopDomain, link, {
+          const crawlDataProductUpdate = {
             ean_locked: false,
             ean_prop: "missing",
             ean_taskId: "",
-          });
+          };
+          await updateCrawlDataProduct(
+            shopDomain,
+            crawlDataProductLink,
+            crawlDataProductUpdate
+          );
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
@@ -169,9 +181,12 @@ export default async function crawlEan(task) {
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
-            await updateProgressInMatchTasks(shops); // update matching tasks
-            await updateProgressInLookupInfoTask(); // update lookup info task
+            await Promise.all([
+              updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+              updateProgressInMatchTasks(shops), // update matching tasks
+              updateProgressInLookupInfoTask(), // update lookup info task
+              updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
+            ]);
             handleResult(r, resolve, reject);
           });
         }
@@ -181,14 +196,18 @@ export default async function crawlEan(task) {
       const handleNotFound = async (cause) => {
         infos.notFound++;
         if (cause === "timeout") {
-          await updateCrawledProduct(shopDomain, link, {
+          await updateCrawlDataProduct(shopDomain, crawlDataProductLink, {
             ean_locked: false,
             ean_prop: "timeout",
             ean_taskId: "",
           });
         } else {
-          await moveCrawledProduct(shopDomain, "grave", _id);
-          await moveArbispotterProduct(shopDomain, "grave", _id);
+          await moveCrawledProduct(shopDomain, "grave", crawlDataProductLink);
+          await moveArbispotterProduct(
+            shopDomain,
+            "grave",
+            crawlDataProductLink
+          );
           if (infos.total >= _productLimit - 1 && !queue.idle()) {
             await checkProgress({
               queue,
@@ -197,9 +216,12 @@ export default async function crawlEan(task) {
               productLimit: _productLimit,
             }).catch(async (r) => {
               clearInterval(interval);
-
-              await updateProgressInMatchTasks(shops); // update matching tasks
-              await updateProgressInLookupInfoTask(); // update lookup info task
+              await Promise.all([
+                updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+                updateProgressInMatchTasks(shops), // update matching tasks
+                updateProgressInLookupInfoTask(), // update lookup info task
+                updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
+              ]);
               handleResult(r, resolve, reject);
             });
           }
@@ -208,31 +230,26 @@ export default async function crawlEan(task) {
         infos.total++;
       };
 
-      if (link) {
-        queue.pushTask(queryProductPageQueue, {
-          retries: 0,
-          shop,
-          addProduct,
-          onNotFound: handleNotFound,
-          addProductInfo,
-          queue,
-          query: {},
-          prio: 0,
-          extendedLookUp: false,
-          limit: undefined,
-          prodInfo: undefined,
-          isFinished: undefined,
-          pageInfo: {
-            link,
-            name: shop.d,
-          },
-        });
-      } else {
-        await moveArbispotterProduct(shopDomain, "grave", _id);
-        await moveCrawledProduct(shopDomain, "grave", _id);
-        infos.shops[shopDomain]++;
-        infos.total++;
-      }
+      queue.pushTask(queryProductPageQueue, {
+        retries: 0,
+        shop,
+        addProduct,
+        targetShop: {
+          name: shopDomain,
+          prefix: "",
+          d: shopDomain,
+        },
+        onNotFound: handleNotFound,
+        addProductInfo,
+        queue,
+        query: {},
+        prio: 0,
+        extendedLookUp: false,
+        pageInfo: {
+          link: crawlDataProductLink,
+          name: shop.d,
+        },
+      });
     }
   });
 }

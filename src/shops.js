@@ -208,20 +208,20 @@ export const shops = {
               sel: "div[class*=sr-resultItemLink] a",
               type: "href",
             },
-            {
-              content: "link",
-              sel: 'span[role=button][data-wishlist-heart*="{"]',
-              urls: {
-                redirect:
-                  "https://www.idealo.de/relocator/relocate?offerKey=<key>&type=oc_offer",
-                default:
-                  "https://www.idealo.de/preisvergleich/OffersOfProduct/",
-              },
-              attr: "data-wishlist-heart",
-              key: "offerKey",
-              redirect_regex: "^[0-9a-f]{32}$",
-              type: "parse_json",
-            },
+            // {
+            //   content: "link",
+            //   sel: 'span[role=button][data-wishlist-heart*="{"]',
+            //   urls: {
+            //     redirect:
+            //       "https://www.idealo.de/relocator/relocate?offerKey=<key>&type=oc_offer",
+            //     default:
+            //       "https://www.idealo.de/preisvergleich/OffersOfProduct/",
+            //   },
+            //   attr: "data-wishlist-heart",
+            //   key: "offerKey",
+            //   redirect_regex: "^[0-9a-f]{32}$",
+            //   type: "parse_json",
+            // },
             {
               content: "image",
               sel: "div[class*=sr-resultItemTile__imageSection] noscript",
@@ -338,7 +338,6 @@ export const shops = {
     category: [],
     crawlActions: [],
     d: "alternate.de",
-    entryPoint: "https://www.alternate.de",
     entryPoints: [
       {
         url: "https://www.alternate.de",
@@ -861,6 +860,11 @@ export const shops = {
           type: "href",
           visible: false,
         },
+        {
+          sel: "div.react-category-tiles a",
+          type: "href",
+          visible: false,
+        },
       ],
     },
     crawlActions: [],
@@ -871,7 +875,7 @@ export const shops = {
         category: "default",
       },
     ],
-    exceptions: [],
+    exceptions: ["https://cdn.alza.cz/Foto/ImgGalery/boxImgPlaceholder-f1.png"],
     hasEan: true,
     manualCategories: [],
     mimic: "a.header-alz-42 img",
@@ -891,7 +895,7 @@ export const shops = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 500,
+      min: 700,
       max: 800,
     },
     product: [
@@ -900,6 +904,7 @@ export const shops = {
         type: "parse_json_element",
         content: "ean",
         parent: "div[id=content0c]",
+        regex: '"gtin13":\\s*"(\\d+)"',
         multiple: true,
         path: "gtin13",
       },
@@ -918,6 +923,12 @@ export const shops = {
         parent: "div[id=content0c]",
         multiple: true,
         path: "mpn",
+      },
+      {
+        sel: "div.availabilityTextBlock",
+        parent: "div.commodityAvailabilityBlock",
+        content: "instock",
+        type: "text",
       },
     ],
     productList: [
@@ -1037,6 +1048,12 @@ export const shops = {
         sel: "img",
         type: "src",
         content: "image",
+      },
+      {
+        parent: "div.product-status",
+        sel: "span",
+        type: "text",
+        content: "instock",
       },
     ],
     productList: [
@@ -1441,7 +1458,8 @@ export const shops = {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "ean",
-        path: "gtin",
+        regex: '"gtin":\\s*"(\\d+)"',
+        path: ["gtin", "[1].gtin", "[0].gtin"],
       },
       {
         sel: "script[type='application/ld+json']",
@@ -1454,6 +1472,12 @@ export const shops = {
         sel: "img",
         type: "src",
         content: "image",
+      },
+      {
+        sel: "div.po-stock-information",
+        parent: "div.atcf-actions",
+        content: "instock",
+        type: "text",
       },
     ],
     productList: [
@@ -1589,6 +1613,12 @@ export const shops = {
         type: "src",
         content: "image",
       },
+      {
+        sel: "div.mu-delivery-selector-option__text",
+        parent: "div.mu-delivery-selector-option__info-container",
+        content: "instock",
+        type: "text",
+      },
     ],
     productList: [
       {
@@ -1718,6 +1748,12 @@ export const shops = {
         parent: "div[id=av_articleheader]",
         type: "content",
         content: "ean",
+      },
+      {
+        sel: "p.availability",
+        parent: "div[id=av_inbasket]",
+        content: "instock",
+        type: "text",
       },
     ],
     productList: [
@@ -2384,11 +2420,11 @@ export const shops = {
     actions: [],
     paginationEl: [],
     productList: [],
-    // pauseOnProductPage: {
-    //   pause: true,
-    //   min: 500,
-    //   max: 800,
-    // },
+    pauseOnProductPage: {
+      pause: true,
+      min: 600,
+      max: 900,
+    },
     product: [
       {
         sel: "img",
@@ -2416,6 +2452,13 @@ export const shops = {
         parent: "table.product-detail-table-right",
         type: "text",
         content: "totalOfferCount",
+        step: 1,
+      },
+      {
+        sel: "tbody tr:nth-child(2) td:nth-child(5)",
+        parent: "table.product-detail-table-right",
+        type: "text",
+        content: "a_prc",
         step: 1,
       },
       {
@@ -2571,14 +2614,14 @@ export const shops = {
       ],
     },
     waitUntil: {
-      product: "domcontentloaded",
-      entryPoint: "domcontentloaded",
+      product: "load",
+      entryPoint: "load",
     },
   },
   "ebay.de": {
     active: true,
     d: "ebay.de",
-    entryPoint: [
+    entryPoints: [
       {
         url: "https://www.ebay.de",
         category: "default",
@@ -2620,9 +2663,39 @@ export const shops = {
     ],
     proxyType: "mix",
     queryActions: [],
+    product: [
+      {
+        sel: "div[data-testid=x-about-this-item] div[data-testid='ux-layout-section-evo__item']",
+        head: "dt",
+        row: "dd",
+        type: "table",
+        content: "ean",
+      },
+      {
+        sel: "img",
+        parent: "div.ux-image-carousel-item",
+        type: "src",
+        content: "image",
+      },
+      {
+        parent: "div.seo-breadcrumbs-container",
+        sel: "li",
+        listItemInnerSel: "a",
+        type: "list",
+        content: "categories",
+        listItemType: "href",
+      },
+      {
+        parent: "div[id=mainContent]",
+        sel: "div.x-price-primary span.ux-textspans",
+        content: "price",
+        type: "text",
+      },
+    ],
     queryUrlSchema: [
       {
-        baseUrl: "https://www.ebay.de/sch/i.html?_nkw=<query>",
+        baseUrl:
+          "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&_nkw=<query>&_sacat=0&LH_BIN=1&_sop=15&LH_ItemCondition=3&LH_SellerType=2",
         category: "default",
       },
     ],

@@ -1,7 +1,7 @@
 import {
   countProducts,
   findProducts,
-  updateProduct,
+  updateArbispotterProduct,
 } from "../src/services/db/util/crudArbispotterProduct.js";
 import { calculateOnlyArbitrage, safeParsePrice } from "@dipmaxtech/clr-pkg";
 import { getActiveShops } from "../src/services/db/util/shops.js";
@@ -80,7 +80,7 @@ const cleansingProducts = async () => {
               update["e_mrgn_pct"] = 0;
             }
             setTimeout(async () => {
-              await updateProduct(shopDomain, pro.lnk, update);
+              await updateArbispotterProduct(shopDomain, pro.lnk, update);
             }, index * 500);
           }
         }, i * 1000);

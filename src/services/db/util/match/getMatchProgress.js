@@ -1,10 +1,9 @@
-import { getCrawlDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../../mongo.js";
 import {
   countTotalProductsForMatchQuery,
   countPendingProductsForMatchQuery,
-} from "./queries.js";
+} from "../../util/queries.js";
 
-//crawler-data
 export const countPendingProductsForMatch = async (
   shopProductCollectionName,
   hasEan

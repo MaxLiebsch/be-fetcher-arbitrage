@@ -17,13 +17,14 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
+import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
-import { lookForUnmatchedEans } from "./db/util/lookForUnmatchedEans.js";
+import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
-import { updateProduct } from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+import { createArbispotterCollection } from "./db/mongo.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -49,7 +50,8 @@ export default async function lookupInfo(task) {
       productLimit
     );
 
-    shops.forEach((info) => {
+    shops.forEach(async (info) => {
+      await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
       infos.missingProperties[info.shop.d] = {
         ean: 0,
@@ -67,6 +69,9 @@ export default async function lookupInfo(task) {
     const toolInfo = await getShop("sellercentral.amazon.de");
 
     infos.locked = products.length;
+
+    //Update task progress
+    await updateProgressInLookupInfoTask();
 
     const startTime = Date.now();
 
@@ -106,24 +111,23 @@ export default async function lookupInfo(task) {
 
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
-      const { product, shop } = products[index];
+      const { product: crawlDataProduct, shop } = products[index];
       const shopDomain = shop.d;
+      const hasEan = shop.hasEan || shop?.ean;
       const {
         name,
-        description,
         category: ctgry,
-        nameSub,
         ean,
+        asin,
         hasMnfctr,
         mnfctr: manufacturer,
         price: prc,
         promoPrice: prmPrc,
         image: img,
-        link: lnk,
+        link: crawlDataProductLink,
         shop: s,
-      } = product;
+      } = crawlDataProduct;
 
-      const _id = product._id;
       let mnfctr = "";
       let prodNm = "";
 
@@ -138,11 +142,10 @@ export default async function lookupInfo(task) {
 
       let procProd = {
         ctgry,
-        asin: "",
         mnfctr,
         nm: prodNm,
         img: prefixLink(img, s),
-        lnk: prefixLink(lnk, s),
+        lnk: prefixLink(crawlDataProductLink, s),
         prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
       };
 
@@ -150,11 +153,12 @@ export default async function lookupInfo(task) {
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const processedProductUpdate = generateUpdate(productInfo, prc);
-          await upsertAsin(processedProductUpdate.asin, [ean]);
+          
+          if (hasEan && ean) {
+            await upsertAsin(processedProductUpdate.asin, [ean]);
+            processedProductUpdate["eanList"] = [ean];
+          }
 
-          processedProductUpdate["aznUpdatedAt"] = new Date().toISOString();
-
-          processedProductUpdate["eanList"] = [ean];
           processedProductUpdate["a_orgn"] = "a";
           processedProductUpdate["a_pblsh"] = true;
 
@@ -162,6 +166,8 @@ export default async function lookupInfo(task) {
             info_locked: false,
             info_taskId: "",
             info_prop: "complete",
+            aznUpdatedAt: new Date().toISOString(),
+            costs: processedProductUpdate.costs,
             asin: processedProductUpdate.asin,
           };
           const updatedProduct = { ...procProd, ...processedProductUpdate };
@@ -175,10 +181,16 @@ export default async function lookupInfo(task) {
           } else {
             infos.failedSave++;
           }
-          await updateCrawledProduct(shopDomain, lnk, crawlDataProductUpdate);
+          await updateCrawlDataProduct(
+            shopDomain,
+            crawlDataProductLink,
+            crawlDataProductUpdate
+          );
         } else {
-          infos.missingProperties[shopDomain].hashes.push(_id.toString());
-          await updateProduct(shopDomain, lnk, {
+          infos.missingProperties[shopDomain].hashes.push(
+            crawlDataProduct.s_hash
+          );
+          await updateArbispotterProduct(shopDomain, crawlDataProductLink, {
             asin: "",
             a_pblsh: false,
             a_prc: 0,
@@ -194,7 +206,7 @@ export default async function lookupInfo(task) {
             a_p_mrgn_pct: 0,
             a_nm: "",
           });
-          await updateCrawledProduct(shopDomain, lnk, {
+          await updateCrawlDataProduct(shopDomain, crawlDataProductLink, {
             info_locked: false,
             info_prop: "missing",
             info_taskId: "",
@@ -217,7 +229,12 @@ export default async function lookupInfo(task) {
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        await updateProduct(shopDomain, lnk, {
+        const crawlDataProductUpdate = {
+          info_locked: false,
+          info_prop: "missing",
+          info_taskId: "",
+        };
+        await updateArbispotterProduct(shopDomain, crawlDataProductLink, {
           asin: "",
           a_prc: 0,
           a_lnk: "",
@@ -232,12 +249,11 @@ export default async function lookupInfo(task) {
           a_p_mrgn_pct: 0,
           a_nm: "",
         });
-        const update = {
-          info_locked: false,
-          info_prop: "missing",
-          info_taskId: "",
-        };
-        await updateCrawledProduct(shopDomain, lnk, update);
+        await updateCrawlDataProduct(
+          shopDomain,
+          crawlDataProductLink,
+          crawlDataProductUpdate
+        );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
             queue: queues,
@@ -256,21 +272,23 @@ export default async function lookupInfo(task) {
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
+        targetShop: {
+          prefix: "",
+          d: shopDomain,
+          name: shopDomain,
+        },
         addProduct,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
         query: {
           product: {
-            value: ean,
-            key: ean,
+            value: hasEan ? ean : asin,
+            key: hasEan ? ean : asin,
           },
         },
         prio: 0,
         extendedLookUp: false,
-        limit: undefined,
-        prodInfo: undefined,
-        isFinished: undefined,
         pageInfo: {
           link: toolInfo.entryPoints[0].url,
           name: toolInfo.d,

@@ -1,22 +1,12 @@
-import { getCrawlAznListingsProgress } from "../services/db/util/getCrawlAznListingsProgress.js";
-import { getLookupInfoProgress } from "../services/db/util/getLookupInfoProgress.js";
-import { getMatchProgress } from "../services/db/util/getMatchProgress.js";
-import { getWholesaleProgress } from "../services/db/util/getWholesaleProgress.js";
-import { findMissingEanShops } from "../services/db/util/lookForMissingEans.js";
-import { getUnmatchecEanShops } from "../services/db/util/lookForUnmatchedEans.js";
+import { getCrawlAznListingsProgress } from "../services/db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getMatchProgress } from "../services/db/util/match/getMatchProgress.js";
+import { getWholesaleProgress } from "../services/db/util/wholesale/getWholesaleProgress.js";
+import { getMissingEanShops } from "../services/db/util/crawlEan/getMissingEanShops.js";
+import { getUnmatchedEanShops } from "../services/db/util/lookupInfo/getUnmatchedEanShops.js";
+import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import { updateTaskWithQuery } from "../services/db/util/tasks.js";
-
-export const updateLookupInfoProgress = async (shopDomain) => {
-  const progress = await getLookupInfoProgress(shopDomain);
-  if (progress)
-    await updateTaskWithQuery(
-      {
-        type: "CRAWL_AZN_LISTINGS",
-        id: `crawl_azn_listings_${shopDomain}`,
-      },
-      { progress }
-    );
-};
+import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
+import { getCrawlEbyListingsProgress } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgress.js";
 
 export const updateMatchProgress = async (shopDomain, hasEan) => {
   const progress = await getMatchProgress(shopDomain, hasEan);
@@ -41,8 +31,34 @@ export const updateCrawlAznListingsProgress = async (shopDomain) => {
   return progress;
 };
 
+export const updateCrawlEbyListingsProgress = async (shopDomain) => {
+  const progress = await getCrawlEbyListingsProgress(shopDomain);
+
+  await updateTaskWithQuery(
+    {
+      type: "CRAWL_EBY_LISTINGS",
+      id: `crawl_eby_listings_${shopDomain}`,
+    },
+    { progress }
+  );
+  return progress;
+};
+
+export const updateProgressInQueryEansOnEbyTask = async () => {
+  const pendingShops = await getUnmatchedQueryEansOnEbyShops();
+  const progress = pendingShops.reduce((acc, { shop, pending }) => {
+    acc.push({
+      shop: shop.d,
+      pending,
+    });
+    return acc;
+  }, []);
+  await updateTaskWithQuery({ id: "query_eans_eby" }, { progress });
+  return progress;
+};
+
 export const updateProgressInCrawlEanTask = async (proxyType = "mix") => {
-  const pendingShops = await findMissingEanShops(proxyType);
+  const pendingShops = await getMissingEanShops(proxyType);
   const progress = pendingShops.reduce((acc, { shop, pending }) => {
     acc.push({
       shop: shop.d,
@@ -54,8 +70,21 @@ export const updateProgressInCrawlEanTask = async (proxyType = "mix") => {
   return progress;
 };
 
+export const updateProgressInLookupCategoryTask = async (proxyType = "mix") => {
+  const pendingShops = await getMissingEbyCategoryShops(proxyType);
+  const progress = pendingShops.reduce((acc, { shop, pending }) => {
+    acc.push({
+      shop: shop.d,
+      pending,
+    });
+    return acc;
+  }, []);
+  await updateTaskWithQuery({ id: "lookup_category", proxyType }, { progress });
+  return progress;
+};
+
 export const updateProgressInLookupInfoTask = async () => {
-  const pendingShops = await getUnmatchecEanShops();
+  const pendingShops = await getUnmatchedEanShops();
   const progress = pendingShops.reduce((acc, { shop, pending }) => {
     acc.push({
       shop: shop.d,
@@ -70,6 +99,6 @@ export const updateProgressInLookupInfoTask = async () => {
 export const updateWholesaleProgress = async (taskId, total) => {
   const progress = await getWholesaleProgress(taskId, total);
 
-  await updateTaskWithQuery({ _id }, { progress });
+  await updateTaskWithQuery({ _id: taskId }, { progress });
   return progress;
 };

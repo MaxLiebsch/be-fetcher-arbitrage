@@ -1,13 +1,13 @@
 import {
   QueryQueue,
-  lookupProductQueue,
-  queryShopQueue,
-  queryURLBuilder,
+  generateUpdate,
+  querySellerInfosQueue,
+  yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult.js";
-import { MissingProductsError, MissingShopError } from "../errors.js";
-import { getShops } from "./db/util/shops.js";
+import { MissingProductsError } from "../errors.js";
+import { getShop } from "./db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -15,29 +15,34 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import {
-  lockProducts,
+  lockWholeSaleProducts,
   updateWholeSaleProduct,
-} from "./db/util/crudWholeSaleSearch.js";
-import { getRedirectUrl } from "./head.js";
-import { AxiosError } from "axios";
+} from "./db/util/wholeSale/crudWholeSaleSearch.js";
 import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
+import { upsertAsin } from "./db/util/asinTable.js";
 
 export default async function wholesale(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, limit, _id, action } = task;
+    const {
+      shopDomain,
+      productLimit,
+      _id,
+      action,
+      userId,
+      browserConcurrency,
+    } = task;
 
-    const targetShops = [
-      { d: "idealo.de", prefix: "i_", name: "idealo" },
-      { d: "amazon.de", prefix: "a_", name: "amazon" },
-    ];
-    const retailerTargetShop = { d: "amazon.de", prefix: "a_", name: "amazon" };
-
-    const rawproducts = await lockProducts(productLimit, _id, action);
+    const wholeSaleProducts = await lockWholeSaleProducts(
+      productLimit,
+      _id,
+      action
+    );
 
     let infos = {
       new: 0,
       total: 0,
       old: 0,
+      failedSave: 0,
       locked: 0,
       missingProperties: {
         name: 0,
@@ -47,232 +52,167 @@ export default async function wholesale(task) {
       },
     };
 
-    if (!rawproducts.length)
+    if (!wholeSaleProducts.length)
       return reject(
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    infos.locked = rawproducts.length;
+    const _productLimit =
+      wholeSaleProducts.length < productLimit
+        ? wholeSaleProducts.length
+        : productLimit;
+
+    infos.locked = wholeSaleProducts.length;
 
     //Update task progress
-    await updateWholesaleProgress(_id, task.progress.total)
+    await updateWholesaleProgress(_id, task.progress.total);
 
     const startTime = Date.now();
 
-    const shops = await getShops(targetShops);
+    const toolInfo = await getShop("sellercentral.amazon.de");
 
-    if (shops === null) return reject(new MissingShopError("", task));
+    const queues = [];
 
-    const idealoShopInfo = shops["idealo.de"];
-    const amazonShopInfo = shops["amazon.de"];
-
-    const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
-      proxyAuth,
-      task
+    await Promise.all(
+      Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
+        async () => {
+          const queue = new QueryQueue(
+            task?.concurrency ? task.concurrency : CONCURRENCY,
+            proxyAuth,
+            task
+          );
+          queues.push(queue);
+          return queue.connect();
+        }
+      )
     );
-    await queue.connect();
 
-    const procProductsPromiseArr = [];
+    const queueIterator = yieldQueues(queues);
 
-    const interval = setInterval(
-      async () =>
-        await checkProgress({ queue, infos, startTime, productLimit }).catch(
-          async (r) => {
-            clearInterval(interval);
-            await updateWholesaleProgress(_id, task.progress.total)
-            handleResult(r, resolve, reject);
-          }
-        ),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
-    for (let index = 0; index < rawproducts.length; index++) {
-      const rawProd = rawproducts[index];
+    const interval = setInterval(async () => {
+      const isDone = queues.every((q) => q.workload() === 0);
+      await updateWholesaleProgress(_id, task.progress.total);
+      if (isDone) {
+        await checkProgress({
+          queue: queues,
+          infos,
+          startTime,
+          productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateWholesaleProgress(_id, task.progress.total);
+          handleResult(r, resolve, reject);
+        });
+      }
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
-      const { name, ean, price, category, _id } = rawProd;
-
-      const procProd = {
-        nm: name,
-        prc: price,
-        mnfctr: "",
-      };
-
-      const prodInfo = {
-        rawProd,
-        procProd,
-        dscrptnSegments: [],
-        nmSubSegments: [],
-      };
-
-      const query = {
-        product: {
-          key: ean,
-          value: ean,
-        },
-        category: "default",
-      };
+    for (let index = 0; index < wholeSaleProducts.length; index++) {
+      const queue = queueIterator.next().value;
+      const wholesaleProduct = wholeSaleProducts[index];
+      const { ean, _id, prc } = wholesaleProduct;
 
       //not needed, I swear I will write clean code
       const addProduct = async (product) => {};
-
-      const isFinished = async (interm) => {
-        if (
-          interm &&
-          interm.intermProcProd.a_nm &&
-          interm.intermProcProd.a_lnk
-        ) {
-          const intermProcProd = interm.intermProcProd;
-
-          const handleNotFound = async () => {
-            const prodInfo = {};
-            Object.entries(intermProcProd).forEach(([key, value]) => {
-              if (key.startsWith("a_")) {
-                prodInfo[key] = value;
-              }
-            });
-
-            await updateWholeSaleProduct(rawProd._id, {
-              ...prodInfo,
-              status: "complete",
-              lookup_pending: false,
-              locked: false,
-              clrName: "",
-            });
-          };
-
-          const addProductInfo = async ({ productInfo, url }) => {
-            const prodInfo = {};
-            prodInfo["a_lnk"] = url;
-            if (productInfo) {
-              const bsr = productInfo.find((info) => info.key === "bsr");
-              const asin = productInfo.find((info) => info.key === "asin");
-              const price = productInfo.find((info) => info.key === "a_prc");
-              const img = productInfo.find((info) => info.key === "a_img");
-
-              prodInfo["bsr"] = bsr?.value ?? [];
-              prodInfo["asin"] = asin?.value ?? "";
-
-              if (price && price > 0) {
-                prodInfo["a_prc"] = price.value;
-              } else {
-                prodInfo["a_prc"] = intermProcProd.a_prc;
-              }
-              if (img) {
-                prodInfo["a_img"] = img.value;
-              }
-              prodInfo["a_mrgn"] = intermProcProd.a_mrgn;
-              prodInfo["a_mrgn_pct"] = intermProcProd.a_mrgn_pct;
-              prodInfo["a_nm"] = intermProcProd.a_nm;
-              prodInfo["a_lnk"] = intermProcProd.a_lnk;
-            } else {
-              Object.entries(intermProcProd).forEach(([key, value]) => {
-                if (key.startsWith("a_")) {
-                  prodInfo[key] = value;
-                }
-              });
-            }
-
-            await updateWholeSaleProduct(rawProd._id, {
-              ...prodInfo,
-              status: "complete",
-              lookup_pending: false,
-              locked: false,
-              clrName: "",
-            });
-          };
-
-          let isOK = true;
-
-          try {
-            if (
-              intermProcProd.a_lnk &&
-              intermProcProd.a_lnk.includes("idealo.de/relocator/relocate")
-            ) {
-              const redirectUrl = await getRedirectUrl(intermProcProd.a_lnk);
-              intermProcProd.a_lnk = redirectUrl;
-            }
-          } catch (error) {
-            if (error instanceof AxiosError) {
-              if (error.response?.status === 404) {
-                isOK = false;
-              }
-            }
-          }
-
-          let link = intermProcProd.a_lnk;
-          if (
-            intermProcProd.a_lnk.startsWith("https://www.amazon.de") &&
-            !intermProcProd.a_lnk.includes("&language=")
-          ) {
-            link = intermProcProd.a_lnk + "&language=de_DE";
-          }
-          if (!isOK) {
-            handleNotFound();
+      const addProductInfo = async ({ productInfo, url }) => {
+        if (productInfo) {
+          const processedProductUpdate = generateUpdate(productInfo, prc);
+          await upsertAsin(processedProductUpdate.asin, [ean]);
+          const result = await updateWholeSaleProduct(_id, {
+            ...processedProductUpdate,
+            status: "complete",
+            lookup_pending: false,
+            locked: false,
+            clrName: "",
+          });
+          if (result.acknowledged) {
+            if (result.upsertedId) infos.new++;
+            else infos.old++;
           } else {
-            queue.pushTask(lookupProductQueue, {
-              retries: 0,
-              shop: amazonShopInfo,
-              addProduct,
-              targetShop: retailerTargetShop,
-              onNotFound: handleNotFound,
-              addProductInfo,
-              queue,
-              query: {},
-              prio: 0,
-              extendedLookUp: false,
-              limit: undefined,
-              prodInfo: undefined,
-              isFinished: undefined,
-              pageInfo: {
-                link,
-                name: amazonShopInfo.d,
-              },
-            });
+            infos.failedSave++;
           }
         } else {
-          await updateWholeSaleProduct(rawProd._id, {
+          const result = await updateWholeSaleProduct(_id, {
             status: "not found",
             lookup_pending: false,
             locked: false,
             clrName: "",
           });
+          if (result.acknowledged) {
+            if (result.upsertedId) infos.new++;
+            else infos.old++;
+          } else {
+            infos.failedSave++;
+          }
         }
-        if (infos.total >= productLimit - 1 && !queue.idle()) {
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
-            queue,
+            queue: queues,
             infos,
             startTime,
-            productLimit,
+            productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateWholesaleProgress(_id, task.progress.total)
+            await updateWholesaleProgress(_id, task.progress.total);
             handleResult(r, resolve, reject);
           });
         }
         infos.total++;
       };
 
-      queue.pushTask(queryShopQueue, {
+      const handleNotFound = async () => {
+        infos.notFound++;
+        const result = await updateWholeSaleProduct(_id, {
+          status: "not found",
+          lookup_pending: false,
+          locked: false,
+          clrName: "",
+        });
+        if (result.acknowledged) {
+          if (result.upsertedId) infos.new++;
+          else infos.old++;
+        } else {
+          infos.failedSave++;
+        }
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue: queues,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            await updateWholesaleProgress(_id, task.progress.total);
+            handleResult(r, resolve, reject);
+          });
+        }
+        infos.total++;
+      };
+
+      queue.pushTask(querySellerInfosQueue, {
         retries: 0,
-        shop: idealoShopInfo,
+        shop: toolInfo,
         addProduct,
+        targetShop: {
+          prefix: "",
+          d: `UserId: ${userId}`,
+          name: `UserId: ${userId}`,
+        },
+        onNotFound: handleNotFound,
+        addProductInfo,
         queue,
-        query,
+        query: {
+          product: {
+            value: ean,
+            key: ean,
+          },
+        },
         prio: 0,
-        prodInfo,
-        targetRetailerList: [retailerTargetShop],
-        extendedLookUp: true,
-        targetShop: retailerTargetShop,
-        limit,
-        isFinished,
+        extendedLookUp: false,
         pageInfo: {
-          link: idealoShopInfo.queryUrlSchema.length
-            ? queryURLBuilder(idealoShopInfo.queryUrlSchema, query).url
-            : idealoShopInfo.entryPoints[0].url,
-          name: idealoShopInfo.d,
+          link: toolInfo.entryPoints[0].url,
+          name: toolInfo.d,
         },
       });
     }
-    await Promise.all(procProductsPromiseArr);
   });
 }

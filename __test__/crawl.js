@@ -1,7 +1,7 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
 
-const shopDomain = "cyberport.de";
+const shopDomain = "alza.de";
 
 const today = new Date();
 const productLimit = 20;
@@ -19,19 +19,18 @@ const task = {
   },
   categories: [
     {
-      "name": "Notebook",
-      "link": "https://www.cyberport.de/notebook-und-tablet.html"
+      "name": "Büro und Schreibwaren",
+      "link": "https://www.alza.de/buero-schreibwaren"
     },
     {
-      "name": "PC&Zubehör",
-      "link": "https://www.cyberport.de/pc-und-zubehoer.html"
-    }
+      "name": "Elektrische Haushaltsgeräte",
+      "link": "https://www.alza.de/haushaltsgerate-und-korperpflege"
+    } 
   ],
   recurrent: true,
   executing: false,
   completed: true,
   createdAt: "2024-04-13T12:19:41.168Z",
-  errored: false,
   startedAt: yesterday.toISOString(),
   completedAt: yesterday.toISOString(),
   productLimit,

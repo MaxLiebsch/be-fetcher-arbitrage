@@ -1,0 +1,53 @@
+import {
+  findArbispotterProducts,
+  updateArbispotterProductQuery,
+} from "../services/db/util/crudArbispotterProduct.js";
+import {
+  updateCrawlDataProduct,
+} from "../services/db/util/crudCrawlDataProduct.js";
+import { getActiveShops } from "../services/db/util/shops.js";
+
+const updateAznUpdatedAt = async () => {
+  const activeShops = await getActiveShops();
+
+  for (const shop of Object.values(activeShops)) {
+    let hasMoreProducts = true;
+    const batchSize = 500;
+    let completed = 0;
+    while (hasMoreProducts) {
+      const products = await findArbispotterProducts(
+        shop.d,
+        {
+          aznUpdatedAt: { $exists: true },
+          a_prc: { $exists: true },
+        },
+        batchSize
+      );
+      if (products.length) {
+        await Promise.all(
+          products.map((p) => {
+            completed++;
+            const dataUpdate = {};
+            dataUpdate["aznUpdatedAt"] = p.aznUpdatedAt;
+            return Promise.all([
+              updateArbispotterProductQuery(shop.d, p.lnk, {
+                $unset: { aznUpdatedAt: "" },
+              }),
+              updateCrawlDataProduct(shop.d, p.lnk, dataUpdate),
+            ]);
+          })
+        );
+        console.log(
+          `Updated aznUpdatedAt in ${completed} products for ${shop.d}`
+        );
+      } else {
+        console.log(`No updates needed in shop ${shop.d}`);
+      }
+      hasMoreProducts = products.length === batchSize;
+    }
+  }
+};
+
+updateAznUpdatedAt().then((r) => {
+  process.exit(0);
+});

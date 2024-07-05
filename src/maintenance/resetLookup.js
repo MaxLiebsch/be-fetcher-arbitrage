@@ -1,5 +1,5 @@
 import { sub } from "date-fns";
-import { updateProducts } from "../src/service/db/util/crudArbispotterProduct.js";
+import { updateArbispotterProducts } from "../src/service/db/util/crudArbispotterProduct.js";
 import { findTask, updateTask } from "../src/service/db/util/tasks.js";
 import { updateCrawlDataProducts } from "../src/service/db/util/crudCrawlDataProduct.js";
 
@@ -21,7 +21,7 @@ const main = async () => {
   const res = await Promise.all(
     crawler.map(async (crawler) => {
       const update = lookup
-        ? await updateProducts(
+        ? await updateArbispotterProducts(
             shopDomain,
             {
               taskId: `${crawler}:${task._id.toString()}`,

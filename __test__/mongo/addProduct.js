@@ -15,8 +15,6 @@ const main = async () => {
       image:
         "https://www.alternate.de/p/200x200/3/8/Razer_USB_C_130W_GaN_Charger__Ladeger_t@@1773883.jpg",
       instock: "Auf Lager",
-      locked: false,
-      matched: false,
       mnfctr: "",
       name: "Razer USB-C 130W GaN Charger, Ladegerät",
       nameSub: "schwarz",

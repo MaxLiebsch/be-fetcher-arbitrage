@@ -1,32 +1,32 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "./crudCrawlDataProduct.js";
-import { getAllShopsAsArray } from "./shops.js";
-import { updateTaskWithQuery } from "./tasks.js";
-import { hostname } from "../mongo.js";
-import { getLookupInfoProgress } from "./getLookupInfoProgress.js";
-import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
+import { findCrawlDataProducts } from "../crudCrawlDataProduct.js";
+import { getAllShopsAsArray } from "../shops.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { hostname } from "../../mongo.js";
+import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
+import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
 
-export async function lookForUnmatchedEans(
+export async function lookForMissingEbyCategory(
   taskId,
   proxyType,
   action,
   productLimit
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryEanLookups(
+    const recoveryProducts = await getRecoveryLookupCategory(
       taskId,
       proxyType,
       productLimit
     );
     console.log(
-      "Lookup Info:\n",
+      "Missing Category:\n",
       recoveryProducts.shops
         .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
         .join("")
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getUnmatchecEanShops();
+    const pendingShops = await getMissingEbyCategoryShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -34,11 +34,13 @@ export async function lookForUnmatchedEans(
 
     const numberOfShops = pendingShops.length;
     const productsPerShop = Math.round(productLimit / numberOfShops);
+
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
-        const products = await lockProductsForLookupInfo(
+        const limit = Math.min(pending, productsPerShop);
+        const products = await lockProductsForLookupCategory(
           shop.d,
-          productsPerShop,
+          limit,
           action,
           taskId
         );
@@ -60,7 +62,7 @@ export async function lookForUnmatchedEans(
     }, []);
 
     console.log(
-      "Lookup Info:\n",
+      "Missing Category:\n",
       Object.values(stats)
         .map(
           (info) => `${info.shopDomain}: p: ${info.pending} b: ${info?.batch}\n`
@@ -77,11 +79,14 @@ export async function lookForUnmatchedEans(
   }
 }
 
-export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
+export async function getRecoveryLookupCategory(
+  taskId,
+  proxyType,
+  productLimit
+) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) =>
-      (shop.hasEan || shop?.ean) && shop.active && shop.proxyType === proxyType
+    (shop) => shop.active && shop.proxyType === proxyType
   );
   let pendingShops = [];
   const products = await Promise.all(
@@ -89,7 +94,7 @@ export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
       const products = await findCrawlDataProducts(
         shop.d,
         {
-          info_taskId: `${hostname}:${taskId.toString()}`,
+          cat_taskId: `${hostname}:${taskId.toString()}`,
         },
         productLimit
       );
@@ -106,22 +111,4 @@ export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
     products: shuffle(products).flatMap((ps) => ps),
     shops: pendingShops,
   };
-}
-
-export async function getUnmatchecEanShops() {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => (shop.hasEan || shop?.ean) && shop.active
-  );
-  const lookupInfoProgressPerShop = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const progress = await getLookupInfoProgress(shop.d);
-      return { pending: progress.pending, shop };
-    })
-  );
-
-  const pendingShops = lookupInfoProgressPerShop.filter(
-    (shop) => shop.pending > 0
-  );
-  return pendingShops;
 }

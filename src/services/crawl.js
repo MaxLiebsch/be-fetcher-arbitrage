@@ -5,7 +5,7 @@ import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
 import {
   CONCURRENCY,
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -81,7 +81,7 @@ export default async function crawl(task) {
           await updateMatchProgress(shopDomain, shop.hasEan);
           handleResult(r, res, reject);
         }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
+      DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product) => {
       if (infos.total >= productLimit && !queue.idle()) {
@@ -101,8 +101,6 @@ export default async function crawl(task) {
           infos.total++;
           const result = await createOrUpdateCrawlDataProduct(shopDomain, {
             ...product,
-            locked: false,
-            matched: false,
           });
           if (result.acknowledged) {
             if (result.upsertedId) infos.new++;

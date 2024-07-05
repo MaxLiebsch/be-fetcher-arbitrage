@@ -15,15 +15,27 @@ import {
 3.1 Lookup Info  
   - sellerinformation(name, link, image, asin, buyBoxIsAmazon, costs, sellerRank), calculate marge
 3.2 Match           
-  - shop has no ean, match amazon,ebay, else ebay  
-4.  Crawl Azn Listings
-  - crawl amazon listings
+  - shop has no ean, match amazon,ebay, else ebay
+3.3 Query Eans on Eby
+  - query eans on ebay
+3.4 Lookup Category
+  - lookup category on ebay
+4.1 Crawl Azn Listings
+  - crawl amazon listings 
+4.2 Crawl Eby Listings
+  - crawl ebay listings
 
 System of dependencies:
-  - crawl ean depends on crawl shop (updated in crawl fn after crawl shop)
-  - match and lookup Info depends on crawl ean (updated in crawl ean fn after crawl ean)
-  - aznListings depends on match (updated in match fn after match)
-  - each task (excl. crawl) should update it's own progress in the beginning and end of the task
+  - crawl ean depends on crawl shop 
+    (updated in crawl fn after crawl shop)
+  - match, lookup Info, query eans on eby depends on crawl ean 
+    (updated in crawl ean fn after crawl ean)
+  - lookup category depends on query eans on eby 
+    (updated in query eans on eby fn after query eans on eby)
+  - aznListings, ebyListings depends on match, lookup category, lookup info 
+    (only initially, updated in consequent fn after match, lookup category, lookup info)
+  - each task (excl. crawl) should update it's own progress in the beginning 
+    and end of the task
 */
 
 /*               Queries Crawl (1)                            */
@@ -58,8 +70,8 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
       { ean: { $exists: true, $eq: "" } },
     ];
     query["$or"] = [
-      { info_prop: { $exists: false } },
-      { info_prop: { $eq: "" } },
+      { ean_prop: { $exists: false } },
+      { ean_prop: { $eq: "" } },
     ];
 
     if (limit) {
@@ -117,7 +129,12 @@ export const crawlEanTaskQueryFn = (lowerThenStartedAt) => {
 
 /*               Queries: Lookup Info (3.1) - crawl-data               */
 
-export const lockProductsForLookupInfoQuery = (taskId, limit, action) => {
+export const lockProductsForLookupInfoQuery = (
+  taskId,
+  limit,
+  action,
+  hasEan
+) => {
   let query = {};
   let options = {};
 
@@ -132,7 +149,13 @@ export const lockProductsForLookupInfoQuery = (taskId, limit, action) => {
       { info_prop: { $eq: "" } },
       { info_prop: { $exists: false } },
     ];
-    query["ean"] = { $exists: true, $ne: "" };
+
+    if (hasEan) {
+      query["ean"] = { $exists: true, $ne: "" };
+    } else {
+      query["asin"] = { $exists: true, $ne: "" };
+    }
+
     if (limit) {
       options["limit"] = limit;
     }
@@ -147,24 +170,45 @@ export const setProductsLockedForLookupInfoQuery = (taskId) => {
     },
   };
 };
-export const countPendingProductsLookupInfoQuery = {
-  $and: [
-    {
-      $or: [
-        { info_locked: { $exists: false } },
-        { info_locked: { $eq: false } },
-      ],
-    },
-    {
-      ean: { $exists: true, $ne: "" },
-    },
-    {
-      $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: "" } }],
-    },
-  ],
-};
-export const countTotalProductsForLookupInfoQuery = {};
+export const countPendingProductsLookupInfoQuery = (hasEan) => {
+  const query = {
+    $and: [
+      {
+        $or: [
+          { info_locked: { $exists: false } },
+          { info_locked: { $eq: false } },
+        ],
+      },
+      {
+        $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: "" } }],
+      },
+    ],
+  };
 
+  if (hasEan) {
+    query.$and.push({ ean: { $exists: true, $ne: "" } });
+  } else {
+    query.$and.push({ asin: { $exists: true, $ne: "" } });
+  }
+
+  return query;
+};
+export const countTotalProductsForLookupInfoQuery = (hasEan) => {
+  let query = {};
+
+  if (hasEan) {
+    query["ean"] = {
+      $exists: true,
+      $ne: "",
+    };
+  } else {
+    query["asin"] = {
+      $exists: true,
+      $ne: "",
+    };
+  }
+  return query;
+};
 export const lookupInfoTaskQueryFn = (
   lowerThenStartedAt,
   danglingMatchThreshold
@@ -203,8 +247,14 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
   if (action === "recover") {
     query["taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["locked"] = { $exists: true, $eq: false };
-    query["matched"] = { $exists: true, $eq: false };
+    query["$or"] = [
+      { locked: { $exists: false } },
+      { locked: { $exists: true, $eq: false } },
+    ];
+    query["$or"] = [
+      { matched: { $exists: false } },
+      { matched: { $exists: true, $eq: false } },
+    ];
     if (hasEan) query["ean"] = { $exists: true, $ne: "" };
     if (limit) {
       options["limit"] = limit;
@@ -225,7 +275,8 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
   twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
   let query = {
     $and: [
-      { matched: false, locked: false },
+      { $or: [{ locked: { $exists: false } }, { locked: { $eq: false } }] },
+      { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
       {
         $or: [
           { matchedAt: { $exists: false } },
@@ -278,18 +329,178 @@ export const matchTaskQueryFn = (
   ];
 };
 
-/*          Queries: Crawl Azn listings (4) - arbispotterdb          */
+/*               Queries: Query Eans on Eby (3.3) - crawl-data            */
+
+export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
+  let query = {};
+  let options = {};
+
+  if (action === "recover") {
+    query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
+  } else {
+    query["$or"] = [
+      { eby_locked: { $exists: false } },
+      { eby_locked: { $exists: true, $eq: false } },
+    ];
+    query["$or"] = [
+      { eby_prop: { $eq: "" } },
+      { eby_prop: { $exists: false } },
+    ];
+    query["ean"] = { $exists: true, $ne: "" };
+    if (limit) {
+      options["limit"] = limit;
+    }
+  }
+  return { query, options };
+};
+export const setProductsLockedForQueryEansOnEbyQuery = (taskId) => {
+  return {
+    $set: {
+      eby_locked: true,
+      eby_taskId: `${hostname}:${taskId.toString()}`,
+    },
+  };
+};
+export const countPendingProductsQueryEansOnEbyQuery = {
+  $and: [
+    {
+      $or: [{ eby_locked: { $exists: false } }, { eby_locked: { $eq: false } }],
+    },
+    {
+      ean: { $exists: true, $ne: "" },
+    },
+    {
+      $or: [{ eby_prop: { $exists: false } }, { eby_prop: { $eq: "" } }],
+    },
+  ],
+};
+export const countTotalProductsForQueryEansOnEbyQuery = {
+  ean: { $exists: true, $ne: "" },
+};
+
+export const queryEansOnEbyTaskQueryFn = (
+  lowerThenStartedAt,
+  danglingMatchThreshold
+) => {
+  return [
+    { type: "QUERY_EANS_EBY" },
+    {
+      $or: [
+        { startedAt: { $exists: false } },
+        { startedAt: "" },
+        {
+          startedAt: { $lt: lowerThenStartedAt },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
+  ];
+};
+
+/*              Queries: Lookup Category (3.4) - crawl-data           */
+
+export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
+  let query = {};
+  let options = {};
+
+  if (action === "recover") {
+    query["cat_taskId"] = `${hostname}:${taskId.toString()}`;
+  } else {
+    query["$or"] = [
+      { cat_locked: { $exists: false } },
+      { cat_locked: { $exists: true, $eq: false } },
+    ];
+    query["$or"] = [
+      { cat_prop: { $eq: "" } },
+      { cat_prop: { $exists: false } },
+    ];
+    query["eby_prop"] = { $exists: true, $eq: "complete" };
+    query["esin"] = { $exists: true, $ne: "" };
+    if (limit) {
+      options["limit"] = limit;
+    }
+  }
+  return { query, options };
+};
+export const setProductsLockedForLookupCategoryQuery = (taskId) => {
+  return {
+    $set: {
+      cat_locked: true,
+      cat_taskId: `${hostname}:${taskId.toString()}`,
+    },
+  };
+};
+export const countPendingProductsForLookupCategoryQuery = {
+  $and: [
+    {
+      $or: [{ cat_locked: { $exists: false } }, { cat_locked: { $eq: false } }],
+    },
+    {
+      eby_prop: { $exists: true, $eq: "complete" },
+    },
+    { esin: { $exists: true, $ne: "" } },
+    {
+      $or: [{ cat_prop: { $exists: false } }, { cat_prop: { $eq: "" } }],
+    },
+  ],
+};
+export const countTotalProductsForLookupCategoryQuery = {
+  eby_prop: { $exists: true, $eq: "complete" },
+};
+export const lookupCategoryTaskQueryFn = (
+  lowerThenStartedAt,
+  danglingMatchThreshold
+) => {
+  return [
+    { type: "LOOKUP_CATEGORY" },
+    {
+      $or: [
+        { startedAt: { $exists: false } },
+        { startedAt: "" },
+        {
+          startedAt: { $lt: lowerThenStartedAt },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
+  ];
+};
+
+/*          Queries: Crawl Azn listings (4.1) - crawl-data               */
 
 export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
   let query = {};
   let options = {};
   if (action === "recover") {
-    query["taskId"] = `${hostname}:${taskId.toString()}`;
+    query["azn_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
     query = {
       $and: [
         {
-          $or: [{ lckd: { $exists: false } }, { lckd: { $eq: false } }],
+          $or: [
+            { azn_locked: { $exists: false } },
+            { azn_locked: { $eq: false } },
+          ],
         },
         {
           asin: { $exists: true, $ne: "" },
@@ -312,16 +523,19 @@ export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
 export const setProductsLockedForCrawlAznListingsQuery = (taskId) => {
   return {
     $set: {
-      lckd: true,
-      taskId: `${hostname}:${taskId.toString()}`,
+      azn_locked: true,
+      azn_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
 };
-export const countPendingProductsForCrawlAzinListingsQuery = () => {
-  return {
+export const countPendingProductsForCrawlAznListingsQuery = () => {
+  const query = {
     $and: [
       {
-        lckd: false,
+        $or: [
+          { azn_locked: { $exists: false } },
+          { azn_locked: { $eq: false } },
+        ],
       },
       {
         asin: { $exists: true, $ne: "" },
@@ -334,8 +548,9 @@ export const countPendingProductsForCrawlAzinListingsQuery = () => {
       },
     ],
   };
+  return query;
 };
-export const countCompletedProductsForCrawlAzinListingsQuery = () => {
+export const countCompletedProductsForCrawlAznListingsQuery = () => {
   return {
     $and: [
       {
@@ -359,6 +574,128 @@ export const crawlAznListingsTaskQueryFn = (
 ) => {
   return [
     { type: "CRAWL_AZN_LISTINGS" },
+    {
+      $or: [
+        { startedAt: { $exists: false } },
+        { startedAt: "" },
+        {
+          startedAt: { $lt: lowerThenStartedAt },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        { "progress.pending": { $gt: danglingLookupThreshold } },
+      ],
+    },
+  ];
+};
+
+/*          Queries: Crawl Eby listings (4.2) - crawl-data              */
+
+export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
+  let query = {};
+  let options = {};
+  if (action === "recover") {
+    query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
+  } else {
+    query = {
+      $and: [
+        {
+          $or: [
+            { eby_locked: { $exists: false } },
+            { eby_locked: { $eq: false } },
+          ],
+        },
+        {
+          esin: { $exists: true, $ne: "" },
+        },
+        {
+          ebyCategories: { $exists: true, $ne: [] },
+        },
+        {
+          $or: [
+            { ebyUpdatedAt: { $exists: false } },
+            { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
+          ],
+        },
+      ],
+    };
+  }
+
+  if (limit && action !== "recover") {
+    options["limit"] = limit;
+  }
+  return { options, query };
+};
+export const setProductsLockedForCrawlEbyListingsQuery = (taskId) => {
+  return {
+    $set: {
+      eby_locked: true,
+      eby_taskId: `${hostname}:${taskId.toString()}`,
+    },
+  };
+};
+export const countPendingProductsForCrawlEbyListingsQuery = () => {
+  const query = {
+    $and: [
+      {
+        eby_locked: false,
+      },
+      {
+        esin: { $exists: true, $ne: "" },
+      },
+      {
+        ebyCategories: { $exists: true, $ne: [] },
+      },
+      {
+        $or: [
+          { ebyUpdatedAt: { $exists: false } },
+          { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
+        ],
+      },
+    ],
+  };
+  return query;
+};
+export const countCompletedProductsForCrawlEbyListingsQuery = () => {
+  return {
+    $and: [
+      {
+        esin: { $exists: true, $ne: "" },
+      },
+      {
+        ebyCategories: { $exists: true, $ne: [] },
+      },
+      {
+        $or: [
+          { ebyUpdatedAt: { $exists: true } },
+          { ebyUpdatedAt: { $gte: subDateDaysISO(7) } },
+        ],
+      },
+    ],
+  };
+};
+export const countTotalProductsCrawlEbyListingsQuery = {
+  $and: [
+    {
+      esin: { $exists: true, $ne: "" },
+    },
+    {
+      ebyCategories: { $exists: true, $ne: [] },
+    },
+  ],
+};
+export const crawlEbyListingsTaskQueryFn = (
+  lowerThenStartedAt,
+  danglingLookupThreshold
+) => {
+  return [
+    { type: "CRAWL_EBY_LISTINGS" },
     {
       $or: [
         { startedAt: { $exists: false } },
@@ -447,6 +784,42 @@ export const findTasksQuery = () => {
     lowerThenStartedAt,
     danglingLookupThreshold
   );
+  const crawlEbyListingsTaskQuery = crawlEbyListingsTaskQueryFn(
+    // (4.1)
+    lowerThenStartedAt,
+    danglingLookupThreshold
+  );
+  const queryEansOnEbyTaskQuery = queryEansOnEbyTaskQueryFn(lowerThenStartedAt); // (3.3)
+  const lookupCategoryTaskQuery = lookupCategoryTaskQueryFn(lowerThenStartedAt); // (3.4)
+  const fallbackQuery = {
+    $and: [
+      {
+        maintenance: false,
+      },
+      {
+        $or: [
+          {
+            $and: matchTaskQuery,
+          },
+          {
+            $and: wholesaleTaskQuery,
+          },
+          {
+            $and: queryEansOnEbyTaskQuery,
+          },
+          { $and: crawlEbyListingsTaskQuery },
+          {
+            $and: crawlAznListingsTaskQuery,
+          },
+          { $and: crawlEanTaskQuery },
+          { $and: lookupInfoTaskQuery },
+          {
+            $and: lookupCategoryTaskQuery,
+          },
+        ],
+      },
+    ],
+  };
 
   const query = {
     $and: [
@@ -459,6 +832,15 @@ export const findTasksQuery = () => {
             $and: crawlShopTaskQuery,
           },
           {
+            $and: scanTaskQuery,
+          },
+          {
+            $and: [
+              ...wholesaleTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
+          },
+          {
             $and: [
               ...crawlEanTaskQuery,
               { cooldown: { $lt: new Date().toISOString() } },
@@ -466,7 +848,19 @@ export const findTasksQuery = () => {
           },
           {
             $and: [
+              ...queryEansOnEbyTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
+          },
+          {
+            $and: [
               ...lookupInfoTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
+          },
+          {
+            $and: [
+              ...lookupCategoryTaskQuery,
               { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
@@ -483,10 +877,10 @@ export const findTasksQuery = () => {
             ],
           },
           {
-            $and: scanTaskQuery,
-          },
-          {
-            $and: wholesaleTaskQuery,
+            $and: [
+              ...crawlEbyListingsTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
           },
         ],
       },
@@ -495,12 +889,9 @@ export const findTasksQuery = () => {
 
   return {
     query,
+    fallbackQuery,
     update,
     danglingMatchThreshold,
     danglingLookupThreshold,
-    lookupInfoTaskQuery,
-    matchTaskQuery,
-    crawlAznListingsTaskQuery,
-    crawlEanTaskQuery,
   };
 };

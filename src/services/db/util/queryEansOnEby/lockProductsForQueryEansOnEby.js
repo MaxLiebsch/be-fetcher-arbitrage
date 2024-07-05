@@ -1,19 +1,23 @@
-import { getCrawlDataDb } from "../mongo.js";
+import { getCrawlDataDb } from "../../mongo.js";
 import {
-  lockProductsForLookupInfoQuery,
-  setProductsLockedForLookupInfoQuery,
-} from "./queries.js";
+  lockProductsForQueryEansOnEbyQuery,
+  setProductsLockedForQueryEansOnEbyQuery,
+} from "../../util/queries.js";
 
-export const lockProductsForLookupInfo = async (
+export const lockProductsForQueryEansOnEby = async (
   domain,
   limit = 0,
   action,
   taskId
 ) => {
-  const collectionName = domain  ;
+  const collectionName = domain;
   const db = await getCrawlDataDb();
 
-  const { query, options } = lockProductsForLookupInfoQuery(taskId, limit, action);
+  const { query, options } = lockProductsForQueryEansOnEbyQuery(
+    taskId,
+    limit,
+    action
+  );
 
   const documents = await db
     .collection(collectionName)
@@ -22,8 +26,7 @@ export const lockProductsForLookupInfo = async (
 
   // Update documents to mark them as locked
   if (action !== "recover") {
-    const query = setProductsLockedForLookupInfoQuery(taskId);
-    console.log('query:', query)
+    const query = setProductsLockedForQueryEansOnEbyQuery(taskId);
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

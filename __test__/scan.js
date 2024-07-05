@@ -31,7 +31,6 @@ const task = {
   executing: false,
   completed: true,
   createdAt: "2024-04-13T12:19:41.168Z",
-  errored: false,
   startedAt: yesterday.toISOString(),
   completedAt: yesterday.toISOString(),
   productLimit,

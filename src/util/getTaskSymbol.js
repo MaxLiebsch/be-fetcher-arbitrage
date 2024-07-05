@@ -1,4 +1,3 @@
-
 export const getTaskSymbol = (type) => {
   switch (type) {
     case "CRAWL_SHOP":
@@ -10,6 +9,12 @@ export const getTaskSymbol = (type) => {
     case "MATCH_PRODUCTS":
       return "🧩";
     case "CRAWL_AZN_LISTINGS":
+      return "🔍";
+    case "CRAWL_EBY_LISTINGS":
+      return "🔍";
+    case "QUERY_EANS_EBY":
+      return "🔍";
+    case "LOOKUP_CATEGORY":
       return "🔍";
     case "LOOKUP_INFO":
       return "🔍";

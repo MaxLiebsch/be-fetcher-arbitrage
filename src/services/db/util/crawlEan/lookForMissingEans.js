@@ -1,19 +1,10 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "./crudCrawlDataProduct.js";
-import { getCrawlEanProgress } from "./getCrawlEanProgress.js";
-import { getAllShopsAsArray } from "./shops.js";
-import { updateTaskWithQuery } from "./tasks.js";
-import { hostname } from "../mongo.js";
+import { findCrawlDataProducts } from "../crudCrawlDataProduct.js";
+import { getAllShopsAsArray } from "../shops.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { hostname } from "../../mongo.js";
 import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
-
-/*
- conditons: 
- default:
-  - ean_lookup: false, undefined
-  - ean: false, equals ""
- recover:
-  - ean_taskId: ""
-*/
+import { getMissingEanShops } from "./getMissingEanShops.js";
 
 export async function lookForMissingEans(
   taskId,
@@ -35,7 +26,7 @@ export async function lookForMissingEans(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await findMissingEanShops(proxyType);
+    const pendingShops = await getMissingEanShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -118,21 +109,3 @@ export async function getRecoveryCrawlEan(taskId, proxyType, productLimit) {
   };
 }
 
-export async function findMissingEanShops(proxyType) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
-  );
-
-  const crawlEanProgressPerShop = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const progress = await getCrawlEanProgress(shop.d);
-      return { pending: progress.pending, shop: shop };
-    })
-  );
-
-  const pendingShops = crawlEanProgressPerShop.filter(
-    (shop) => shop.pending > 0
-  );
-  return pendingShops;
-}

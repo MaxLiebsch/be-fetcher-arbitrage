@@ -1,7 +1,7 @@
 import { proxyAuth } from "../src/constants.js";
-import { join } from "path";
 
 import { getPage, mainBrowser } from "@dipmaxtech/clr-pkg";
+import { getShop } from "../src/services/db/util/shops.js";
 
 // const proxyAuth = {
 //   host: "rp.proxyscrape.com:6060",
@@ -11,9 +11,16 @@ import { getPage, mainBrowser } from "@dipmaxtech/clr-pkg";
 
 const secureMode = async () => {
   const browser = await mainBrowser({ id: "test" }, proxyAuth, "126.0.6478.55");
-  const page = await getPage(browser, {}, 1);
+  const shop = await getShop("alza.de");
+  const page = await getPage(
+    browser,
+    shop,
+    1,
+    shop.resourceTypes["crawl"],
+    shop.exceptions
+  );
 
-  await page.goto("https://www.alza.de");
+  await page.goto("https://www.alza.de/buero-schreibwaren");
   // const res = await fetch(
   //   "http://127.0.0.1:8080/change-proxy?proxy=gb"
   // );

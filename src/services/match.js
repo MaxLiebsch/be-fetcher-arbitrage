@@ -14,22 +14,23 @@ import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { getShop, getShops } from "./db/util/shops.js";
-import { updateCrawledProduct } from "./db/util/crudCrawlDataProduct.js";
+import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { getRedirectUrl } from "./head.js";
-import { AxiosError } from "axios";
 import { parseAsinFromUrl } from "../util/parseAsin.js";
 import {
   updateCrawlAznListingsProgress,
+  updateCrawlEbyListingsProgress,
   updateMatchProgress,
 } from "../util/updateProgressInTasks.js";
-import { lockProductsForMatch } from "./db/util/lockProductsForMatch.js";
+import { lockProductsForMatch } from "./db/util/match/lockProductsForMatch.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
+import { parseEsinFromUrl } from "../util/parseEsin.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -109,6 +110,7 @@ export default async function match(task) {
           clearInterval(interval);
           await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
           await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
+          await updateCrawlEbyListingsProgress(shopDomain); // update crawl eby listings progress
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -204,48 +206,42 @@ export default async function match(task) {
               clearInterval(interval);
               await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
               await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
+              await updateCrawlEbyListingsProgress(shopDomain); // update crawl eby listings progress
               handleResult(r, resolve, reject);
             });
           }
           if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
-            const path = targetShopProducts[0].path;
             const procProd = targetShopProducts[0]?.procProd;
-            try {
-              if (
-                procProd.a_lnk &&
-                procProd.a_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
-                procProd.a_lnk = redirectUrl;
-              }
-              if (
-                procProd.e_lnk &&
-                procProd.e_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
-                procProd.e_lnk = redirectUrl;
-              }
-            } catch (error) {
-              if (error instanceof AxiosError) {
-                if (error.response?.status === 404) {
-                  infos.notFound++;
-                }
-              }
+            const path = targetShopProducts[0].path;
+            const crawlDataProductUpdate = {
+              taskId: "",
+              dscrptnSegments,
+              matched: true,
+              locked: false,
+              nmSubSegments,
+              path,
+              query: query.product.value,
+              mnfctr,
+              matchedAt: new Date().toISOString(),
+            };
+
+            await handleRelocateLinks(procProd, infos);
+
+            const esin = parseEsinFromUrl(procProd.e_lnk);
+            if (esin) {
+              procProd["esin"] = esin;
+              crawlDataProductUpdate["eby_prop"] = "complete";
+              crawlDataProductUpdate["esin"] = esin;
             }
+
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
               procProd.asin = asin;
+              crawlDataProductUpdate["asin"] = asin;
             }
-            if (procProd.a_prc) {
-              procProd["aznUpdatedAt"] = new Date().toISOString();
-            }
-            //Publish the product if it has a price && margin
-            if (procProd.e_prc && procProd.e_mrgn) {
-              procProd["e_pblsh"] = true;
-            }
-            if (procProd.a_prc && procProd.a_mrgn) {
-              procProd["a_pblsh"] = true;
-            }
+            
+            procProd['bsr'] = [];
+
             const result = await createOrUpdateArbispotterProduct(
               collectionName,
               procProd
@@ -256,23 +252,11 @@ export default async function match(task) {
             } else {
               infos.failedSave++;
             }
-            const crawlDataProductUpdate = {
-              dscrptnSegments,
-              nmSubSegments,
-              asin: procProd.asin,
-              path,
-              query: query.product.value,
-              mnfctr,
-              matched: true,
-              locked: false,
-              matchedAt: new Date().toISOString(),
-              taskId: "",
-            };
             if (targetShopProducts[0]?.candidates) {
               crawlDataProductUpdate.candidates =
                 targetShopProducts[0]?.candidates;
             }
-            await updateCrawledProduct(
+            await updateCrawlDataProduct(
               shopDomain,
               rawProd.link,
               crawlDataProductUpdate
@@ -283,42 +267,35 @@ export default async function match(task) {
               targetShopProducts,
               prodInfo
             );
-            try {
-              if (
-                procProd.a_lnk &&
-                procProd.a_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.a_lnk);
-                procProd.a_lnk = redirectUrl;
-              }
-              if (
-                procProd.e_lnk &&
-                procProd.e_lnk.includes("idealo.de/relocator/relocate")
-              ) {
-                const redirectUrl = await getRedirectUrl(procProd.e_lnk);
-                procProd.e_lnk = redirectUrl;
-              }
-            } catch (error) {
-              if (error instanceof AxiosError) {
-                if (error.response?.status === 404) {
-                  infos.notFound++;
-                }
-              }
+            const crawlDataProductUpdate = {
+              dscrptnSegments,
+              nmSubSegments,
+              asin: procProd.asin,
+              path,
+              bsr: [],
+              query: query.product.value,
+              mnfctr,
+              matchedAt: new Date().toISOString(),
+              taskId: "",
+              matched: true,
+              locked: false,
+              candidates,
+            };
+            await handleRelocateLinks(procProd, infos);
+
+            const esin = parseEsinFromUrl(procProd.e_lnk);
+            if (esin) {
+              crawlDataProductUpdate["eby_prop"] = "complete";
+              crawlDataProductUpdate["esin"] = esin;
+              procProd["esin"] = esin;
             }
+
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
               procProd.asin = asin;
+              crawlDataProductUpdate["asin"] = asin;
             }
-            if (procProd.a_prc) {
-              procProd["aznUpdatedAt"] = new Date().toISOString();
-            }
-            //Publish the product if it has a price
-            if (procProd.e_prc && procProd.e_mrgn) {
-              procProd["e_pblsh"] = true;
-            }
-            if (procProd.a_prc && procProd.a_mrgn) {
-              procProd["a_pblsh"] = true;
-            }
+
             const result = await createOrUpdateArbispotterProduct(
               collectionName,
               procProd
@@ -329,19 +306,11 @@ export default async function match(task) {
             } else {
               infos.failedSave++;
             }
-            await updateCrawledProduct(shopDomain, rawProd.link, {
-              matched: true,
-              locked: false,
-              asin: procProd.asin,
-              price: procProd.prc,
-              taskId: "",
-              query: query.product.value,
-              dscrptnSegments,
-              nmSubSegments,
-              matchedAt: new Date().toISOString(),
-              mnfctr,
-              candidates,
-            });
+            await updateCrawlDataProduct(
+              shopDomain,
+              rawProd.link,
+              crawlDataProductUpdate
+            );
             return procProd;
           }
         })

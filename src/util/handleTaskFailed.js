@@ -1,0 +1,27 @@
+import { COOLDOWN, COOLDOWN_MULTIPLIER } from "../constants.js";
+import { hostname } from "../services/db/mongo.js";
+
+export const handleTaskFailed = async (id, retry) => {
+  const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
+  const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
+  
+  const update = {
+    cooldown,
+    executing: false,
+  };
+  if (retry < MAX_TASK_RETRIES) {
+    update["retry"] = retry + 1;
+    update["completedAt"] = "";
+  } else {
+    update["cooldown"] = new Date(
+      Date.now() + COOLDOWN * COOLDOWN_MULTIPLIER
+    ).toISOString();
+    update["completedAt"] = new Date().toISOString();
+    update["retry"] = 0;
+  }
+
+  await updateTask(id, {
+    $set: update,
+    $pull: { lastCrawler: hostname },
+  });
+};

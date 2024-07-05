@@ -1,4 +1,4 @@
-import { getCrawlDataDb , hostname} from "../mongo.js";
+import { getCrawlDataDb, hostname } from "../../mongo.js";
 
 const collectionName = "wholesale";
 
@@ -22,7 +22,7 @@ export const unlockProduts = async (products) => {
   );
 };
 
-export const lockProducts = async (limit = 0, taskId, action) => {
+export const lockWholeSaleProducts = async (limit = 0, taskId, action) => {
   const db = await getCrawlDataDb();
 
   const options = {};
@@ -63,8 +63,8 @@ export const updateWholeSaleProduct = async (productId, update) => {
   const collection = db.collection(collectionName);
 
   update["updatedAt"] = new Date().toISOString();
-  
-  await collection.updateOne(
+
+  return collection.updateOne(
     { _id: productId },
     {
       $set: {

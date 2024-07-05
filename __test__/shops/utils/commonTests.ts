@@ -12,8 +12,10 @@ import {
   lookupProductQueue,
   mainBrowser,
   paginationUrlBuilder,
+  queryEansOnEbyQueue,
   queryProductPageQueue,
   querySellerInfosQueue,
+  queryURLBuilder,
 } from "@dipmaxtech/clr-pkg";
 import { Page } from "puppeteer";
 import { MockQueue } from "./MockQueue.js";
@@ -417,10 +419,114 @@ export const querySellerInfos = async (addProductInfo: any, ean: string) => {
   }
 };
 
-export const queryAznListing = async (
-  addProductInfo: any,
-  offer: string
+export const queryEansOnEby = async (
+  addProduct: any,
+  onNotFound: any,
+  isFinished: any,
+  ean: string
 ) => {
+  if (page && shops && shops[shopDomain]) {
+    const query = {
+      brand: { key: "", value: "" },
+      year: { min: 0, max: 0 },
+      model: { key: "", value: "" },
+      category: "",
+      product: {
+        value: ean,
+        key: ean,
+      },
+    };
+    await page.goto(
+      queryURLBuilder(shops[shopDomain].queryUrlSchema, query).url
+    );
+    return await queryEansOnEbyQueue(page, {
+      shop: shops[shopDomain],
+      addProduct,
+      isFinished,
+      query,
+      onNotFound,
+      // @ts-ignore
+      queue: new MockQueue(),
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      pageInfo: {
+        name: "",
+        link: shops[shopDomain].entryPoints[0].url,
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+    });
+  }
+};
+
+export const queryEbayCategory = async (addProductInfo: any, ean: string) => {
+  if (page && shops && shops[shopDomain]) {
+    return await querySellerInfosQueue(page, {
+      shop: shops[shopDomain],
+      addProductInfo,
+      query: {
+        brand: { key: "", value: "" },
+        year: { min: 0, max: 0 },
+        model: { key: "", value: "" },
+        category: "",
+        product: {
+          value: ean,
+          key: ean,
+        },
+      },
+      // @ts-ignore
+      queue: new MockQueue(),
+      categoriesHeuristic: {
+        subCategories: {
+          0: 0,
+          "1-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "+50": 0,
+        },
+        mainCategories: 0,
+      },
+      productPageCountHeuristic: {
+        0: 0,
+        "1-9": 0,
+        "10-49": 0,
+        "+50": 0,
+      },
+      pageInfo: {
+        name: "",
+        link: shops[shopDomain].entryPoints[0].url,
+      },
+      limit: {
+        pages: 5,
+        mainCategory: 0,
+        subCategory: 0,
+      },
+    });
+  }
+};
+
+export const queryAznListing = async (addProductInfo: any, offer: string) => {
   if (page && shops && shops[shopDomain]) {
     await page.goto(offer);
     return await lookupProductQueue(page, {

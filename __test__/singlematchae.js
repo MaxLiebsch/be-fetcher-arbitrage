@@ -21,8 +21,6 @@ const rawProd = {
   description:
     "Typ: Digital Mikroskop Technologie: 20x - 500x Ausführung: mit 3´´ Monitor Approbation: 0,5 MP Batterietyp: Li-Ion-Akku Breite: 130 mm Höhe: 112 mm Tiefe: 28 mm Farbe: schwarz",
   image: "/resize/150/150/web/artikel_ws/D100/PCE_DHM_10_01.jpg?20210317",
-  locked: false,
-  matched: true,
   name: "PCE DHM 10 - Digital-Mikroskop",
   nameSub: "",
   price: "243,54",

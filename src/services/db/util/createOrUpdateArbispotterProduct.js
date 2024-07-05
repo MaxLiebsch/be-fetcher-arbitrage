@@ -2,7 +2,8 @@ import { subDateDaysISO } from "../../../util/dates.js";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
   findProductByLink,
-  updateProduct,
+  insertArbispotterProduct,
+  updateArbispotterProduct,
   upsertProduct,
 } from "./crudArbispotterProduct.js";
 
@@ -14,9 +15,6 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
     if (product) {
       if (a_lnk && product.a_hash) {
         if (!verifyHash(a_lnk, product.a_hash)) {
-          if (!bsr || !bsr.length) {
-            procProd["bsr"] = [];
-          }
           // Remove keepa properties
           const keepaProperties = [
             { name: "categories" },
@@ -38,15 +36,14 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
             { name: "avg90_ansprcs" }, // Average of the Amazon history prices of the last 90 days
             { name: "avg90_ausprcs" }, // Average of the Amazon history prices of the last 90 days
             { name: "avg90_salesRank" }, // Average of the Amazon history prices of the last 90 days
-            { name: "buyBoxIsAmazon" },
+            // { name: "buyBoxIsAmazon" },
             { name: "stockAmount" }, //  The stock of the Amazon offer, if available. Otherwise undefined.
             { name: "stockBuyBox" }, // he stock of the buy box offer, if available. Otherwise undefined.
-            { name: "totalOfferCount" }, // The total count of offers for this product (all conditions combined). The offer count per condition can be found in the current field.
+            // { name: "totalOfferCount" }, // The total count of offers for this product (all conditions combined). The offer count per condition can be found in the current field.
           ];
           keepaProperties.forEach((prop) => {
             procProd[prop.name] = null;
           });
-          procProd["a_pblsh"] = false;
           procProd["keepaUpdatedAt"] = subDateDaysISO(14);
           procProd.a_hash = createHash(a_lnk);
           procProd.a_vrfd = {
@@ -60,7 +57,6 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
       if (e_lnk && product.e_hash) {
         if (!verifyHash(e_lnk, product.e_hash)) {
           procProd["e_hash"] = createHash(e_lnk);
-          procProd["e_pblsh"] = false;
           procProd["e_vrfd"] = {
             vrfd: false,
             vrfn_pending: true,
@@ -69,7 +65,7 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
           };
         }
       }
-      return await updateProduct(domain, lnk, procProd);
+      return await updateArbispotterProduct(domain, lnk, procProd);
     } else {
       const newProduct = {
         a_pblsh: false,
@@ -101,7 +97,7 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
         newProduct["e_hash"] = e_hash;
       }
 
-      return await upsertProduct(domain, newProduct);
+      return await insertArbispotterProduct(domain, newProduct);
     }
   } catch (error) {
     if (error instanceof MongoServerError) {

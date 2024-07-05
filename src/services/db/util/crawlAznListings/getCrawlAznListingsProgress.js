@@ -1,15 +1,15 @@
-import { getArbispotterDb } from "../mongo.js";
+import { getCrawlDataDb } from "../../mongo.js";
 import {
-  countCompletedProductsForCrawlAzinListingsQuery,
-  countPendingProductsForCrawlAzinListingsQuery,
+  countCompletedProductsForCrawlAznListingsQuery,
+  countPendingProductsForCrawlAznListingsQuery,
   countTotalProductsCrawlAznListingsQuery,
-} from "./queries.js";
+} from "../../util/queries.js";
 
 // arbispotter amazon
 export const countTotalProductsCrawlAznListings = async (
   shopProductCollectionName
 ) => {
-  const db = await getArbispotterDb();
+  const db = await getCrawlDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countTotalProductsCrawlAznListingsQuery);
 };
@@ -17,19 +17,21 @@ export const countTotalProductsCrawlAznListings = async (
 export const countCompletedProductsForCrawlAznListings = async (
   shopProductCollectionName
 ) => {
-  const db = await getArbispotterDb();
+  const db = await getCrawlDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(
-    countCompletedProductsForCrawlAzinListingsQuery
+    countCompletedProductsForCrawlAznListingsQuery
   );
 };
 
 export const countPendingProductsForCrawlAznListings = async (
   shopProductCollectionName
 ) => {
-  const db = await getArbispotterDb();
+  const db = await getCrawlDataDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
-  return shopProductCollection.count(countPendingProductsForCrawlAzinListingsQuery());
+  return shopProductCollection.count(
+    countPendingProductsForCrawlAznListingsQuery()
+  );
 };
 
 export const getCrawlAznListingsProgress = async (shopDomain) => {

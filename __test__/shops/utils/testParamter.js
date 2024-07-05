@@ -1,6 +1,9 @@
 import { sub } from "date-fns";
 
 const testParameters = {
+  "ebay.de": {
+    productPageUrl: "https://www.ebay.de/itm/134266596559?epid=241462519&itmmeta=01J1WFJSHJVY3V58KJEBKB69MW&hash=item1f42e9accf:g:OtgAAOSwbtNjPkF6&itmprp=enc%3AAQAJAAAAwGz1B%2FHf2sTMNHVePpiHPxSgUjf31vmHjsqWzDmO1r9FFCm%2Bxe%2FP%2BicUeEJpf%2BDGBrBaLCs1N2g1ivw%2FjmnclTxWYX6fSUq5MWpDXXAIP4gYKMJfbaShTEKbINjWZTsRXLBygTPmTsowK5PsVssA%2F14EbITu4KHOxTZ3h%2FV6HyGYKlLHfvBGBdq%2FTEqeqqVTBpp1tUoHMxDuyaCiBO5ZX1I2P08jyp7qvwZmQ27H4VMNhpU2HjLTUUrc6Z7LWmAYwg%3D%3D%7Ctkp%3ABk9SR_KYy4-PZA"
+  },
   "bergfreunde.de": {
     productPageUrl: "https://www.bergfreunde.de/stoic-womens-performance-merino150-bydalenst-shirt-merinoshirt",
   },
@@ -48,7 +51,7 @@ const testParameters = {
   },
   "fressnapf.de": {
     productPageUrl:
-      "https://www.fressnapf.de/p/quiko-hand-formula-3-kg-handaufzucht-fuer-papageien-und-sittiche---handfuetterung-von-jungvoegeln-1387817/",
+      "https://www.fressnapf.de/p/orijen-original-cat-340-g-1261000/",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,
@@ -75,7 +78,7 @@ const testParameters = {
   },
   "alza.de": {
     productPageUrl:
-      "https://www.alza.de/epson-workforce-pro-wf-3820dwf-d6204051.htm",
+      "https://www.alza.de/soundmaster-pdb1600sw-d6361089.htm",
     productsPerPage: 24,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 48,
@@ -99,12 +102,12 @@ const testParameters = {
       "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",
   },
   "idealo.de": {
+    productPageUrl:
+      "https://www.idealo.de/preisvergleich/OffersOfProduct/202961754_-sport-bag-2023-satch.html",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
-    productPageUrl:
-      "https://www.idealo.de/preisvergleich/OffersOfProduct/200732946_-ryzen-9-5950x-amd.html",
     initialProductPageUrl:
       "https://www.idealo.de/preisvergleich/ProductCategory/10832.html",
     subCategoryUrl:

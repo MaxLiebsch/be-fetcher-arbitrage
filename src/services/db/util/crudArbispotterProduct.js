@@ -6,7 +6,12 @@ export const countProducts = async (domain, query = {}) => {
   const collection = db.collection(collectionName);
   return collection.countDocuments({ ...query });
 };
-export const findArbispotterProducts = async (domain, query, limit = 500, page = 0) => {
+export const findArbispotterProducts = async (
+  domain,
+  query,
+  limit = 500,
+  page = 0
+) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
@@ -40,7 +45,36 @@ export const upsertProduct = async (domain, product) => {
     upsert: true,
   });
 };
-export const updateProduct = async (domain, link, update) => {
+
+export const insertArbispotterProduct = async (domain, product) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+
+  product["createdAt"] = new Date().toISOString();
+  product["updatedAt"] = new Date().toISOString();
+
+  return collection.insertOne(product);
+};
+
+export const updateArbispotterProductQuery = async (domain, link, query) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  if (query?.$set) {
+    query.$set["updatedAt"] = new Date().toISOString();
+  } else {
+    query["$set"] = { updatedAt: new Date().toISOString() };
+  }
+
+  return collection.updateOne(
+    { lnk: link },
+    {
+      ...query,
+    }
+  );
+};
+export const updateArbispotterProduct = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
@@ -54,21 +88,26 @@ export const updateProduct = async (domain, link, update) => {
     }
   );
 };
-export const moveArbispotterProduct = async (from, to, _id) => {
-  const fromCollectionName = from;
-  const toCollectionName = to;
-  const db = await getArbispotterDb();
-  const fromCollection = db.collection(fromCollectionName);
-  const toCollection = db.collection(toCollectionName);
+export const moveArbispotterProduct = async (from, to, lnk) => {
+  try {
+    const fromCollectionName = from;
+    const toCollectionName = to;
+    const db = await getArbispotterDb();
+    const fromCollection = db.collection(fromCollectionName);
+    const toCollection = db.collection(toCollectionName);
 
-  const product = await fromCollection.findOne({ _id });
+    const product = await fromCollection.findOne({ lnk });
 
-  await toCollection.insertOne(product);
-  await fromCollection.deleteOne({ _id });
+    await toCollection.insertOne(product);
+    await fromCollection.deleteOne({ lnk });
 
-  return product;
+    return product;
+  } catch (error) {
+    console.log("error:", error);
+    return null;
+  }
 };
-export const updateProducts = async (domain, query, update) => {
+export const updateArbispotterProducts = async (domain, query, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
