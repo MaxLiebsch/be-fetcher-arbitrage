@@ -17,7 +17,7 @@ import { checkProgress } from "../util/checkProgress.js";
 import {
   lockWholeSaleProducts,
   updateWholeSaleProduct,
-} from "./db/util/wholeSale/crudWholeSaleSearch.js";
+} from "./db/util/wholesaleSearch/crudWholeSaleSearch.js";
 import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
 import { upsertAsin } from "./db/util/asinTable.js";
 
