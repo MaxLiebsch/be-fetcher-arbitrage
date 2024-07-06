@@ -33,7 +33,7 @@ export const findProductByLink = async (domain, link) => {
   const collection = db.collection(collectionName);
   return collection.findOne({ lnk: link });
 };
-export const upsertProduct = async (domain, product) => {
+export const upsertArbispotterProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);

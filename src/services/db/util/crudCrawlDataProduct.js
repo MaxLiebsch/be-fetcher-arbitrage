@@ -2,7 +2,7 @@ import { createHash } from "../../../util/hash.js";
 import { getCrawlDataDb } from "../mongo.js";
 
 //Add crawled product //crawler-data
-export const upsertCrawledProduct = async (domain, product) => {
+export const upsertCrawlDataProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
@@ -10,17 +10,14 @@ export const upsertCrawledProduct = async (domain, product) => {
   product["updatedAt"] = new Date().toISOString();
 
   const s_hash = createHash(product.link);
-  try {
-    return collection.updateOne(
-      { link },
-      { $set: { ...product, s_hash } },
-      {
-        upsert: true,
-      }
-    );
-  } catch (error) {
-    console.log("error:", error);
-  }
+
+  return collection.updateOne(
+    { link },
+    { $set: { ...product, s_hash } },
+    {
+      upsert: true,
+    }
+  );
 };
 
 export const insertCrawlDataProduct = async (domain, product) => {

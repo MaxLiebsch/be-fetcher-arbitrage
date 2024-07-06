@@ -31,9 +31,7 @@ export default async function crawlEan(task) {
     const { productLimit, _id, action, proxyType, type } = task;
 
     let infos = {
-      new: 0,
       total: 0,
-      old: 0,
       notFound: 0,
       locked: 0,
       shops: {},
@@ -128,7 +126,6 @@ export default async function crawlEan(task) {
             await deleteProduct(shopDomain, crawlDataProductLink);
             crawlDataProductLink = url;
             crawlDataProductUpdate["link"] = url;
-            crawlDataProductUpdate["s_hash"] = createHash(url);
           }
           if (isEan) {
             crawlDataProductUpdate["ean"] = ean;
@@ -142,12 +139,13 @@ export default async function crawlEan(task) {
           if (mku) {
             crawlDataProductUpdate["mku"] = mku;
           }
-          const properties = ["ean", "image"];
+          const properties = ["ean"];
           properties.forEach((prop) => {
             if (!crawlDataProductUpdate[prop]) {
               infos.missingProperties[shopDomain][prop]++;
             }
           });
+          crawlDataProductUpdate["s_hash"] = createHash(crawlDataProductLink);
           if (isEan) {
             crawlDataProductUpdate["ean_prop"] = "found";
           } else {

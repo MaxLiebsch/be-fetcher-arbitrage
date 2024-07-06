@@ -247,15 +247,17 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
   if (action === "recover") {
     query["taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$or"] = [
-      { locked: { $exists: false } },
-      { locked: { $exists: true, $eq: false } },
+    query["$and"] = [
+      { $or: [{ locked: { $exists: false } }, { locked: { $eq: false } }] },
+      { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
+      {
+        $or: [
+          { matchedAt: { $exists: false } },
+          { matchedAt: { $lte: new Date().toISOString() } },
+        ],
+      },
     ];
-    query["$or"] = [
-      { matched: { $exists: false } },
-      { matched: { $exists: true, $eq: false } },
-    ];
-    if (hasEan) query["ean"] = { $exists: true, $ne: "" };
+    if (hasEan) query.$and["ean"] = { $exists: true, $ne: "" };
     if (limit) {
       options["limit"] = limit;
     }
@@ -277,12 +279,6 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
     $and: [
       { $or: [{ locked: { $exists: false } }, { locked: { $eq: false } }] },
       { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
-      {
-        $or: [
-          { matchedAt: { $exists: false } },
-          { matchedAt: { $lte: twentyFourAgo.toISOString() } },
-        ],
-      },
     ],
   };
 

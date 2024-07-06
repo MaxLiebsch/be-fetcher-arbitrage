@@ -52,12 +52,7 @@ export default async function lookupInfo(task) {
 
     shops.forEach(async (info) => {
       await createArbispotterCollection(info.shop.d);
-      infos.shops[info.shop.d] = 0;
-      infos.missingProperties[info.shop.d] = {
-        ean: 0,
-        image: 0,
-        hashes: [],
-      };
+      infos.shops[info.shop.d] = 0; 
     });
 
     if (!products.length)

@@ -25,7 +25,8 @@ async function handleCrawlTask({
   const { limit, productLimit, retry, _id, id, categories, shopDomain } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
-    await handleTaskCompleted(_id, infos);
+    subject += " " + infos.total;
+    await handleTaskCompleted(_id, infos, { executing: false });
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
@@ -247,7 +248,7 @@ async function handleCrawlEbyListingsTask({
 
   return { htmlBody, subject, priority };
 }
-async function handleScanTask({
+async function handleScanTask({ 
   taskResult,
   task,
   completionStatus,

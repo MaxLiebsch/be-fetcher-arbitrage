@@ -4,6 +4,9 @@ import {
   MAX_TASK_RETRIES,
 } from "../constants.js";
 import { hostname } from "../services/db/mongo.js";
+import {
+  updateTask,
+} from "../services/db/util/tasks.js";
 
 export const handleTaskFailed = async (id, retry) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;

@@ -2,9 +2,8 @@ import { subDateDaysISO } from "../../../util/dates.js";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
   findProductByLink,
-  insertArbispotterProduct,
   updateArbispotterProduct,
-  upsertProduct,
+  upsertArbispotterProduct,
 } from "./crudArbispotterProduct.js";
 
 //ARBISPOTTER DB UTILS
@@ -97,7 +96,7 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
         newProduct["e_hash"] = e_hash;
       }
 
-      return await insertArbispotterProduct(domain, newProduct);
+      return await upsertArbispotterProduct(domain, newProduct);
     }
   } catch (error) {
     if (error instanceof MongoServerError) {

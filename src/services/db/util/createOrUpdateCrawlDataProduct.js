@@ -2,9 +2,8 @@ import { MongoServerError } from "mongodb";
 import { createHash } from "../../../util/hash.js";
 import {
   findCrawledProductByLink,
-  insertCrawlDataProduct,
   updateCrawlDataProduct,
-  upsertCrawledProduct,
+  upsertCrawlDataProduct,
 } from "./crudCrawlDataProduct.js";
 
 export const createOrUpdateCrawlDataProduct = async (domain, rawProd) => {
@@ -16,10 +15,8 @@ export const createOrUpdateCrawlDataProduct = async (domain, rawProd) => {
         ...rawProd,
         s_hash,
       });
-    } else {
-      const s_hash = createHash(rawProd.link);
-      rawProd["s_hash"] = s_hash;
-      return await insertCrawlDataProduct(domain, rawProd);
+    } else { 
+      return await upsertCrawlDataProduct(domain, rawProd);
     }
   } catch (error) {
     console.log("error:", error);

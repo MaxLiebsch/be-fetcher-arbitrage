@@ -26,6 +26,7 @@ import {
 import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
 import { lookForMissingEbyCategory } from "./db/util/lookupCategory/lookForMissingEbyCategory.js";
 import { getShop } from "./db/util/shops.js";
+import { createArbispotterCollection } from "./db/mongo.js";
 
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
@@ -38,7 +39,6 @@ async function lookupCategory(task) {
       notFound: 0,
       locked: 0,
       shops: {},
-      missingProperties: {},
     };
 
     const { products, shops } = await lookForMissingEbyCategory(
@@ -48,13 +48,9 @@ async function lookupCategory(task) {
       productLimit
     );
 
-    shops.forEach((info) => {
+    shops.forEach(async (info) => {
+      await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
-      infos.missingProperties[info.shop.d] = {
-        ean: 0,
-        image: 0,
-        hashes: [],
-      };
     });
 
     if (!products.length)

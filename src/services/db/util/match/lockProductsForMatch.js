@@ -2,11 +2,11 @@ import { getCrawlDataDb, hostname } from "../../mongo.js";
 import { lockProductsForMatchQuery, setProductsLockedForMatchQuery } from "../../util/queries.js";
 
 export const lockProductsForMatch = async (
-  domain,
-  limit = 0,
   taskId,
+  domain,
   action,
-  hasEan
+  hasEan,
+  limit = 0,
 ) => {
   const collectionName = domain  ;
   const db = await getCrawlDataDb();

@@ -43,11 +43,11 @@ export default async function match(task) {
     if (!srcShop) return reject(new MissingShopError("", task));
 
     const lockedProducts = await lockProductsForMatch(
-      shopDomain,
-      productLimit,
       _id,
+      shopDomain,
       action,
-      srcShop.hasEan || srcShop?.ean
+      srcShop.hasEan || srcShop?.ean,
+      productLimit
     );
 
     let infos = {
