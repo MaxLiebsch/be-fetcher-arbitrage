@@ -6,7 +6,7 @@ import { updateTask } from "../services/db/util/tasks.js";
 export const handleTaskCompleted = async (id, infos, additionalUpdate = {}) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
   const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
-  const update = {
+  let update = {
     cooldown,
     completedAt: new Date().toISOString(),
     retry: 0,

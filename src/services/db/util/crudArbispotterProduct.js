@@ -41,9 +41,13 @@ export const upsertArbispotterProduct = async (domain, product) => {
   product["createdAt"] = new Date().toISOString();
   product["updatedAt"] = new Date().toISOString();
 
-  return collection.replaceOne({ lnk: product.lnk }, product, {
-    upsert: true,
-  });
+  return collection.updateOne(
+    { lnk: product.lnk },
+    { $set: { ...product } },
+    {
+      upsert: true,
+    }
+  );
 };
 
 export const insertArbispotterProduct = async (domain, product) => {

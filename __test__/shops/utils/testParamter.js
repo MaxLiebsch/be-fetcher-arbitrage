@@ -2,7 +2,8 @@ import { sub } from "date-fns";
 
 const testParameters = {
   "ebay.de": {
-    productPageUrl: "https://www.ebay.de/itm/134266596559?epid=241462519&itmmeta=01J1WFJSHJVY3V58KJEBKB69MW&hash=item1f42e9accf:g:OtgAAOSwbtNjPkF6&itmprp=enc%3AAQAJAAAAwGz1B%2FHf2sTMNHVePpiHPxSgUjf31vmHjsqWzDmO1r9FFCm%2Bxe%2FP%2BicUeEJpf%2BDGBrBaLCs1N2g1ivw%2FjmnclTxWYX6fSUq5MWpDXXAIP4gYKMJfbaShTEKbINjWZTsRXLBygTPmTsowK5PsVssA%2F14EbITu4KHOxTZ3h%2FV6HyGYKlLHfvBGBdq%2FTEqeqqVTBpp1tUoHMxDuyaCiBO5ZX1I2P08jyp7qvwZmQ27H4VMNhpU2HjLTUUrc6Z7LWmAYwg%3D%3D%7Ctkp%3ABk9SR_KYy4-PZA"
+    productPageUrl: "https://www.ebay.de/p/16031005284?iid=395515409216"
+    
   },
   "bergfreunde.de": {
     productPageUrl: "https://www.bergfreunde.de/stoic-womens-performance-merino150-bydalenst-shirt-merinoshirt",

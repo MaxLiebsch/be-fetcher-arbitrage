@@ -159,7 +159,6 @@ export default async function queryEansOnEby(task) {
             clearInterval(interval);
             await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
             await updateProgressInLookupCategoryTask() // update lookup category task
-            // TODO: uddapte get category task
             handleResult(r, resolve, reject);
           });
         }
@@ -213,11 +212,26 @@ export default async function queryEansOnEby(task) {
         infos.notFound++;
         infos.shops[srcShopDomain]++;
         infos.total++;
+        
         await updateCrawlDataProduct(srcShopDomain, link, {
           eby_locked: false,
           eby_prop: "missing",
           eby_taskId: "",
         });
+
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
+            await updateProgressInLookupCategoryTask() // update lookup category task
+            handleResult(r, resolve, reject);
+          });
+        }
       };
 
       const queryLink = queryURLBuilder(toolInfo.queryUrlSchema, query).url;

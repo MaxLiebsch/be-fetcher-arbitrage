@@ -90,13 +90,13 @@ async function lookupCategory(task) {
     );
 
     for (let index = 0; index < products.length; index++) {
-      const { shop, product } = products[index];
+      const { shop: srcShop, product } = products[index];
 
       const crawledProductLink = product.link;
 
       const queryUrl = "https://www.ebay.de/itm/" + product.esin;
 
-      const shopDomain = shop.d;
+      const shopDomain = srcShop.d;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -111,43 +111,63 @@ async function lookupCategory(task) {
           const ean = infoMap.get("ean");
           const price = infoMap.get("price");
           const categories = infoMap.get("categories");
-          if (categories) {
-            const sellPrice = safeParsePrice(price ?? "0");
-            const parsedCategories = parseEbyCategories(categories);
-            let ebyArbitrage = calculateEbyArbitrage(
-              parsedCategories,
-              sellPrice,
-              product.price
-            );
-            if (ebyArbitrage) {
-              await updateArbispotterProduct(shopDomain, crawledProductLink, {
-                ...ebyArbitrage,
-                e_pblsh: true,
-                ebyCategories: parsedCategories,
-                esin: product.esin,
-              });
-              delete product._id;
-              crawlDataProductUpdate["ebyCategories"] = parsedCategories;
-              crawlDataProductUpdate["ebyUpdatedAt"] = new Date().toISOString();
 
-              await updateCrawlDataProduct(
-                shopDomain,
-                crawledProductLink,
-                crawlDataProductUpdate
-              );
-            } else {
+          if (srcShop.hasEan || srcShop?.ean) {
+            if (!ean) {
               await updateCrawlDataProduct(shopDomain, crawledProductLink, {
                 cat_locked: false,
-                cat_prop: "category_not_found",
+                cat_prop: "ean_missing",
                 cat_taskId: "",
+                esin: ""
               });
+              await updateArbispotterProduct(shopDomain, crawledProductLink, {
+                esin: "",
+                e_pblsh: false,
+                e_prc: 0,
+                e_lnk: "",
+                e_nm: "",
+                e_mrgn: 0,
+                e_mrgn_prc: 0,
+              });
+            } else if (ean !== product.ean) {
+              await updateCrawlDataProduct(shopDomain, crawledProductLink, {
+                cat_locked: false,
+                cat_prop: "ean_missmatch",
+                cat_taskId: "",
+                esin: ""
+              });
+              await updateArbispotterProduct(shopDomain, crawledProductLink, {
+                esin: "",
+                e_pblsh: false,
+                e_prc: 0,
+                e_lnk: "",
+                e_nm: "",
+                e_mrgn: 0,
+                e_mrgn_prc: 0,
+              });
+            } else {
+              await handleCategoryAndUpdate(
+                shopDomain,
+                crawledProductLink,
+                product.esin,
+                product,
+                price,
+                categories,
+                product.price,
+                crawlDataProductUpdate
+              );
             }
           } else {
-            await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-              cat_locked: false,
-              cat_prop: "categories_missing",
-              cat_taskId: "",
-            });
+            await handleCategoryAndUpdate(
+              shopDomain,
+              crawledProductLink,
+              product.esin,
+              product,
+              price,
+              categories,
+              product.price,
+              crawlDataProductUpdate
+            );
           }
         } else {
           await updateCrawlDataProduct(shopDomain, crawledProductLink, {
@@ -219,11 +239,61 @@ async function lookupCategory(task) {
         isFinished: undefined,
         pageInfo: {
           link: queryUrl,
-          name: shop.d,
+          name: srcShop.d,
         },
       });
     }
   });
 }
+
+const handleCategoryAndUpdate = async (
+  shopDomain,
+  crawledProductLink,
+  esin,
+  product,
+  price,
+  categories,
+  buyPrice,
+  crawlDataProductUpdate
+) => {
+  if (categories) {
+    const sellPrice = safeParsePrice(price ?? "0");
+    const parsedCategories = parseEbyCategories(categories);
+    let ebyArbitrage = calculateEbyArbitrage(
+      parsedCategories,
+      sellPrice,
+      buyPrice
+    );
+    if (ebyArbitrage) {
+      await updateArbispotterProduct(shopDomain, crawledProductLink, {
+        ...ebyArbitrage,
+        e_pblsh: true,
+        ebyCategories: parsedCategories,
+        esin,
+      });
+      delete product._id;
+      crawlDataProductUpdate["ebyCategories"] = parsedCategories;
+      crawlDataProductUpdate["ebyUpdatedAt"] = new Date().toISOString();
+
+      await updateCrawlDataProduct(
+        shopDomain,
+        crawledProductLink,
+        crawlDataProductUpdate
+      );
+    } else {
+      await updateCrawlDataProduct(shopDomain, crawledProductLink, {
+        cat_locked: false,
+        cat_prop: "category_not_found",
+        cat_taskId: "",
+      });
+    }
+  } else {
+    await updateCrawlDataProduct(shopDomain, crawledProductLink, {
+      cat_locked: false,
+      cat_prop: "categories_missing",
+      cat_taskId: "",
+    });
+  }
+};
 
 export default lookupCategory;

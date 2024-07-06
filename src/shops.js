@@ -2669,6 +2669,15 @@ export const shops = {
         head: "dt",
         row: "dd",
         type: "table",
+        keys: ["ean", "upc", "gtin", "gtin13", "gtin11"],
+        content: "ean",
+      },
+      {
+        sel: "div[id=ProductDetails]",
+        head: "div.s-name",
+        row: "div.s-value",
+        type: "table",
+        keys: ["ean", "upc", "gtin", "gtin13", "gtin11"],
         content: "ean",
       },
       {

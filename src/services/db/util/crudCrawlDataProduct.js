@@ -12,7 +12,7 @@ export const upsertCrawlDataProduct = async (domain, product) => {
   const s_hash = createHash(product.link);
 
   return collection.updateOne(
-    { link },
+    { link: product.link },
     { $set: { ...product, s_hash } },
     {
       upsert: true,
