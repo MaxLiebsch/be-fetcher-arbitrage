@@ -7,7 +7,7 @@ import wholesale from "../services/wholesale.js";
 import queryEansOnEby from "../services/queryEansOnEby.js";
 import lookupCategory from "../services/lookupCategory.js";
 import crawlEbyListings from "../services/crawlEbyListings.js";
-import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellerCentral.js";
+import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellercentral.js";
 
 export async function executeTask(task) {
   const { type } = task;
