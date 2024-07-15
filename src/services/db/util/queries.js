@@ -409,7 +409,12 @@ export const queryEansOnEbyTaskQueryFn = (
   ];
 };
 
-/*              Queries: Lookup Category (3.4) - crawl-data           */
+
+/*              Queries: Lookup Category (3.4) - crawl-data           
+                cat_prop: complete/missing/empty,
+                esin: exists,not "",
+                cat_locked: false
+*/
 
 export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
   let query = {};
@@ -541,7 +546,7 @@ export const countPendingProductsForCrawlAznListingsQuery = () => {
       },
       {
         asin: { $exists: true, $ne: "" },
-      }, 
+      },
       {
         $or: [
           { aznUpdatedAt: { $exists: false } },

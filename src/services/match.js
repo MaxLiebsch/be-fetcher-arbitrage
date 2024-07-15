@@ -23,9 +23,9 @@ import {
 import { checkProgress } from "../util/checkProgress.js";
 import { parseAsinFromUrl } from "../util/parseAsin.js";
 import {
-  updateCrawlAznListingsProgress,
-  updateCrawlEbyListingsProgress,
   updateMatchProgress,
+  updateProgressInLookupCategoryTask,
+  updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForMatch } from "./db/util/match/lockProductsForMatch.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
@@ -111,8 +111,8 @@ export default async function match(task) {
         }).catch(async (r) => {
           clearInterval(interval);
           await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
-          await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
-          await updateCrawlEbyListingsProgress(shopDomain); // update crawl eby listings progress
+          await updateProgressInLookupInfoTask();  // update lookup info task progress  
+          await updateProgressInLookupCategoryTask();
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -211,8 +211,8 @@ export default async function match(task) {
             }).catch(async (r) => {
               clearInterval(interval);
               await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
-              await updateCrawlAznListingsProgress(shopDomain); // update crawl azn listings progress
-              await updateCrawlEbyListingsProgress(shopDomain); // update crawl eby listings progress
+              await updateProgressInLookupInfoTask();  // update lookup info task progress  
+              await updateProgressInLookupCategoryTask();
               handleResult(r, resolve, reject);
             });
           }

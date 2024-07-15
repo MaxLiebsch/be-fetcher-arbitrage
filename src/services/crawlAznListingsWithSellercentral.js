@@ -21,10 +21,14 @@ import {
 } from "../constants.js";
 import { getShop } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
+import {
+  updateCrawlAznListingsProgress,
+  updateProgressInLookupInfoTask,
+} from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
+import { resetAznProduct } from "./lookupInfo.js";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -104,6 +108,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         }).catch(async (r) => {
           clearInterval(interval);
           await updateCrawlAznListingsProgress(shopDomain);
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -168,6 +173,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
+            await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }
@@ -178,8 +184,15 @@ export default async function crawlAznListingsWithSellercentral(task) {
         await updateCrawlDataProduct(shopDomain, productLink, {
           azn_locked: false,
           azn_taskId: "",
+          asin: "",
+          a_qty: 0,
+          info_prop: "", // reset lookup info to start over
         });
-        await updateArbispotterProduct(shopDomain, productLink, );
+        await updateArbispotterProduct(
+          shopDomain,
+          productLink,
+          resetAznProduct()
+        );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
             queue: queues,
@@ -189,6 +202,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
+            await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }

@@ -24,26 +24,36 @@ import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.
 import { getShop } from "./db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
-import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+import {
+  createOrUpdateArbispotterProduct,
+  keepaProperties,
+} from "./db/util/createOrUpdateArbispotterProduct.js";
 import { createArbispotterCollection } from "./db/mongo.js";
 
-export const resetAznProduct = {
-  asin: "",
-  a_pblsh: false,
-  a_prc: 0,
-  a_uprc: 0,
-  a_qty: 0,
-  a_lnk: "",
-  a_img: "",
-  a_mrgn: 0,
-  a_mrgn_pct: 0,
-  a_w_mrgn: 0,
-  a_w_mrgn_pct: 0,
-  a_w_p_mrgn: 0,
-  a_w_p_mrgn_pct: 0,
-  a_p_mrgn: 0,
-  a_p_mrgn_pct: 0,
-  a_nm: "",
+export const resetAznProduct = () => {
+  const update = {
+    asin: "",
+    a_pblsh: false,
+    a_prc: 0,
+    a_uprc: 0,
+    a_qty: 0,
+    a_lnk: "",
+    a_img: "",
+    a_hash: "",
+    a_mrgn: 0,
+    a_mrgn_pct: 0,
+    a_w_mrgn: 0,
+    a_w_mrgn_pct: 0,
+    a_w_p_mrgn: 0,
+    a_w_p_mrgn_pct: 0,
+    a_p_mrgn: 0,
+    a_p_mrgn_pct: 0,
+    a_nm: "",
+  };
+  keepaProperties.forEach((prop) => {
+    update[prop.name] = null;
+  });
+  return update;
 };
 
 const crawlDataInfoMissingUpdate = {
@@ -240,7 +250,7 @@ export default async function lookupInfo(task) {
           await updateArbispotterProduct(
             shopDomain,
             crawlDataProductLink,
-            resetAznProduct
+            resetAznProduct()
           );
           await updateCrawlDataProduct(
             shopDomain,
@@ -268,7 +278,7 @@ export default async function lookupInfo(task) {
         await updateArbispotterProduct(
           shopDomain,
           crawlDataProductLink,
-          resetAznProduct
+          resetAznProduct()
         );
         await updateCrawlDataProduct(
           shopDomain,

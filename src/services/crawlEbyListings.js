@@ -18,7 +18,10 @@ import {
 } from "../constants.js";
 import { getShop } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlEbyListingsProgress } from "../util/updateProgressInTasks.js";
+import {
+  updateCrawlEbyListingsProgress,
+  updateProgressInQueryEansOnEbyTask,
+} from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlEbyListings } from "./db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { resetEbayProduct } from "./lookupCategory.js";
@@ -83,6 +86,7 @@ async function crawlEbyListings(task) {
         }).catch(async (r) => {
           clearInterval(interval);
           await updateCrawlEbyListingsProgress(shopDomain);
+          await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -161,6 +165,7 @@ async function crawlEbyListings(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlEbyListingsProgress(shopDomain);
+            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
             handleResult(r, resolve, reject);
           });
         }
@@ -171,6 +176,10 @@ async function crawlEbyListings(task) {
         await updateCrawlDataProduct(shopDomain, productLink, {
           eby_locked: false,
           eby_taskId: "",
+          esin: "",
+          e_qty: 0,
+          cat_prop: "", // lookup category
+          eby_prop: "", //  query eans on eby
         });
         await updateArbispotterProduct(
           shopDomain,
@@ -186,6 +195,7 @@ async function crawlEbyListings(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlEbyListingsProgress(shopDomain);
+            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
             handleResult(r, resolve, reject);
           });
         }

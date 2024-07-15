@@ -9,16 +9,19 @@ import {
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
-import { MissingProductsError, MissingShopError } from "../errors.js";
+import { MissingProductsError } from "../errors.js";
 import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
 } from "../constants.js";
-import { getShop, getShops } from "./db/util/shops.js";
+import { getShop } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
+import {
+  updateCrawlAznListingsProgress,
+  updateProgressInLookupInfoTask,
+} from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { resetAznProduct } from "./lookupInfo.js";
@@ -83,6 +86,7 @@ export default async function crawlAznListings(task) {
         }).catch(async (r) => {
           clearInterval(interval);
           await updateCrawlAznListingsProgress(shopDomain);
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
@@ -166,6 +170,7 @@ export default async function crawlAznListings(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
+            await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }
@@ -180,7 +185,7 @@ export default async function crawlAznListings(task) {
         await updateArbispotterProduct(
           shopDomain,
           productLink,
-          resetAznProduct
+          resetAznProduct()
         );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
@@ -191,6 +196,7 @@ export default async function crawlAznListings(task) {
           }).catch(async (r) => {
             clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
+            await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }

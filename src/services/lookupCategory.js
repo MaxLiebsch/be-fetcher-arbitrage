@@ -37,6 +37,7 @@ export const resetEbayProduct = {
   e_qty: 0,
   e_prc: 0,
   e_lnk: "",
+  e_hash: "",
   e_nm: "",
   e_mrgn: 0,
   e_ns_mrgn: 0,
