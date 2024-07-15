@@ -1,10 +1,13 @@
 import {
   QueryQueue,
-  calculateEbyArbitrage,
-  findMappedCategory,
-  queryProductPageQueue,
+  calculateAznArbitrage,
+  calculateOnlyArbitrage,
+  generateUpdate,
+  lookupProductQueue,
+  querySellerInfosQueue,
   roundToTwoDecimals,
   safeParsePrice,
+  yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -18,14 +21,21 @@ import {
 } from "../constants.js";
 import { getShop } from "./db/util/shops.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlEbyListingsProgress } from "../util/updateProgressInTasks.js";
-import { lockProductsForCrawlEbyListings } from "./db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
+import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
+import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
-import { resetEbayProduct } from "./lookupCategory.js";
+import { upsertAsin } from "./db/util/asinTable.js";
 
-async function crawlEbyListings(task) {
+export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, _id, action } = task;
+    const {
+      shopDomain,
+      productLimit,
+      _id,
+      action,
+      browserConcurrency,
+      concurrency,
+    } = task;
 
     let infos = {
       new: 0,
@@ -42,7 +52,7 @@ async function crawlEbyListings(task) {
       },
     };
 
-    const products = await lockProductsForCrawlEbyListings(
+    const products = await lockProductsForCrawlAznListings(
       shopDomain,
       productLimit,
       _id,
@@ -60,107 +70,104 @@ async function crawlEbyListings(task) {
     infos.locked = products.length;
 
     //Update task progress
-    await updateCrawlEbyListingsProgress(shopDomain);
+    await updateCrawlAznListingsProgress(shopDomain);
 
     const startTime = Date.now();
+    const srcShops = await getShop(shopDomain);
+    const { hasEan, ean: eanSelector } = srcShops;
+    const toolInfo = await getShop("sellercentral.amazon.de");
+    const queues = [];
 
-    const shop = await getShop("ebay.de");
-
-    const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
-      proxyAuth,
-      task
+    await Promise.all(
+      Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
+        async () => {
+          const queue = new QueryQueue(
+            concurrency ? concurrency : CONCURRENCY,
+            proxyAuth,
+            task
+          );
+          queues.push(queue);
+          return queue.connect();
+        }
+      )
     );
-    await queue.connect();
+
+    const queueIterator = yieldQueues(queues);
 
     const interval = setInterval(
       async () =>
         await checkProgress({
-          queue,
+          queue: queues,
           infos,
           startTime,
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateCrawlEbyListingsProgress(shopDomain);
+          await updateCrawlAznListingsProgress(shopDomain);
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
     for (let index = 0; index < products.length; index++) {
+      const queue = queueIterator.next().value;
       const crawlDataProduct = products[index];
-      const productLink = crawlDataProduct.link;
+      const {
+        link: productLink,
+        asin,
+        ean,
+        uprc: unitPrice,
+        a_qty,
+      } = crawlDataProduct;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
-          const infoMap = new Map();
-          productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const sellPrice = infoMap.get("e_prc");
-          const image = infoMap.get("image");
-          const arbispotterProductUpdate = {
-            e_lnk: url.split("?")[0],
-          };
-          const crawlDataProductUpdate = {
-            ebyUpdatedAt: new Date().toISOString(),
-            eby_locked: false,
-            eby_taskId: "",
-          };
-          if (sellPrice) {
-            const parsedSellPrice = safeParsePrice(sellPrice);
-
-            arbispotterProductUpdate["e_prc"] = parsedSellPrice;
-            arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
-              parsedSellPrice / crawlDataProduct.e_qty
-            );
-            const mappedCategories = findMappedCategory(
-              crawlDataProduct.ebyCategories.reduce((acc, curr) => {
-                acc.push(curr.id);
-                return acc;
-              }, [])
-            );
-            const arbitrage = calculateEbyArbitrage(
-              mappedCategories,
-              arbispotterProductUpdate["e_uprc"],
-              crawlDataProduct.uprc
-            );
-            Object.entries(arbitrage).forEach(([key, val]) => {
-              arbispotterProductUpdate[key] = val;
-            });
-          }
-          if (image) {
-            arbispotterProductUpdate["e_img"] = image;
-          }
-          await updateCrawlDataProduct(
-            shopDomain,
-            productLink,
-            crawlDataProductUpdate
+          const processedProductUpdate = generateUpdate(
+            productInfo,
+            unitPrice,
+            a_qty ?? 1
           );
+          let eanList = [];
+          if (hasEan || eanSelector) {
+            eanList = [ean];
+          }
+          await upsertAsin(asin, eanList, processedProductUpdate.costs);
+
+          const arbispotterProductUpdate = { ...processedProductUpdate };
+
+          const crawlDataProductUpdate = {
+            aznUpdatedAt: new Date().toISOString(),
+            azn_locked: false,
+            azn_taskId: "",
+          };
 
           await updateArbispotterProduct(
             shopDomain,
             productLink,
             arbispotterProductUpdate
           );
+          await updateCrawlDataProduct(
+            shopDomain,
+            productLink,
+            crawlDataProductUpdate
+          );
         } else {
+          infos.missingProperties.bsr++;
           await updateCrawlDataProduct(shopDomain, productLink, {
-            eby_locked: false,
-            eby_taskId: "",
-          });
-          await updateArbispotterProduct(shopDomain, productLink, {
-            e_lnk: url.split("?")[0],
+            azn_locked: false,
+            azn_taskId: "",
           });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
-            queue,
+            queue: queues,
             infos,
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateCrawlEbyListingsProgress(shopDomain);
+            await updateCrawlAznListingsProgress(shopDomain);
             handleResult(r, resolve, reject);
           });
         }
@@ -169,48 +176,50 @@ async function crawlEbyListings(task) {
       const handleNotFound = async () => {
         infos.notFound++;
         await updateCrawlDataProduct(shopDomain, productLink, {
-          eby_locked: false,
-          eby_taskId: "",
+          azn_locked: false,
+          azn_taskId: "",
         });
-        await updateArbispotterProduct(
-          shopDomain,
-          productLink,
-          resetEbayProduct
-        );
+        await updateArbispotterProduct(shopDomain, productLink, );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
-            queue,
+            queue: queues,
             infos,
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
             clearInterval(interval);
-            await updateCrawlEbyListingsProgress(shopDomain);
+            await updateCrawlAznListingsProgress(shopDomain);
             handleResult(r, resolve, reject);
           });
         }
         infos.total++;
       };
 
-      let ebyLink = "https://www.ebay.de/itm/" + crawlDataProduct.esin;
-
-      queue.pushTask(queryProductPageQueue, {
+      queue.pushTask(querySellerInfosQueue, {
         retries: 0,
-        shop,
+        shop: toolInfo,
         addProduct,
+        targetShop: {
+          prefix: "",
+          d: shopDomain,
+          name: shopDomain,
+        },
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
-        query: {},
+        query: {
+          product: {
+            value: asin,
+            key: asin,
+          },
+        },
         prio: 0,
         extendedLookUp: false,
         pageInfo: {
-          link: ebyLink,
-          name: shop.d,
+          link: toolInfo.entryPoints[0].url,
+          name: toolInfo.d,
         },
       });
     }
   });
 }
-
-export default crawlEbyListings;

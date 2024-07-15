@@ -4,10 +4,11 @@ import {
   getManufacturer,
   prefixLink,
   querySellerInfosQueue,
+  replaceAllHiddenCharacters,
   safeParsePrice,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
+import _, { reduce } from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
@@ -26,10 +27,44 @@ import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 import { createArbispotterCollection } from "./db/mongo.js";
 
+export const resetAznProduct = {
+  asin: "",
+  a_pblsh: false,
+  a_prc: 0,
+  a_uprc: 0,
+  a_qty: 0,
+  a_lnk: "",
+  a_img: "",
+  a_mrgn: 0,
+  a_mrgn_pct: 0,
+  a_w_mrgn: 0,
+  a_w_mrgn_pct: 0,
+  a_w_p_mrgn: 0,
+  a_w_p_mrgn_pct: 0,
+  a_p_mrgn: 0,
+  a_p_mrgn_pct: 0,
+  a_nm: "",
+};
+
+const crawlDataInfoMissingUpdate = {
+  info_locked: false,
+  info_prop: "missing",
+  info_taskId: "",
+  asin: "",
+  a_qty: 0,
+};
+
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, proxyType, type, browserConcurrency } =
-      task;
+    const {
+      productLimit,
+      _id,
+      action,
+      proxyType,
+      type,
+      browserConcurrency,
+      concurrency,
+    } = task;
 
     let infos = {
       new: 0,
@@ -52,7 +87,7 @@ export default async function lookupInfo(task) {
 
     shops.forEach(async (info) => {
       await createArbispotterCollection(info.shop.d);
-      infos.shops[info.shop.d] = 0; 
+      infos.shops[info.shop.d] = 0;
     });
 
     if (!products.length)
@@ -76,7 +111,7 @@ export default async function lookupInfo(task) {
       Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
         async () => {
           const queue = new QueryQueue(
-            task?.concurrency ? task.concurrency : CONCURRENCY,
+            concurrency ? concurrency : CONCURRENCY,
             proxyAuth,
             task
           );
@@ -116,11 +151,14 @@ export default async function lookupInfo(task) {
         asin,
         hasMnfctr,
         mnfctr: manufacturer,
-        price: prc,
-        promoPrice: prmPrc,
-        image: img,
+        price,
+        uprc: unitPrice,
+        qty,
+        promoPrice,
+        image,
         link: crawlDataProductLink,
         shop: s,
+        a_qty,
       } = crawlDataProduct;
 
       let mnfctr = "";
@@ -139,27 +177,41 @@ export default async function lookupInfo(task) {
         ctgry,
         mnfctr,
         nm: prodNm,
-        img: prefixLink(img, s),
+        img: prefixLink(image, s),
         lnk: prefixLink(crawlDataProductLink, s),
-        prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
+        s_hash: crawlDataProduct.s_hash,
+        prc: promoPrice ? promoPrice : price,
+        uprc: unitPrice,
+        qty,
       };
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
-          const processedProductUpdate = generateUpdate(productInfo, prc);
-          
+          const processedProductUpdate = generateUpdate(
+            productInfo,
+            unitPrice,
+            a_qty ?? 1
+          );
+
           if (hasEan && ean) {
-            await upsertAsin(processedProductUpdate.asin, [ean]);
+            await upsertAsin(
+              processedProductUpdate.asin,
+              [ean],
+              processedProductUpdate.costs
+            );
             processedProductUpdate["eanList"] = [ean];
           }
-
+          processedProductUpdate["a_nm"] = replaceAllHiddenCharacters(
+            processedProductUpdate["a_nm"]
+          );
           processedProductUpdate["a_orgn"] = "a";
           processedProductUpdate["a_pblsh"] = true;
 
           const crawlDataProductUpdate = {
             info_locked: false,
             info_taskId: "",
+            a_qty: processedProductUpdate.a_qty,
             info_prop: "complete",
             aznUpdatedAt: new Date().toISOString(),
             costs: processedProductUpdate.costs,
@@ -185,27 +237,16 @@ export default async function lookupInfo(task) {
           infos.missingProperties[shopDomain].hashes.push(
             crawlDataProduct.s_hash
           );
-          await updateArbispotterProduct(shopDomain, crawlDataProductLink, {
-            asin: "",
-            a_pblsh: false,
-            a_prc: 0,
-            a_lnk: "",
-            a_img: "",
-            a_mrgn: 0,
-            a_mrgn_pct: 0,
-            a_w_mrgn: 0,
-            a_w_mrgn_pct: 0,
-            a_w_p_mrgn: 0,
-            a_w_p_mrgn_pct: 0,
-            a_p_mrgn: 0,
-            a_p_mrgn_pct: 0,
-            a_nm: "",
-          });
-          await updateCrawlDataProduct(shopDomain, crawlDataProductLink, {
-            info_locked: false,
-            info_prop: "missing",
-            info_taskId: "",
-          });
+          await updateArbispotterProduct(
+            shopDomain,
+            crawlDataProductLink,
+            resetAznProduct
+          );
+          await updateCrawlDataProduct(
+            shopDomain,
+            crawlDataProductLink,
+            crawlDataInfoMissingUpdate
+          );
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
@@ -224,30 +265,15 @@ export default async function lookupInfo(task) {
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        const crawlDataProductUpdate = {
-          info_locked: false,
-          info_prop: "missing",
-          info_taskId: "",
-        };
-        await updateArbispotterProduct(shopDomain, crawlDataProductLink, {
-          asin: "",
-          a_prc: 0,
-          a_lnk: "",
-          a_img: "",
-          a_mrgn: 0,
-          a_mrgn_pct: 0,
-          a_w_mrgn: 0,
-          a_w_mrgn_pct: 0,
-          a_w_p_mrgn: 0,
-          a_w_p_mrgn_pct: 0,
-          a_p_mrgn: 0,
-          a_p_mrgn_pct: 0,
-          a_nm: "",
-        });
+        await updateArbispotterProduct(
+          shopDomain,
+          crawlDataProductLink,
+          resetAznProduct
+        );
         await updateCrawlDataProduct(
           shopDomain,
           crawlDataProductLink,
-          crawlDataProductUpdate
+          crawlDataInfoMissingUpdate
         );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({

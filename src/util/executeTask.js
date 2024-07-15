@@ -1,5 +1,4 @@
 import match from "../services/match.js";
-import crawlAznListings from "../services/crawlAznListings.js";
 import crawl from "../services/crawl.js";
 import scan from "../services/scan.js";
 import crawlEan from "../services/crawlEan.js";
@@ -8,6 +7,7 @@ import wholesale from "../services/wholesale.js";
 import queryEansOnEby from "../services/queryEansOnEby.js";
 import lookupCategory from "../services/lookupCategory.js";
 import crawlEbyListings from "../services/crawlEbyListings.js";
+import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellerCentral.js";
 
 export async function executeTask(task) {
   const { type } = task;
@@ -24,7 +24,7 @@ export async function executeTask(task) {
     return await match(task);
   }
   if (type === "CRAWL_AZN_LISTINGS") {
-    return await crawlAznListings(task);
+    return await crawlAznListingsWithSellercentral(task);
   }
   if (type === "CRAWL_EBY_LISTINGS") {
     return await crawlEbyListings(task);

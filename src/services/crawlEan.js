@@ -206,23 +206,23 @@ export default async function crawlEan(task) {
             "grave",
             crawlDataProductLink
           );
-          if (infos.total >= _productLimit - 1 && !queue.idle()) {
-            await checkProgress({
-              queue,
-              infos,
-              startTime,
-              productLimit: _productLimit,
-            }).catch(async (r) => {
-              clearInterval(interval);
-              await Promise.all([
-                updateProgressInCrawlEanTask(proxyType), // update crawl ean task
-                updateProgressInMatchTasks(shops), // update matching tasks
-                updateProgressInLookupInfoTask(), // update lookup info task
-                updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-              ]);
-              handleResult(r, resolve, reject);
-            });
-          }
+        }
+        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            await Promise.all([
+              updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+              updateProgressInMatchTasks(shops), // update matching tasks
+              updateProgressInLookupInfoTask(), // update lookup info task
+              updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
+            ]);
+            handleResult(r, resolve, reject);
+          });
         }
         infos.shops[shopDomain]++;
         infos.total++;

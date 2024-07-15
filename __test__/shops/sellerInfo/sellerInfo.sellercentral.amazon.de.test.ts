@@ -40,7 +40,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         console.log(update);
       }
     };
-    await querySellerInfos(addProductInfo, "5025232921331");
+    await querySellerInfos(addProductInfo, "B015AFAVOO");
   }, 200000);
 
 

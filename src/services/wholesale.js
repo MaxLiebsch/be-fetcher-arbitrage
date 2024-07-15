@@ -109,14 +109,21 @@ export default async function wholesale(task) {
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
       const wholesaleProduct = wholeSaleProducts[index];
-      const { ean, _id, prc } = wholesaleProduct;
+      const { ean, _id, prc, a_qty } = wholesaleProduct;
 
       //not needed, I swear I will write clean code
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
-          const processedProductUpdate = generateUpdate(productInfo, prc);
-          await upsertAsin(processedProductUpdate.asin, [ean]);
+          const processedProductUpdate = generateUpdate(
+            productInfo,
+            prc,
+            a_qty ?? 1
+          );
+
+          let reducedCosts = { ...processedProductUpdate.costs };
+          delete reducedCosts.azn;
+          await upsertAsin(processedProductUpdate.asin, [ean], reducedCosts);
           const result = await updateWholeSaleProduct(_id, {
             ...processedProductUpdate,
             status: "complete",

@@ -1,4 +1,8 @@
-import { CrawlerQueue, crawlShop, crawlSubpage } from "@dipmaxtech/clr-pkg";
+import {
+  CrawlerQueue,
+  crawlShop,
+  crawlSubpage,
+} from "@dipmaxtech/clr-pkg";
 import { createCrawlDataCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
@@ -99,6 +103,10 @@ export default async function crawl(task) {
       } else {
         if (product.name && product.price && product.link) {
           infos.total++;
+
+          product["qty"] = 1;
+          product["uprc"] = product.price;
+         
           const result = await createOrUpdateCrawlDataProduct(shopDomain, {
             ...product,
           });

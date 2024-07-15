@@ -26,6 +26,7 @@ const main = async () => {
           };
         }
         if (doc.e_lnk) {
+        
           e_hash = createHash(doc.e_lnk);
           e_vrfd = {
             vrfd: false,

@@ -1,15 +1,16 @@
-import lookupInfo from "../src/services/lookupInfo.js";
+import crawlAznListingsWithSellercentral from "../src/services/crawlAznListingsWithSellerCentral.js";
 
+const shop = "alternate.de";
 const task = {
   _id: "6638824827e8707aa568b4c3",
-  type: "LOOKUP_INFO",
-  id: `lookup_info`,
-  proxyType: "mix",
+  type: "CRAWL_AZN_LISTINGS",
+  id: `crawl_azn_listings_${shop}`,
+  shopDomain: shop,
   productLimit: 20,
   executing: false,
-  lastCrawler: [],
-  browserConcurrency: 4,
+  browserConcurrency: 5,
   concurrency: 1,
+  lastCrawler: [],
   test: false,
   maintenance: false,
   recurrent: true,
@@ -24,7 +25,7 @@ const task = {
   },
 };
 
-lookupInfo(task).then((r) => {
+crawlAznListingsWithSellercentral(task).then((r) => {
   console.log(JSON.stringify(r, 2, null));
   process.exit(0);
 });

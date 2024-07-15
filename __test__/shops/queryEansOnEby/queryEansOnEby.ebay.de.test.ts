@@ -1,20 +1,15 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "../utils/testParamter.js";
 import {
-  extractProductInfos,
+
   mimicTest,
+
   myAfterAll,
+
   myBeforeAll,
   queryEansOnEby,
-  querySellerInfos,
+
 } from "../utils/commonTests.js";
-import {
-  safeParsePrice,
-  calculateAznArbitrage,
-  getNumber,
-  generateUpdate,
-} from "@dipmaxtech/clr-pkg";
+
 import { ProductRecord } from "@dipmaxtech/clr-pkg/lib/types/product.js";
 import { Product } from "@dipmaxtech/clr-pkg/lib/types/query.js";
 
@@ -50,7 +45,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     );
   }, 200000);
 
-  // afterAll(async () => {
-  //   await myAfterAll();
-  // });
+  afterAll(async () => {
+    await myAfterAll();
+  });
 });

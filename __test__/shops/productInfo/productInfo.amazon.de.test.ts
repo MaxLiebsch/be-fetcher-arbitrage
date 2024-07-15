@@ -16,7 +16,7 @@ import {
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 
-const shopDomain = "ebay.de";
+const shopDomain = "amazon.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
@@ -41,19 +41,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         // expect(map.get("ean")).toBe("0195949048258");
         // expect(map.get("price")).toBe("EUR1.249,00");
         // expect(map.get("categories")?.length).toBe(4);
-        const rawSellPrice = map.get("price");
-        const buyPrice = 3;
-        const sellPrice = safeParsePrice(rawSellPrice);
-        const parsedCategories = parseEbyCategories(map.get("categories"));
-        let mappedCategory = findMappedCategory(parsedCategories);
-        if (mappedCategory) {
-          let ebyArbitrage = calculateEbyArbitrage(
-            mappedCategory,
-            sellPrice,
-            buyPrice
-          );
-          console.log("ebyArbitrage:", ebyArbitrage);
-        }
+
       } else {
         expect(1).toBe(2);
       }
@@ -61,7 +49,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductInfos(addProductInfo);
   }, 60000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

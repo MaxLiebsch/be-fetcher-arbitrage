@@ -1,20 +1,24 @@
 import { getCrawlDataDb } from "../services/db/mongo.js";
 import { getShop } from "../services/db/util/shops.js";
+import { subDateDaysISO } from "../util/dates.js";
 
 const main = async () => {
-  const shop = await getShop("cyberport.de");
+  const shop = await getShop("alternate.de");
 
   if (!shop) return "Shop not found";
 
   const db = await getCrawlDataDb();
 
   const collectionName = shop.d;
-  const query = {};
+  const query = {
+    asin: { $exists: true },
+  };
 
   const update = {
     $set: {
-      cat_prop: "",
-      cat_locked: false,
+      aznUpdatedAt: subDateDaysISO(10),
+      azn_locked: false,
+      azn_taskId: ""
     },
   };
 

@@ -27,8 +27,7 @@ const main = async () => {
               taskId: `${crawler}:${task._id.toString()}`,
             },
             {
-              taskId: "",
-              lckd: false,
+              
             }
           )
         : await updateCrawlDataProducts(
@@ -37,8 +36,7 @@ const main = async () => {
               taskId: `${crawler}:${task._id.toString()}`,
             },
             {
-              taskId: "",
-              locked: false,
+             
             }
           );
       if (update.modifiedCount === 0) return "No products to update";

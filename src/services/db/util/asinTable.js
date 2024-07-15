@@ -8,7 +8,13 @@ export const findAsin = async (asin) => {
   return collection.findOne({ asin });
 };
 
-export const upsertAsin = async (asin, eanList) => {
+export const findEan = async (ean) => {
+  const db = await getCrawlDataDb();
+  const collection = db.collection(collectionName);
+  return collection.findOne({ eans: ean });
+};
+
+export const upsertAsin = async (asin, eanList, costs) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
@@ -19,6 +25,7 @@ export const upsertAsin = async (asin, eanList) => {
         eans: { $each: eanList },
       },
       $set: {
+        costs,
         updatedAt: new Date().toISOString(),
       },
     },

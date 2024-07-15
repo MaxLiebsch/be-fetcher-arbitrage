@@ -65,8 +65,6 @@ const main = async () => {
   //     e_nm: "Ubiquiti USW-16-PoE UniFi Switch grau 2x SFP Neu",
   //     e_mrgn: -19.1,
   //     e_mrgn_pct: -6.4,
-  //     lckd: false,
-  //     taskId: "",
   //     asin: "B08385FZHS",
   //     bsr: [
   //       {

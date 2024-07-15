@@ -1,8 +1,10 @@
 import {
   QueryQueue,
   calculateEbyArbitrage,
+  findMappedCategory,
   parseEbyCategories,
   queryProductPageQueue,
+  roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -28,6 +30,21 @@ import { lookForMissingEbyCategory } from "./db/util/lookupCategory/lookForMissi
 import { getShop } from "./db/util/shops.js";
 import { createArbispotterCollection } from "./db/mongo.js";
 
+export const resetEbayProduct = {
+  esin: "",
+  e_pblsh: false,
+  e_uprc: 0,
+  e_qty: 0,
+  e_prc: 0,
+  e_lnk: "",
+  e_nm: "",
+  e_mrgn: 0,
+  e_ns_mrgn: 0,
+  e_mrgn_prc: 0,
+  ebyCategories: [],
+  e_ns_mrgn_prc: 0,
+};
+
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, proxyType, type } = task;
@@ -41,25 +58,23 @@ async function lookupCategory(task) {
       shops: {},
     };
 
-    const { products, shops } = await lookForMissingEbyCategory(
-      _id,
-      proxyType,
-      action,
-      productLimit
-    );
+    const { products: crawlDataProducts, shops } =
+      await lookForMissingEbyCategory(_id, proxyType, action, productLimit);
 
     shops.forEach(async (info) => {
       await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
     });
 
-    if (!products.length)
+    if (!crawlDataProducts.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      crawlDataProducts.length < productLimit
+        ? crawlDataProducts.length
+        : productLimit;
 
-    infos.locked = products.length;
+    infos.locked = crawlDataProducts.length;
 
     await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
 
@@ -89,8 +104,8 @@ async function lookupCategory(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    for (let index = 0; index < products.length; index++) {
-      const { shop: srcShop, product } = products[index];
+    for (let index = 0; index < crawlDataProducts.length; index++) {
+      let { shop: srcShop, product } = crawlDataProducts[index];
 
       const crawledProductLink = product.link;
 
@@ -109,7 +124,7 @@ async function lookupCategory(task) {
             cat_taskId: "",
           };
           const ean = infoMap.get("ean");
-          const price = infoMap.get("price");
+          const ebyListingPrice = infoMap.get("e_prc");
           const categories = infoMap.get("categories");
 
           if (srcShop.hasEan || srcShop?.ean) {
@@ -118,42 +133,33 @@ async function lookupCategory(task) {
                 cat_locked: false,
                 cat_prop: "ean_missing",
                 cat_taskId: "",
-                esin: ""
-              });
-              await updateArbispotterProduct(shopDomain, crawledProductLink, {
                 esin: "",
-                e_pblsh: false,
-                e_prc: 0,
-                e_lnk: "",
-                e_nm: "",
-                e_mrgn: 0,
-                e_mrgn_prc: 0,
               });
+              await updateArbispotterProduct(
+                shopDomain,
+                crawledProductLink,
+                resetEbayProduct
+              );
             } else if (ean !== product.ean) {
               await updateCrawlDataProduct(shopDomain, crawledProductLink, {
                 cat_locked: false,
                 cat_prop: "ean_missmatch",
                 cat_taskId: "",
-                esin: ""
-              });
-              await updateArbispotterProduct(shopDomain, crawledProductLink, {
                 esin: "",
-                e_pblsh: false,
-                e_prc: 0,
-                e_lnk: "",
-                e_nm: "",
-                e_mrgn: 0,
-                e_mrgn_prc: 0,
+                e_qty: 0,
               });
+              await updateArbispotterProduct(
+                shopDomain,
+                crawledProductLink,
+                resetEbayProduct
+              );
             } else {
               await handleCategoryAndUpdate(
                 shopDomain,
                 crawledProductLink,
-                product.esin,
                 product,
-                price,
+                ebyListingPrice,
                 categories,
-                product.price,
                 crawlDataProductUpdate
               );
             }
@@ -161,11 +167,9 @@ async function lookupCategory(task) {
             await handleCategoryAndUpdate(
               shopDomain,
               crawledProductLink,
-              product.esin,
               product,
-              price,
+              ebyListingPrice,
               categories,
-              product.price,
               crawlDataProductUpdate
             );
           }
@@ -174,6 +178,8 @@ async function lookupCategory(task) {
             cat_locked: false,
             cat_prop: "missing",
             cat_taskId: "",
+            esin: "",
+            e_qty: 0,
           });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
@@ -249,30 +255,49 @@ async function lookupCategory(task) {
 const handleCategoryAndUpdate = async (
   shopDomain,
   crawledProductLink,
-  esin,
-  product,
-  price,
+  crawlDataProduct,
+  ebyListingPrice,
   categories,
-  buyPrice,
   crawlDataProductUpdate
 ) => {
+  const { esin, uprc: unitPrice } = crawlDataProduct;
   if (categories) {
-    const sellPrice = safeParsePrice(price ?? "0");
-    const parsedCategories = parseEbyCategories(categories);
-    let ebyArbitrage = calculateEbyArbitrage(
-      parsedCategories,
-      sellPrice,
-      buyPrice
+    const sellPrice = safeParsePrice(ebyListingPrice ?? "0");
+
+    const sellUnitPrice = roundToTwoDecimals(
+      sellPrice / crawlDataProduct.e_qty
     );
-    if (ebyArbitrage) {
+    const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
+    let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
+
+    if (mappedCategory) {
+      let ebyArbitrage = calculateEbyArbitrage(
+        mappedCategory,
+        sellUnitPrice,
+        unitPrice
+      );
       await updateArbispotterProduct(shopDomain, crawledProductLink, {
         ...ebyArbitrage,
+        e_prc: sellPrice,
+        e_uprc: sellUnitPrice,
+        ebyCategories: [
+          {
+            id: mappedCategory.id,
+            createdAt: new Date().toISOString(),
+            category: mappedCategory.category,
+          },
+        ],
         e_pblsh: true,
-        ebyCategories: parsedCategories,
         esin,
       });
-      delete product._id;
-      crawlDataProductUpdate["ebyCategories"] = parsedCategories;
+      delete crawlDataProduct._id;
+      crawlDataProductUpdate["ebyCategories"] = [
+        {
+          id: mappedCategory.id,
+          createdAt: new Date().toISOString(),
+          category: mappedCategory.category,
+        },
+      ];
       crawlDataProductUpdate["ebyUpdatedAt"] = new Date().toISOString();
 
       await updateCrawlDataProduct(
@@ -285,6 +310,8 @@ const handleCategoryAndUpdate = async (
         cat_locked: false,
         cat_prop: "category_not_found",
         cat_taskId: "",
+        esin: "",
+        e_qty: 0,
       });
     }
   } else {
@@ -292,6 +319,8 @@ const handleCategoryAndUpdate = async (
       cat_locked: false,
       cat_prop: "categories_missing",
       cat_taskId: "",
+      esin: "",
+      e_qty: 0,
     });
   }
 };

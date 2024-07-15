@@ -2324,17 +2324,34 @@ export const shops = {
     },
     product: [
       {
+        sel: "#productDetails_db_sections",
+        head: "tbody td",
+        row: "tbody td",
+        type: "table",
+        keys: ['asin'],
+        content: "asin",
+      },
+      {
+        sel: "#productDetails_db_sections",
+        head: "tbody td",
+        row: "tbody td",
+        type: "table",
+        keys: ['Amazon Bestseller-Rang'],
+        content: "bsr",
+      },
+      {
         type: "src",
         parent: "#imgTagWrapperId",
         sel: "img",
         content: "a_img",
       },
       {
-        type: "value",
-        parent: "div[id=prodDetails]",
-        sel: "input[name=priceValue]",
+        sel: "span.a-offscreen",
+        parent: "span.a-price",
+        type: "text",
         content: "a_prc",
       },
+
     ],
     productList: [
       {
@@ -2422,7 +2439,7 @@ export const shops = {
     productList: [],
     pauseOnProductPage: {
       pause: true,
-      min: 600,
+      min: 750,
       max: 900,
     },
     product: [
@@ -2455,13 +2472,6 @@ export const shops = {
         step: 1,
       },
       {
-        sel: "tbody tr:nth-child(2) td:nth-child(5)",
-        parent: "table.product-detail-table-right",
-        type: "text",
-        content: "a_prc",
-        step: 1,
-      },
-      {
         sel: "span[part=label-text]",
         parent:
           "kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency",
@@ -2469,7 +2479,7 @@ export const shops = {
         shadowRoot: true,
         content: "a_prc",
         step: 1,
-      },
+      }, 
       {
         sel: "tbody tr:nth-child(3) td:nth-child(2)",
         parent: "table.product-detail-table-right",
@@ -2697,14 +2707,14 @@ export const shops = {
       {
         parent: "div[id=mainContent]",
         sel: "div.x-price-primary span.ux-textspans",
-        content: "price",
+        content: "e_prc",
         type: "text",
       },
     ],
     queryUrlSchema: [
       {
         baseUrl:
-          "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&_nkw=<query>&_sacat=0&LH_BIN=1&_sop=15&LH_ItemCondition=3&LH_SellerType=2",
+          "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&_nkw=<query>&_sacat=0&LH_BIN=1&_sop=15&LH_ItemCondition=3&LH_SellerType=2&LH_PrefLoc=3",
         category: "default",
       },
     ],

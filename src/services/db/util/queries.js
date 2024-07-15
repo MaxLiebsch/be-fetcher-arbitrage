@@ -325,7 +325,13 @@ export const matchTaskQueryFn = (
   ];
 };
 
-/*               Queries: Query Eans on Eby (3.3) - crawl-data            */
+/*               Queries: Query Eans on Eby (3.3) - crawl-data   
+                 eby_prop: complete/missing/empty, 
+                 eby_prop: empty
+                 ean: exists, 
+                 ean: not empty, 
+                 eby_locked: false,          
+*/
 
 export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
   let query = {};
@@ -535,7 +541,7 @@ export const countPendingProductsForCrawlAznListingsQuery = () => {
       },
       {
         asin: { $exists: true, $ne: "" },
-      },
+      }, 
       {
         $or: [
           { aznUpdatedAt: { $exists: false } },
@@ -580,14 +586,14 @@ export const crawlAznListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        { "progress.pending": { $gt: danglingLookupThreshold } },
-      ],
-    },
+    // {
+    //   $or: [
+    //     {
+    //       progress: { $exists: false },
+    //     },
+    //     { "progress.pending": { $gt: danglingLookupThreshold } },
+    //   ],
+    // },
   ];
 };
 
@@ -640,7 +646,10 @@ export const countPendingProductsForCrawlEbyListingsQuery = () => {
   const query = {
     $and: [
       {
-        eby_locked: false,
+        $or: [
+          { eby_locked: { $exists: false } },
+          { eby_locked: { $eq: false } },
+        ],
       },
       {
         esin: { $exists: true, $ne: "" },
@@ -702,14 +711,14 @@ export const crawlEbyListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        { "progress.pending": { $gt: danglingLookupThreshold } },
-      ],
-    },
+    // {
+    //   $or: [
+    //     {
+    //       progress: { $exists: false },
+    //     },
+    //     { "progress.pending": { $gt: danglingLookupThreshold } },
+    //   ],
+    // },
   ];
 };
 

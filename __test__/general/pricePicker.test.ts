@@ -6,6 +6,7 @@ describe("Price Picker", () => {
     { str: "ab227,99€", expect: 227.99 },
     { str: "€55,58 + 0", expect: 55.58 },
     { str: "1.933 €", expect: 1933.0 },
+    { str: "248\n,\n00€", expect: 248.0 },
     { str: "1.933€", expect: 1933.0 },
     { str: "Neu - 129,99 €", expect: 129.99 },
     { str: "EUR124,99bisEUR139,00", expect: 124.99 },
@@ -17,7 +18,7 @@ describe("Price Picker", () => {
     { str: "EUR1.136,2", expect: 1136.2 },
     { str: "EUR1.136,22", expect: 1136.22 },
     { str: "3,99..", expect: 3.99 },
-    { str: "€1.019", expect : 1019.0 },
+    { str: "€1.019", expect: 1019.0 },
     { str: "€1.029,00", expect: 1029.0 },
     { str: "€ 1.029,00", expect: 1029.0 },
     { str: "389,99€", expect: 389.99 },
@@ -42,8 +43,8 @@ describe("Price Picker", () => {
     { str: "3,99€..", expect: 3.99 },
   ];
 
-  test("test with parsePrice only", () => {
-    examples.forEach((example) => {
+  examples.forEach((example) => {
+    test(`${example.str} becomes ${example.expect}`, () => {
       const parsedPrice = safeParsePrice(example.str);
       expect(parsedPrice).toBe(example.expect);
     });

@@ -17,7 +17,7 @@ const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
 
 const today = new Date();
-const productLimit = 30;
+const productLimit = 40;
 const lookupsProductLimit = 50;
 const yesterday = sub(today, { days: 1 });
 const proxyType = "mix";
@@ -160,6 +160,8 @@ const createCrawlAznListingsTask = (shopDomain) => {
     executing: false,
     lastCrawler: [],
     test: false,
+    browserConcurrency: 5,
+    concurrency: 1,
     maintenance: false,
     recurrent: true,
     completed: false,
@@ -172,7 +174,6 @@ const createCrawlAznListingsTask = (shopDomain) => {
       pages: 0,
     },
     retry: 0,
-    concurrency: 4,
   };
 };
 const queryEansOnEbyTask = {

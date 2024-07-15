@@ -3,6 +3,7 @@ import {
   calculateAznArbitrage,
   calculateOnlyArbitrage,
   lookupProductQueue,
+  roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -20,6 +21,7 @@ import { checkProgress } from "../util/checkProgress.js";
 import { updateCrawlAznListingsProgress } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
+import { resetAznProduct } from "./lookupInfo.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -62,7 +64,7 @@ export default async function crawlAznListings(task) {
 
     const startTime = Date.now();
 
-    const shop = await getShop("amazon.de");
+    const amazonShop = await getShop("amazon.de");
 
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
@@ -97,9 +99,7 @@ export default async function crawlAznListings(task) {
           const price = infoMap.get("a_prc");
           const image = infoMap.get("a_img");
           const bsr = infoMap.get("bsr");
-          const arbispotterProductUpdate = {
-            a_lnk: url,
-          };
+          const arbispotterProductUpdate = {};
           const crawlDataProductUpdate = {
             aznUpdatedAt: new Date().toISOString(),
             azn_locked: false,
@@ -107,10 +107,15 @@ export default async function crawlAznListings(task) {
           };
           if (price) {
             const parsedPrice = safeParsePrice(price);
+            arbispotterProductUpdate["a_prc"] = parsedPrice;
+            arbispotterProductUpdate["a_uprc"] = roundToTwoDecimals(
+              parsedPrice / crawlDataProduct.a_qty
+            );
+
             if (crawlDataProduct?.costs) {
               const arbitrage = calculateAznArbitrage(
-                crawlDataProduct.price,
-                parsedPrice,
+                crawlDataProduct.uprc,
+                arbispotterProductUpdate["a_uprc"],
                 crawlDataProduct.costs
               );
               Object.entries(arbitrage).forEach(([key, val]) => {
@@ -125,7 +130,6 @@ export default async function crawlAznListings(task) {
                 arbispotterProductUpdate[`a_${key}`] = val;
               });
             }
-            arbispotterProductUpdate["a_prc"] = parsedPrice;
           }
           if (image) {
             arbispotterProductUpdate["a_img"] = image;
@@ -133,7 +137,6 @@ export default async function crawlAznListings(task) {
           if (bsr) {
             arbispotterProductUpdate["bsr"] = bsr;
           }
-
           await updateArbispotterProduct(
             shopDomain,
             productLink,
@@ -151,7 +154,7 @@ export default async function crawlAznListings(task) {
             azn_taskId: "",
           });
           await updateArbispotterProduct(shopDomain, productLink, {
-            a_lnk: url,
+            a_lnk: url.split("?")[0],
           });
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
@@ -174,17 +177,11 @@ export default async function crawlAznListings(task) {
           azn_locked: false,
           azn_taskId: "",
         });
-        await updateArbispotterProduct(shopDomain, productLink, {
-          lckd: false,
-          taskId: "",
-          a_prc: 0,
-          asin: "",
-          a_lnk: "",
-          a_img: "",
-          a_mrgn: 0,
-          a_mrgn_pct: 0,
-          a_nm: "",
-        });
+        await updateArbispotterProduct(
+          shopDomain,
+          productLink,
+          resetAznProduct
+        );
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
             queue,
@@ -207,7 +204,7 @@ export default async function crawlAznListings(task) {
 
       queue.pushTask(lookupProductQueue, {
         retries: 0,
-        shop,
+        shop: amazonShop,
         addProduct,
         onNotFound: handleNotFound,
         addProductInfo,
@@ -217,7 +214,7 @@ export default async function crawlAznListings(task) {
         extendedLookUp: false,
         pageInfo: {
           link: aznLink,
-          name: shop.d,
+          name: amazonShop.d,
         },
       });
     }

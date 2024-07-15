@@ -6,8 +6,8 @@ import {
   queryTargetShops,
   standardTargetRetailerList,
   reduceString,
-  safeParsePrice,
   matchTargetShopProdsWithRawProd,
+  replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
 import { createArbispotterCollection } from "./db/mongo.js";
@@ -71,7 +71,9 @@ export default async function match(task) {
       );
 
     const _productLimit =
-      lockedProducts.length < productLimit ? lockedProducts.length : productLimit;
+      lockedProducts.length < productLimit
+        ? lockedProducts.length
+        : productLimit;
 
     infos.locked = lockedProducts.length;
 
@@ -131,8 +133,10 @@ export default async function match(task) {
         ean,
         hasMnfctr,
         mnfctr: manufacturer,
-        price: prc,
-        promoPrice: prmPrc,
+        price,
+        promoPrice,
+        uprc: unitPrice,
+        qty,
         image: img,
         link: lnk,
         shop: s,
@@ -159,7 +163,9 @@ export default async function match(task) {
         nm: prodNm,
         img: prefixLink(img, s),
         lnk: prefixLink(lnk, s),
-        prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
+        prc: promoPrice ? promoPrice : price,
+        uprc: unitPrice,
+        qty,
       };
 
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
@@ -229,18 +235,27 @@ export default async function match(task) {
 
             const esin = parseEsinFromUrl(procProd.e_lnk);
             if (esin) {
+              procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
+              procProd["e_qty"] = 1;
+              procProd["e_uprc"] = procProd.e_prc;
+
+              procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
               procProd["esin"] = esin;
+              crawlDataProductUpdate["e_qty"] = procProd["e_qty"];
               crawlDataProductUpdate["eby_prop"] = "complete";
               crawlDataProductUpdate["esin"] = esin;
             }
 
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
-              procProd.asin = asin;
+              procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
+              procProd["a_qty"] = 1;
+              procProd["a_uprc"] = procProd.a_prc;
+              procProd["asin"] = asin;
               crawlDataProductUpdate["asin"] = asin;
             }
-            
-            procProd['bsr'] = [];
+
+            procProd["bsr"] = [];
 
             const result = await createOrUpdateArbispotterProduct(
               collectionName,
@@ -285,13 +300,20 @@ export default async function match(task) {
 
             const esin = parseEsinFromUrl(procProd.e_lnk);
             if (esin) {
+              procProd['e_nm'] = replaceAllHiddenCharacters(procProd.e_nm);
+              procProd["e_qty"] = 1;
+              procProd["e_uprc"] = procProd.e_prc;
+              procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
+              procProd["esin"] = esin;
               crawlDataProductUpdate["eby_prop"] = "complete";
               crawlDataProductUpdate["esin"] = esin;
-              procProd["esin"] = esin;
             }
 
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
+              procProd['a_nm'] = replaceAllHiddenCharacters(procProd.a_nm);
+              procProd["a_qty"] = 1;
+              procProd["a_uprc"] = procProd.a_prc;
               procProd.asin = asin;
               crawlDataProductUpdate["asin"] = asin;
             }

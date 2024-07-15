@@ -1,6 +1,9 @@
 import { sub } from "date-fns";
 
 const testParameters = {
+  "amazon.de": {
+    productPageUrl: "https://www.amazon.de/dp/product/B0CSZ24B3P?language=de_DE"
+  },
   "ebay.de": {
     productPageUrl: "https://www.ebay.de/p/16031005284?iid=395515409216"
     

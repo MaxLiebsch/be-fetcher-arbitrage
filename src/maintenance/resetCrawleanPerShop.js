@@ -154,7 +154,7 @@ const _ids = [
 ];
 
 const main = async () => {
-  const shop = await getShop("fressnapf.de");
+  const shop = await getShop("alza.de");
 
   if (!shop) return "Shop not found";
 
@@ -162,14 +162,14 @@ const main = async () => {
 
   const collectionName = shop.d;
   const query = {
-    _id: {
-      $in: _ids.map((id) => new ObjectId(id)),
-    },
+   
   };
 
   const update = {
     $set: {
-      ean_prop: ""
+      ean_prop: "",
+      ean_locked: false,
+      ean_taskId: ""
     },
   };
 
