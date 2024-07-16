@@ -221,6 +221,7 @@ export default async function lookupInfo(task) {
           const crawlDataProductUpdate = {
             info_locked: false,
             info_taskId: "",
+            qty_prop: "",
             a_qty: processedProductUpdate.a_qty,
             info_prop: "complete",
             aznUpdatedAt: new Date().toISOString(),

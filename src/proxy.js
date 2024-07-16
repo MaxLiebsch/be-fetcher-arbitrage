@@ -12,7 +12,6 @@ const osHostname = os.hostname();
 
 config({
   path: [
-    `.env.${process.env.NODE_ENV}.${process.env.PROXY_TYPE}`,
     `.env.${process.env.NODE_ENV}`,
   ],
 });
@@ -32,9 +31,9 @@ const server = http.createServer((req, res) => {
       res.writeHead(400, { "Content-Type": "text/plain" });
       return res.end("Bad Request");
     }
-    if (query.proxy === "gb") {
-      host = process.env.PROXY_GATEWAY_URL_GB;
-    } else if (query.proxy === "request") {
+    if (query.proxy === "de") {
+      host = process.env.PROXY_GATEWAY_URL_DE;
+    } else if (query.proxy === "mix") {
       host = process.env.PROXY_GATEWAY_URL;
     }
     // Set the response HTTP headers

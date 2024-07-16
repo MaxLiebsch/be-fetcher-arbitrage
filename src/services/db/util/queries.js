@@ -409,7 +409,6 @@ export const queryEansOnEbyTaskQueryFn = (
   ];
 };
 
-
 /*              Queries: Lookup Category (3.4) - crawl-data           
                 cat_prop: complete/missing/empty,
                 esin: exists,not "",
@@ -591,14 +590,6 @@ export const crawlAznListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
-    // {
-    //   $or: [
-    //     {
-    //       progress: { $exists: false },
-    //     },
-    //     { "progress.pending": { $gt: danglingLookupThreshold } },
-    //   ],
-    // },
   ];
 };
 
@@ -716,14 +707,6 @@ export const crawlEbyListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
-    // {
-    //   $or: [
-    //     {
-    //       progress: { $exists: false },
-    //     },
-    //     { "progress.pending": { $gt: danglingLookupThreshold } },
-    //   ],
-    // },
   ];
 };
 
@@ -843,10 +826,10 @@ export const findTasksQuery = () => {
           {
             $and: queryEansOnEbyTaskQuery,
           },
-          { $and: crawlEbyListingsTaskQuery },
-          {
-            $and: crawlAznListingsTaskQuery,
-          },
+          // { $and: crawlEbyListingsTaskQuery },
+          // {
+          //   $and: crawlAznListingsTaskQuery,
+          // },
           { $and: crawlEanTaskQuery },
           { $and: lookupInfoTaskQuery },
           {

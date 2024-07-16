@@ -1,6 +1,4 @@
-
 const version = process.env.APP_VERSION || require("./package.json").version;
-
 
 module.exports = {
   apps: [
@@ -11,7 +9,7 @@ module.exports = {
       interpreter: "none",
       env: {
         NODE_ENV: "prodution",
-        PROXY_TYPE: "request",
+        PROXY_TYPE: "mix",
         DEBUG: false,
       },
     },
@@ -22,7 +20,6 @@ module.exports = {
       interpreter: "none",
       env: {
         NODE_ENV: "prodution",
-        PROXY_TYPE: "request",
         DEBUG: false,
       },
     },

@@ -126,7 +126,7 @@ const cleanSlate = async () => {
           spotterBulkWrites.push(spotterBulk);
           crawlDataBulkWrites.push(crawlDataBulk);
         });
-        const result = await Promise.all([
+        await Promise.all([
           spotter.collection(shop.d).bulkWrite(spotterBulkWrites),
           crawlData.collection(shop.d).bulkWrite(crawlDataBulkWrites),
         ]);
@@ -139,8 +139,6 @@ const cleanSlate = async () => {
         cnt,
         "count:",
         count,
-        "Count Product batch: ",
-        products.length,
         "hasMoreProducts: ",
         products.length === batchSize
       );

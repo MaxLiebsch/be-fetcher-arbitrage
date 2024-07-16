@@ -196,6 +196,7 @@ export default async function queryEansOnEby(task) {
 
           const crawlDataProductUpdate = {
             eby_locked: false,
+            qty_prop: "",
             e_qty: arbispotterProductUpdate["e_qty"],
             eby_taskId: "",
             esin,

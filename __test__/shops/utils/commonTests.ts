@@ -66,7 +66,7 @@ export const myBeforeAll = async (
     },
   };
   if (gb) {
-    (task["proxyType"] = "gb"), (task["timezones"] = ["Europe/Berlin"]);
+    (task["proxyType"] = "de"), (task["timezones"] = ["Europe/Berlin"]);
   }
 
   browser = await mainBrowser(
