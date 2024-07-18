@@ -1,32 +1,17 @@
 import {
-  createArbispotterCollection,
-  createCrawlDataCollection,
   getArbispotterDb,
   getCrawlDataDb,
 } from "../services/db/mongo.js";
-import {
-  countProducts,
-  findArbispotterProducts,
-} from "../services/db/util/crudArbispotterProduct.js";
-import { createOrUpdateArbispotterProduct } from "../services/db/util/createOrUpdateArbispotterProduct.js";
+import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
 import { getAllShopsAsArray } from "../services/db/util/shops.js";
 import {
   calculateAznArbitrage,
   calculateEbyArbitrage,
-  detectQuantity,
   findMappedCategory,
-  roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
-import { parseAsinFromUrl } from "../util/parseAsin.js";
-import { parseEsinFromUrl } from "../util/parseEsin.js";
-import { createHash } from "../util/hash.js";
 import { countTotal } from "./countProducts.js";
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const cleanSlate = async () => {
+const migrationPackage = async () => {
   const crawlData = await getCrawlDataDb();
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
@@ -57,25 +42,34 @@ const cleanSlate = async () => {
           const set = {};
           const spotterSet = {};
           const crawlDataSet = {};
-          set["qty"] = 1;
-          set["uprc"] = p.prc;
-          spotterSet["s_hash"] = createHash(p.lnk);
+          if (p.a_qty !== undefined && p.a_qty === 0) {
+            p.a_qty = 1;
+          }
+          if (p.e_qty !== undefined && p.e_qty === 0) {
+            p.e_qty = 1;
+          }
+          if (p.qty !== undefined && p.qty === 0) {
+            p.qty = 1;
+          }
           if (p.ebyCategories && p.e_nm) {
-            const esin = parseEsinFromUrl(p.e_lnk);
-            if (esin) {
-              set["esin"] = esin;
-              spotterSet["esin"] = esin;
-              spotterSet["e_lnk"] = p.e_lnk.split("?")[0];
-              spotterSet["e_hash"] = createHash(p.e_lnk.split("?")[0]);
-              set["e_qty"] = 1;
-              spotterSet["e_uprc"] = p.e_prc;
+            let mappedCategory = null;
+            if (p.ebyCategories.every((cat) => typeof cat === "number")) {
+              mappedCategory = findMappedCategory(p.ebyCategories); // { category: "Drogerie", id: 322323, ...}
+            } else if (p.ebyCategories.length > 0) {
+              mappedCategory = findMappedCategory([p.ebyCategories[0].id]);
             }
-            let mappedCategory = findMappedCategory(p.ebyCategories); // { category: "Drogerie", id: 322323, ...}
             if (mappedCategory) {
+              const {
+                prc: buyPrice,
+                qty: buyQty,
+                e_qty: sellQty,
+                e_prc: sellPrice,
+              } = p;
+
               let ebyArbitrage = calculateEbyArbitrage(
                 mappedCategory,
-                spotterSet["e_uprc"],
-                set["uprc"]
+                sellPrice, //VK
+                buyPrice * (sellQty / buyQty) //EK  //QTY Zielshop/QTY Herkunftsshop
               );
               if (ebyArbitrage) {
                 Object.entries(ebyArbitrage).forEach(([key, val]) => {
@@ -92,20 +86,19 @@ const cleanSlate = async () => {
             }
           }
           if (p.costs && p.a_nm) {
-            const asin = parseAsinFromUrl(p.a_lnk);
-            if (asin) {
-              set["asin"] = asin;
-              spotterSet["asin"] = asin;
-              spotterSet["a_lnk"] = p.a_lnk.split("?")[0];
-              spotterSet["a_hash"] = createHash(p.a_lnk.split("?")[0]);
-              set["a_qty"] = 1;
-              spotterSet["a_uprc"] = p.a_prc;
-            }
+            const {
+              prc: buyPrice,
+              qty: buyQty,
+              a_qty: sellQty,
+              a_prc: sellPrice,
+              costs,
+              tax,
+            } = p;
             const arbitrage = calculateAznArbitrage(
-              set["uprc"],
-              spotterSet["a_uprc"],
-              p.costs,
-              p.tax
+              buyPrice * (sellQty / buyQty), // EK
+              sellPrice, // VK
+              costs,
+              tax
             );
             Object.entries(arbitrage).forEach(([key, val]) => {
               spotterSet[key] = val;
@@ -151,6 +144,6 @@ const cleanSlate = async () => {
   }
 };
 
-cleanSlate().then((r) => {
+migrationPackage().then((r) => {
   process.exit(0);
 });
