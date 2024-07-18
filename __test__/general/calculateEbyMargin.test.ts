@@ -1,39 +1,59 @@
 import {
   calculateAznArbitrage,
   calculateEbyArbitrage,
+  findMappedCategory,
 } from "@dipmaxtech/clr-pkg";
+//@ts-ignore
+import { getArbispotterDb } from "../../src/services/db/mongo.js";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 
-describe("calculate arbitrage", () => {
-  const expected = {
-    e_mrgn: 215.24,
-    e_mrgn_pct: 25.5,
-    e_ns_mrgn: 177.25,
-    e_ns_mrgn_pct: 21,
-  };
-  const result = calculateEbyArbitrage(
-    {
-      category: "Computer, Tablets & Netzwerk",
-      id: 58058,
-      tier: {
-        no_shop: [
-          { up_to: 990, percentage: 0.065 },
-          { above: 990, percentage: 0.02 },
-        ],
-        shop: [
-          { above: 400, percentage: 0.02 },
-          { up_to: 400, percentage: 0.065 },
-        ],
-      },
-    },
-    844.13,
-    567.9
-  ) as any;
 
-  if (result)
-    Object.keys(result).forEach((key) => {
-      test(`${key}`, () => {
+describe("calculate arbitrage", () => {
+  let product: null | any= null;
+  let ean = "8719514319141";
+  beforeAll(async () => {
+    const db = await getArbispotterDb();
+    const shopDomain = "idealo.de";
+    const col = db.collection(shopDomain);
+    product = await col.findOne({ eanList: ean }, { limit: 1 });
+  }, 1000000);
+  test("calculateAznArbitrage", () => {
+    const { e_prc, prc, qty, e_qty, nm, e_nm } = product;
+    const expected = {
+      e_tax: 7.98,
+      e_costs: 6,
+      e_mrgn: -7.35,
+      e_mrgn_pct: -14.7,
+      e_ns_costs: 6,
+      e_ns_mrgn: -7.35,
+      e_ns_mrgn_pct: -14.7
+    }
+    const mappedCategory = findMappedCategory([product.ebyCategories[0].id]);
+    const result = calculateEbyArbitrage(
+      mappedCategory!,
+      e_prc, //VK
+      prc * (e_qty / qty) //EK  //QTY Zielshop/QTY Herkunftsshop
+    ) as any;
+
+    if (result) {
+      console.log("result:", result);
+      console.log(
+        JSON.stringify(
+          {
+            e_prc,
+            prc,
+            qty,
+            e_qty,
+            nm,
+            e_nm,
+          },
+          null,
+          2
+        )
+      );
+      Object.keys(result).forEach((key) => {
         expect(result[key]).toEqual(expected[key as keyof typeof expected]);
       });
-    });
+    }
+  });
 });

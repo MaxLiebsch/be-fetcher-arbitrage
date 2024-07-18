@@ -261,21 +261,24 @@ const handleCategoryAndUpdate = async (
   categories,
   crawlDataProductUpdate
 ) => {
-  const { esin, uprc: unitPrice } = crawlDataProduct;
+  const {
+    esin,
+    price: buyPrice,
+    e_qty: sellQty,
+    qty: buyQty,
+  } = crawlDataProduct;
   if (categories) {
     const sellPrice = safeParsePrice(ebyListingPrice ?? "0");
 
-    const sellUnitPrice = roundToTwoDecimals(
-      sellPrice / crawlDataProduct.e_qty
-    );
+    const sellUnitPrice = roundToTwoDecimals(sellPrice / sellQty);
     const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
     let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
 
     if (mappedCategory) {
       let ebyArbitrage = calculateEbyArbitrage(
         mappedCategory,
-        sellUnitPrice,
-        unitPrice
+        sellPrice,
+        buyPrice * (sellQty / buyQty)
       );
       await updateArbispotterProduct(shopDomain, crawledProductLink, {
         ...ebyArbitrage,

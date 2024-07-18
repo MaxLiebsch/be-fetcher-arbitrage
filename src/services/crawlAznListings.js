@@ -109,29 +109,28 @@ export default async function crawlAznListings(task) {
             azn_locked: false,
             azn_taskId: "",
           };
+          const {
+            qty: buyQty,
+            a_qty: sellQty,
+            price: buyPrice,
+            costs,
+          } = crawlDataProduct;
           if (price) {
             const parsedPrice = safeParsePrice(price);
             arbispotterProductUpdate["a_prc"] = parsedPrice;
             arbispotterProductUpdate["a_uprc"] = roundToTwoDecimals(
-              parsedPrice / crawlDataProduct.a_qty
+              parsedPrice / sellQty
             );
+            const { a_prc: sellPrice } = arbispotterProductUpdate;
 
             if (crawlDataProduct?.costs) {
               const arbitrage = calculateAznArbitrage(
-                crawlDataProduct.uprc,
-                arbispotterProductUpdate["a_uprc"],
-                crawlDataProduct.costs
+                buyPrice * (sellQty / buyQty),
+                sellPrice,
+                costs
               );
               Object.entries(arbitrage).forEach(([key, val]) => {
                 arbispotterProductUpdate[key] = val;
-              });
-            } else {
-              const arbitrage = calculateOnlyArbitrage(
-                crawlDataProduct.price,
-                parsedPrice
-              );
-              Object.entries(arbitrage).forEach(([key, val]) => {
-                arbispotterProductUpdate[`a_${key}`] = val;
               });
             }
           }

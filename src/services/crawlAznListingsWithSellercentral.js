@@ -1,12 +1,7 @@
 import {
   QueryQueue,
-  calculateAznArbitrage,
-  calculateOnlyArbitrage,
   generateUpdate,
-  lookupProductQueue,
   querySellerInfosQueue,
-  roundToTwoDecimals,
-  safeParsePrice,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -122,7 +117,9 @@ export default async function crawlAznListingsWithSellercentral(task) {
         asin,
         ean,
         uprc: unitPrice,
+        price: buyPrice,
         a_qty,
+        qty,
       } = crawlDataProduct;
 
       const addProduct = async (product) => {};
@@ -130,8 +127,9 @@ export default async function crawlAznListingsWithSellercentral(task) {
         if (productInfo) {
           const processedProductUpdate = generateUpdate(
             productInfo,
-            unitPrice,
-            a_qty ?? 1
+            buyPrice,
+            a_qty ?? 1,
+            qty ?? 1
           );
           let eanList = [];
           if (hasEan || eanSelector) {

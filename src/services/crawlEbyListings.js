@@ -111,6 +111,7 @@ async function crawlEbyListings(task) {
             eby_locked: false,
             eby_taskId: "",
           };
+          const { e_qty: buyQty, price: buyPrice, qfty: sellQty } = crawlDataProduct;
           if (sellPrice) {
             const parsedSellPrice = safeParsePrice(sellPrice);
 
@@ -118,16 +119,17 @@ async function crawlEbyListings(task) {
             arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
               parsedSellPrice / crawlDataProduct.e_qty
             );
-            const mappedCategories = findMappedCategory(
+            const mappedCategory = findMappedCategory(
               crawlDataProduct.ebyCategories.reduce((acc, curr) => {
                 acc.push(curr.id);
                 return acc;
               }, [])
             );
+            const { e_prc: sellPrice } = arbispotterProductUpdate;
             const arbitrage = calculateEbyArbitrage(
-              mappedCategories,
-              arbispotterProductUpdate["e_uprc"],
-              crawlDataProduct.uprc
+              mappedCategory,
+              sellPrice, // e_prc, //VK
+              buyPrice * (buyQty / sellQty) // prc * (e_qty / qty) //EK  //QTY Zielshop/QTY Herkunftsshop
             );
             Object.entries(arbitrage).forEach(([key, val]) => {
               arbispotterProductUpdate[key] = val;

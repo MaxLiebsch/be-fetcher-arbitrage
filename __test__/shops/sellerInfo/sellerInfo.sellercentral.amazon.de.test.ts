@@ -9,9 +9,6 @@ import {
   querySellerInfos,
 } from "../utils/commonTests.js";
 import {
-  safeParsePrice,
-  calculateAznArbitrage,
-  getNumber,
   generateUpdate,
 } from "@dipmaxtech/clr-pkg";
 
@@ -20,7 +17,7 @@ const shopDomain = "sellercentral.amazon.de";
 //TODO : make sure mimic does not create fake block
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '124.0.6367.207');
+    await myBeforeAll(shopDomain, false, "124.0.6367.207");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -36,15 +33,14 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
-        const update = generateUpdate(productInfo, 6);
+        const update = generateUpdate(productInfo, 6, 1, 1);
         console.log(update);
       }
     };
     await querySellerInfos(addProductInfo, "B015AFAVOO");
   }, 200000);
 
-
-  // afterAll(async () => {
-  //   await myAfterAll();
-  // });
+  afterAll(async () => {
+    await myAfterAll();
+  });
 });

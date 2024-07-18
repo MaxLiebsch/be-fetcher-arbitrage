@@ -5,10 +5,9 @@ import {
   prefixLink,
   querySellerInfosQueue,
   replaceAllHiddenCharacters,
-  safeParsePrice,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import _, { reduce } from "underscore";
+import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
@@ -162,13 +161,13 @@ export default async function lookupInfo(task) {
         hasMnfctr,
         mnfctr: manufacturer,
         price,
-        uprc: unitPrice,
+        uprc,
         qty,
         promoPrice,
         image,
         link: crawlDataProductLink,
         shop: s,
-        a_qty,
+        a_qty: sellQty,
       } = crawlDataProduct;
 
       let mnfctr = "";
@@ -191,17 +190,18 @@ export default async function lookupInfo(task) {
         lnk: prefixLink(crawlDataProductLink, s),
         s_hash: crawlDataProduct.s_hash,
         prc: promoPrice ? promoPrice : price,
-        uprc: unitPrice,
+        uprc,
         qty,
       };
-
+      const { prc: buyPrice, qty: buyQty } = procProd;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
           const processedProductUpdate = generateUpdate(
             productInfo,
-            unitPrice,
-            a_qty ?? 1
+            buyPrice,
+            sellQty ?? 1,
+            buyQty ?? 1
           );
 
           if (hasEan && ean) {
