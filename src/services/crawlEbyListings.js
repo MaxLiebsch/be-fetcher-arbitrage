@@ -111,7 +111,11 @@ async function crawlEbyListings(task) {
             eby_locked: false,
             eby_taskId: "",
           };
-          const { e_qty: buyQty, price: buyPrice, qfty: sellQty } = crawlDataProduct;
+          const {
+            e_qty: buyQty,
+            price: buyPrice,
+            qfty: sellQty,
+          } = crawlDataProduct;
           if (sellPrice) {
             const parsedSellPrice = safeParsePrice(sellPrice);
 
@@ -153,10 +157,17 @@ async function crawlEbyListings(task) {
           await updateCrawlDataProduct(shopDomain, productLink, {
             eby_locked: false,
             eby_taskId: "",
+            esin: "",
+            e_qty: 0,
+            cat_prop: "", // lookup category
+            eby_prop: "", //  query eans on eby
           });
-          await updateArbispotterProduct(shopDomain, productLink, {
-            e_lnk: url.split("?")[0],
-          });
+          await updateArbispotterProduct(
+            shopDomain,
+            productLink,
+            resetEbayProduct
+          );
+          infos.notFound++;
         }
         if (infos.total >= _productLimit - 1 && !queue.idle()) {
           await checkProgress({
