@@ -5,6 +5,26 @@ export const none = [
       package: null,
     },
     {
+      input: "HP Nr. 59X schwarz (CF259X)",
+      package: null,
+    },
+    {
+      input: "HP Nr. 59X schwarz (CF259X)",
+      package: null,
+    },
+    {
+      input: "Garmin fēnix® 7X Pro",
+      package: null,
+    },
+    {
+      input: "Babolat Pure Aero black-yellow X12",
+      package: null,
+    },
+    {
+      input: "DeWalt DWP849X",
+      package: null,
+    },
+    {
       input: "3M Scotch Klebefilm Magic 811, ablösbar, 19 mm x 33 m",
       package: null,
     },
@@ -63,7 +83,7 @@ export const none = [
     },
     {
       input: "6x8 US.FM RWo.M - Keystone Anschlussdose US-Style 6 P  reinweiß",
-      package: null,
+      package: 6,
     },
     {
       input: 'BARBIE Pop Reveal Puppensortiment - Saftkartonverpackung mit 5 Überraschungen, fruchtiger Duft, bunte Haare, Rollschuhe und sensorische Funktionen, für Kinder ab 3 Jahren, HRK58',

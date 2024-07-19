@@ -14,9 +14,7 @@ const migrationPackage = async () => {
   const crawlData = await getCrawlDataDb();
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops.filter(
-    (shop) => shop.active 
-  );
+  const activeShops = shops.filter((shop) => shop.active);
 
   let count = 0;
   let sampleSize = await countTotal();
@@ -49,6 +47,7 @@ const migrationPackage = async () => {
           } else {
             p.qty = 1;
           }
+          spotterSet["uprc"] = roundToTwoDecimals(p.prc / p.qty);
 
           if (p.a_qty !== undefined && p.a_qty === 0) {
             p.a_qty = 1;
@@ -59,7 +58,7 @@ const migrationPackage = async () => {
           if (p.qty !== undefined && p.qty === 0) {
             p.qty = 1;
           }
-          
+
           if (p.ebyCategories && p.e_nm) {
             let mappedCategory = null;
             if (p.ebyCategories.every((cat) => typeof cat === "number")) {
@@ -136,7 +135,6 @@ const migrationPackage = async () => {
           set["qty"] = p.qty;
           set["a_qty"] = p.a_qty;
           set["e_qty"] = p.e_qty;
-
 
           let spotterBulk = {
             updateOne: {

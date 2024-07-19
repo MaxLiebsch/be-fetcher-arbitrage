@@ -197,6 +197,7 @@ export default async function lookupInfo(task) {
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         if (productInfo) {
+          
           const processedProductUpdate = generateUpdate(
             productInfo,
             buyPrice,

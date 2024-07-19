@@ -188,8 +188,15 @@ export default async function queryEansOnEby(task) {
           arbispotterProductUpdate["e_nm"] = replaceAllHiddenCharacters(
             foundProduct.name
           );
-          arbispotterProductUpdate["e_qty"] = 1;
-          arbispotterProductUpdate["e_uprc"] = foundProduct.price;
+
+          const e_qty = detectQuantity(foundProduct.name);
+          if (e_qty) {
+            arbispotterProductUpdate["e_qty"] = e_qty;
+            arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(foundProduct.price / e_qty);
+          } else {
+            arbispotterProductUpdate["e_qty"] = 1;
+            arbispotterProductUpdate["e_uprc"] = foundProduct.price;
+          }
 
           const esin = new URL(foundProduct.link).pathname.split("/")[2];
           arbispotterProductUpdate["esin"] = esin;

@@ -9,22 +9,71 @@ export const packs = [
     package: null,
   },
   {
-    input: 'Duss PK 600 SET',
+    input: 'TRIXIE glutenfreie Hhnchen Kaurolle Denta Fun Chicken Chewing Rolls, 12 cm, 30 St./240 g - 31378 (Packung mit 2)',
+    package: 2,
+  },
+  {
+    input: "Zeller Weinregal Fichte für 25 Flaschen (13172)",
+    package: null,
+  },
+  {
+    input: "Zeller Weinregal Fichte 25 Flaschen (13172)",
+    package: 25,
+  },
+  {
+    input: "12 Pck. 3M Deutschland Atemschutzmaske 8710 (VE20) Atemschutzmasken 7000034734",
+    package: 12,
+  },
+  {
+    input: "Bosch 1000x Klammer Typ 53 (Textilien/Gewebe, Teppich, Akustikplatten, Rasenteppich, 11.4 x 0.74 x 8 mm, Zubehr Tacker)",
+    package: 1000,
+  },
+  {
+    input:
+      "Lavazza Crema e Gusto Classico, 108 Kaffeepads für Espressomaschinen",
+    package: 108,
+  },
+  {
+    input: "WELLER WR 2002 - Lötstation, Entlötstation, WR 2002 Set, 300 W, 2-Kanal, ESD",
     package: null
   },
   {
-    input: 'o.b. Original Tampons normal mit geschwungenen Rillen Saugfähig 64er',
+    input:
+      "Radeon RX 7800 XT GAMING OC 16G, Grafikkarte RDNA 3, GDDR6, 2x DisplayPort, 2x HDMI 2.1",
+    package: null,
+  },
+  {
+    input: "Duss PK 600 SET",
+    package: null,
+  },
+  {
+    input: "Paulmann LED Base rund 10 x max. 10W GU10 weiß (934.00)",
+    package: null,
+  },
+  {
+    input:
+      "APIFONDA Futterteig 12 x 1 KG Bienenfutter Südzucker Imkerei Futter für Bienen",
+    package: 12,
+  },
+  {
+    input: "Ferrero Kinder Bueno - 30 Riegel - Schokolade Schokoriegel",
+    package: 30,
+  },
+  {
+    input:
+      "o.b. Original Tampons normal mit geschwungenen Rillen Saugfähig 64er",
     package: 64,
   },
   {
-    input: 'JBL Bar 800',
+    input: "JBL Bar 800",
     package: null,
   },
   {
-    input: 'AMD Ryzen 7 5800X Boxed',
+    input: "AMD Ryzen 7 5800X Boxed",
     package: null,
   },
   { input: "Adult Huhn mit Lachs 2 kg 3 Packungen", package: 3 },
+  { input: "24 Flaschen San Pellegrino SANBITTER a´ 98ml", package: 24 },
   {
     input:
       "Gourmet Perle Erlesene Streifen Katzenfutter nass, mit Lachs, 26er Pack (26 x 85g)",
@@ -35,16 +84,30 @@ export const packs = [
     package: 2,
   },
   {
+    input: "Pampers Harmonie Aqua Baby Feuchttücher Box, 720 Tücher (15 x 48), sanfter Hautschutz für zarte Haut mit 99% Wasser",
+    package: 15,
+  },
+  {
     input:
       "L'Oréal Paris Permanente Haarfarbe, Haarfärbeset mit Coloration und Farbglanz-Pflegebalsam, Préférence, P11 Kühles Intensives Schwarz (Manhattan), 3er Set",
-    package: null,
+    package: 3,
+  },
+  {
+    input:
+      "12 Dosen Airwaves Menthol & Eukalyptus o. Zucker a 50 Dragees Kaugummi",
+    package: 12,
   },
   {
     input: "STABILO Point 88 50 Stück Metallgehäuse",
     package: 50,
   },
   {
-    input: "4x new Retro Wheels RONAL R10 Turbo 7x15 4x100 ET:37 VW Golf 2 3 Jetta - USA",
+    input: "Eschenbach powerlux 7x LED (8000K)",
+    package: null,
+  },
+  {
+    input:
+      "4x new Retro Wheels RONAL R10 Turbo 7x15 4x100 ET:37 VW Golf 2 3 Jetta - USA",
     package: null,
   },
   {
@@ -59,7 +122,7 @@ export const packs = [
   },
   {
     input: "Cartrend Caravan Stützbock 4er-Set (10306)",
-    package: null,
+    package: 4,
   },
   {
     input: "Kessel medintim Oral Safe Latexschutztuch Vanille (8 Stk.)",
@@ -107,8 +170,8 @@ export const packs = [
   },
 
   {
-    input: 'Fast & Furious - 10-Movie-Collection [10 DVDs]',
-    package: null
+    input: "Fast & Furious - 10-Movie-Collection [10 DVDs]",
+    package: null,
   },
   {
     input: "Wahl Edelstahl-Aufschiebekamm Set 1247-7440",
@@ -116,57 +179,61 @@ export const packs = [
   },
   {
     input: "Lowa Care Set (831101)",
-    package: null
+    package: null,
   },
   {
-    input: 'Metabo KGS 254 M Set (613254900)',
-    package: null
+    input: "Metabo KGS 254 M Set (613254900)",
+    package: null,
   },
   {
-    input: 'Rothenberger Pressbackenset Standard SV15-18-22-28 (015060X)',
-    package: null
+    input: "Rothenberger Pressbackenset Standard SV15-18-22-28 (015060X)",
+    package: null,
   },
   {
-    input: "Bosch Professional 18V System Akku GBA 18V 4.0Ah (2 x 65 Waschladungen) hochkonzentriert",
+    input:
+      "Bosch Professional 18V System Akku GBA 18V 4.0Ah (2 x 65 Waschladungen) hochkonzentriert",
     package: 2,
   },
   {
-    input: "GP 10023AC4 Hoog Voltage Alkaline Knopfzelle 23A (MS21 / MN21), 4er Blister",
+    input:
+      "GP 10023AC4 Hoog Voltage Alkaline Knopfzelle 23A (MS21 / MN21), 4er Blister",
     package: 4,
   },
   {
-    input: 'Sheba Multipack Soup mit Huhn | 10 Packungen 4 x 40g',
-    package: 10
+    input: "Sheba Multipack Soup mit Huhn | 10 Packungen 4 x 40g",
+    package: 10,
   },
   {
-    input: "Professional Akku-Rasenmäher RASARRO 36/40, 36Volt (2x18V) rot/schwarz, 2x Li-Ionen Akku 4,0Ah",
+    input:
+      "Professional Akku-Rasenmäher RASARRO 36/40, 36Volt (2x18V) rot/schwarz, 2x Li-Ionen Akku 4,0Ah",
     package: null,
   },
   {
     input: "PILOT FriXion Ball 07 / 0,35 mm - Set mit 15 Farben",
-    package: null
-  },
-  {
-    input: "Akku-Rasenmäher DLM539PT2, 36Volt (2x18Volt) blau/schwarz, 2x Li-Ionen Akku 5,0Ah, mit Radantrieb",
     package: null,
   },
   {
-    input: "Bachmann CONI Modulträger 3-fach, 2x Strom, 2x USB-A, Steckdosenleiste",
-    package: null
+    input:
+      "Akku-Rasenmäher DLM539PT2, 36Volt (2x18Volt) blau/schwarz, 2x Li-Ionen Akku 5,0Ah, mit Radantrieb",
+    package: null,
+  },
+  {
+    input:
+      "Bachmann CONI Modulträger 3-fach, 2x Strom, 2x USB-A, Steckdosenleiste",
+    package: null,
   },
   {
     input: "DeLOCK Steckdosenleiste 4-fach, 3x USB",
-    package: null
+    package: null,
   },
   {
-    input: "Bachmann CONI Modulträger 3-fach, 3x Strom, Steckdosenleiste", 
-    package: null
+    input: "Bachmann CONI Modulträger 3-fach, 3x Strom, Steckdosenleiste",
+    package: null,
   },
   {
     input: "Carrera GO!!! Build 'n Race - Racing Set 6.2, Rennbahn",
     package: null,
-  }
-  ,
+  },
   {
     input: "RM650, PC-Netzteil schwarz, 4x PCIe, Kabel-Management, 650 Watt",
     package: null,
@@ -180,28 +247,30 @@ export const packs = [
     package: 4,
   },
   {
-    input: 'FABER-CASTELL Spitzdose Grip 2001 3-fach silber',
-    package: null
+    input: "FABER-CASTELL Spitzdose Grip 2001 3-fach silber",
+    package: null,
   },
   {
     input: "Pelikan Zeichenblock A3 sortiert 10 Blatt 100g/qm",
     package: null,
   },
   {
-    input: "Müller - Toy Place - City Team Set - 5 Fahrzeuge, 3-fach sortiert, 1 Stück Spiel",
-    package: 1
+    input:
+      "Müller - Toy Place - City Team Set - 5 Fahrzeuge, 3-fach sortiert, 1 Stück Spiel",
+    package: 1,
   },
   {
     input: "folia Faltblätter aus Origamipapier 96 Blatt 19 x 19 cm",
     package: null,
   },
   {
-    input: 'beaphar Hundesnack Zahnpflege Sticks 7 St./112g',
-    package: 7
+    input: "beaphar Hundesnack Zahnpflege Sticks 7 St./112g",
+    package: 7,
   },
   {
-    input: '(1L|27,78) 6x150ml Fa Purple Passion 48H Deospray 0% Aluminium Veilchenblüten',
-    package: 6
+    input:
+      "(1L|27,78) 6x150ml Fa Purple Passion 48H Deospray 0% Aluminium Veilchenblüten",
+    package: 6,
   },
   {
     input: "folia Stickerrolle UNICORN 352 Teile",
@@ -377,7 +446,7 @@ export const packs = [
   {
     input:
       "Ceva Katzenzubehör Feliway Friends 3x30 Tage Vorteilspack Nachfüllflakon",
-    package: null,
+    package: 3,
   },
   {
     input: "LaSelva 6x Pesto mit Curry und Blüten - Kürbis Würzpaste 130g",

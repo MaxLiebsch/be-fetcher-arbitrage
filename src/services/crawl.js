@@ -2,6 +2,8 @@ import {
   CrawlerQueue,
   crawlShop,
   crawlSubpage,
+  detectQuantity,
+  roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
 import { createCrawlDataCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
@@ -104,9 +106,14 @@ export default async function crawl(task) {
         if (product.name && product.price && product.link) {
           infos.total++;
 
-          product["qty"] = 1;
-          product["uprc"] = product.price;
-         
+          const qty = detectQuantity(product.name);
+          if (qty) {
+            product["qty"] = qty;
+            product["uprc"] = roundToTwoDecimals(product.price / qty);
+          } else {
+            product["qty"] = 1;
+            product["uprc"] = product.price;
+          }
           const result = await createOrUpdateCrawlDataProduct(shopDomain, {
             ...product,
           });
