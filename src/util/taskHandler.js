@@ -21,7 +21,7 @@ async function handleCrawlTask({
   subject,
 }) {
   const { result, name, message } = taskResult;
-  const { infos } = result;
+  const { infos, statistics } = result;
   const { limit, productLimit, retry, _id, id, categories, shopDomain } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
@@ -31,6 +31,7 @@ async function handleCrawlTask({
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
       executing: false,
+      visitedPages: statistics.visitedPages
     };
     if (retry < MAX_TASK_RETRIES) {
       update["retry"] = retry + 1;

@@ -16,8 +16,9 @@ export const packs = [
     input: "Gillette Fusion 5 Rasierklingen für Rasierer, 14 Ersatzklingen für Nassrasierer Herren mit 5-fach Klinge, Made in Germany",
     package: 14,
   },
+
   { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
-    package: 90,
+    package: 1,
   },
   {
     input: 'Sheba Katzensnacks Creamy Snacks, 18 praktische Katzenleckerli Sticks, 18x12g (1 Packung) – in den Varietäten Huhn, Lachs (MSC zertifiziert) und Rind zum aus der Hand schlecken',
@@ -62,6 +63,15 @@ export const packs = [
     package: null,
   },
   {
+    input: "Q4AC - Ladegerät für Akkupacks Q4AC, 1-4s, max. 5 A, 4x 50 W",
+    package: null,
+  },
+  {
+    input:
+      "Radeon RX 7800 XT GAMING OC 16G, Grafikkarte RDNA 3, GDDR6, 2x Displayport, 2x HDMI 2.1",
+    package: null,
+  },
+  {
     input: "Duss PK 600 SET",
     package: null,
   },
@@ -103,13 +113,17 @@ export const packs = [
     package: 2,
   },
   {
+    input: "Polaroid Color Film für 600 - Doppelpack",
+    package: 2,
+  },
+  {
     input: "Pampers Harmonie Aqua Baby Feuchttücher Box, 720 Tücher (15 x 48), sanfter Hautschutz für zarte Haut mit 99% Wasser",
     package: 15,
   },
   {
     input:
       "L'Oréal Paris Permanente Haarfarbe, Haarfärbeset mit Coloration und Farbglanz-Pflegebalsam, Préférence, P11 Kühles Intensives Schwarz (Manhattan), 3er Set",
-    package: 3,
+    package: null,
   },
   {
     input:
@@ -132,7 +146,7 @@ export const packs = [
   {
     input:
       "Philips Hue Smart Weiß E27 LED Leuchtmittel Viererpack Dimmbar 800lm Bluetooth",
-    package: null,
+    package: 4,
   },
   {
     input:
@@ -140,8 +154,12 @@ export const packs = [
     package: 4,
   },
   {
+    input: "EFB-Elektronik Spleißschutz TS0338/96 (VE150) Spleißschutz 53100.32-150",
+    package: 150,
+  },
+  {
     input: "Cartrend Caravan Stützbock 4er-Set (10306)",
-    package: 4,
+    package: null,
   },
   {
     input: "Kessel medintim Oral Safe Latexschutztuch Vanille (8 Stk.)",
@@ -157,9 +175,25 @@ export const packs = [
     package: 8,
   },
   {
+    input: "LGMDM 4B6602458 - Fahrzeugantenne 4x4 MiMo 4G/5G + 2x2 MiMo WIFI + GPS/GNSS - Schwar",
+    package: null,
+  },
+  {
+    input: "LGMDM 4B6602458 - Fahrzeugantenne 4x4 MIMO 4G/5G + 2x2 MiMo WIFI + GPS/GNSS - Schwar",
+    package: null,
+  },
+  {
+    input: "BCS600 - Fernglas, 12x32, Prisma K9, schwarz",
+    package: null,
+  },
+  {
     input:
       "5x Rummo Pasta Integrale Fusilli N.48 Vollkornnudeln 500g+Polpa 400g",
     package: 5,
+  },
+  {
+    input: "Rohrmotor PLUS Mini 6 Nm - Rohrmotor Plus Mini, 6 Nm für 40er Welle",
+    package: null,
   },
   {
     input:

@@ -330,7 +330,7 @@ export const shops = {
       basepath: false,
       subCategories: [
         {
-          sel: "div[id=category] div.accordion a.font-weight-bold",
+          sel: "div[id=category] div.accordion a",
           type: "href",
         },
       ],
