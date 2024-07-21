@@ -9,6 +9,25 @@ export const packs = [
     package: null,
   },
   {
+    input: "Compeed Blasenpflaster Mixpack - Hydrokolloid-Pflaster in verschiedenen Gren - gegen Blasen an Fersen, Zehen und fr kleine Blasen, 6 stck",
+    package: 6,
+  },
+  {
+    input: "Gillette Fusion 5 Rasierklingen für Rasierer, 14 Ersatzklingen für Nassrasierer Herren mit 5-fach Klinge, Made in Germany",
+    package: 14,
+  },
+  { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
+    package: 90,
+  },
+  {
+    input: 'Sheba Katzensnacks Creamy Snacks, 18 praktische Katzenleckerli Sticks, 18x12g (1 Packung) – in den Varietäten Huhn, Lachs (MSC zertifiziert) und Rind zum aus der Hand schlecken',
+    package: 18,
+  },
+  {
+    input: "Pampers Pampers Ninjamas Nachthöschen / Höschenwindeln für Mädchen (27-43kg), 54 Pyjama Höschen, 8-12 Jahre, MONATSBOX, absorbierende Windelhöschen, Auslaufschutz für die ganze Nacht",
+    package: 54,
+  },
+  {
     input: 'TRIXIE glutenfreie Hhnchen Kaurolle Denta Fun Chicken Chewing Rolls, 12 cm, 30 St./240 g - 31378 (Packung mit 2)',
     package: 2,
   },

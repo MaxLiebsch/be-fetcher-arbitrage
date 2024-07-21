@@ -101,7 +101,7 @@ async function crawlEbyListings(task) {
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const sellPrice = infoMap.get("e_prc");
+          const rawSellPrice = infoMap.get("e_prc");
           const image = infoMap.get("image");
           const arbispotterProductUpdate = {
             e_lnk: url.split("?")[0],
@@ -116,8 +116,8 @@ async function crawlEbyListings(task) {
             price: buyPrice,
             qfty: sellQty,
           } = crawlDataProduct;
-          if (sellPrice) {
-            const parsedSellPrice = safeParsePrice(sellPrice);
+          if (rawSellPrice) {
+            const parsedSellPrice = safeParsePrice(rawSellPrice);
 
             arbispotterProductUpdate["e_prc"] = parsedSellPrice;
             arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
