@@ -826,14 +826,13 @@ export const findTasksQuery = () => {
           {
             $and: queryEansOnEbyTaskQuery,
           },
-          // { $and: crawlEbyListingsTaskQuery },
-          // {
-          //   $and: crawlAznListingsTaskQuery,
-          // },
           { $and: crawlEanTaskQuery },
           { $and: lookupInfoTaskQuery },
           {
             $and: lookupCategoryTaskQuery,
+          },
+          {
+            $and: crawlShopTaskQuery,
           },
         ],
       },
