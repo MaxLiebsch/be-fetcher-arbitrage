@@ -9,7 +9,6 @@ import { getUnmatchedEanShops } from "../util/lookupInfo/getUnmatchedEanShops.js
 import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
-import { getShop } from "./shops.js";
 
 export const getNewTask = async () => {
   const collectionName = tasksCollectionName;
@@ -117,7 +116,7 @@ export const getNewTask = async () => {
         shopProductCollectionName
       );
       console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-      if (pending === 0) {
+      if (pending >= task.minPendingProducts) {
         await updateTask(task._id, {
           $set: {
             executing: false,
@@ -136,7 +135,7 @@ export const getNewTask = async () => {
         shopProductCollectionName
       );
       console.log("CRAWL_EBY_LISTINGS: pending:", pending);
-      if (pending === 0) {
+      if (pending >= task.minPendingProducts) {
         await updateTask(task._id, {
           $set: {
             executing: false,
@@ -248,7 +247,7 @@ export const getNewTask = async () => {
           shopProductCollectionName
         );
         console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-        if (pending === 0) {
+        if (pending >= task.minPendingProducts) {
           await updateTask(task._id, {
             $set: {
               executing: false,
@@ -267,7 +266,7 @@ export const getNewTask = async () => {
           shopProductCollectionName
         );
         console.log("CRAWL_EBY_LISTINGS: pending:", pending);
-        if (pending === 0) {
+        if (pending >= task.minPendingProducts) {
           await updateTask(task._id, {
             $set: {
               executing: false,
