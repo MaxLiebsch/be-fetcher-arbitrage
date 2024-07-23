@@ -818,6 +818,9 @@ export const findTasksQuery = () => {
       {
         $or: [
           {
+            $and: crawlShopTaskQuery,
+          },
+          {
             $and: matchTaskQuery,
           },
           {
@@ -830,9 +833,6 @@ export const findTasksQuery = () => {
           { $and: lookupInfoTaskQuery },
           {
             $and: lookupCategoryTaskQuery,
-          },
-          {
-            $and: crawlShopTaskQuery,
           },
         ],
       },
