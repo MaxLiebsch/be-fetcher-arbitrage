@@ -116,7 +116,7 @@ export const getNewTask = async () => {
         shopProductCollectionName
       );
       console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-      if (pending >= task.minPendingProducts) {
+      if (pending < task.minPendingProducts) {
         await updateTask(task._id, {
           $set: {
             executing: false,
@@ -135,7 +135,7 @@ export const getNewTask = async () => {
         shopProductCollectionName
       );
       console.log("CRAWL_EBY_LISTINGS: pending:", pending);
-      if (pending >= task.minPendingProducts) {
+      if (pending < task.minPendingProducts) {
         await updateTask(task._id, {
           $set: {
             executing: false,
@@ -247,7 +247,7 @@ export const getNewTask = async () => {
           shopProductCollectionName
         );
         console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-        if (pending >= task.minPendingProducts) {
+        if (pending < task.minPendingProducts) {
           await updateTask(task._id, {
             $set: {
               executing: false,
@@ -266,7 +266,7 @@ export const getNewTask = async () => {
           shopProductCollectionName
         );
         console.log("CRAWL_EBY_LISTINGS: pending:", pending);
-        if (pending >= task.minPendingProducts) {
+        if (pending < task.minPendingProducts) {
           await updateTask(task._id, {
             $set: {
               executing: false,
