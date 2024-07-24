@@ -810,31 +810,14 @@ export const findTasksQuery = () => {
   );
   const queryEansOnEbyTaskQuery = queryEansOnEbyTaskQueryFn(lowerThenStartedAt); // (3.3)
   const lookupCategoryTaskQuery = lookupCategoryTaskQueryFn(lowerThenStartedAt); // (3.4)
-  const fallbackQuery = {
+
+  const prioQuery = {
     $and: [
       {
         maintenance: false,
       },
       {
-        $or: [
-          {
-            $and: crawlShopTaskQuery,
-          },
-          {
-            $and: matchTaskQuery,
-          },
-          {
-            $and: wholesaleTaskQuery,
-          },
-          {
-            $and: queryEansOnEbyTaskQuery,
-          },
-          { $and: crawlEanTaskQuery },
-          { $and: lookupInfoTaskQuery },
-          {
-            $and: lookupCategoryTaskQuery,
-          },
-        ],
+        $and: crawlShopTaskQuery,
       },
     ],
   };
@@ -846,9 +829,6 @@ export const findTasksQuery = () => {
       },
       {
         $or: [
-          {
-            $and: crawlShopTaskQuery,
-          },
           {
             $and: scanTaskQuery,
           },
@@ -905,7 +885,34 @@ export const findTasksQuery = () => {
     ],
   };
 
+  const fallbackQuery = {
+    $and: [
+      {
+        maintenance: false,
+      },
+      {
+        $or: [
+          {
+            $and: matchTaskQuery,
+          },
+          {
+            $and: wholesaleTaskQuery,
+          },
+          {
+            $and: queryEansOnEbyTaskQuery,
+          },
+          { $and: crawlEanTaskQuery },
+          { $and: lookupInfoTaskQuery },
+          {
+            $and: lookupCategoryTaskQuery,
+          },
+        ],
+      },
+    ],
+  };
+
   return {
+    prioQuery,
     query,
     fallbackQuery,
     update,

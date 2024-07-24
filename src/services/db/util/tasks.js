@@ -11,11 +11,20 @@ import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getC
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
 
 export const getNewTask = async () => {
+  const { prioQuery, query, fallbackQuery, update } = findTasksQuery();
   const collectionName = tasksCollectionName;
   const db = await getCrawlDataDb();
   const taskCollection = db.collection(collectionName);
-  const { query, fallbackQuery, update, danglingLookupThreshold } =
-    findTasksQuery();
+
+  const prioTask = await taskCollection.findOneAndUpdate(prioQuery, update, {
+    returnNewDocument: true,
+  });
+
+  if (prioTask) {
+    console.log("Prio:task:", prioTask?.type, " ", prioTask?.id);
+    return prioTask;
+  }
+
   const task = await taskCollection.findOneAndUpdate(query, update, {
     returnNewDocument: true,
   });
@@ -23,7 +32,7 @@ export const getNewTask = async () => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
   const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
   if (task) {
-    if (task.type === "CRAWL_SHOP" || task.type === "SCAN_SHOP") {
+    if (task.type === "SCAN_SHOP") {
       return task;
     }
     if (task.type === "WHOLESALE_SEARCH") {
@@ -173,9 +182,6 @@ export const getNewTask = async () => {
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN_LONG; // 60 min in future
     const cooldown = new Date(Date.now() + coolDownFactor).toISOString();
     if (task) {
-      if(task.type === "CRAWL_SHOP") {
-        return task;
-      }
       if (task.type === "WHOLESALE_SEARCH") {
         const pending = await countPendingProductsForWholesaleSearch(task._id);
         console.log("WHOLESALE_SEARCH: pending:", pending);
