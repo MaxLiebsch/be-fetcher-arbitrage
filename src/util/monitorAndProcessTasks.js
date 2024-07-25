@@ -1,20 +1,22 @@
 import { updateTask } from "../services/db/util/tasks.js";
 import { sendMail } from "../email.js";
 import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
-import { LoggerService } from "@dipmaxtech/clr-pkg";
+import { LoggerService, ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
 import { MissingProductsError } from "../errors.js";
-import {
-  COOLDOWN,
-  NEW_TASK_CHECK_INTERVAL,
-} from "../constants.js";
+import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
 
 import { executeTask } from "./executeTask.js";
 import { checkForNewTask } from "./checkForNewTask.js";
 import { hostname } from "../services/db/mongo.js";
 import { handleTask } from "./taskHandler.js";
+import clientPool from "../services/db/mongoPool.js";
 
 const { errorLogger } = LoggerService.getSingleton();
 
+const timeTracker = ProcessTimeTracker.getSingleton(
+  hostname,
+  clientPool["crawler-data"]
+);
 let taskId = "";
 
 export async function monitorAndProcessTasks() {
@@ -22,11 +24,7 @@ export async function monitorAndProcessTasks() {
     const task = await checkForNewTask(); // Implement this function to check for new tasks
     if (!task) return;
 
-    const {
-      type, 
-      id,
-      _id,
-    } = task;
+    const { type, id, _id } = task;
 
     const isMatchLookup =
       type === "MATCH_PRODUCTS" || type === "CRAWL_AZN_LISTINGS";
@@ -34,7 +32,9 @@ export async function monitorAndProcessTasks() {
     taskId = id;
 
     try {
+      timeTracker.markActive(task.type);
       const taskResult = await executeTask(task);
+      timeTracker.markInactive();
       if (taskResult instanceof TimeLimitReachedStatus) {
         const update = {
           completed: false,
@@ -56,9 +56,10 @@ export async function monitorAndProcessTasks() {
           subject,
           html: htmlBody,
         });
-      } 
+      }
       monitorAndProcessTasks().then(); // Resume checking after task execution
     } catch (error) {
+      timeTracker.markInactive();
       errorLogger.error({
         error,
         taskId: id,
@@ -79,7 +80,6 @@ export async function monitorAndProcessTasks() {
           $set: update,
           $pull: { lastCrawler: hostname },
         });
-
       } else {
         const update = {
           completed: true,

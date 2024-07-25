@@ -18,7 +18,6 @@ import {
 import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import { moveArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import { createHash } from "../util/hash.js";
-import { subDateDaysISO } from "../util/dates.js";
 import {
   updateProgressInCrawlEanTask,
   updateProgressInLookupInfoTask,

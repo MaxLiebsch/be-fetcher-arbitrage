@@ -666,7 +666,8 @@ export const shops = {
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+    ],
     d: "gamestop.de",
     entryPoints: [
       {
@@ -675,6 +676,7 @@ export const shops = {
       },
     ],
     exceptions: [
+      "https://www.gamestop.de/Content/Images/big-loader.gif",
       "https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg",
       "https://www.gamestop.de/Views/Locale/Content/Images/maxDefault.jpg",
     ],
@@ -705,8 +707,21 @@ export const shops = {
         link: "https://www.gamestop.de/PC/Index",
       },
     ],
-    mimic: "a.hamburgerLogo",
+    mimic: "input#closeContentKey",
     paginationEl: [
+      // {
+      //   type: "recursive-more-button",
+      //   sel: "button.loadmoreBtn",
+      //   nav: "?currentPage0=",
+      //   wait: false,
+      //   calculation: {
+      //     method: "match_text",
+      //     textToMatch: "Weitere Artikel laden",
+      //     dynamic: true,
+      //     last: "button.loadmoreBtn",
+      //     sel: "button.loadmoreBtn",
+      //   },
+      // }
       {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
@@ -839,7 +854,7 @@ export const shops = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: ["media", "font", "image"],
+      crawl: ["media", "font", "image", "script", "stylesheet"],
     },
     waitUntil: {
       product: "domcontentloaded",
@@ -984,7 +999,9 @@ export const shops = {
     action: [],
     active: true,
     categories: {
-      exclude: [],
+      exclude: [
+        "anzeigen"
+      ],
       visible: false,
       sel: "a.level-1-link",
       type: "href",
@@ -1442,7 +1459,8 @@ export const shops = {
         sel: "div.p-items",
         nav: "?currentPage=",
         calculation: {
-          method: "count",
+          method: "product_count",
+          productsPerPage:48,
           last: "div.p-items a",
           sel: "div.p-items a",
         },
@@ -1914,6 +1932,10 @@ export const shops = {
         "actionen",
         "fotoparadies.de",
         "brand",
+        "service",
+        "store",
+        "myaccount",
+        "content",
         "/product/",
         "b2b-business-solutions",
       ],
