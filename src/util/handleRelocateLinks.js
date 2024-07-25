@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { getRedirectUrl } from "../services/head.js";
 
 export const handleRelocateLinks = async (procProd, infos) => {
@@ -37,7 +38,6 @@ export const handleRelocateLinksInCrawlTask = async (product, infos) => {
     const url = new URL(redirectUrl);
 
     return url.hostname;
-
   } catch (error) {
     if (error instanceof AxiosError) {
       if (error.response?.status === 404) {
