@@ -32,9 +32,11 @@ export async function monitorAndProcessTasks() {
     taskId = id;
 
     try {
+      await timeTracker.loadFromDb();
       timeTracker.markActive(task.type);
       const taskResult = await executeTask(task);
-      timeTracker.markInactive();
+      await timeTracker.markInactive();
+
       if (taskResult instanceof TimeLimitReachedStatus) {
         const update = {
           completed: false,
