@@ -85,7 +85,7 @@ export async function getRecoveryQueryEansOnEby(
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
     (shop) =>
-      (shop.hasEan || shop?.ean) && shop.active && shop.proxyType === proxyType
+      (shop.hasEan || shop?.ean) && shop.active 
   );
   let pendingShops = [];
   const products = await Promise.all(

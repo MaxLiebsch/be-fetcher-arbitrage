@@ -9,6 +9,7 @@ import { getUnmatchedEanShops } from "../util/lookupInfo/getUnmatchedEanShops.js
 import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
+import { MINIMUM_PENDING_PRODUCTS } from "@dipmaxtech/clr-pkg";
 
 const handleComulativTasks = async (task, pendingShops, cooldown) => {
   if (

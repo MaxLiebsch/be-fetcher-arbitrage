@@ -4,7 +4,7 @@ import { getLookupCategoryProgress } from "./getLookupCategoryProgress.js";
 export async function getMissingEbyCategoryShops(proxyType) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) => shop.active && shop.proxyType === proxyType
+    (shop) => shop.active 
   );
 
   const lookupCategoryProgressPerShop = await Promise.all(

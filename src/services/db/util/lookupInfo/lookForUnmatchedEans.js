@@ -81,7 +81,7 @@ export async function lookForUnmatchedEans(
 export async function getRecoveryEanLookups(taskId, proxyType, productLimit) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) => shop.active && shop.proxyType === proxyType
+    (shop) => shop.active 
   );
   let pendingShops = [];
   const products = await Promise.all(

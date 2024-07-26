@@ -86,7 +86,7 @@ export async function getRecoveryLookupCategory(
 ) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) => shop.active && shop.proxyType === proxyType
+    (shop) => shop.active 
   );
   let pendingShops = [];
   const products = await Promise.all(

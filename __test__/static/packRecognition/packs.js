@@ -22,7 +22,7 @@ export const packs = [
   },
   {
     input: 'Sheba Katzensnacks Creamy Snacks, 18 praktische Katzenleckerli Sticks, 18x12g (1 Packung) – in den Varietäten Huhn, Lachs (MSC zertifiziert) und Rind zum aus der Hand schlecken',
-    package: 18,
+    package: 1,
   },
   {
     input: "Pampers Pampers Ninjamas Nachthöschen / Höschenwindeln für Mädchen (27-43kg), 54 Pyjama Höschen, 8-12 Jahre, MONATSBOX, absorbierende Windelhöschen, Auslaufschutz für die ganze Nacht",
@@ -123,7 +123,7 @@ export const packs = [
   {
     input:
       "L'Oréal Paris Permanente Haarfarbe, Haarfärbeset mit Coloration und Farbglanz-Pflegebalsam, Préférence, P11 Kühles Intensives Schwarz (Manhattan), 3er Set",
-    package: null,
+    package: 3,
   },
   {
     input:
@@ -163,7 +163,7 @@ export const packs = [
   },
   {
     input: "Cartrend Caravan Stützbock 4er-Set (10306)",
-    package: null,
+    package: 4,
   },
   {
     input: "Kessel medintim Oral Safe Latexschutztuch Vanille (8 Stk.)",
