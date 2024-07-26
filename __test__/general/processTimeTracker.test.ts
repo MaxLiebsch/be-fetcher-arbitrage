@@ -6,6 +6,7 @@ import sinon from "sinon";
 import clientPool from "../../src/services/db/mongoPool.js";
 
 let clock: sinon.SinonFakeTimers;
+let timeTracker: ProcessTimeTracker;
 
 describe("Process Time Tracker", () => {
   beforeAll(() => {
@@ -16,15 +17,15 @@ describe("Process Time Tracker", () => {
       "⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔⛔\nStart: ",
       new Date()
     );
-  });
-
-  test("Process Time Tracker", async () => {
-    const timeTracker = ProcessTimeTracker.getSingleton(
+    timeTracker = ProcessTimeTracker.getSingleton(
       "test-crawler",
       clientPool["crawler-data"]
     );
+  });
+
+  test("Process Time Tracker", async () => {
+    if (!timeTracker.initialized) await timeTracker.initPromise;
     timeTracker.markActive("CRAWL_SHOP");
-    await timeTracker.loadFromDb();
 
     setTimeout(() => {
       console.log(
@@ -70,7 +71,7 @@ describe("Process Time Tracker", () => {
 
     setTimeout(() => {
       console.log("Mark active... afer 1 minute 25th 00:03");
-      timeTracker.markActive('QUERY_EAN_EBY');
+      timeTracker.markActive("QUERY_EAN_EBY");
     }, 1000 * 60 * 1);
     clock.tick(1000 * 60 * 1);
 
@@ -87,7 +88,7 @@ describe("Process Time Tracker", () => {
 
     setTimeout(() => {
       console.log("Mark active... afer 1 minute 25th 00:06");
-      timeTracker.markActive('CRAWL_EBY_LISTINGS');
+      timeTracker.markActive("CRAWL_EBY_LISTINGS");
     }, 1000 * 60 * 1);
     clock.tick(1000 * 60 * 1);
 
@@ -104,7 +105,7 @@ describe("Process Time Tracker", () => {
 
     setTimeout(() => {
       console.log("Mark active... afer 1 minute 25th 00:06");
-      timeTracker.markActive('CRAWL_EBY_LISTINGS');
+      timeTracker.markActive("CRAWL_EBY_LISTINGS");
     }, 1000 * 60 * 1);
     clock.tick(1000 * 60 * 1);
 
