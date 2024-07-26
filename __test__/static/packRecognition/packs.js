@@ -18,7 +18,7 @@ export const packs = [
   },
 
   { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
-    package: 1,
+    package: 90,
   },
   {
     input: 'Sheba Katzensnacks Creamy Snacks, 18 praktische Katzenleckerli Sticks, 18x12g (1 Packung) – in den Varietäten Huhn, Lachs (MSC zertifiziert) und Rind zum aus der Hand schlecken',
@@ -142,6 +142,10 @@ export const packs = [
     input:
       "4x new Retro Wheels RONAL R10 Turbo 7x15 4x100 ET:37 VW Golf 2 3 Jetta - USA",
     package: null,
+  },
+  {
+    input: 'Pampers Windeln Größe 7 (15kg+) Baby-Dry, Extra Large, MONATSBOX, bis zu 12 Stunden Rundum-Auslaufschutz, (1er Pack) 132 Stück',
+    package: 132,
   },
   {
     input:
@@ -462,7 +466,7 @@ export const packs = [
   },
   {
     input: "Scholl Einlegesohlen GelActiv Everyday, Gr. 40 -46,5 (1..., 2 St",
-    package: null,
+    package: 2,
   },
   {
     input: "essence Blush Baby Got Blush 10 Tickle Me Pink, 5,5 g",
