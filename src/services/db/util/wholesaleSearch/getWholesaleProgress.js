@@ -21,8 +21,15 @@ export const countPendingProductsForWholesaleSearch = async (taskId) => {
   );
 };
 
-export const getWholesaleSearchProgress = async (taskId, total) => {
+export const countTotalProductsForWholesaleSearch = async (taskId) => {
+  const db = await getCrawlDataDb();
+  const wholesaleCollection = db.collection(collectionName);
+  return wholesaleCollection.count({ taskId: taskId.toString() });
+};
+
+export const getWholesaleSearchProgress = async (taskId) => {
   const pending = await countPendingProductsForWholesaleSearch(taskId);
+  const total = await countTotalProductsForWholesaleSearch(taskId);
   const completed = await getCompletedProductsCount(taskId);
   return {
     percentage: `${(((total - pending) / total) * 100).toFixed(2)} %`,
