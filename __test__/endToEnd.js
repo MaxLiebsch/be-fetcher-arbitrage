@@ -12,83 +12,23 @@ import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
 import { deleteLogs } from "../src/services/db/util/logs.js";
 import { getAllShops, updateShopStats } from "../src/services/db/util/shops.js";
 import { shuffle } from "underscore";
+import { createDailySalesTask } from "../src/task.js";
+import { sendMail } from "../src/email.js";
 
 const hostname = os.hostname();
 const logger = LoggerService.getSingleton().logger;
 
 const today = new Date();
-const productLimit = 40;
+const productLimit = 20;
 const lookupsProductLimit = 50;
 const yesterday = sub(today, { days: 1 });
 const proxyType = "mix";
 const timezones = ["Europe/Berlin"];
 const shopDomain = "gamestop.de";
 
-const createCrawlTask = (shopDomain, categories, proxyType) => {
-  const task = {
-    type: "CRAWL_SHOP",
-    id: `crawl_shop_${shopDomain}_1_of_5`,
-    shopDomain,
-    limit: {
-      mainCategory: 2,
-      subCategory: 100,
-      pages: 2,
-    },
-    categories,
-    recurrent: true,
-    executing: false,
-    completed: false,
-    startedAt: yesterday.toISOString(),
-    completedAt: yesterday.toISOString(),
-    productLimit,
-    retry: 0,
-    maintenance: false,
-    lastCrawler: [],
-    weekday: today.getDay(),
-  };
-  if (proxyType === "de") {
-    task["proxyType"] = proxyType;
-    task["timezones"] = timezones;
-  }
-  return task;
-};
-
-const createMatchTask = (shopDomain) => {
-  return {
-    type: "MATCH_PRODUCTS",
-    id: `match_products_${shopDomain}`,
-    shopDomain,
-    productLimit,
-    executing: true,
-    maintenance: false,
-    recurrent: true,
-    completed: false,
-    startedAt: yesterday.toISOString(),
-    completedAt: yesterday.toISOString(),
-    limit: {
-      mainCategory: 0,
-      subCategory: 0,
-      pages: 0,
-    },
-    test: false,
-    extendedLookUp: true,
-    startShops: [
-      {
-        d: "idealo.de",
-        prefix: "i_",
-        name: "Idealo",
-      },
-    ],
-    lastCrawler: [],
-    concurrency: 4,
-    retry: 0,
-  };
-};
-
 const lookupInfoTask = {
   type: "LOOKUP_INFO",
   id: `lookup_info`,
-  proxyType: "mix",
   productLimit: lookupsProductLimit,
   executing: false,
   lastCrawler: [],
@@ -133,7 +73,6 @@ const crawlEanTask = {
 const lookupCategory = {
   type: "LOOKUP_CATEGORY",
   id: `lookup_category`,
-  proxyType: "mix",
   productLimit: lookupsProductLimit,
   executing: false,
   lastCrawler: [],
@@ -253,6 +192,11 @@ const main = async () => {
       ]);
     })
   );
+  await Promise.all([
+    deleteAllProducts("sales"),
+    deleteAllArbispotterProducts("sales"),
+    updateShopStats("sales"),
+  ]);
   const selectedShops = shops.filter((shop) => shopsToTest.includes(shop.d));
 
   //empty tasks
@@ -289,6 +233,19 @@ const main = async () => {
       });
     }
   });
+  const dailySalesTask = allTasks.find(
+    (task) => task.type === "DAILY_SALES" && task.shopDomain === shopsToTest[0]
+  );
+  
+  if (dailySalesTask) {
+    tasks.push({
+      ...dailySalesTask,
+      productLimit,
+      startedAt: yesterday.toISOString(),
+      completedAt: yesterday.toISOString(),
+      maintenance: false,
+    });
+  }
 
   //empty tasks
   await deleteLogs();

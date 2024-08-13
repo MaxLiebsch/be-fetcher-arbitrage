@@ -6,6 +6,7 @@ import { MissingProductsError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -30,7 +31,7 @@ export default async function crawlEan(task) {
     const { productLimit, _id, action, proxyType, type } = task;
 
     let infos = {
-      total: 0,
+      total: 1,
       notFound: 0,
       locked: 0,
       shops: {},
@@ -58,6 +59,7 @@ export default async function crawlEan(task) {
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
 
@@ -71,6 +73,7 @@ export default async function crawlEan(task) {
       proxyAuth,
       task
     );
+    queue.total = 1;
     await queue.connect();
 
     const interval = setInterval(
@@ -100,6 +103,9 @@ export default async function crawlEan(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -170,7 +176,7 @@ export default async function crawlEan(task) {
             crawlDataProductUpdate
           );
         }
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,
@@ -187,11 +193,12 @@ export default async function crawlEan(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
       };
       const handleNotFound = async (cause) => {
         infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         if (cause === "timeout") {
           await updateCrawlDataProduct(shopDomain, crawlDataProductLink, {
             ean_locked: false,
@@ -206,7 +213,7 @@ export default async function crawlEan(task) {
             crawlDataProductLink
           );
         }
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,
@@ -223,8 +230,6 @@ export default async function crawlEan(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
       };
 
       queue.pushTask(queryProductPageQueue, {
@@ -239,7 +244,7 @@ export default async function crawlEan(task) {
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
-        query: {},
+        query: defaultQuery,
         prio: 0,
         extendedLookUp: false,
         pageInfo: {

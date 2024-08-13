@@ -1,10 +1,10 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
 
-const shopDomain = "alza.de";
+const shopDomain = "gamestop.de";
 
 const today = new Date();
-const productLimit = 20;
+const productLimit = 4000;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -15,17 +15,14 @@ const task = {
   limit: {
     mainCategory: 9,
     subCategory: 100,
-    pages: 2,
+    pages: 50,
   },
   categories: [
     {
-      "name": "Büro und Schreibwaren",
-      "link": "https://www.alza.de/buero-schreibwaren"
+      name: "Abholung im Store",
+      link: "https://www.gamestop.de/SearchResult/QuickSearch?variantType=1&shippingMethod=2",
+      size: 4633,
     },
-    {
-      "name": "Elektrische Haushaltsgeräte",
-      "link": "https://www.alza.de/haushaltsgerate-und-korperpflege"
-    } 
   ],
   recurrent: true,
   executing: false,

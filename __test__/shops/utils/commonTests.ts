@@ -8,6 +8,7 @@ import {
   crawlProducts,
   getCategories,
   getPage,
+  getPageNumberFromPagination,
   getProductCount,
   lookupProductQueue,
   mainBrowser,
@@ -176,14 +177,32 @@ export const findSubCategories = async () => {
       );
   }
 };
-export const productPageCount = async () => {
+export const productPageCount = async (url = "") => {
   if (page && shops && shops[shopDomain]) {
-    await page.goto(testParameters[shopDomain].initialProductPageUrl);
+    await page.goto(
+      url ? url : testParameters[shopDomain].initialProductPageUrl
+    );
 
     const count = await getProductCount(page, shops[shopDomain].productList);
 
     expect(count !== null).toBe(true);
     expect(count).toBeGreaterThan(0);
+  }
+};
+
+export const countProductPages = async () => {
+  if (page && shops && shops[shopDomain]) {
+    await page.goto(testParameters[shopDomain].countProductPageUrl);
+
+    const count = await getProductCount(page, shops[shopDomain].productList);
+
+    const pageNumberCount = await getPageNumberFromPagination(
+      page,
+      shops[shopDomain],
+      shops[shopDomain].paginationEl[0],
+      count
+    );
+    expect(pageNumberCount.pages.length).toBeGreaterThan(testParameters[shopDomain].pages);
   }
 };
 export const findPaginationAndNextPage = async () => {
@@ -243,7 +262,7 @@ export const extractProducts = async () => {
   expect(products.length).toBe(productsPerPage);
   if (products.length > 0)
     console.log(
-      "Products cnt ",
+      "extractProducts: Products cnt ",
       products.length,
       "Product: ",
       JSON.stringify(products[0], null, 2)
@@ -295,7 +314,7 @@ export const extractProductsFromSecondPage = async () => {
       shop: shops[shopDomain],
     });
     expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
-    if (products.length > 0) console.log(products[0]);
+    if (products.length > 0) console.log('extractProductsFromSecondPage: ', products[0]);
   }
 };
 
@@ -326,7 +345,7 @@ export const extractProductsFromSecondPageQueueless = async () => {
     );
     if (result === "crawled") {
       expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
-      if (products.length > 0) console.log(products[0]);
+      if (products.length > 0) console.log('Total products: ', products.length,"extractProductsFromSecondPageQueueless: ", products[0]);
     }
   }
 };

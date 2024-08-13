@@ -2,7 +2,9 @@ import { updateShopWithQuery } from "../services/db/util/shops.js";
 import { findTasks } from "../services/db/util/tasks.js";
 import {
   createCrawlAznListingsTask,
+  createCrawlEbyListingsTask,
   createCrawlTasks,
+  createDailySalesTask,
   createSingleCrawlAznListingsTask,
   createSingleMatchTask,
 } from "../task.js";
@@ -13,8 +15,11 @@ const newShops = [
     d: "alza.de",
     gb: false,
     maxProducts: 20000,
+    productLimit: 500,
+    salesProductLimit: 2000,
     hasEan: true,
     proxyType: "mix",
+    categories: [],
   },
 ];
 
@@ -92,7 +97,14 @@ const main = async () => {
       if (!task) {
         await createSingleCrawlAznListingsTask(shop.d);
         await createSingleMatchTask(shop.d);
-        await createCrawlAznListingsTask(shop.d);
+        await createCrawlAznListingsTask(shop.d, shop.productLimit);
+        await createCrawlEbyListingsTask(shop.d, shop.productLimit);
+        await createDailySalesTask(
+          shop.d,
+          shop.categories,
+          shop.salesProductLimit,
+          shop.proxyType
+        );
         return createCrawlTasks(shop.d, shop.gb, shop.maxProducts);
       } else {
         console.log(`Tasks for ${shop.d} already exists!`);

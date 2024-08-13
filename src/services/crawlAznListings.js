@@ -14,6 +14,7 @@ import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
   proxyAuth,
 } from "../constants.js";
 import { getShop } from "./db/util/shops.js";
@@ -32,7 +33,7 @@ export default async function crawlAznListings(task) {
 
     let infos = {
       new: 0,
-      total: 0,
+      total: 1,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -59,6 +60,7 @@ export default async function crawlAznListings(task) {
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
 
@@ -74,6 +76,7 @@ export default async function crawlAznListings(task) {
       proxyAuth,
       task
     );
+    queue.total = 1;
     await queue.connect();
 
     const interval = setInterval(
@@ -97,6 +100,8 @@ export default async function crawlAznListings(task) {
       const productLink = crawlDataProduct.link;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        infos.total++;
+        queue.total++;
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -160,7 +165,7 @@ export default async function crawlAznListings(task) {
             a_lnk: url.split("?")[0],
           });
         }
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,
@@ -173,10 +178,11 @@ export default async function crawlAznListings(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.total++;
       };
       const handleNotFound = async () => {
         infos.notFound++;
+        infos.total++;
+        queue.total++;
         await updateCrawlDataProduct(shopDomain, productLink, {
           azn_locked: false,
           azn_taskId: "",
@@ -186,7 +192,7 @@ export default async function crawlAznListings(task) {
           productLink,
           resetAznProduct()
         );
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,
@@ -199,7 +205,6 @@ export default async function crawlAznListings(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.total++;
       };
 
       let aznLink =
@@ -214,7 +219,7 @@ export default async function crawlAznListings(task) {
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
-        query: {},
+        query: defaultQuery,
         prio: 0,
         extendedLookUp: false,
         pageInfo: {

@@ -1,87 +1,37 @@
 import {
-  QueryQueue,
   generateUpdate,
   getManufacturer,
   globalEventEmitter,
   prefixLink,
+  QueryQueue,
   querySellerInfosQueue,
   replaceAllHiddenCharacters,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
-
-import { handleResult } from "../handleResult.js";
-import { MissingProductsError } from "../errors.js";
+import { proxyAuth } from "../../constants.js";
+import { createOrUpdateArbispotterProduct } from "../../services/db/util/createOrUpdateArbispotterProduct.js";
+import { upsertAsin } from "../../services/db/util/asinTable.js";
+import { updateCrawlDataProduct } from "../../services/db/util/crudCrawlDataProduct.js";
+import { updateArbispotterProduct } from "../../services/db/util/crudArbispotterProduct.js";
+import { salesDbName } from "../../services/productPriceComparator.js";
 import {
-  CONCURRENCY,
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
-  proxyAuth,
-} from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
-import { upsertAsin } from "./db/util/asinTable.js";
-import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
-import { getShop } from "./db/util/shops.js";
-import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
-import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
-import {
-  createOrUpdateArbispotterProduct,
-  keepaProperties,
-} from "./db/util/createOrUpdateArbispotterProduct.js";
-import { createArbispotterCollection } from "./db/mongo.js";
-import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
+  crawlDataInfoMissingUpdate,
+  resetAznProduct,
+} from "../../services/lookupInfo.js";
+import { updateTask } from "../../services/db/util/tasks.js";
 
-export const resetAznProduct = () => {
-  const update = {
-    asin: "",
-    a_pblsh: false,
-    a_prc: 0,
-    a_uprc: 0,
-    a_qty: 0,
-    a_lnk: "",
-    a_img: "",
-    a_hash: "",
-    a_mrgn: 0,
-    a_mrgn_pct: 0,
-    a_w_mrgn: 0,
-    a_w_mrgn_pct: 0,
-    a_w_p_mrgn: 0,
-    a_w_p_mrgn_pct: 0,
-    a_p_mrgn: 0,
-    a_p_mrgn_pct: 0,
-    a_nm: "",
-  };
-  keepaProperties.forEach((prop) => {
-    update[prop.name] = null;
-  });
-  return update;
+export const getMaxLoadQueue = (queues) => {
+  const queueLoad = queues.map((queue) => queue.workload());
+  const maxQueueLoad = Math.max(...queueLoad);
+  const index = queueLoad.indexOf(maxQueueLoad);
+  return queues[index];
 };
 
-export const crawlDataInfoMissingUpdate = {
-  info_locked: false,
-  info_prop: "missing",
-  info_taskId: "",
-  asin: "",
-  a_qty: 0,
-};
-
-/*
-  TODO
-    transfer tasks between queues
-
-*/
-
-export default async function lookupInfo(task) {
-  return new Promise(async (resolve, reject) => {
-    const {
-      productLimit,
-      _id,
-      action,
-      proxyType,
-      type,
-      browserConcurrency,
-      concurrency,
-    } = task;
+export const lookupInfo = async (sellerCentral, origin, task) =>
+  new Promise(async (res, rej) => {
+    const { browserConfig, _id, shopDomain } = task;
+    const { concurrency, productLimit, browserConcurrency } =
+      browserConfig.lookupInfo;
 
     let infos = {
       total: 1,
@@ -93,48 +43,16 @@ export default async function lookupInfo(task) {
       shops: {},
       missingProperties: {},
     };
-
-    const { products, shops } = await lookForUnmatchedEans(
-      _id,
-      proxyType,
-      action,
-      productLimit
-    );
-
-    shops.forEach(async (info) => {
-      await createArbispotterCollection(info.shop.d);
-      infos.shops[info.shop.d] = 0;
-    });
-
-    if (!products.length)
-      return reject(new MissingProductsError(`No products ${type}`, task));
-
-    const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
-    task.actualProductLimit = _productLimit;
-
-    const toolInfo = await getShop("sellercentral.amazon.de");
-
-    infos.locked = products.length;
-
-    //Update task progress
-    await updateProgressInLookupInfoTask();
-
-    const startTime = Date.now();
-
+    const eventEmitter = globalEventEmitter;
     const queryQueues = [];
     const queuesWithId = {};
-    const eventEmitter = globalEventEmitter;
-
+    task.actualProductLimit = task.lookupInfo.length;
     await Promise.all(
       Array.from({ length: browserConcurrency || 1 }, (v, k) => k + 1).map(
         async () => {
-          const queue = new QueryQueue(
-            concurrency ? concurrency : CONCURRENCY,
-            proxyAuth,
-            task
-          );
+          const queue = new QueryQueue(concurrency, proxyAuth, task);
           queuesWithId[queue.queueId] = queue;
+          queryQueues.push(queue);
           //@ts-ignore
           eventEmitter.on(
             `${queue.queueId}-finished`,
@@ -149,7 +67,7 @@ export default async function lookupInfo(task) {
                   " tasks from ",
                   maxQueue.queueId,
                   "to ",
-                  queueId
+                  queueId,
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
               } else {
@@ -158,7 +76,6 @@ export default async function lookupInfo(task) {
               }
             }
           );
-          queryQueues.push(queue);
           return queue.connect();
         }
       )
@@ -166,11 +83,12 @@ export default async function lookupInfo(task) {
 
     const queueIterator = yieldQueues(queryQueues);
 
-    for (let index = 0; index < products.length; index++) {
+    while (task.progress.lookupInfo.length) {
+      const crawlDataProduct = task.lookupInfo.pop();
+      task.progress.lookupInfo.pop();
+      if (!crawlDataProduct) continue;
       const queue = queueIterator.next().value;
-      const { product: crawlDataProduct, shop } = products[index];
-      const shopDomain = shop.d;
-      const hasEan = shop.hasEan || shop?.ean;
+      const hasEan = origin.hasEan || origin?.ean;
       const {
         name,
         category: ctgry,
@@ -209,11 +127,15 @@ export default async function lookupInfo(task) {
         s_hash: crawlDataProduct.s_hash,
         prc: promoPrice ? promoPrice : price,
         uprc,
+        shop: shopDomain,
         qty,
       };
       const { prc: buyPrice, qty: buyQty } = procProd;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         if (productInfo) {
           const processedProductUpdate = generateUpdate(
             productInfo,
@@ -248,7 +170,7 @@ export default async function lookupInfo(task) {
           };
           const updatedProduct = { ...procProd, ...processedProductUpdate };
           const result = await createOrUpdateArbispotterProduct(
-            shopDomain,
+            salesDbName,
             updatedProduct
           );
           if (result.acknowledged) {
@@ -258,7 +180,7 @@ export default async function lookupInfo(task) {
             infos.failedSave++;
           }
           await updateCrawlDataProduct(
-            shopDomain,
+            salesDbName,
             crawlDataProductLink,
             crawlDataProductUpdate
           );
@@ -267,61 +189,46 @@ export default async function lookupInfo(task) {
             crawlDataProduct.s_hash
           );
           await updateArbispotterProduct(
-            shopDomain,
+            salesDbName,
             crawlDataProductLink,
             resetAznProduct()
           );
           await updateCrawlDataProduct(
-            shopDomain,
+            salesDbName,
             crawlDataProductLink,
             crawlDataInfoMissingUpdate
           );
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue: queryQueues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            await updateProgressInLookupInfoTask();
-            handleResult(r, resolve, reject);
-          });
+        if (infos.total === productLimit) {
+          await updateTask(_id, { $set: { progress: task.progress } });
+          await Promise.all(queryQueues.map((queue) => queue.disconnect(true)));
+          res(infos);
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
       };
       const handleNotFound = async () => {
         infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         await updateArbispotterProduct(
-          shopDomain,
+          salesDbName,
           crawlDataProductLink,
           resetAznProduct()
         );
         await updateCrawlDataProduct(
-          shopDomain,
+          salesDbName,
           crawlDataProductLink,
           crawlDataInfoMissingUpdate
         );
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue: queryQueues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            await updateProgressInLookupInfoTask();
-            handleResult(r, resolve, reject);
-          });
+        if (infos.total === productLimit) {
+          await updateTask(_id, { $set: { progress: task.progress } });
+          await Promise.all(queryQueues.map((queue) => queue.disconnect(true)));
+          res(infos);
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
       };
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
-        shop: toolInfo,
+        shop: sellerCentral,
         targetShop: {
           prefix: "",
           d: shopDomain,
@@ -340,10 +247,9 @@ export default async function lookupInfo(task) {
         prio: 0,
         extendedLookUp: false,
         pageInfo: {
-          link: toolInfo.entryPoints[0].url,
-          name: toolInfo.d,
+          link: sellerCentral.entryPoints[0].url,
+          name: sellerCentral.d,
         },
       });
     }
   });
-}

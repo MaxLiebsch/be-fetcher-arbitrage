@@ -47,7 +47,7 @@ export const crawlShopTaskQueryFn = (start, weekday) => {
     { executing: { $eq: false } },
     { weekday: { $eq: weekday } },
     {
-      $or: [{ completedAt: "" }, { completedAt: { $lt: start.toISOString() } }],
+      $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
     },
   ];
 };
@@ -710,7 +710,7 @@ export const crawlEbyListingsTaskQueryFn = (
   ];
 };
 
-/*               Queries: Scan                                 */
+/*               Queries: Scan (5)                              */
 
 const scanTaskQuery = [
   { type: "SCAN_SHOP" },
@@ -719,7 +719,7 @@ const scanTaskQuery = [
   { executing: { $eq: false } },
 ];
 
-/*               Queries: Wholesale                            */
+/*               Queries: Wholesale  (6)                         */
 export const countPendingProductsForWholesaleSearchQuery = (taskId) => {
   const query = {
     taskId: taskId.toString(),
@@ -752,6 +752,21 @@ const wholesaleTaskQuery = [
   { "progress.pending": { $gt: 0 } },
 ];
 
+/*               Daily Sales (7)                            */
+
+export const crawlDailySalesQueryFn = (start) => {
+  return [
+    { type: "DAILY_SALES" },
+    { recurrent: { $eq: true } },
+    { executing: { $eq: false } },
+    {
+      $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+    },
+  ];
+};
+
+
+
 /*               Queries: Tasks                                */
 
 export const findTasksQuery = () => {
@@ -776,7 +791,7 @@ export const findTasksQuery = () => {
 
   const weekday = today.getDay();
 
-  const start = startOfDay(today);
+  const start = startOfDay(today).toISOString();
 
   let update = {};
 
@@ -791,6 +806,8 @@ export const findTasksQuery = () => {
   };
 
   const crawlShopTaskQuery = crawlShopTaskQueryFn(start, weekday); // (1)
+  const dailySalesTaskQuery = crawlDailySalesQueryFn(start);
+
   const crawlEanTaskQuery = crawlEanTaskQueryFn(lowerThenStartedAt); // (2)
   const lookupInfoTaskQuery = lookupInfoTaskQueryFn(lowerThenStartedAt); // (3.1)
   const matchTaskQuery = matchTaskQueryFn(
@@ -817,7 +834,14 @@ export const findTasksQuery = () => {
         maintenance: false,
       },
       {
-        $and: crawlShopTaskQuery,
+        $or: [
+          {
+            $and: crawlShopTaskQuery,
+          },
+          {
+            $and: dailySalesTaskQuery,
+          },
+        ],
       },
     ],
   };

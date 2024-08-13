@@ -18,6 +18,7 @@ import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -74,6 +75,7 @@ export default async function match(task) {
       lockedProducts.length < productLimit
         ? lockedProducts.length
         : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = lockedProducts.length;
 
@@ -111,7 +113,7 @@ export default async function match(task) {
         }).catch(async (r) => {
           clearInterval(interval);
           await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
-          await updateProgressInLookupInfoTask();  // update lookup info task progress  
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
           await updateProgressInLookupCategoryTask();
           handleResult(r, resolve, reject);
         }),
@@ -171,6 +173,7 @@ export default async function match(task) {
       const reducedName = mnfctr + " " + reduceString(prodNm, 55);
 
       const query = {
+        ...defaultQuery,
         product: {
           key: reducedName,
           value: ean || reducedName,
@@ -202,7 +205,8 @@ export default async function match(task) {
       procProductsPromiseArr.push(
         Promise.all(_shops).then(async (targetShopProducts) => {
           infos.total++;
-          if (infos.total >= _productLimit - 1 && !queue.idle()) {
+          queue.total++;
+          if (infos.total === _productLimit && !queue.idle()) {
             await checkProgress({
               queue,
               infos,
@@ -211,7 +215,7 @@ export default async function match(task) {
             }).catch(async (r) => {
               clearInterval(interval);
               await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
-              await updateProgressInLookupInfoTask();  // update lookup info task progress  
+              await updateProgressInLookupInfoTask(); // update lookup info task progress
               await updateProgressInLookupCategoryTask();
               handleResult(r, resolve, reject);
             });
@@ -278,6 +282,7 @@ export default async function match(task) {
             );
             return procProd;
           } else {
+            const path = targetShopProducts[0].path;
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
               targetShopProducts,
               prodInfo
@@ -300,7 +305,7 @@ export default async function match(task) {
 
             const esin = parseEsinFromUrl(procProd.e_lnk);
             if (esin) {
-              procProd['e_nm'] = replaceAllHiddenCharacters(procProd.e_nm);
+              procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
               procProd["e_qty"] = 1;
               procProd["e_uprc"] = procProd.e_prc;
               procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
@@ -311,7 +316,7 @@ export default async function match(task) {
 
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
-              procProd['a_nm'] = replaceAllHiddenCharacters(procProd.a_nm);
+              procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
               procProd["a_qty"] = 1;
               procProd["a_uprc"] = procProd.a_prc;
               procProd.asin = asin;

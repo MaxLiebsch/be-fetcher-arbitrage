@@ -1,5 +1,7 @@
 export const getTaskSymbol = (type) => {
   switch (type) {
+    case "DAILY_SALES":
+      return "🚀";
     case "CRAWL_SHOP":
       return "🕷️";
     case "WHOLESALE_SEARCH":

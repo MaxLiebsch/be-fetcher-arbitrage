@@ -8,9 +8,13 @@ import queryEansOnEby from "../services/queryEansOnEby.js";
 import lookupCategory from "../services/lookupCategory.js";
 import crawlEbyListings from "../services/crawlEbyListings.js";
 import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellercentral.js";
+import { productPriceComperator } from "../services/productPriceComparator.js";
 
 export async function executeTask(task) {
   const { type } = task;
+  if (type === "DAILY_SALES") {
+    return await productPriceComperator(task);
+  }
   if (type === "CRAWL_SHOP") {
     return await crawl(task);
   }

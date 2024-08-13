@@ -2,7 +2,7 @@ import {
   CrawlerQueue,
   crawlShop,
   crawlSubpage,
-  detectQuantity,
+  globalEventEmitter,
   roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
 import { createCrawlDataCollection } from "./db/mongo.js";
@@ -26,9 +26,10 @@ export default async function crawl(task) {
     const { shopDomain, productLimit, limit, recurrent, categories } = task;
 
     const shops = await getShops([{ d: shopDomain }]);
-
+    let done = false;
     const shop = shops[shopDomain];
     const { entryPoints } = shop;
+    const uniqueLinks = [];
 
     let infos = {
       new: 0,
@@ -60,14 +61,30 @@ export default async function crawl(task) {
         image: 0,
       },
     };
-
+    
     if (shops === null) reject(new MissingShopError("", task));
-
+    task.actualProductLimit = productLimit;
     const queue = new CrawlerQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
+    const emitter = globalEventEmitter;
+
+    emitter.on(`${queue.queueId}-finished`, async () => {
+      await checkProgress({
+        queue,
+        infos,
+        startTime,
+        productLimit,
+      }).catch(async (r) => {
+        clearInterval(interval);
+        await updateProgressInCrawlEanTask(shop.proxyType);
+        await updateMatchProgress(shopDomain, shop.hasEan);
+        handleResult(r, res, reject);
+      });
+    });
+
     await queue.connect();
 
     await createCrawlDataCollection(`${shopDomain}`);
@@ -90,23 +107,17 @@ export default async function crawl(task) {
       DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product) => {
-      if (infos.total >= productLimit && !queue.idle()) {
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInCrawlEanTask(shop.proxyType);
-          await updateMatchProgress(shopDomain, shop.hasEan);
-          handleResult(r, res, reject);
-        });
-      } else {
-        if (product.name && product.price && product.link) {
+      if (done) return;
+      if (infos.total === productLimit && !queue.idle()) {
+        done = true;
+        return;
+      }
+      if (product.name && product.price && product.link) {
+        if (uniqueLinks.indexOf(product.link) === -1) {
+          uniqueLinks.push(product.link);
           infos.total++;
-
-          const qty = detectQuantity(product.name);
+          queue.total++;
+          const qty = 1;
           if (qty) {
             product["qty"] = qty;
             product["uprc"] = roundToTwoDecimals(product.price / qty);
@@ -123,14 +134,14 @@ export default async function crawl(task) {
           } else {
             infos.failedSave++;
           }
-        } else {
-          const properties = ["name", "price", "link", "image"];
-          properties.forEach((prop) => {
-            if (!product[prop]) {
-              infos.missingProperties[prop]++;
-            }
-          });
         }
+      } else {
+        const properties = ["name", "price", "link", "image"];
+        properties.forEach((prop) => {
+          if (!product[prop]) {
+            infos.missingProperties[prop]++;
+          }
+        });
       }
     };
     const link = entryPoints.length

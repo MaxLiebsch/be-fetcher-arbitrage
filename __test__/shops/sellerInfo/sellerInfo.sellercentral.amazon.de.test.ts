@@ -37,7 +37,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         console.log(update);
       }
     };
-    await querySellerInfos(addProductInfo, "B015AFAVOO");
+    await querySellerInfos(addProductInfo, "4013670005653");
   }, 200000);
 
   afterAll(async () => {

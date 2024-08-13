@@ -289,8 +289,10 @@ export const updateTasks = async (taskType, update) => {
   );
 };
 
-export const addTask = async (task) => {
-  const collectionName = tasksCollectionName;
+export const addTask = async (task, test = false) => {
+  let collectionName = test
+    ? `test_${tasksCollectionName}`
+    : tasksCollectionName;
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.insertOne(task);

@@ -54,6 +54,8 @@ const testParameters = {
     nextPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao?currentPage0=2",
   },
   "fressnapf.de": {
+    countProductPageUrl: "https://www.fressnapf.de/c/katze/katzenfutter/nassfutter/",
+    pages: 20,
     productPageUrl:
       "https://www.fressnapf.de/p/orijen-original-cat-340-g-1261000/",
     productsPerPage: 48,
@@ -100,7 +102,7 @@ const testParameters = {
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
     initialProductPageUrl:
-      "https://www.gamestop.de/SearchResult/QuickSearch?platform=90",
+      "https://www.gamestop.de/SearchResult/QuickSearch?variantType=1&shippingMethod=2",
     subCategoryUrl: "https://www.gamestop.de/XboxOne/Index",
     nextPageUrl:
       "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",

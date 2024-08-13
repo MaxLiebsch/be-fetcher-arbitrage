@@ -11,7 +11,7 @@ async function runTests(retries = 0) {
 
   const result = await runCLI(
     {
-      testMatch: ["**/productInfo.ebay.de.test.ts"],
+      testMatch: ["**/gamestop.de.test.ts"],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
       verbose: true,

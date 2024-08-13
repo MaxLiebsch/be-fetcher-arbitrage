@@ -1,3 +1,4 @@
+import { MongoServerError } from "mongodb";
 import { subDateDaysISO } from "../../../util/dates.js";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
@@ -39,6 +40,9 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
   const product = await findProductByLink(domain, procProd.lnk);
   try {
     if (product) {
+      if (!product.bsr && !bsr) {
+        procProd["bsr"] = [];
+      }
       if (a_lnk && product.a_hash) {
         if (!verifyHash(a_lnk, product.a_hash)) {
           keepaProperties.forEach((prop) => {

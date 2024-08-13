@@ -8,11 +8,12 @@ export const checkProgress = async (args) => {
   const elapsedTime = (endTime - startTime) / 1000 / 60 / 60;
 
   infos["elapsedTime"] = `${elapsedTime.toFixed(2)} h`;
+  console.log("checkProgress total: ", infos.total, "Expected: ", productLimit);
 
   if (queue instanceof Array) {
     let status = "";
     const isDone = queue.every((q) => q.workload() === 0);
-    if (infos.total >= productLimit) {
+    if (infos.total === productLimit) {
       status = "PRODUCT_LIMIT_REACHED";
       const tasks = await Promise.all(
         queue.map((q) => q.clearQueue(status, infos))
@@ -65,7 +66,7 @@ export const checkProgress = async (args) => {
       });
     }
   } else {
-    if (infos.total >= productLimit) {
+    if (infos.total === productLimit) {
       const task = await queue.clearQueue("PRODUCT_LIMIT_REACHED", infos);
       throw new TaskCompletedStatus("PRODUCT_LIMIT_REACHED", task, {
         infos,

@@ -1,7 +1,7 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 //@ts-ignore
 import testParameters from "./utils/testParamter.js";
-import { extractProducts, extractProductsFromSecondPage, findMainCategories, findPaginationAndNextPage, findSubCategories, mimicTest, myAfterAll, myBeforeAll, productPageCount } from "./utils/commonTests.js";
+import { extractProducts, extractProductsFromSecondPage, countProductPages,findMainCategories, findPaginationAndNextPage, findSubCategories, mimicTest, myAfterAll, myBeforeAll, productPageCount } from "./utils/commonTests.js";
 
 const shopDomain = "fressnapf.de";
 
@@ -26,7 +26,11 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
   test("Find product in category count", async () => {
     await productPageCount();
-  });
+  }, 1000000);
+
+  test("Count Product pages", async () => {
+    await countProductPages();
+  }, 1000000);
 
   test("Find Pagination and generate page 2 link", async () => {
     await findPaginationAndNextPage();

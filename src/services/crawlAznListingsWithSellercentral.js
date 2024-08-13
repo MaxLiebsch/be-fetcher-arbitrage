@@ -1,6 +1,7 @@
 import {
   QueryQueue,
   generateUpdate,
+  globalEventEmitter,
   querySellerInfosQueue,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
@@ -24,6 +25,7 @@ import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lock
 import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
 import { resetAznProduct } from "./lookupInfo.js";
+import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -38,7 +40,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
 
     let infos = {
       new: 0,
-      total: 0,
+      total: 1,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -65,6 +67,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
 
     const _productLimit =
       products.length < productLimit ? products.length : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
 
@@ -75,8 +78,9 @@ export default async function crawlAznListingsWithSellercentral(task) {
     const srcShops = await getShop(shopDomain);
     const { hasEan, ean: eanSelector } = srcShops;
     const toolInfo = await getShop("sellercentral.amazon.de");
-    const queues = [];
-
+    const queryQueues = [];
+    const queuesWithId = {};
+    const eventEmitter = globalEventEmitter;
     await Promise.all(
       Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
         async () => {
@@ -85,32 +89,39 @@ export default async function crawlAznListingsWithSellercentral(task) {
             proxyAuth,
             task
           );
-          queues.push(queue);
+          queue.total = 1;
+          queuesWithId[queue.queueId] = queue;
+          //@ts-ignore
+          eventEmitter.on(
+            `${queue.queueId}-finished`,
+            async function crawlAznListingsCallback({ queueId }) {
+              console.log("Emitter: Queue completed ", queueId);
+              const maxQueue = getMaxLoadQueue(queryQueues);
+              const tasks = maxQueue.pullTasksFromQueue();
+              if (tasks) {
+                console.log("adding tasks to queue: ", queueId, tasks.length);
+                queuesWithId[queueId].addTasksToQueue(tasks);
+              } else {
+                console.log("no more tasks to distribute. Closing ", queueId);
+                await queuesWithId[queueId].disconnect(true);
+              }
+            }
+          );
+          queryQueues.push(queue);
           return queue.connect();
         }
       )
     );
 
-    const queueIterator = yieldQueues(queues);
+    const queueIterator = yieldQueues(queryQueues);
 
-    const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue: queues,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateCrawlAznListingsProgress(shopDomain);
-          await updateProgressInLookupInfoTask(); // update lookup info task progress
-          handleResult(r, resolve, reject);
-        }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
+    Object.values(queuesWithId).forEach(
+      (queue) => (queue.actualProductLimit = 0)
     );
 
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
+      queue.actualProductLimit++;
       const crawlDataProduct = products[index];
       const {
         link: productLink,
@@ -124,6 +135,8 @@ export default async function crawlAznListingsWithSellercentral(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        infos.total++;
+        queue.total++;
         if (productInfo) {
           const processedProductUpdate = generateUpdate(
             productInfo,
@@ -162,23 +175,23 @@ export default async function crawlAznListingsWithSellercentral(task) {
             azn_taskId: "",
           });
         }
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
-            queue: queues,
+            queue: queryQueues,
             infos,
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
             await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }
-        infos.total++;
       };
       const handleNotFound = async () => {
         infos.notFound++;
+        infos.total++;
+        queue.total++;
         await updateCrawlDataProduct(shopDomain, productLink, {
           azn_locked: false,
           azn_taskId: "",
@@ -191,20 +204,18 @@ export default async function crawlAznListingsWithSellercentral(task) {
           productLink,
           resetAznProduct()
         );
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
-            queue: queues,
+            queue: queryQueues,
             infos,
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
             await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
           });
         }
-        infos.total++;
       };
 
       queue.pushTask(querySellerInfosQueue, {

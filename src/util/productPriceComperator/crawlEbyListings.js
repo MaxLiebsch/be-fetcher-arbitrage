@@ -1,36 +1,21 @@
 import {
-  QueryQueue,
   calculateEbyArbitrage,
   findMappedCategory,
+  globalEventEmitter,
   queryProductPageQueue,
+  QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
+import { defaultQuery, proxyAuth } from "../../constants.js";
+import { updateCrawlDataProduct } from "../../services/db/util/crudCrawlDataProduct.js";
+import { updateArbispotterProduct } from "../../services/db/util/crudArbispotterProduct.js";
+import { salesDbName } from "../../services/productPriceComparator.js";
+import { resetEbayProduct } from "../../services/lookupCategory.js";
+import { updateTask } from "../../services/db/util/tasks.js";
 
-import { handleResult } from "../handleResult.js";
-import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
-import {
-  CONCURRENCY,
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
-  defaultQuery,
-  proxyAuth,
-} from "../constants.js";
-import { getShop } from "./db/util/shops.js";
-import { checkProgress } from "../util/checkProgress.js";
-import {
-  updateCrawlEbyListingsProgress,
-  updateProgressInQueryEansOnEbyTask,
-} from "../util/updateProgressInTasks.js";
-import { lockProductsForCrawlEbyListings } from "./db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
-import { resetEbayProduct } from "./lookupCategory.js";
-
-async function crawlEbyListings(task) {
-  return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, _id, action } = task;
-
+export const crawlEbyListings = (ebay, task) =>
+  new Promise(async (res, rej) => {
     let infos = {
       new: 0,
       total: 1,
@@ -45,58 +30,28 @@ async function crawlEbyListings(task) {
         image: 0,
       },
     };
+    const { browserConfig, _id, shopDomain } = task;
+    const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
-    const products = await lockProductsForCrawlEbyListings(
-      shopDomain,
-      productLimit,
-      _id,
-      action
+    task.actualProductLimit = task.ebyListings.length
+    const queue = new QueryQueue(concurrency, proxyAuth, task);
+
+    const eventEmitter = globalEventEmitter;
+
+    eventEmitter.on(
+      `${queue.queueId}-finished`,
+      async function crawlEbyListingEventCallback() {
+        await updateTask(_id, { $set: { progress: task.progress } });
+        await queue.disconnect(true);
+        res(infos);
+      }
     );
 
-    if (!products.length)
-      return reject(
-        new MissingProductsError(`No products for ${shopDomain}`, task)
-      );
-
-    const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
-    task.actualProductLimit = _productLimit;
-
-    infos.locked = products.length;
-
-    //Update task progress
-    await updateCrawlEbyListingsProgress(shopDomain);
-
-    const startTime = Date.now();
-
-    const shop = await getShop("ebay.de");
-
-    const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
-      proxyAuth,
-      task
-    );
-    queue.total = 1;
     await queue.connect();
-
-    const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateCrawlEbyListingsProgress(shopDomain);
-          await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-          handleResult(r, resolve, reject);
-        }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
-
-    for (let index = 0; index < products.length; index++) {
-      const crawlDataProduct = products[index];
+    while (task.progress.ebyListings.length) {
+      const crawlDataProduct = task.ebyListings.pop();
+      task.progress.ebyListings.pop();
+      if (!crawlDataProduct) continue;
       const productLink = crawlDataProduct.link;
 
       const addProduct = async (product) => {};
@@ -151,18 +106,18 @@ async function crawlEbyListings(task) {
             arbispotterProductUpdate["e_img"] = image;
           }
           await updateCrawlDataProduct(
-            shopDomain,
+            salesDbName,
             productLink,
             crawlDataProductUpdate
           );
 
           await updateArbispotterProduct(
-            shopDomain,
+            salesDbName,
             productLink,
             arbispotterProductUpdate
           );
         } else {
-          await updateCrawlDataProduct(shopDomain, productLink, {
+          await updateCrawlDataProduct(salesDbName, productLink, {
             eby_locked: false,
             eby_taskId: "",
             esin: "",
@@ -171,31 +126,24 @@ async function crawlEbyListings(task) {
             eby_prop: "", //  query eans on eby
           });
           await updateArbispotterProduct(
-            shopDomain,
+            salesDbName,
             productLink,
             resetEbayProduct
           );
           infos.notFound++;
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateCrawlEbyListingsProgress(shopDomain);
-            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-            handleResult(r, resolve, reject);
-          });
+        if (infos.total === productLimit && !queue.idle()) {
+          console.log("product limit reached");
+          await updateTask(_id, { $set: { progress: task.progress } });
+          await queue.disconnect(true);
+          res(infos);
         }
       };
       const handleNotFound = async () => {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await updateCrawlDataProduct(shopDomain, productLink, {
+        await updateCrawlDataProduct(salesDbName, productLink, {
           eby_locked: false,
           eby_taskId: "",
           esin: "",
@@ -204,22 +152,15 @@ async function crawlEbyListings(task) {
           eby_prop: "", //  query eans on eby
         });
         await updateArbispotterProduct(
-          shopDomain,
+          salesDbName,
           productLink,
           resetEbayProduct
         );
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateCrawlEbyListingsProgress(shopDomain);
-            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-            handleResult(r, resolve, reject);
-          });
+        if (infos.total === productLimit && !queue.idle()) {
+          console.log("product limit reached");
+          await updateTask(_id, { $set: { progress: task.progress } });
+          await queue.disconnect(true);
+          res(infos);
         }
       };
 
@@ -227,7 +168,7 @@ async function crawlEbyListings(task) {
 
       queue.pushTask(queryProductPageQueue, {
         retries: 0,
-        shop,
+        shop: ebay,
         addProduct,
         onNotFound: handleNotFound,
         addProductInfo,
@@ -237,11 +178,8 @@ async function crawlEbyListings(task) {
         extendedLookUp: false,
         pageInfo: {
           link: ebyLink,
-          name: shop.d,
+          name: ebay.d,
         },
       });
     }
   });
-}
-
-export default crawlEbyListings;

@@ -5,6 +5,7 @@ import {
   extractProducts,
   extractProductsFromSecondPageQueueless,
   findMainCategories,
+  findPaginationAndNextPage,
   findSubCategories,
   mimicTest,
   myAfterAll,

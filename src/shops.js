@@ -866,7 +866,7 @@ export const shops = {
     active: true,
     categories: {
       visible: false,
-      exclude: [],
+      exclude: ['wie-baue'],
       sel: "div.js-left-category-menu li a.l0-catLink",
       type: "href",
       subCategories: [

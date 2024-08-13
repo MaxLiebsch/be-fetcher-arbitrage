@@ -22,7 +22,7 @@ export default async function scan(task) {
     let infos = {
       new: 0,
       old: 0,
-      total: 0,
+      total: 1,
       categoriesHeuristic: {
         subCategories: {
           0: 0,

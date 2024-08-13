@@ -53,11 +53,13 @@ export async function monitorAndProcessTasks() {
           taskResult,
           task
         );
-        await sendMail({
-          priority,
-          subject,
-          html: htmlBody,
-        });
+        if (priority === "high" || task.type === 'CRAWL_SHOP') {
+          await sendMail({
+            priority,
+            subject,
+            html: htmlBody,
+          });
+        }
       }
       monitorAndProcessTasks().then(); // Resume checking after task execution
     } catch (error) {

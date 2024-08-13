@@ -5,7 +5,7 @@ import { getArbispotterDb } from "../../src/services/db/mongo.js";
 
 describe("calculate arbitrage", () => {
   let product: null | any = null;
-  let ean = "4026056130375";
+  let ean = "0718037899794";
   beforeAll(async () => {
     const db = await getArbispotterDb();
     const shopDomain = "idealo.de";

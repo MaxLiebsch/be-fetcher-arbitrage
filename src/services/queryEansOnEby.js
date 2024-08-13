@@ -1,6 +1,5 @@
 import {
   QueryQueue,
-  detectQuantity,
   getManufacturer,
   prefixLink,
   queryEansOnEbyQueue,
@@ -16,6 +15,7 @@ import { MissingProductsError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -36,7 +36,7 @@ export default async function queryEansOnEby(task) {
 
     let infos = {
       new: 0,
-      total: 0,
+      total: 1,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -67,6 +67,7 @@ export default async function queryEansOnEby(task) {
 
     const _productLimit =
       rawProducts.length < productLimit ? rawProducts.length : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = rawProducts.length;
 
@@ -80,6 +81,7 @@ export default async function queryEansOnEby(task) {
       proxyAuth,
       task
     );
+    queue.total = 1;
     await queue.connect();
 
     await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
@@ -122,6 +124,7 @@ export default async function queryEansOnEby(task) {
       } = rawCrawlDataProduct;
 
       const query = {
+        ...defaultQuery,
         product: {
           value: ean,
           key: ean,
@@ -160,20 +163,10 @@ export default async function queryEansOnEby(task) {
         foundProducts.push(product);
       };
       const isFinished = async () => {
+        infos.shops[srcShopDomain]++;
+        infos.total++;
+        queue.total++;
         const arbispotterProductUpdate = {};
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-            await updateProgressInLookupCategoryTask(); // update lookup category task
-            handleResult(r, resolve, reject);
-          });
-        }
         const foundProduct = foundProducts.find((p) => p.link && p.price);
         if (foundProduct) {
           arbispotterProductUpdate["e_img"] = foundProduct.image;
@@ -189,10 +182,12 @@ export default async function queryEansOnEby(task) {
             foundProduct.name
           );
 
-          const e_qty = detectQuantity(foundProduct.name);
+          const e_qty = 1;
           if (e_qty) {
             arbispotterProductUpdate["e_qty"] = e_qty;
-            arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(foundProduct.price / e_qty);
+            arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
+              foundProduct.price / e_qty
+            );
           } else {
             arbispotterProductUpdate["e_qty"] = 1;
             arbispotterProductUpdate["e_uprc"] = foundProduct.price;
@@ -232,13 +227,25 @@ export default async function queryEansOnEby(task) {
             eby_taskId: "",
           });
         }
-        infos.shops[srcShopDomain]++;
-        infos.total++;
+        if (infos.total === _productLimit && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
+            await updateProgressInLookupCategoryTask(); // update lookup category task
+            handleResult(r, resolve, reject);
+          });
+        }
       };
       const handleNotFound = async () => {
         infos.notFound++;
         infos.shops[srcShopDomain]++;
         infos.total++;
+        queue.total++;
 
         await updateCrawlDataProduct(srcShopDomain, link, {
           eby_locked: false,
@@ -246,7 +253,7 @@ export default async function queryEansOnEby(task) {
           eby_taskId: "",
         });
 
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,

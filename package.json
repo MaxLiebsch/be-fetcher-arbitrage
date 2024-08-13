@@ -1,6 +1,6 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.987",
+  "version": "0.0.988",
   "description": "",
   "type": "module",
   "scripts": {
@@ -39,7 +39,7 @@
     "prod:match:debug:gb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "mio": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true yarn proxy",
     "miogb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently \"yarn proxy\"",
-    "test:endtoend": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/endtoend.js\"",
+    "test:endtoend": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/endtoend.js\"",
     "test:securemode": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/secureMode.js\"",
     "test:page": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/pageMode.js\"",
     "test:production:securemode": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true node ./__test__/secureMode.js",
@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "axios": "^1.7.2",
+    "be-fetcher-arbitrage": "file:",
     "concurrently": "^8.2.2",
     "convert-units": "^2.3.4",
     "cross-env": "^7.0.3",

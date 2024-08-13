@@ -6,6 +6,14 @@ export const countProducts = async (domain, query = {}) => {
   const collection = db.collection(collectionName);
   return collection.countDocuments({ ...query });
 };
+
+export const findArbispotterProduct = async (domain, query) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.findOne({ ...query });
+}
+
 export const findArbispotterProducts = async (
   domain,
   query,

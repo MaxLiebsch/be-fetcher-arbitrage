@@ -14,6 +14,7 @@ import { MissingProductsError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -52,7 +53,7 @@ async function lookupCategory(task) {
 
     let infos = {
       new: 0,
-      total: 0,
+      total: 1,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -74,6 +75,7 @@ async function lookupCategory(task) {
       crawlDataProducts.length < productLimit
         ? crawlDataProducts.length
         : productLimit;
+    task.actualProductLimit = _productLimit;
 
     infos.locked = crawlDataProducts.length;
 
@@ -88,6 +90,7 @@ async function lookupCategory(task) {
       proxyAuth,
       task
     );
+    queue.total = 1;
     await queue.connect();
 
     const interval = setInterval(
@@ -116,6 +119,9 @@ async function lookupCategory(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -183,7 +189,7 @@ async function lookupCategory(task) {
             e_qty: 0,
           });
         }
-        if (infos.total >= _productLimit - 1 && !queue.idle()) {
+        if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,
             infos,
@@ -195,11 +201,12 @@ async function lookupCategory(task) {
             handleResult(r, resolve, reject);
           });
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
       };
       const handleNotFound = async (cause) => {
         infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         if (cause === "timeout") {
           await updateCrawlDataProduct(shopDomain, crawledProductLink, {
             cat_locked: false,
@@ -209,21 +216,19 @@ async function lookupCategory(task) {
         } else {
           await moveCrawledProduct(shopDomain, "grave", crawledProductLink);
           await moveArbispotterProduct(shopDomain, "grave", crawledProductLink);
-          if (infos.total >= _productLimit - 1 && !queue.idle()) {
-            await checkProgress({
-              queue,
-              infos,
-              startTime,
-              productLimit: _productLimit,
-            }).catch(async (r) => {
-              clearInterval(interval);
-              await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
-              handleResult(r, resolve, reject);
-            });
-          }
         }
-        infos.shops[shopDomain]++;
-        infos.total++;
+        if (infos.total === _productLimit && !queue.idle()) {
+          await checkProgress({
+            queue,
+            infos,
+            startTime,
+            productLimit: _productLimit,
+          }).catch(async (r) => {
+            clearInterval(interval);
+            await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
+            handleResult(r, resolve, reject);
+          });
+        }
       };
 
       queue.pushTask(queryProductPageQueue, {
@@ -238,7 +243,7 @@ async function lookupCategory(task) {
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
-        query: {},
+        query: defaultQuery,
         prio: 0,
         extendedLookUp: false,
         limit: undefined,
@@ -253,7 +258,7 @@ async function lookupCategory(task) {
   });
 }
 
-const handleCategoryAndUpdate = async (
+export const handleCategoryAndUpdate = async (
   shopDomain,
   crawledProductLink,
   crawlDataProduct,

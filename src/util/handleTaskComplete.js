@@ -11,7 +11,6 @@ export const handleTaskCompleted = async (id, infos, additionalUpdate = {}) => {
     completedAt: new Date().toISOString(),
     retry: 0,
   };
-  console.log(infos);
   if (Object.keys(additionalUpdate).length > 0) {
     update = { ...update, ...additionalUpdate };
   }

@@ -2,11 +2,10 @@ export const packs = [
   {
     input: "Holle - Bio-Fol­ge­milch 2 aus Zie­gen­milch - 0,4 kg - 6er Pack",
     package: 6,
-    type: "pack",
   },
   {
     input: "Hama SpotLight Steady 120 Set",
-    package: null,
+    package: 1,
   },
   {
     input: "Compeed Blasenpflaster Mixpack - Hydrokolloid-Pflaster in verschiedenen Gren - gegen Blasen an Fersen, Zehen und fr kleine Blasen, 6 stck",
@@ -18,7 +17,7 @@ export const packs = [
   },
 
   { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
-    package: 90,
+    package: 1,
   },
   {
     input: 'Sheba Katzensnacks Creamy Snacks, 18 praktische Katzenleckerli Sticks, 18x12g (1 Packung) – in den Varietäten Huhn, Lachs (MSC zertifiziert) und Rind zum aus der Hand schlecken',
@@ -26,7 +25,7 @@ export const packs = [
   },
   {
     input: "Pampers Pampers Ninjamas Nachthöschen / Höschenwindeln für Mädchen (27-43kg), 54 Pyjama Höschen, 8-12 Jahre, MONATSBOX, absorbierende Windelhöschen, Auslaufschutz für die ganze Nacht",
-    package: 54,
+    package: 1,
   },
   {
     input: 'TRIXIE glutenfreie Hhnchen Kaurolle Denta Fun Chicken Chewing Rolls, 12 cm, 30 St./240 g - 31378 (Packung mit 2)',
@@ -34,11 +33,11 @@ export const packs = [
   },
   {
     input: "Zeller Weinregal Fichte für 25 Flaschen (13172)",
-    package: null,
+    package: 1,
   },
   {
     input: "Zeller Weinregal Fichte 25 Flaschen (13172)",
-    package: 25,
+    package: 1,
   },
   {
     input: "12 Pck. 3M Deutschland Atemschutzmaske 8710 (VE20) Atemschutzmasken 7000034734",
@@ -46,7 +45,7 @@ export const packs = [
   },
   {
     input: "Bosch 1000x Klammer Typ 53 (Textilien/Gewebe, Teppich, Akustikplatten, Rasenteppich, 11.4 x 0.74 x 8 mm, Zubehr Tacker)",
-    package: 1000,
+    package: 1,
   },
   {
     input:
@@ -55,29 +54,29 @@ export const packs = [
   },
   {
     input: "WELLER WR 2002 - Lötstation, Entlötstation, WR 2002 Set, 300 W, 2-Kanal, ESD",
-    package: null
+    package: 1
   },
   {
     input:
       "Radeon RX 7800 XT GAMING OC 16G, Grafikkarte RDNA 3, GDDR6, 2x DisplayPort, 2x HDMI 2.1",
-    package: null,
+    package: 1,
   },
   {
     input: "Q4AC - Ladegerät für Akkupacks Q4AC, 1-4s, max. 5 A, 4x 50 W",
-    package: null,
+    package: 1,
   },
   {
     input:
       "Radeon RX 7800 XT GAMING OC 16G, Grafikkarte RDNA 3, GDDR6, 2x Displayport, 2x HDMI 2.1",
-    package: null,
+    package: 1,
   },
   {
     input: "Duss PK 600 SET",
-    package: null,
+    package: 1,
   },
   {
     input: "Paulmann LED Base rund 10 x max. 10W GU10 weiß (934.00)",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -95,11 +94,11 @@ export const packs = [
   },
   {
     input: "JBL Bar 800",
-    package: null,
+    package: 1,
   },
   {
     input: "AMD Ryzen 7 5800X Boxed",
-    package: null,
+    package: 1,
   },
   { input: "Adult Huhn mit Lachs 2 kg 3 Packungen", package: 3 },
   { input: "24 Flaschen San Pellegrino SANBITTER a´ 98ml", package: 24 },
@@ -118,7 +117,7 @@ export const packs = [
   },
   {
     input: "Pampers Harmonie Aqua Baby Feuchttücher Box, 720 Tücher (15 x 48), sanfter Hautschutz für zarte Haut mit 99% Wasser",
-    package: 15,
+    package: 720,
   },
   {
     input:
@@ -136,16 +135,16 @@ export const packs = [
   },
   {
     input: "Eschenbach powerlux 7x LED (8000K)",
-    package: null,
+    package: 1,
   },
   {
     input:
       "4x new Retro Wheels RONAL R10 Turbo 7x15 4x100 ET:37 VW Golf 2 3 Jetta - USA",
-    package: null,
+    package: 1,
   },
   {
     input: 'Pampers Windeln Größe 7 (15kg+) Baby-Dry, Extra Large, MONATSBOX, bis zu 12 Stunden Rundum-Auslaufschutz, (1er Pack) 132 Stück',
-    package: 132,
+    package: 1,
   },
   {
     input:
@@ -180,15 +179,15 @@ export const packs = [
   },
   {
     input: "LGMDM 4B6602458 - Fahrzeugantenne 4x4 MiMo 4G/5G + 2x2 MiMo WIFI + GPS/GNSS - Schwar",
-    package: null,
+    package: 1,
   },
   {
     input: "LGMDM 4B6602458 - Fahrzeugantenne 4x4 MIMO 4G/5G + 2x2 MiMo WIFI + GPS/GNSS - Schwar",
-    package: null,
+    package: 1,
   },
   {
     input: "BCS600 - Fernglas, 12x32, Prisma K9, schwarz",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -197,7 +196,7 @@ export const packs = [
   },
   {
     input: "Rohrmotor PLUS Mini 6 Nm - Rohrmotor Plus Mini, 6 Nm für 40er Welle",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -219,7 +218,7 @@ export const packs = [
   {
     input:
       "JACOBS Lungo 8 Intenso 200 Nespresso®* kompatible Kaffeekapseln +2x 20 gratis",
-    package: null,
+    package: 1,
   },
   {
     input: "Cenovis Klare Gemüsebrühe 4x12 Stück",
@@ -228,23 +227,23 @@ export const packs = [
 
   {
     input: "Fast & Furious - 10-Movie-Collection [10 DVDs]",
-    package: null,
+    package: 1,
   },
   {
     input: "Wahl Edelstahl-Aufschiebekamm Set 1247-7440",
-    package: null,
+    package: 1,
   },
   {
     input: "Lowa Care Set (831101)",
-    package: null,
+    package: 1,
   },
   {
     input: "Metabo KGS 254 M Set (613254900)",
-    package: null,
+    package: 1,
   },
   {
     input: "Rothenberger Pressbackenset Standard SV15-18-22-28 (015060X)",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -263,37 +262,37 @@ export const packs = [
   {
     input:
       "Professional Akku-Rasenmäher RASARRO 36/40, 36Volt (2x18V) rot/schwarz, 2x Li-Ionen Akku 4,0Ah",
-    package: null,
+    package: 1,
   },
   {
     input: "PILOT FriXion Ball 07 / 0,35 mm - Set mit 15 Farben",
-    package: null,
+    package: 1,
   },
   {
     input:
       "Akku-Rasenmäher DLM539PT2, 36Volt (2x18Volt) blau/schwarz, 2x Li-Ionen Akku 5,0Ah, mit Radantrieb",
-    package: null,
+    package: 1,
   },
   {
     input:
       "Bachmann CONI Modulträger 3-fach, 2x Strom, 2x USB-A, Steckdosenleiste",
-    package: null,
+    package: 1,
   },
   {
     input: "DeLOCK Steckdosenleiste 4-fach, 3x USB",
-    package: null,
+    package: 1,
   },
   {
     input: "Bachmann CONI Modulträger 3-fach, 3x Strom, Steckdosenleiste",
-    package: null,
+    package: 1,
   },
   {
     input: "Carrera GO!!! Build 'n Race - Racing Set 6.2, Rennbahn",
-    package: null,
+    package: 1,
   },
   {
     input: "RM650, PC-Netzteil schwarz, 4x PCIe, Kabel-Management, 650 Watt",
-    package: null,
+    package: 1,
   },
   {
     input: "Shelly Plus Plug S 4er Sparpack, Schaltsteckdose, schwarz",
@@ -305,11 +304,11 @@ export const packs = [
   },
   {
     input: "FABER-CASTELL Spitzdose Grip 2001 3-fach silber",
-    package: null,
+    package: 1,
   },
   {
     input: "Pelikan Zeichenblock A3 sortiert 10 Blatt 100g/qm",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -318,7 +317,7 @@ export const packs = [
   },
   {
     input: "folia Faltblätter aus Origamipapier 96 Blatt 19 x 19 cm",
-    package: null,
+    package: 1,
   },
   {
     input: "beaphar Hundesnack Zahnpflege Sticks 7 St./112g",
@@ -331,15 +330,15 @@ export const packs = [
   },
   {
     input: "folia Stickerrolle UNICORN 352 Teile",
-    package: null,
+    package: 1,
   },
   {
     input: "KUM Holzanspitzer Wood 2",
-    package: null,
+    package: 1,
   },
   {
     input: "Bench. Hüfttasche dunkelgrau 1700",
-    package: null,
+    package: 1,
   },
   {
     input: "BIG 800001191 - Big Bobby Car - Pylonen Set 4 - Neu",
@@ -357,7 +356,7 @@ export const packs = [
   },
   {
     input: "Scheppach HC06 Set",
-    package: null,
+    package: 1,
   },
   {
     input: "Maybach Grauer Burgunder (Pinot Grigio) 12% vol 6 x 75cl",
@@ -403,7 +402,7 @@ export const packs = [
   },
   {
     input: "HP Nr. 302XL 3-farbig (F6U67AE)",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -420,7 +419,7 @@ export const packs = [
   },
   {
     input:
-      ":4x Campingaz CV 470 Plus Kartusche mit Ventil, 80:20 Butan:Propan, 450g (1,8kg)",
+      "4x Campingaz CV 470 Plus Kartusche mit Ventil, 80:20 Butan:Propan, 450g (1,8kg)",
     package: 4,
   },
   {
@@ -430,24 +429,24 @@ export const packs = [
   },
   {
     input: "Cottelli Collection Lingerie Hebe-Set ouvert aus Satin 2-teilig",
-    package: null,
+    package: 1,
   },
   {
     input:
       "eufy Security S330 eufyCam 3, überwachungskamera aussen, 4K kabellose überwachungskamera solar 3+1 mit Gesichtserkennung K.I, Farbige Nachtsicht, Erweiterbarer Speicher 16TB, Gebührenfreie Nutzung",
-    package: null,
+    package: 1,
   },
   {
     input: "Bosch GRA 18V2-46 2x18V (ohne Akku und Ladegerät)",
-    package: null,
+    package: 1,
   },
   {
     input: "CARDO Freecom 4x Duo",
-    package: null,
+    package: 1,
   },
   {
     input: "Niermann Wolke Bunte Blumen 5-flg./20LED",
-    package: null,
+    package: 1,
   },
   {
     input:
@@ -462,7 +461,7 @@ export const packs = [
   {
     input:
       "Syoss Oleo Intense Öl-Coloration 4-86 Schokoladenbraun Stufe 3 (115 ml), dauerhafte Haarfarbe mit pflegendem Öl, Coloration ohne Ammoniak",
-    package: null,
+    package: 1,
   },
   {
     input: "Scholl Einlegesohlen GelActiv Everyday, Gr. 40 -46,5 (1..., 2 St",
@@ -470,7 +469,7 @@ export const packs = [
   },
   {
     input: "essence Blush Baby Got Blush 10 Tickle Me Pink, 5,5 g",
-    package: null,
+    package: 1,
   },
   {
     input: "ZEWA W&W Extra Lang Original 2x86",
@@ -478,23 +477,23 @@ export const packs = [
   },
   {
     input: "STAEDTLER Farbstifte Noris Club 127 12+4er-Bonuspack",
-    package: null,
+    package: 1,
   },
   {
     input: "House of the Dragon - Staffel 1 [4 BRs]",
-    package: null,
+    package: 1,
   },
   {
     input: "Illumination 5 Filme DVD-Edition [5 DVDs]",
-    package: null,
+    package: 1,
   },
   {
     input: "Dragonball Z - TV-Serie - Vol.1 (Episoden 1-35) [4 BRs]",
-    package: null,
+    package: 1,
   },
   {
     input: "BIALETTI Espressokocher Moka Express 6 Tassen",
-    package: null,
+    package: 1,
   },
   {
     input: "Jada - Disney 100 Blind Pack Nanofigs, 13-fach sortiert, 1 Stück",
@@ -569,24 +568,24 @@ export const packs = [
   },
   {
     input: "4x 3M Scotch Klebefilm Magic 811, ablösbar, 19 mm x 33 m",
-    package: 4,
+    package: 1,
   },
   {
     input:
       "8er Multipack Maul Kleiderbügel 9453370 (B x H) 45 cm x 22 cm Holz Holz 8 St.",
-    package: 8,
+    package: 1,
   },
   {
     input:
       "DOMETIC Power-Care für Camping-WCs & Chemietoiletten – Sanitär-Zusatz zersetzt Fäkalien und verhindert unangenehme Gerüche – Alternative zu Sanitärflüssigkeit (20 Tabs für 20 Tankfüllungen)",
-    package: 20,
+    package: 1,
   },
   {
     input: "Dometic Powercare Tabs 20 Stck.",
-    package: 20,
+    package: 1,
   },
   {
     input: "Vitakraft 25226 Kräcker Meerschweinchen Trio-Mix, 3Stk",
-    package: 3,
+    package: 1,
   },
 ];

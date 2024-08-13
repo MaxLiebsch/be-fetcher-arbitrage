@@ -4,7 +4,6 @@ import { getAllShopsAsArray } from "../services/db/util/shops.js";
 import {
   calculateAznArbitrage,
   calculateEbyArbitrage,
-  detectQuantity,
   findMappedCategory,
   roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
@@ -41,7 +40,7 @@ const migrationPackage = async () => {
           const set = {};
           const spotterSet = {};
           const crawlDataSet = {};
-          const qty = detectQuantity(p.nm);
+          const qty = 1;
           if (qty) {
             p.qty = qty;
           } else {
@@ -67,7 +66,7 @@ const migrationPackage = async () => {
               mappedCategory = findMappedCategory([p.ebyCategories[0].id]);
             }
             if (mappedCategory) {
-              const qty = detectQuantity(p.e_nm);
+              const qty = 1;
 
               if (qty) {
                 p.e_qty = qty;
@@ -103,7 +102,7 @@ const migrationPackage = async () => {
             }
           }
           if (p.costs && p.a_nm) {
-            const qty = detectQuantity(p.a_nm);
+            const qty = 1;
             if (qty) {
               p.a_qty = qty;
             } else {
@@ -155,6 +154,7 @@ const migrationPackage = async () => {
           spotter.collection(shop.d).bulkWrite(spotterBulkWrites),
           crawlData.collection(shop.d).bulkWrite(crawlDataBulkWrites),
         ]);
+        await new Promise((r) => setTimeout(r, 1000));
       } else {
         console.log(`Done ${shop.d}`);
       }

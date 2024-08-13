@@ -17,11 +17,32 @@ export const SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD = 50;
 export const DEFAULT_MAX_TASK_RETRIES = 3;
 export const MAX_EARNING_MARGIN = 150;
 export const NEW_TASK_CHECK_INTERVAL = 10000;
+export const RECHECK_EAN_EBY_AZN_INTERVAL = 7; // 7 days
 
 export const proxyAuth = {
   host: "127.0.0.1:8080",
   username: "",
   password: "",
+};
+
+export const defaultQuery = {
+  category: "",
+  brand: {
+    key: "",
+    value: "",
+  },
+  year: {
+    min: 0,
+    max: 0,
+  },
+  model: {
+    key: "",
+    value: "",
+  },
+  product: {
+    key: "",
+    value: "",
+  },
 };
 
 /*

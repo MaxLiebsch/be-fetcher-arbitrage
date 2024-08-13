@@ -62,6 +62,27 @@ export const getShops = async (retailerList) => {
   }
 };
 
+export const findShops = async (shopList) => {
+  const collectionName = shopCollectionName;
+  const db = await getCrawlDataDb();
+  const collection = db.collection(collectionName);
+
+  let query = {};
+  if (shopList && shopList.length) {
+    query = { d: { $in: shopList } };
+  }
+
+  const shops = await collection.find(query).toArray();
+  if (shops.length) {
+    return shops.reduce((acc, shop) => {
+      acc[shop.d] = shop;
+      return acc;
+    }, {});
+  } else {
+    return null;
+  }
+};
+
 export const insertShop = async (shop) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlDataDb();

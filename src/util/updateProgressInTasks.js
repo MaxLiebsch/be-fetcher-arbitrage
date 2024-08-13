@@ -96,8 +96,8 @@ export const updateProgressInLookupInfoTask = async () => {
   return progress;
 };
 
-export const updateWholesaleProgress = async (taskId, total) => {
-  const progress = await getWholesaleSearchProgress(taskId, total);
+export const updateWholesaleProgress = async (taskId) => {
+  const progress = await getWholesaleSearchProgress(taskId);
 
   await updateTaskWithQuery({ _id: taskId }, { progress });
   return progress;

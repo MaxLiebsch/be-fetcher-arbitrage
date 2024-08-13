@@ -85,6 +85,19 @@ export const deleteProduct = async (domain, link) => {
   const collection = db.collection(collectionName);
   return collection.deleteOne({ link });
 };
+
+export const findCrawlDataProductsNoLimit = async (
+  domain,
+  query,
+) => {
+  const collectionName = domain;
+  const db = await getCrawlDataDb();
+  const collection = db.collection(collectionName);
+  return collection
+    .find({ ...query })
+    .toArray();
+};
+
 export const findCrawlDataProducts = async (
   domain,
   query,

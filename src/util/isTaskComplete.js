@@ -23,7 +23,7 @@ const isTaskComplete = (type, infos, productLimit) => {
       total < SMALL_LOCKED_PRODUCT_CNT_THRESHOLD
         ? true
         : completionPercentage >= MATCH_LOOKUP_THRESHOLD;
-  } else if (type === "CRAWL_SHOP") {
+  } else if (type === "CRAWL_SHOP" || type === "DAILY_SALES") {
     completionPercentage = total / productLimit;
     taskCompleted = completionPercentage >= CRAWL_THRESHOLD;
   } else if (type === "SCAN_SHOP") {

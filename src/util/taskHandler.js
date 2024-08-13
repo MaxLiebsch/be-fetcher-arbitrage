@@ -13,6 +13,80 @@ import { handleTaskCompleted } from "./handleTaskComplete.js";
 import { handleTaskFailed } from "./handleTaskFailed.js";
 import isTaskComplete from "./isTaskComplete.js";
 
+async function handleDailySalesTask({
+  taskResult,
+  task,
+  completionStatus,
+  priority,
+  subject,
+}) {
+  const { result, name, message } = taskResult;
+  const { infos, statistics } = result;
+  const {
+    browserConfig,
+    productLimit,
+    retry,
+    _id,
+    id,
+    categories,
+    shopDomain,
+  } = task;
+  const { limit } = browserConfig.crawlShop;
+  const { taskCompleted, completionPercentage } = completionStatus;
+  if (taskCompleted) {
+    subject += " " + infos.total;
+    await handleTaskCompleted(_id, infos, { executing: false });
+    await updateShopStats("sales");
+  } else {
+    subject = "🚱 " + subject + " " + completionPercentage;
+    const update = {
+      executing: false,
+      visitedPages: statistics.visitedPages,
+    };
+    if (retry < MAX_TASK_RETRIES) {
+      update["retry"] = retry + 1;
+      update["completedAt"] = "";
+    } else {
+      update["completedAt"] = new Date().toISOString();
+      update["retry"] = 0;
+    }
+    if (
+      result.infos.total > COMPLETE_FAILURE_THRESHOLD &&
+      limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
+    ) {
+      const newPageLimit = calculatePageLimit(
+        limit.pages,
+        productLimit,
+        result.infos.total
+      );
+
+      update["browserConfig.crawlShop.limit"] = {
+        ...limit,
+        pages: newPageLimit,
+      };
+    }
+    if (retry === MAX_TASK_RETRIES && result.infos.total > 0) {
+      update["productLimit"] = result.infos.total;
+    }
+    await updateTask(_id, {
+      $set: update,
+      $pull: { lastCrawler: hostname },
+    });
+  }
+  const emailBody = {
+    shop: shopDomain,
+    categories,
+    name,
+    ...result,
+    message,
+  };
+
+  const text = JSON.stringify(emailBody, null, 2);
+  const htmlBody = `\n<h1>Summary - ${id}</h1>\n<pre>${text}</pre>\n\n`;
+
+  return { htmlBody, subject, priority };
+}
+
 async function handleCrawlTask({
   taskResult,
   task,
@@ -31,7 +105,7 @@ async function handleCrawlTask({
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
       executing: false,
-      visitedPages: statistics.visitedPages
+      visitedPages: statistics.visitedPages,
     };
     if (retry < MAX_TASK_RETRIES) {
       update["retry"] = retry + 1;
@@ -249,7 +323,7 @@ async function handleCrawlEbyListingsTask({
 
   return { htmlBody, subject, priority };
 }
-async function handleScanTask({ 
+async function handleScanTask({
   taskResult,
   task,
   completionStatus,
@@ -355,6 +429,7 @@ export async function handleTask(taskResult, task) {
   const { type, productLimit, id } = task;
   const subject = `🆗 ${getTaskSymbol(type)} ${hostname}: ${id}`;
   const completionStatus = isTaskComplete(type, result.infos, productLimit);
+
   const infos = {
     taskResult,
     task,
@@ -363,6 +438,9 @@ export async function handleTask(taskResult, task) {
     completionStatus,
   };
 
+  if (type === "DAILY_SALES") {
+    return await handleDailySalesTask(infos);
+  }
   if (type === "CRAWL_SHOP") {
     return await handleCrawlTask(infos);
   }
