@@ -731,19 +731,7 @@ export const countPendingProductsForWholesaleSearchQuery = (taskId) => {
 export const countCompletedProductsForWholesaleSearchQuery = (taskId) => {
   return {
     taskId: taskId.toString(),
-    status: { $exists: true },
-    $or: [
-      {
-        status: {
-          $eq: "complete",
-        },
-      },
-      {
-        status: {
-          $eq: "not found",
-        },
-      },
-    ],
+    status: { $in: ["complete", "not found"] },
   };
 };
 
@@ -764,7 +752,6 @@ export const crawlDailySalesQueryFn = (start) => {
     },
   ];
 };
-
 
 
 /*               Queries: Tasks                                */

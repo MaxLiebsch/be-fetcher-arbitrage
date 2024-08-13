@@ -28,7 +28,7 @@ export default async function wholesale(task) {
     const {
       shopDomain,
       productLimit,
-      _id,
+      _id: taskId,
       action,
       userId,
       browserConcurrency,
@@ -36,14 +36,14 @@ export default async function wholesale(task) {
 
     const wholeSaleProducts = await lockWholeSaleProducts(
       productLimit,
-      _id,
+      taskId,
       action
     );
 
     let infos = {
       new: 0,
       total: 1,
-      old: 0,
+      old: 1,
       failedSave: 0,
       locked: 0,
       missingProperties: {
@@ -68,7 +68,7 @@ export default async function wholesale(task) {
     infos.locked = wholeSaleProducts.length;
 
     //Update task progress
-    await updateWholesaleProgress(_id);
+    await updateWholesaleProgress(taskId);
 
     const startTime = Date.now();
 
@@ -134,7 +134,7 @@ export default async function wholesale(task) {
 
     const interval = setInterval(async () => {
       const isDone = queues.every((q) => q.workload() === 0);
-      await updateWholesaleProgress(_id);
+      await updateWholesaleProgress(taskId);
       if (isDone) {
         await checkProgress({
           queue: queues,
@@ -143,7 +143,7 @@ export default async function wholesale(task) {
           productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateWholesaleProgress(_id);
+          await updateWholesaleProgress(taskId);
           handleResult(r, resolve, reject);
         });
       }
@@ -152,7 +152,7 @@ export default async function wholesale(task) {
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
       const wholesaleProduct = wholeSaleProducts[index];
-      const { ean, _id, prc, a_qty, qty } = wholesaleProduct;
+      const { ean, _id: productId, prc, a_qty, qty } = wholesaleProduct;
 
       //not needed, I swear I will write clean code
       const addProduct = async (product) => {};
@@ -170,7 +170,7 @@ export default async function wholesale(task) {
           let reducedCosts = { ...processedProductUpdate.costs };
           delete reducedCosts.azn;
           await upsertAsin(processedProductUpdate.asin, [ean], reducedCosts);
-          const result = await updateWholeSaleProduct(_id, {
+          const result = await updateWholeSaleProduct(productId, {
             ...processedProductUpdate,
             status: "complete",
             lookup_pending: false,
@@ -184,7 +184,7 @@ export default async function wholesale(task) {
             infos.failedSave++;
           }
         } else {
-          const result = await updateWholeSaleProduct(_id, {
+          const result = await updateWholeSaleProduct(productId, {
             status: "not found",
             lookup_pending: false,
             locked: false,
@@ -197,7 +197,6 @@ export default async function wholesale(task) {
             infos.failedSave++;
           }
         }
-        console.log("infos.total", infos.total, _productLimit);
         if (infos.total === _productLimit) {
           await checkProgress({
             queue: queues,
@@ -205,7 +204,7 @@ export default async function wholesale(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            await updateWholesaleProgress(_id);
+            await updateWholesaleProgress(taskId);
             handleResult(r, resolve, reject);
           });
         }
@@ -215,7 +214,7 @@ export default async function wholesale(task) {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        const result = await updateWholeSaleProduct(_id, {
+        const result = await updateWholeSaleProduct(productId, {
           status: "not found",
           lookup_pending: false,
           locked: false,
@@ -227,7 +226,6 @@ export default async function wholesale(task) {
         } else {
           infos.failedSave++;
         }
-        console.log("infos.total", infos.total, _productLimit);
         if (infos.total === _productLimit) {
           await checkProgress({
             queue: queues,
@@ -235,7 +233,7 @@ export default async function wholesale(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
-            await updateWholesaleProgress(_id);
+            await updateWholesaleProgress(taskId);
             handleResult(r, resolve, reject);
           });
         }
