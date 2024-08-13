@@ -81,6 +81,23 @@ export default async function crawlAznListingsWithSellercentral(task) {
     const queryQueues = [];
     const queuesWithId = {};
     const eventEmitter = globalEventEmitter;
+
+    const interval = setInterval(
+      async () =>
+        await checkProgress({
+          queue: queryQueues,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateCrawlAznListingsProgress(shopDomain);
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
+          handleResult(r, resolve, reject);
+        }),
+      DEFAULT_CHECK_PROGRESS_INTERVAL
+    );
+
     await Promise.all(
       Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
         async () => {
@@ -104,6 +121,20 @@ export default async function crawlAznListingsWithSellercentral(task) {
               } else {
                 console.log("no more tasks to distribute. Closing ", queueId);
                 await queuesWithId[queueId].disconnect(true);
+                const isDone = queryQueues.every((q) => q.workload() === 0);
+                if (isDone) {
+                  await checkProgress({
+                    queue: queryQueues,
+                    infos,
+                    startTime,
+                    productLimit: _productLimit,
+                  }).catch(async (r) => {
+                    interval && clearInterval(interval);
+                    await updateCrawlAznListingsProgress(shopDomain);
+                    await updateProgressInLookupInfoTask(); // update lookup info task progress
+                    handleResult(r, resolve, reject);
+                  });
+                }
               }
             }
           );
@@ -182,6 +213,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
+            interval && clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
             await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);
@@ -211,6 +243,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
             startTime,
             productLimit: _productLimit,
           }).catch(async (r) => {
+            interval && clearInterval(interval);
             await updateCrawlAznListingsProgress(shopDomain);
             await updateProgressInLookupInfoTask(); // update lookup info task progress
             handleResult(r, resolve, reject);

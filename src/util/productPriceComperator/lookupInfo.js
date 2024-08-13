@@ -73,6 +73,15 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
               } else {
                 console.log("no more tasks to distribute. Closing ", queueId);
                 await queuesWithId[queueId].disconnect(true);
+                const isDone = queryQueues.every((q) => q.workload() === 0);
+                if (isDone) {
+                  interval && clearInterval(interval);
+                  await updateTask(_id, { $set: { progress: task.progress } });
+                  await Promise.all(
+                    queryQueues.map((queue) => queue.disconnect(true))
+                  );
+                  res(infos);
+                }
               }
             }
           );

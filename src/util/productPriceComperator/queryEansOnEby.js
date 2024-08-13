@@ -47,7 +47,7 @@ export const queryEansOnEby = async (ebay, task) =>
         $pull: {
           "progress.queryEansOnEby": { _id: { $in: completedProducts } },
         },
-        $push: {
+        $addToSet: {
           "progress.lookupCategory": { $each: task.progress.lookupCategory },
         },
       });

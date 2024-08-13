@@ -51,7 +51,7 @@ export const crawlEans = async (shop, task) =>
         $pull: {
           "progress.crawlEan": { _id: { $in: completedProducts } },
         },
-        $push: {
+        $addToSet: {
           "progress.queryEansOnEby": { $each: task.progress.queryEansOnEby },
           "progress.lookupInfo": { $each: task.progress.lookupInfo },
         },
