@@ -34,10 +34,10 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         image: 0,
       },
     };
-    
+
     const queues = [];
-    
-    task.actualProductLimit = task.aznListings.length
+
+    task.actualProductLimit = task.aznListings.length;
     await Promise.all(
       Array.from({ length: browserConcurrency || 1 }, (v, k) => k + 1).map(
         async () => {
@@ -65,6 +65,12 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         } else {
           console.log("no more tasks to distribute. Closing ", queueId);
           await queuesWithId[queueId].disconnect(true);
+          const isDone = queues.every((q) => q.workload() === 0);
+          if (isDone) {
+            console.log("infos:", infos.total, "limit: ", productLimit);
+            await updateTask(_id, { $set: { progress: task.progress } });
+            res(infos);
+          }
         }
       });
     });
