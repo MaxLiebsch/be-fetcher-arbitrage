@@ -9,7 +9,11 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { DEFAULT_CHECK_PROGRESS_INTERVAL, defaultQuery, proxyAuth } from "../../constants.js";
+import {
+  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
+  proxyAuth,
+} from "../../constants.js";
 import { createHash } from "../hash.js";
 import { createOrUpdateArbispotterProduct } from "../../services/db/util/createOrUpdateArbispotterProduct.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -21,7 +25,7 @@ export const queryEansOnEby = async (ebay, task) =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
-    
+
     task.actualProductLimit = task.queryEansOnEby.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
 
@@ -42,6 +46,9 @@ export const queryEansOnEby = async (ebay, task) =>
       await updateTask(_id, {
         $pull: {
           "progress.queryEansOnEby": { _id: { $in: completedProducts } },
+        },
+        $push: {
+          "progress.lookupCategory": { $each: task.progress.lookupCategory },
         },
       });
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
