@@ -9,7 +9,7 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { defaultQuery, proxyAuth } from "../../constants.js";
+import { DEFAULT_CHECK_PROGRESS_INTERVAL, defaultQuery, proxyAuth } from "../../constants.js";
 import { createHash } from "../hash.js";
 import { createOrUpdateArbispotterProduct } from "../../services/db/util/createOrUpdateArbispotterProduct.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -30,11 +30,21 @@ export const queryEansOnEby = async (ebay, task) =>
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function queryEansOnEbyCallback() {
+        interval && clearInterval(interval);
         await updateTask(_id, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res(infos);
       }
     );
+
+    const completedProducts = [];
+    let interval = setInterval(async () => {
+      await updateTask(_id, {
+        $pull: {
+          "progress.queryEansOnEby": { _id: { $in: completedProducts } },
+        },
+      });
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     await queue.connect();
     let infos = {
@@ -117,6 +127,7 @@ export const queryEansOnEby = async (ebay, task) =>
         foundProducts.push(product);
       };
       const isFinished = async () => {
+        completedProducts.push(crawlDataProduct._id);
         const arbispotterProductUpdate = {};
         infos.shops[shopDomain]++;
         infos.total++;
@@ -199,12 +210,14 @@ export const queryEansOnEby = async (ebay, task) =>
           });
         }
         if (infos.total === productLimit && !queue.idle()) {
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res(infos);
         }
       };
       const handleNotFound = async () => {
+        completedProducts.push(crawlDataProduct._id);
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
@@ -217,6 +230,7 @@ export const queryEansOnEby = async (ebay, task) =>
         });
 
         if (infos.total === productLimit && !queue.idle()) {
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res(infos);

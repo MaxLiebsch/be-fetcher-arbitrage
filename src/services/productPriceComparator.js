@@ -2,9 +2,7 @@ import { findShops } from "./db/util/shops.js";
 import {
   createArbispotterCollection,
   createCrawlDataCollection,
-  hostname,
 } from "./db/mongo.js";
-import { ObjectId } from "mongodb";
 import { crawlProducts } from "../util/productPriceComperator/crawlProducts.js";
 import { crawlEans } from "../util/productPriceComperator/crawlEan.js";
 import { lookupInfo } from "../util/productPriceComperator/lookupInfo.js";
@@ -14,81 +12,18 @@ import { crawlAznListings } from "../util/productPriceComperator/crawlAznListing
 import { crawlEbyListings } from "../util/productPriceComperator/crawlEbyListings.js";
 import { findCrawlDataProductsNoLimit } from "./db/util/crudCrawlDataProduct.js";
 import { TaskCompletedStatus } from "../status.js";
-import isTaskComplete from "../util/isTaskComplete.js";
-
-let task = {
-  _id: new ObjectId("66b30a822cfd0e4c93aba609"),
-  type: "DAILY_SALES",
-  id: "daily_sales_idealo.de",
-  shopDomain: "idealo.de",
-  recurrent: true,
-  productLimit: 20,
-  executing: false,
-  createdAt: "2024-04-13T12:20:47.258Z",
-  errored: false,
-  startedAt: "2024-08-03T00:00:07.852Z",
-  completedAt: "2024-08-03T00:30:09.826Z",
-  retry: 0,
-  maintenance: false,
-  lastCrawler: [],
-  visitedPages: [],
-  categories: [
-    {
-      name: "Sale",
-      link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
-      productLimit: 20,
-    },
-  ],
-  progress: {
-    crawlEan: [],
-    lookupInfo: [],
-    lookupCategory: [],
-    queryEansOnEby: [],
-    aznListings: [],
-    ebyListings: [],
-  },
-  browserConfig: {
-    crawlShop: {
-      concurrency: 4,
-      limit: {
-        subCategory: 100,
-        pages: 10,
-      },
-    },
-    crawlEan: {
-      productLimit: 20,
-      concurrency: 4,
-    },
-    lookupInfo: {
-      concurrency: 1,
-      productLimit: 20,
-      browserConcurrency: 6,
-    },
-    queryEansOnEby: {
-      concurrency: 4,
-      productLimit: 20,
-    },
-    lookupCategory: {
-      concurrency: 4,
-      productLimit: 20,
-    },
-    crawlAznListings: {
-      concurrency: 1,
-      productLimit: 20,
-      browserConcurrency: 6,
-    },
-    crawlEbyListings: {
-      concurrency: 4,
-      productLimit: 20,
-    },
-  },
-};
+import {
+  COMPLETE_FAILURE_THRESHOLD,
+  MAX_TASK_RETRIES,
+  SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
+} from "../constants.js";
+import calculatePageLimit from "../util/calculatePageLimit.js";
+import { updateTask } from "./db/util/tasks.js";
 
 export const salesDbName = "sales";
 
-
 export const productPriceComperator = async (task) => {
-  // task = await findTask(task._id);
+  const { productLimit } = task;
   const { shopDomain } = task;
   return new Promise(async (res, rej) => {
     const shops = await findShops([
@@ -116,13 +51,58 @@ export const productPriceComperator = async (task) => {
     if (task.action === "recover") {
       infos["total"] = task.productLimit;
     } else {
-      const crawledProductsInfo = await crawlProducts(origin, task);
-      infos["crawlProducts"] = crawledProductsInfo;
-      infos["total"] = crawledProductsInfo.total;
+      let done = false;
+      let retry = 1;
+      while (!done) {
+        console.log("Task CrawlProducts... ", retry, " try.");
+        const crawledProductsInfo = await crawlProducts(origin, task);
+        infos["crawlProducts"] = crawledProductsInfo;
+        infos["total"] = crawledProductsInfo.total;
+        const limit = task.browserConfig.crawlShop.limit;
+        if (infos.total >= task.productLimit) {
+          done = true;
+          break;
+        }
+        console.log("Total products as low as: ", infos.total);
+        if (
+          retry < MAX_TASK_RETRIES &&
+          infos.total > COMPLETE_FAILURE_THRESHOLD &&
+          task.browserConfig.crawlShop.limit.pages <=
+            SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
+        ) {
+          console.log("Updating page limit...");
+          const newPageLimit = calculatePageLimit(
+            limit.pages,
+            productLimit,
+            infos.total
+          );
+          task.browserConfig.crawlShop.limit = {
+            ...limit,
+            pages: newPageLimit,
+          };
+          console.log("New limit", task.browserConfig.crawlShop.limit);
+          console.log("crawlEan: ", task.progress.crawlEan.length);
+        }
+        if (retry >= MAX_TASK_RETRIES && infos.total > 1) {
+          console.log(
+            "Limit never reached after ",
+            retry,
+            " retries. Continuing...."
+          );
+          task.productLimit = infos.total;
+          await updateTask(task._id, { $set: { ...task } });
+          done = true;
+          break;
+        }
+        if (infos.total > 1) {
+          retry++;
+          task.progress.crawlEan = [];
+        }
+      }
     }
 
     if (task.progress.crawlEan.length > 0) {
-      console.log("Task CrawlEan");
+      console.log("Task CrawlEan ", task.progress.crawlEan.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.crawlEan },
       });
@@ -135,7 +115,7 @@ export const productPriceComperator = async (task) => {
     }
 
     if (task.progress.lookupInfo.length > 0) {
-      console.log("Task LookupInfo");
+      console.log("Task LookupInfo ", task.progress.lookupInfo.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupInfo },
       });
@@ -148,7 +128,7 @@ export const productPriceComperator = async (task) => {
     }
 
     if (task.progress.queryEansOnEby.length > 0) {
-      console.log("Task QueryEansOnEby");
+      console.log("Task QueryEansOnEby", task.progress.queryEansOnEby.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.queryEansOnEby },
       });
@@ -161,7 +141,7 @@ export const productPriceComperator = async (task) => {
     }
 
     if (task.progress.lookupCategory.length > 0) {
-      console.log("Task LookupCategory");
+      console.log("Task LookupCategory ", task.progress.lookupCategory.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupCategory },
       });
@@ -174,7 +154,7 @@ export const productPriceComperator = async (task) => {
     }
 
     if (task.progress.aznListings.length > 0) {
-      console.log("Task AznListings");
+      console.log("Task AznListings ", task.progress.aznListings.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.aznListings },
       });
@@ -191,7 +171,7 @@ export const productPriceComperator = async (task) => {
     }
 
     if (task.progress.ebyListings.length > 0) {
-      console.log("Task EbyListings");
+      console.log("Task EbyListings ", task.progress.ebyListings.length);
       const products = await findCrawlDataProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.ebyListings },
       });

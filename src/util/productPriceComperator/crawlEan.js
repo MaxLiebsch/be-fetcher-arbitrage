@@ -9,7 +9,11 @@ import { updateTask } from "../../services/db/util/tasks.js";
 import { deleteProduct } from "../../services/db/util/crudCrawlDataProduct.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
 import { createHash } from "../hash.js";
-import { defaultQuery, proxyAuth } from "../../constants.js";
+import {
+  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
+  proxyAuth,
+} from "../../constants.js";
 
 export const crawlEans = async (shop, task) =>
   new Promise(async (res, rej) => {
@@ -29,7 +33,7 @@ export const crawlEans = async (shop, task) =>
       },
     };
 
-    task.actualProductLimit = task.crawlEan.length
+    task.actualProductLimit = task.crawlEan.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     const eventEmitter = globalEventEmitter;
 
@@ -41,6 +45,14 @@ export const crawlEans = async (shop, task) =>
         res(infos);
       }
     );
+    const completedProducts = [];
+    let interval = setInterval(async () => {
+      await updateTask(_id, {
+        $pull: {
+          "progress.crawlEan": { _id: { $in: completedProducts } },
+        },
+      });
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     await queue.connect();
     while (task.progress.crawlEan.length) {
@@ -51,6 +63,7 @@ export const crawlEans = async (shop, task) =>
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        completedProducts.push(crawlDataProduct._id);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
@@ -129,18 +142,24 @@ export const crawlEans = async (shop, task) =>
         }
         if (infos.total === productLimit && !queue.idle()) {
           console.log("product limit reached");
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res(infos);
         }
       };
       const handleNotFound = async (cause) => {
+        completedProducts.push(crawlDataProduct._id);
         infos.notFound++;
         infos.total++;
         queue.total++;
         //marke dead
         if (infos.total === productLimit && !queue.idle()) {
-          console.log("dead!");
+          console.log("product limit reached");
+          interval && clearInterval(interval);
+          await updateTask(_id, { $set: { progress: task.progress } });
+          await queue.disconnect(true);
+          res(infos);
         }
       };
 

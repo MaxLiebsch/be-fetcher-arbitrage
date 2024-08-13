@@ -3,7 +3,11 @@ import {
   queryProductPageQueue,
   QueryQueue,
 } from "@dipmaxtech/clr-pkg";
-import { defaultQuery, proxyAuth } from "../../constants.js";
+import {
+  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
+  proxyAuth,
+} from "../../constants.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
 import {
   moveCrawledProduct,
@@ -34,7 +38,7 @@ export const lookupCategory = async (ebay, origin, task) =>
       },
     };
 
-    task.actualProductLimit = task.lookupCategory.length
+    task.actualProductLimit = task.lookupCategory.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     const eventEmitter = globalEventEmitter;
 
@@ -46,6 +50,15 @@ export const lookupCategory = async (ebay, origin, task) =>
         res(infos);
       }
     );
+
+    const completedProducts = [];
+    let interval = setInterval(async () => {
+      await updateTask(_id, {
+        $pull: {
+          "progress.lookupCategory": { _id: { $in: completedProducts } },
+        },
+      });
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
     await queue.connect();
     while (task.progress.lookupCategory.length) {
       const crawlDataProduct = task.lookupCategory.pop();
@@ -58,6 +71,7 @@ export const lookupCategory = async (ebay, origin, task) =>
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        completedProducts.push(crawlDataProduct._id);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
@@ -129,12 +143,14 @@ export const lookupCategory = async (ebay, origin, task) =>
           });
         }
         if (infos.total === productLimit && !queue.idle()) {
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res(infos);
         }
       };
       const handleNotFound = async (cause) => {
+        completedProducts.push(crawlDataProduct._id);
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
@@ -153,6 +169,7 @@ export const lookupCategory = async (ebay, origin, task) =>
             crawledProductLink
           );
           if (infos.total === productLimit && !queue.idle()) {
+            interval && clearInterval(interval);
             await updateTask(_id, { $set: { progress: task.progress } });
             await queue.disconnect(true);
             res(infos);

@@ -61,7 +61,7 @@ export default async function crawl(task) {
         image: 0,
       },
     };
-    
+
     if (shops === null) reject(new MissingShopError("", task));
     task.actualProductLimit = productLimit;
     const queue = new CrawlerQueue(
@@ -113,7 +113,7 @@ export default async function crawl(task) {
         return;
       }
       if (product.name && product.price && product.link) {
-        if (uniqueLinks.indexOf(product.link) === -1) {
+        if (!uniqueLinks.includes(product.link)) {
           uniqueLinks.push(product.link);
           infos.total++;
           queue.total++;

@@ -23,6 +23,6 @@ const task = {
 };
 
 queryEansOnEby(task).then((r) => {
-  console.log(JSON.stringify(r, 2, null));
+  console.log(JSON.stringify(r, null, 2));
   process.exit(0);
 });

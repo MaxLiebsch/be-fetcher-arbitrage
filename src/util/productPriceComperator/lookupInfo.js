@@ -8,7 +8,7 @@ import {
   replaceAllHiddenCharacters,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import { proxyAuth } from "../../constants.js";
+import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
 import { createOrUpdateArbispotterProduct } from "../../services/db/util/createOrUpdateArbispotterProduct.js";
 import { upsertAsin } from "../../services/db/util/asinTable.js";
 import { updateCrawlDataProduct } from "../../services/db/util/crudCrawlDataProduct.js";
@@ -18,7 +18,7 @@ import {
   crawlDataInfoMissingUpdate,
   resetAznProduct,
 } from "../../services/lookupInfo.js";
-import { updateTask } from "../../services/db/util/tasks.js";
+import { findTask, updateTask } from "../../services/db/util/tasks.js";
 
 export const getMaxLoadQueue = (queues) => {
   const queueLoad = queues.map((queue) => queue.workload());
@@ -67,7 +67,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
                   " tasks from ",
                   maxQueue.queueId,
                   "to ",
-                  queueId,
+                  queueId
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
               } else {
@@ -82,6 +82,15 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
     );
 
     const queueIterator = yieldQueues(queryQueues);
+
+    const completedProducts = [];
+    let interval = setInterval(async () => {
+      await updateTask(_id, {
+        $pull: {
+          "progress.lookupInfo": { _id: { $in: completedProducts } },
+        },
+      });
+    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     while (task.progress.lookupInfo.length) {
       const crawlDataProduct = task.lookupInfo.pop();
@@ -133,6 +142,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
       const { prc: buyPrice, qty: buyQty } = procProd;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        completedProducts.push(crawlDataProduct._id);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
@@ -200,12 +210,14 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
           );
         }
         if (infos.total === productLimit) {
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await Promise.all(queryQueues.map((queue) => queue.disconnect(true)));
           res(infos);
         }
       };
       const handleNotFound = async () => {
+        completedProducts.push(crawlDataProduct._id);
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
@@ -221,6 +233,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
           crawlDataInfoMissingUpdate
         );
         if (infos.total === productLimit) {
+          interval && clearInterval(interval);
           await updateTask(_id, { $set: { progress: task.progress } });
           await Promise.all(queryQueues.map((queue) => queue.disconnect(true)));
           res(infos);
@@ -235,6 +248,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
           name: shopDomain,
         },
         addProduct,
+        lookupRetryLimit: 0,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
