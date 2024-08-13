@@ -144,15 +144,10 @@ export default async function crawlAznListingsWithSellercentral(task) {
       )
     );
 
-    const queueIterator = yieldQueues(queryQueues);
-
-    Object.values(queuesWithId).forEach(
-      (queue) => (queue.actualProductLimit = 0)
-    );
+    const queueIterator = yieldQueues(queryQueues); 
 
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
-      queue.actualProductLimit++;
       const crawlDataProduct = products[index];
       const {
         link: productLink,
