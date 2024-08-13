@@ -155,6 +155,18 @@ export default async function lookupInfo(task) {
               } else {
                 console.log("no more tasks to distribute. Closing ", queueId);
                 await queuesWithId[queueId].disconnect(true);
+                const isDone = queryQueues.every((q) => q.workload() === 0);
+                if (isDone) {
+                  await checkProgress({
+                    queue: queryQueues,
+                    infos,
+                    startTime,
+                    productLimit: _productLimit,
+                  }).catch(async (r) => {
+                    await updateProgressInLookupInfoTask();
+                    handleResult(r, resolve, reject);
+                  });
+                }
               }
             }
           );

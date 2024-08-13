@@ -77,9 +77,6 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
                 if (isDone) {
                   interval && clearInterval(interval);
                   await updateTask(_id, { $set: { progress: task.progress } });
-                  await Promise.all(
-                    queryQueues.map((queue) => queue.disconnect(true))
-                  );
                   res(infos);
                 }
               }
