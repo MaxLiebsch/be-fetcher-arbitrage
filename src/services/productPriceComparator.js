@@ -19,10 +19,13 @@ import {
 } from "../constants.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "./db/util/tasks.js";
+import { LoggerService } from "@dipmaxtech/clr-pkg";
 
 export const salesDbName = "sales";
+const logService = LoggerService.getSingleton();
 
 export const productPriceComperator = async (task) => {
+  const startTime = Date.now();
   const { productLimit } = task;
   const { shopDomain } = task;
   return new Promise(async (res, rej) => {
@@ -183,6 +186,17 @@ export const productPriceComperator = async (task) => {
       }
     }
     task.statistics = task.browserConfig;
+    const endTime = Date.now();
+    const elapsedTime = (endTime - startTime) / 1000 / 60 / 60;
+    
+    logService.logger.info({
+      shopDomain: task.shopDomain,
+      taskid: task.id ?? "",
+      type: task.type,
+      ...infos,
+      ...task.statistics,
+      elapsedTime: `${elapsedTime.toFixed(2)} h`,
+    });
     res(
       new TaskCompletedStatus("", task, {
         infos,
