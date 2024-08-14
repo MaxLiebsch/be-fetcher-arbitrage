@@ -108,11 +108,9 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
           }
           await upsertAsin(asin, eanList, processedProductUpdate.costs);
 
-          const arbispotterProductUpdate = { ...processedProductUpdate };
-
-          const crawlDataProductUpdate = {
+          const arbispotterProductUpdate = {
+            ...processedProductUpdate,
             aznUpdatedAt: new Date().toISOString(),
-            azn_locked: false,
             azn_taskId: "",
           };
 
@@ -120,11 +118,6 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
             salesDbName,
             productLink,
             arbispotterProductUpdate
-          );
-          await updateCrawlDataProduct(
-            salesDbName,
-            productLink,
-            crawlDataProductUpdate
           );
         } else {
           infos.missingProperties.bsr++;

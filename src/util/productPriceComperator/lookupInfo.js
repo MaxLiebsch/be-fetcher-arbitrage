@@ -180,11 +180,15 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
             qty_prop: "",
             a_qty: processedProductUpdate.a_qty,
             info_prop: "complete",
-            aznUpdatedAt: new Date().toISOString(),
             costs: processedProductUpdate.costs,
             asin: processedProductUpdate.asin,
           };
-          const updatedProduct = { ...procProd, ...processedProductUpdate };
+          const updatedProduct = {
+            ...procProd,
+            ...processedProductUpdate,
+            aznUpdatedAt: new Date().toISOString(),
+          };
+
           const result = await createOrUpdateArbispotterProduct(
             salesDbName,
             updatedProduct

@@ -115,8 +115,6 @@ export const crawlProducts = async (shop, task) =>
                   info_prop,
                   eby_prop,
                   cat_prop,
-                  ebyUpdatedAt,
-                  aznUpdatedAt,
                 } = existingProduct;
                 if (!shop.hasEan && shop.ean) {
                   task.progress.lookupInfo.push(existingProduct._id);
@@ -164,11 +162,11 @@ export const crawlProducts = async (shop, task) =>
                   task.progress.lookupCategory.push(existingProduct._id);
                 }
 
-                if (ebyUpdatedAt) {
+                if (cat_prop === "complete" && eby_prop === "complete") {
                   task.progress.ebyListings.push(existingProduct._id);
                 }
 
-                if (aznUpdatedAt) {
+                if (info_prop === "complete") {
                   task.progress.aznListings.push(existingProduct._id);
                 }
               } else {
