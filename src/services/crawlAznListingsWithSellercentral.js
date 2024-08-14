@@ -144,7 +144,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
       )
     );
 
-    const queueIterator = yieldQueues(queryQueues); 
+    const queueIterator = yieldQueues(queryQueues);
 
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
@@ -176,11 +176,9 @@ export default async function crawlAznListingsWithSellercentral(task) {
           }
           await upsertAsin(asin, eanList, processedProductUpdate.costs);
 
-          const arbispotterProductUpdate = { ...processedProductUpdate };
-
-          const crawlDataProductUpdate = {
+          const arbispotterProductUpdate = {
+            ...processedProductUpdate,
             aznUpdatedAt: new Date().toISOString(),
-            azn_locked: false,
             azn_taskId: "",
           };
 
@@ -189,15 +187,9 @@ export default async function crawlAznListingsWithSellercentral(task) {
             productLink,
             arbispotterProductUpdate
           );
-          await updateCrawlDataProduct(
-            shopDomain,
-            productLink,
-            crawlDataProductUpdate
-          );
         } else {
           infos.missingProperties.bsr++;
-          await updateCrawlDataProduct(shopDomain, productLink, {
-            azn_locked: false,
+          await updateArbispotterProduct(shopDomain, productLink, {
             azn_taskId: "",
           });
         }
@@ -220,17 +212,14 @@ export default async function crawlAznListingsWithSellercentral(task) {
         infos.total++;
         queue.total++;
         await updateCrawlDataProduct(shopDomain, productLink, {
-          azn_locked: false,
-          azn_taskId: "",
           asin: "",
           a_qty: 0,
           info_prop: "", // reset lookup info to start over
         });
-        await updateArbispotterProduct(
-          shopDomain,
-          productLink,
-          resetAznProduct()
-        );
+        await updateArbispotterProduct(shopDomain, productLink, {
+          ...resetAznProduct(),
+          azn_taskId: "",
+        });
         if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue: queryQueues,

@@ -504,8 +504,8 @@ export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
       $and: [
         {
           $or: [
-            { azn_locked: { $exists: false } },
-            { azn_locked: { $eq: false } },
+            { azn_taskId: { $exists: false } },
+            { azn_taskId: { $eq: "" } },
           ],
         },
         {
@@ -529,7 +529,6 @@ export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
 export const setProductsLockedForCrawlAznListingsQuery = (taskId) => {
   return {
     $set: {
-      azn_locked: true,
       azn_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
@@ -538,10 +537,7 @@ export const countPendingProductsForCrawlAznListingsQuery = () => {
   const query = {
     $and: [
       {
-        $or: [
-          { azn_locked: { $exists: false } },
-          { azn_locked: { $eq: false } },
-        ],
+        $or: [{ azn_taskId: { $exists: false } }, { azn_taskId: { $eq: "" } }],
       },
       {
         asin: { $exists: true, $ne: "" },
@@ -605,8 +601,8 @@ export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
       $and: [
         {
           $or: [
-            { eby_locked: { $exists: false } },
-            { eby_locked: { $eq: false } },
+            { eby_taskId: { $exists: false } },
+            { eby_taskId: { $eq: "" } },
           ],
         },
         {
@@ -633,7 +629,6 @@ export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
 export const setProductsLockedForCrawlEbyListingsQuery = (taskId) => {
   return {
     $set: {
-      eby_locked: true,
       eby_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
@@ -642,10 +637,7 @@ export const countPendingProductsForCrawlEbyListingsQuery = () => {
   const query = {
     $and: [
       {
-        $or: [
-          { eby_locked: { $exists: false } },
-          { eby_locked: { $eq: false } },
-        ],
+        $or: [{ eby_taskId: { $exists: false } }, { eby_taskId: { $eq: "" } }],
       },
       {
         esin: { $exists: true, $ne: "" },
@@ -752,7 +744,6 @@ export const crawlDailySalesQueryFn = (start) => {
     },
   ];
 };
-
 
 /*               Queries: Tasks                                */
 

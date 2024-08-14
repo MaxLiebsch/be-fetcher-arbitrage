@@ -17,7 +17,6 @@ const main = async () => {
   const update = {
     $set: {
       aznUpdatedAt: subDateDaysISO(10),
-      azn_locked: false,
       azn_taskId: ""
     },
   };

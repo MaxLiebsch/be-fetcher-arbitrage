@@ -111,11 +111,6 @@ async function crawlEbyListings(task) {
           const arbispotterProductUpdate = {
             e_lnk: url.split("?")[0],
           };
-          const crawlDataProductUpdate = {
-            ebyUpdatedAt: new Date().toISOString(),
-            eby_locked: false,
-            eby_taskId: "",
-          };
           const {
             e_qty: buyQty,
             price: buyPrice,
@@ -150,31 +145,23 @@ async function crawlEbyListings(task) {
           if (image) {
             arbispotterProductUpdate["e_img"] = image;
           }
-          await updateCrawlDataProduct(
-            shopDomain,
-            productLink,
-            crawlDataProductUpdate
-          );
 
-          await updateArbispotterProduct(
-            shopDomain,
-            productLink,
-            arbispotterProductUpdate
-          );
+          await updateArbispotterProduct(shopDomain, productLink, {
+            ...arbispotterProductUpdate,
+            ebyUpdatedAt: new Date().toISOString(),
+            eby_taskId: "",
+          });
         } else {
           await updateCrawlDataProduct(shopDomain, productLink, {
-            eby_locked: false,
-            eby_taskId: "",
             esin: "",
             e_qty: 0,
             cat_prop: "", // lookup category
             eby_prop: "", //  query eans on eby
           });
-          await updateArbispotterProduct(
-            shopDomain,
-            productLink,
-            resetEbayProduct
-          );
+          await updateArbispotterProduct(shopDomain, productLink, {
+            ...resetEbayProduct,
+            eby_taskId: "",
+          });
           infos.notFound++;
         }
         if (infos.total === _productLimit && !queue.idle()) {
@@ -196,18 +183,15 @@ async function crawlEbyListings(task) {
         infos.total++;
         queue.total++;
         await updateCrawlDataProduct(shopDomain, productLink, {
-          eby_locked: false,
-          eby_taskId: "",
           esin: "",
           e_qty: 0,
           cat_prop: "", // lookup category
           eby_prop: "", //  query eans on eby
         });
-        await updateArbispotterProduct(
-          shopDomain,
-          productLink,
-          resetEbayProduct
-        );
+        await updateArbispotterProduct(shopDomain, productLink, {
+          ...resetEbayProduct,
+          eby_taskId: "",
+        });
         if (infos.total === _productLimit && !queue.idle()) {
           await checkProgress({
             queue,

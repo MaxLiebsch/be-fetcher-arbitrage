@@ -1,4 +1,4 @@
-import { getCrawlDataDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   lockProductsForCrawlEbyListingsQuery,
   setProductsLockedForCrawlEbyListingsQuery,
@@ -11,7 +11,7 @@ export const lockProductsForCrawlEbyListings = async (
   action
 ) => {
   const collectionName = domain;
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
 
   const { query, options } = lockProductsForCrawlEbyListingsQuery(
     limit,
