@@ -51,7 +51,10 @@ export const productPriceComperator = async (task) => {
     await createCrawlDataCollection("sales");
     await createArbispotterCollection("sales");
 
-    if (task.action === "recover") {
+    if (
+      task.action === "recover" &&
+      Object.keys(task.progress).some((key) => task.progress[key].length > 0)
+    ) {
       infos["total"] = task.productLimit;
     } else {
       let done = false;
@@ -188,7 +191,7 @@ export const productPriceComperator = async (task) => {
     task.statistics = task.browserConfig;
     const endTime = Date.now();
     const elapsedTime = (endTime - startTime) / 1000 / 60 / 60;
-    
+
     logService.logger.info({
       shopDomain: task.shopDomain,
       taskid: task.id ?? "",

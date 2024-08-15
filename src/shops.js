@@ -1,5 +1,3 @@
-import pkg from "fs-jetpack";
-const { write } = pkg;
 import { insertShop } from "./services/db/util/shops.js";
 
 export const shops = {
@@ -94,6 +92,18 @@ export const shops = {
       max: 800,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.lowPrice",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -325,6 +335,7 @@ export const shops = {
     action: [],
     active: true,
     categories: {
+      exclude: ["generalüberholt"],
       sel: "div[id=navigation-tree] a",
       type: "href",
       basepath: false,
@@ -369,6 +380,18 @@ export const shops = {
       max: 800,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -666,8 +689,7 @@ export const shops = {
         },
       ],
     },
-    crawlActions: [
-    ],
+    crawlActions: [],
     d: "gamestop.de",
     entryPoints: [
       {
@@ -754,6 +776,18 @@ export const shops = {
       },
     ],
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers[0].price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers[0].availability",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -866,7 +900,7 @@ export const shops = {
     active: true,
     categories: {
       visible: false,
-      exclude: ['wie-baue'],
+      exclude: ["wie-baue"],
       sel: "div.js-left-category-menu li a.l0-catLink",
       type: "href",
       subCategories: [
@@ -917,6 +951,24 @@ export const shops = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
+        parent: "div[id=content0c]",
+        content: "price",
+        regex: '"price":\\s*"(\\S+)"',
+        path: "offers.price",
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        parent: "div[id=content0c]",
+        multiple: true,
+        regex: '"availability":\\s*"(\\S+)"',
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
         content: "ean",
         parent: "div[id=content0c]",
         regex: '"gtin13":\\s*"(\\d+)"',
@@ -927,6 +979,7 @@ export const shops = {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "sku",
+        regex: '"sku":\\s*"(\\S+)"',
         parent: "div[id=content0c]",
         multiple: true,
         path: "sku",
@@ -935,15 +988,10 @@ export const shops = {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "mku",
+        regex: '"mku":\\s*"(\\S+)"',
         parent: "div[id=content0c]",
         multiple: true,
         path: "mpn",
-      },
-      {
-        sel: "div.availabilityTextBlock",
-        parent: "div.commodityAvailabilityBlock",
-        content: "instock",
-        type: "text",
       },
     ],
     productList: [
@@ -999,9 +1047,7 @@ export const shops = {
     action: [],
     active: true,
     categories: {
-      exclude: [
-        "anzeigen"
-      ],
+      exclude: ["anzeigen"],
       visible: false,
       sel: "a.level-1-link",
       type: "href",
@@ -1030,7 +1076,7 @@ export const shops = {
       {
         type: "pagination",
         sel: "div.paging",
-        nav: "?p=",
+        nav: "/",
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1044,6 +1090,22 @@ export const shops = {
       max: 800,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        multiple: true,
+        parent: "div[id=details]",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        multiple: true,
+        parent: "div[id=details]",
+        path: "offers.availability",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -1065,12 +1127,6 @@ export const shops = {
         sel: "img",
         type: "src",
         content: "image",
-      },
-      {
-        parent: "div.product-status",
-        sel: "span",
-        type: "text",
-        content: "instock",
       },
     ],
     productList: [
@@ -1202,6 +1258,20 @@ export const shops = {
         },
       },
     ],
+    product: [
+      {
+        parent: "div.productOmnibox-availability__delivery",
+        sel: 'a[href="#overlayDeliveryAvailability"]',
+        type: "text",
+        content: "instock",
+      },
+      {
+        parent: "div.productOmnibox-price",
+        sel: "span.productOmnibox-price__price--delivery",
+        type: "text",
+        content: "price",
+      },
+    ],
     productList: [
       {
         sel: "div.productsList",
@@ -1306,18 +1376,43 @@ export const shops = {
         },
       },
     ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 1000,
+    },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+        multiple: true,
+        parent: "head",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "ean",
         path: "gtin",
+        multiple: true,
+        parent: "head",
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "sku",
         path: "sku",
+        multiple: true,
+        parent: "head",
       },
     ],
     productList: [
@@ -1396,10 +1491,10 @@ export const shops = {
       crawl: [
         "media",
         "font",
-        "stylesheet",
+        // "stylesheet",
         "ping",
         "image",
-        "fetch",
+        // "fetch",
         "imageset",
         "sub_frame",
         "other",
@@ -1460,7 +1555,7 @@ export const shops = {
         nav: "?currentPage=",
         calculation: {
           method: "product_count",
-          productsPerPage:48,
+          productsPerPage: 48,
           last: "div.p-items a",
           sel: "div.p-items a",
         },
@@ -1472,6 +1567,22 @@ export const shops = {
       max: 1000,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: [
+          "offers.availability",
+          "[1].offers.availability",
+          "[0].offers.availability",
+        ],
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: ["offers.price", "[1].offers.price", "[0].offers.price"],
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -1490,12 +1601,6 @@ export const shops = {
         sel: "img",
         type: "src",
         content: "image",
-      },
-      {
-        sel: "div.po-stock-information",
-        parent: "div.atcf-actions",
-        content: "instock",
-        type: "text",
       },
     ],
     productList: [
@@ -1613,6 +1718,18 @@ export const shops = {
       max: 1500,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers[0].price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers[0].availability",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -1761,6 +1878,12 @@ export const shops = {
       max: 1500,
     },
     product: [
+      {
+        parent: "div.av_price_frame",
+        sel: "div[id=av_price]",
+        content: "price",
+        type: "text",
+      },
       {
         sel: "meta[itemprop=gtin13]",
         parent: "div[id=av_articleheader]",
@@ -2069,6 +2192,22 @@ export const shops = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
+        content: "price",
+        parent: "head",
+        path: "object.offers[0].price",
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        parent: "head",
+        path: "object.offers[0].availability",
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
         content: "ean",
         parent: "head",
         path: "object.gtin13",
@@ -2191,7 +2330,13 @@ export const shops = {
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+       {
+        type: "scroll",
+        sel: "none",
+        action: "scroll",
+      }
+    ],
     d: "voelkner.de",
     entryPoints: [
       {
@@ -2260,6 +2405,18 @@ export const shops = {
     },
     product: [
       {
+        sel: "link[itemprop=availability]",
+        parent: "div.product__price--large",
+        type: "href",
+        content: "instock",
+      },
+      {
+        sel: "span[itemprop=price]",
+        parent: "div.product__price--large",
+        type: "content",
+        content: "price",
+      },
+      {
         sel: "meta[itemprop=gtin]",
         parent: "div.grid_container.product",
         type: "content",
@@ -2297,8 +2454,38 @@ export const shops = {
             },
             {
               content: "price",
-              sel: "div.product__price__wrapper",
+              sel: "div[class*=product__price__wrapper]",
               type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div.dailydeal",
+        productCntSel: ["span.reptile_tilelist__itemCount"],
+        product: {
+          sel: "div.deal",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.deal__link",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.deal__image img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "span.product__title--small",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span[itemprop=price]",
+              type: "content",
             },
           ],
         },
@@ -2350,7 +2537,7 @@ export const shops = {
         head: "tbody td",
         row: "tbody td",
         type: "table",
-        keys: ['asin'],
+        keys: ["asin"],
         content: "asin",
       },
       {
@@ -2358,7 +2545,7 @@ export const shops = {
         head: "tbody td",
         row: "tbody td",
         type: "table",
-        keys: ['Amazon Bestseller-Rang'],
+        keys: ["Amazon Bestseller-Rang"],
         content: "bsr",
       },
       {
@@ -2373,7 +2560,6 @@ export const shops = {
         type: "text",
         content: "a_prc",
       },
-
     ],
     productList: [
       {
@@ -2501,7 +2687,7 @@ export const shops = {
         shadowRoot: true,
         content: "a_prc",
         step: 1,
-      }, 
+      },
       {
         sel: "tbody tr:nth-child(3) td:nth-child(2)",
         parent: "table.product-detail-table-right",
