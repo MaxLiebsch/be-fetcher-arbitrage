@@ -18,7 +18,7 @@ import {
   crawlDataInfoMissingUpdate,
   resetAznProduct,
 } from "../../services/lookupInfo.js";
-import { findTask, updateTask } from "../../services/db/util/tasks.js";
+import { updateTask } from "../../services/db/util/tasks.js";
 
 export const getMaxLoadQueue = (queues) => {
   const queueLoad = queues.map((queue) => queue.workload());
