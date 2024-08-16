@@ -731,19 +731,6 @@ export const shops = {
     ],
     mimic: "input#closeContentKey",
     paginationEl: [
-      // {
-      //   type: "recursive-more-button",
-      //   sel: "button.loadmoreBtn",
-      //   nav: "?currentPage0=",
-      //   wait: false,
-      //   calculation: {
-      //     method: "match_text",
-      //     textToMatch: "Weitere Artikel laden",
-      //     dynamic: true,
-      //     last: "button.loadmoreBtn",
-      //     sel: "button.loadmoreBtn",
-      //   },
-      // }
       {
         type: "pagination",
         sel: "button.button-secondary.loadmoreBtn",
@@ -2331,11 +2318,19 @@ export const shops = {
       ],
     },
     crawlActions: [
-       {
-        type: "scroll",
-        sel: "none",
-        action: "scroll",
-      }
+      // {
+      //   type: "button",
+      //   sel: "div[id=js_reveal_cookie_content] button",
+      //   btn_sel: "button",
+      //   action: "click",
+      //   step: 1,
+      //   wait: false,
+      // },
+      // {
+      //   type: "scroll",
+      //   sel: "none",
+      //   action: "scroll",
+      // },
     ],
     d: "voelkner.de",
     entryPoints: [
@@ -2548,6 +2543,7 @@ export const shops = {
         keys: ["Amazon Bestseller-Rang"],
         content: "bsr",
       },
+
       {
         type: "src",
         parent: "#imgTagWrapperId",
@@ -2555,8 +2551,26 @@ export const shops = {
         content: "a_img",
       },
       {
+        sel: "#priceValue",
+        parent: "#prodDetails",
+        type: "value",
+        content: "a_prc_test_1",
+      },
+      {
+        sel: "#twister-plus-price-data-price",
+        parent: "#twisterPlusPriceSubtotalWWDesktop_feature_div",
+        type: "value",
+        content: "a_prc_test_2",
+      },
+      {
+        sel: "#twisterPlusWWDesktop > div",
+        type: "parse_json_element",
+        content: "a_prc_test_3",
+        path: "desktop_buybox_group_1[0].priceAmount",
+      },
+      {
         sel: "span.a-offscreen",
-        parent: "span.a-price",
+        parent: "div[id=corePrice_feature_div] span.a-price",
         type: "text",
         content: "a_prc",
       },
