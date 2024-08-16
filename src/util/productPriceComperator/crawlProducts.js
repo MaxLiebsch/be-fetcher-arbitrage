@@ -66,7 +66,6 @@ export const crawlProducts = async (shop, task) =>
     );
 
     const interval = setInterval(async () => {
-      console.log("Checking progress... ", task.progress.crawlEan.length);
       if (queue.workload() === 0) {
         await sleep(20000);
         if (queue.workload() === 0) {
@@ -110,21 +109,11 @@ export const crawlProducts = async (shop, task) =>
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
                 );
                 infos.old++;
-                const {
-                  ean_prop,
-                  info_prop,
-                  eby_prop,
-                  cat_prop,
-                } = existingProduct;
-                if (!shop.hasEan && shop.ean) {
-                  task.progress.lookupInfo.push(existingProduct._id);
-                  task.progress.queryEansOnEby.push(existingProduct._id);
-                  return;
-                }
+                const { ean_prop, info_prop, eby_prop, cat_prop } =
+                  existingProduct;
                 if (
                   !ean_prop ||
-                  ean_prop !== "missing" ||
-                  ean_prop !== "found"
+                  (ean_prop !== "missing" && ean_prop !== "found")
                 ) {
                   task.progress.crawlEan.push(existingProduct._id);
                   return;
@@ -133,8 +122,7 @@ export const crawlProducts = async (shop, task) =>
                   new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!info_prop ||
-                      info_prop !== "missing" ||
-                      info_prop !== "complete"))
+                      (info_prop !== "missing" && info_prop !== "complete")))
                 ) {
                   task.progress.lookupInfo.push(existingProduct._id);
                 }
@@ -143,8 +131,7 @@ export const crawlProducts = async (shop, task) =>
                   new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!eby_prop ||
-                      eby_prop !== "missing" ||
-                      eby_prop !== "complete"))
+                      (eby_prop !== "missing" && eby_prop !== "complete")))
                 ) {
                   task.progress.queryEansOnEby.push(existingProduct._id);
                 }
@@ -152,12 +139,12 @@ export const crawlProducts = async (shop, task) =>
                 if (
                   eby_prop === "complete" &&
                   (!cat_prop ||
-                    cat_prop !== "complete" ||
-                    cat_prop !== "missing" ||
-                    cat_prop !== "ean_missing" ||
-                    cat_prop !== "ean_missmatch" ||
-                    cat_prop !== "categories_missing" ||
-                    cat_prop !== "category_not_found")
+                    (cat_prop !== "complete" &&
+                      cat_prop !== "missing" &&
+                      cat_prop !== "ean_missing" &&
+                      cat_prop !== "ean_missmatch" &&
+                      cat_prop !== "categories_missing" &&
+                      cat_prop !== "category_not_found"))
                 ) {
                   task.progress.lookupCategory.push(existingProduct._id);
                 }
