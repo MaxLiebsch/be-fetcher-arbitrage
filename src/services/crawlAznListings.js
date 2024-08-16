@@ -3,6 +3,7 @@ import {
   calculateAznArbitrage,
   calculateOnlyArbitrage,
   lookupProductQueue,
+  queryProductPageQueue,
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
@@ -212,7 +213,7 @@ export default async function crawlAznListings(task) {
         crawlDataProduct.asin +
         "?language=de_DE";
 
-      queue.pushTask(lookupProductQueue, {
+      queue.pushTask(queryProductPageQueue, {
         retries: 0,
         shop: amazonShop,
         addProduct,
