@@ -3,6 +3,7 @@ import { describe, expect, test, beforeAll } from "@jest/globals";
 
 describe("Price Picker", () => {
   const examples = [
+    { str: "EUR 12,99/Stk.", expect: 12.99 },
     { str: "ab227,99€", expect: 227.99 },
     { str: "€55,58 + 0", expect: 55.58 },
     { str: "1.933 €", expect: 1933.0 },
