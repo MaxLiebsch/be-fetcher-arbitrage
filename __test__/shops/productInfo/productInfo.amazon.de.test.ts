@@ -1,20 +1,11 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "../utils/testParamter.js";
 import {
   extractProductInfos,
   mimicTest,
   myAfterAll,
   myBeforeAll,
 } from "../utils/commonTests.js";
-import {
-  calculateEbyArbitrage,
-  ebayTier,
-  findMappedCategory,
-  parseEbyCategories,
-  roundToTwoDecimals,
-  safeParsePrice,
-} from "@dipmaxtech/clr-pkg";
+
 
 const shopDomain = "amazon.de";
 
