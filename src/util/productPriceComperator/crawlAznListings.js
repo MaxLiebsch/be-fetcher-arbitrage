@@ -122,7 +122,6 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         } else {
           infos.missingProperties.bsr++;
           await updateCrawlDataProduct(salesDbName, productLink, {
-            azn_locked: false,
             azn_taskId: "",
           });
         }
@@ -138,7 +137,6 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         infos.total++;
         queue.total++;
         await updateCrawlDataProduct(salesDbName, productLink, {
-          azn_locked: false,
           azn_taskId: "",
           asin: "",
           a_qty: 0,

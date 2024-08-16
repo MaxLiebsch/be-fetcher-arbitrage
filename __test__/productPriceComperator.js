@@ -1,34 +1,34 @@
 import { ObjectId } from "mongodb";
 import { productPriceComperator } from "../src/services/productPriceComparator.js";
-
+const shopDomain = 'voelkner.de'
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),
   type: "DAILY_SALES",
   proxyType: "mix",
-  id: "daily_sales_fressnapf.de",
-  shopDomain: "fressnapf.de",
+  id: "daily_sales_" + shopDomain,
+  shopDomain,
   executing: false,
-  productLimit: 2000,
+  productLimit: 178,
   lastCrawler: [],
   categories: [
     {
-      name: "Sale",
-      link: "https://www.fressnapf.de/aktionen-angebote/sale/",
-      limit: {
-        subCategories: 100,
-        pages: 10,
+      "name": "Sale",
+      "link": "https://www.voelkner.de/categories/13150_13268/Freizeit-Hobby/Sale.html",
+      "limit": {
+        "subCategories": 100,
+        "pages": 10
       },
-      productLimit: 20,
+      "productLimit": 20
     },
     {
-      name: "Sale",
-      link: "https://www.fressnapf.de/aktionen-angebote/preiskraller/",
-      limit: {
-        subCategories: 100,
-        pages: 10,
+      "name": "Sale",
+      "link": "https://www.voelkner.de/products/dailydeals.html?itm_source=info&itm_medium=deals_block&itm_campaign=goToDealsPage",
+      "limit": {
+        "subCategories": 100,
+        "pages": 10
       },
-      productLimit: 20,
-    },
+      "productLimit": 20
+    }
   ],
   test: false,
   maintenance: false,
@@ -48,11 +48,11 @@ const task = {
   browserConfig: {
     crawlShop: {
       concurrency: 4,
-      limit: {
-        pages: 20,
-        subCategory: 100,
-        mainCategory: 20,
-      },
+     "limit": {
+          "pages": 23,
+          "subCategory": 100,
+          "mainCategory": 20
+        }, 
     },
     crawlEan: {
       productLimit: 20,
@@ -61,7 +61,7 @@ const task = {
     lookupInfo: {
       concurrency: 1,
       productLimit: 20,
-      browserConcurrency: 6,
+      browserConcurrency: 4,
     },
     queryEansOnEby: {
       concurrency: 4,
@@ -72,9 +72,8 @@ const task = {
       productLimit: 20,
     },
     crawlAznListings: {
-      concurrency: 1,
+      concurrency: 4,
       productLimit: 20,
-      browserConcurrency: 6,
     },
     crawlEbyListings: {
       concurrency: 4,
@@ -149,7 +148,7 @@ let task2 = {
     crawlAznListings: {
       concurrency: 1,
       productLimit: 20,
-      browserConcurrency: 6,
+      browserConcurrency: 4,
     },
     crawlEbyListings: {
       concurrency: 4,

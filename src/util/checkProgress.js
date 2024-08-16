@@ -1,13 +1,14 @@
 import { sleep } from "@dipmaxtech/clr-pkg";
 import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
 import { MATCH_TIME_LIMIT } from "../constants.js";
+import { getElapsedTime } from "./dates.js";
 
 export const checkProgress = async (args) => {
   const { queue, infos, startTime, productLimit } = args;
-  const endTime = Date.now();
-  const elapsedTime = (endTime - startTime) / 1000 / 60 / 60;
+  const { elapsedTime, elapsedTimeStr } = getElapsedTime(startTime);
 
-  infos["elapsedTime"] = `${elapsedTime.toFixed(2)} h`;
+  infos["elapsedTime"] = elapsedTimeStr;
+
   console.log("checkProgress total: ", infos.total, "Expected: ", productLimit);
 
   if (queue instanceof Array) {
