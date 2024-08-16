@@ -33,7 +33,7 @@ export const crawlEbyListings = (ebay, task) =>
     const { browserConfig, _id, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
-    task.actualProductLimit = task.ebyListings.length
+    task.actualProductLimit = task.ebyListings.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
 
     const eventEmitter = globalEventEmitter;
@@ -52,7 +52,12 @@ export const crawlEbyListings = (ebay, task) =>
       const crawlDataProduct = task.ebyListings.pop();
       task.progress.ebyListings.pop();
       if (!crawlDataProduct) continue;
-      const productLink = crawlDataProduct.link;
+      const {
+        e_qty: buyQty,
+        price: buyPrice,
+        qfty: sellQty,
+        link: productLink,
+      } = crawlDataProduct;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -63,25 +68,23 @@ export const crawlEbyListings = (ebay, task) =>
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const rawSellPrice = infoMap.get("e_prc");
           const image = infoMap.get("image");
-          const arbispotterProductUpdate = {
+          let arbispotterProductUpdate = {
             e_lnk: url.split("?")[0],
+            ebyUpdatedAt: new Date().toISOString(),
           };
           const crawlDataProductUpdate = {
-            ebyUpdatedAt: new Date().toISOString(),
             eby_locked: false,
             eby_taskId: "",
           };
-          const {
-            e_qty: buyQty,
-            price: buyPrice,
-            qfty: sellQty,
-          } = crawlDataProduct;
           if (rawSellPrice) {
+            if (image) {
+              arbispotterProductUpdate["e_img"] = image;
+            }
             const parsedSellPrice = safeParsePrice(rawSellPrice);
 
             arbispotterProductUpdate["e_prc"] = parsedSellPrice;
             arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
-              parsedSellPrice / crawlDataProduct.e_qty
+              parsedSellPrice / buyQty
             );
             const mappedCategory = findMappedCategory(
               crawlDataProduct.ebyCategories.reduce((acc, curr) => {
@@ -101,10 +104,14 @@ export const crawlEbyListings = (ebay, task) =>
                   arbispotterProductUpdate[key] = val;
                 });
             }
+          } else {
+            arbispotterProductUpdate = {
+              ...arbispotterProductUpdate,
+              ...resetEbayProduct,
+            };
+            infos.notFound++;
           }
-          if (image) {
-            arbispotterProductUpdate["e_img"] = image;
-          }
+
           await updateCrawlDataProduct(
             salesDbName,
             productLink,
