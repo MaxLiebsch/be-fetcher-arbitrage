@@ -138,7 +138,6 @@ async function crawlEbyListings(task) {
             e_lnk: url.split("?")[0],
           };
           if (rawSellPrice) {
-            console.log('rawSellPrice:', rawSellPrice)
             const parsedSellPrice = safeParsePrice(rawSellPrice);
             productUpdate = {
               ...productUpdate,
@@ -160,7 +159,6 @@ async function crawlEbyListings(task) {
                 buyPrice * (buyQty / sellQty) // prc * (e_qty / qty) //EK  //QTY Zielshop/QTY Herkunftsshop
               );
               if (arbitrage) {
-                console.log('arbitrage:', arbitrage)
                 Object.entries(arbitrage).forEach(([key, val]) => {
                   productUpdate[key] = val;
                 });
@@ -185,7 +183,6 @@ async function crawlEbyListings(task) {
                 );
               }
             } else {
-              console.log('Category not found')
               infos.missingProperties.mappedCat++;
               await updateArbispotterProductQuery(
                 shopDomain,
@@ -194,7 +191,6 @@ async function crawlEbyListings(task) {
               );
             }
           } else {
-            console.log('Price not found')
             infos.missingProperties.price++;
             await updateArbispotterProductQuery(
               shopDomain,
