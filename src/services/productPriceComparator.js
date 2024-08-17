@@ -8,7 +8,6 @@ import { crawlEans } from "../util/productPriceComperator/crawlEan.js";
 import { lookupInfo } from "../util/productPriceComperator/lookupInfo.js";
 import { queryEansOnEby } from "../util/productPriceComperator/queryEansOnEby.js";
 import { lookupCategory } from "../util/productPriceComperator/lookupCategory.js";
-import { crawlAznListings } from "../util/productPriceComperator/crawlAznListings.js";
 import { crawlEbyListings } from "../util/productPriceComperator/crawlEbyListings.js";
 import { findCrawlDataProductsNoLimit } from "./db/util/crudCrawlDataProduct.js";
 import { TaskCompletedStatus } from "../status.js";
@@ -44,27 +43,13 @@ export const productPriceComperator = async (task) => {
     const amazon = shops["amazon.de"];
 
     const infos = {
-      crawlProducts: {
-        elapsedTime: "",
-      },
-      crawlEan: {
-        elapsedTime: "",
-      },
-      lookupInfo: {
-        elapsedTime: "",
-      },
-      lookupCategory: {
-        elapsedTime: "",
-      },
-      queryEansOnEby: {
-        elapsedTime: "",
-      },
-      aznListings: {
-        elapsedTime: "",
-      },
-      ebyListings: {
-        elapsedTime: "",
-      },
+      crawlProducts: {},
+      crawlEan: {},
+      lookupInfo: {},
+      lookupCategory: {},
+      queryEansOnEby: {},
+      aznListings: {},
+      ebyListings: {},
     };
     await createCrawlDataCollection("sales");
     await createArbispotterCollection("sales");
@@ -106,7 +91,6 @@ export const productPriceComperator = async (task) => {
             pages: newPageLimit,
           };
           console.log("New limit", task.browserConfig.crawlShop.limit);
-          console.log("crawlEan: ", task.progress.crawlEan.length);
         }
         if (retry >= MAX_TASK_RETRIES && infos.total > 1) {
           console.log(
@@ -152,7 +136,8 @@ export const productPriceComperator = async (task) => {
         infos["crawlEan"] = crawlEansInfo;
       }
     }
-    infos.crawlEan.elapsedTime = getElapsedTime(stepStartTime).elapsedTimeStr;
+    infos.crawlEan["elapsedTime"] =
+      getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
     if (task.progress.lookupInfo.length > 0) {
@@ -182,7 +167,8 @@ export const productPriceComperator = async (task) => {
         infos["lookupInfo"] = lookupInfos;
       }
     }
-    infos.lookupInfo.elapsedTime = getElapsedTime(stepStartTime).elapsedTimeStr;
+    infos.lookupInfo["elapsedTime"] =
+      getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
     if (task.progress.queryEansOnEby.length > 0) {
@@ -212,7 +198,7 @@ export const productPriceComperator = async (task) => {
         infos["queryEansOnEby"] = queryEansOnEbyInfo;
       }
     }
-    infos.queryEansOnEby.elapsedTime =
+    infos.queryEansOnEby["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
@@ -243,7 +229,7 @@ export const productPriceComperator = async (task) => {
         infos["lookupCategory"] = lookupCategoryInfo;
       }
     }
-    infos.lookupCategory.elapsedTime =
+    infos.lookupCategory["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     if (task.progress.aznListings.length > 0) {
@@ -277,7 +263,7 @@ export const productPriceComperator = async (task) => {
         infos["aznListings"] = crawlAznListingsInfo;
       }
     }
-    infos.aznListings.elapsedTime =
+    infos.aznListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     if (task.progress.ebyListings.length > 0) {
@@ -307,7 +293,7 @@ export const productPriceComperator = async (task) => {
         infos["ebyListings"] = crawlEbyListingsInfo;
       }
     }
-    infos.ebyListings.elapsedTime =
+    infos.ebyListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     task.statistics = task.browserConfig;
@@ -317,12 +303,12 @@ export const productPriceComperator = async (task) => {
       shopDomain: task.shopDomain,
       taskid: task.id ?? "",
       type: task.type,
-      ...infos,
-      ...task.statistics,
+      infos,
+      statistics: task.statistics,
       elapsedTime: elapsedTimeStr,
     });
     res(
-      new TaskCompletedStatus("", task, {
+      new TaskCompletedStatus("DAILY_DEALS COMPLETED", task, {
         infos,
         statistics: task.statistics,
       })
