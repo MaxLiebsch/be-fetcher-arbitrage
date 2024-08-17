@@ -7,6 +7,8 @@ import {
   updateArbispotterProductSet,
   upsertArbispotterProduct,
 } from "./crudArbispotterProduct.js";
+import { RECHECK_EAN_INTERVAL } from "../../../constants.js";
+import { parseISO } from "date-fns";
 
 //ARBISPOTTER DB UTILS
 // Remove keepa properties
@@ -46,6 +48,18 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
           ...procProd,
         },
       };
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - RECHECK_EAN_INTERVAL);
+      if (
+        product.eanUpdatedAt &&
+        new Date(parseISO(product.eanUpdatedAt)) < sevenDaysAgo &&
+        (product.ean_prop === "invalid" ||
+          product.ean_prop === "missing" ||
+          product.ean_prop === "timeout")
+      ) {
+        query.$set.procProd.ean_prop = "";
+        query.$set.procProd.eanUpdatedAt = new Date().toISOString();
+      }
       if (!product.bsr && !bsr) {
         query.$set.procProd["bsr"] = [];
       }

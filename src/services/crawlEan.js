@@ -148,6 +148,7 @@ export default async function crawlEan(task) {
 
             const productUpdate = {
               ean_taskId: "",
+              eanUpdatedAt: new Date().toISOString(),
               ean_prop: "found",
               ean,
               ...(prc && { prc }),
@@ -187,6 +188,7 @@ export default async function crawlEan(task) {
             infos.missingProperties[shopDomain]["ean"]++;
             const productUpdate = {
               ean_taskId: "",
+              eanUpdatedAt: new Date().toISOString(),
               ean_prop: ean ? "invalid" : "missing",
             };
             await updateArbispotterProductSet(
@@ -198,6 +200,7 @@ export default async function crawlEan(task) {
         } else {
           await updateArbispotterProductSet(shopDomain, productLink, {
             ean_prop: "invalid",
+            eanUpdatedAt: new Date().toISOString(),
             ean_taskId: "",
           });
         }
@@ -211,6 +214,7 @@ export default async function crawlEan(task) {
         if (cause === "timeout") {
           await updateArbispotterProductSet(shopDomain, productLink, {
             ean_prop: "timeout",
+            eanUpdatedAt: new Date().toISOString(),
             ean_taskId: "",
           });
         } else {
