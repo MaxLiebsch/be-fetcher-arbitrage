@@ -15,11 +15,12 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { createOrUpdateCrawlDataProduct } from "./db/util/createOrUpdateCrawlDataProduct.js";
 import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
 } from "../util/updateProgressInTasks.js";
+import { transformProduct } from "../util/transformProduct.js";
+import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
@@ -112,22 +113,19 @@ export default async function crawl(task) {
         done = true;
         return;
       }
-      if (product.name && product.price && product.link) {
-        if (!uniqueLinks.includes(product.link)) {
-          uniqueLinks.push(product.link);
+      const transformedProduct = transformProduct(product);
+      const { lnk, nm, prc } = transformedProduct;
+      if (nm && prc && lnk) {
+        if (!uniqueLinks.includes(lnk)) {
+          uniqueLinks.push(lnk);
           infos.total++;
           queue.total++;
-          const qty = 1;
-          if (qty) {
-            product["qty"] = qty;
-            product["uprc"] = roundToTwoDecimals(product.price / qty);
-          } else {
-            product["qty"] = 1;
-            product["uprc"] = product.price;
-          }
-          const result = await createOrUpdateCrawlDataProduct(shopDomain, {
-            ...product,
-          });
+          transformedProduct["qty"] = 1;
+          transformedProduct["uprc"] = prc;
+          const result = await createOrUpdateArbispotterProduct(
+            shopDomain,
+            transformedProduct
+          );
           if (result.acknowledged) {
             if (result.upsertedId) infos.new++;
             else infos.old++;
@@ -136,9 +134,9 @@ export default async function crawl(task) {
           }
         }
       } else {
-        const properties = ["name", "price", "link", "image"];
+        const properties = ["nm", "prc", "lnk", "img"];
         properties.forEach((prop) => {
-          if (!product[prop]) {
+          if (!transformedProduct[prop]) {
             infos.missingProperties[prop]++;
           }
         });

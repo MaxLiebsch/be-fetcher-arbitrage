@@ -1,10 +1,11 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
+import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 
 const shopDomain = "gamestop.de";
 
 const today = new Date();
-const productLimit = 4000;
+const productLimit = 50;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -37,6 +38,9 @@ const task = {
   weekday: today.getDay(),
 };
 
-crawl(task)
-  .then((r) => console.log(JSON.stringify(r, null, 2)))
-  .catch((e) => console.log(e));
+const main = async () => {
+  await deleteAllArbispotterProducts(shopDomain);
+  const r = await crawl(task);
+  console.log(JSON.stringify(r, null, 2));
+};
+main();
