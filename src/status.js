@@ -1,6 +1,4 @@
-
-import pkg from '@dipmaxtech/clr-pkg';
-const { Status } = pkg;
+import { Status } from "@dipmaxtech/clr-pkg";
 
 
 export function ProductLimitReachedStatus(message = "", task, result= {}) {

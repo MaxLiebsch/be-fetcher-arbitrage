@@ -3,7 +3,8 @@ import { subDateDaysISO } from "../../../util/dates.js";
 import { createHash, verifyHash } from "../../../util/hash.js";
 import {
   findProductByLink,
-  updateArbispotterProduct,
+  updateArbispotterProductQuery,
+  updateArbispotterProductSet,
   upsertArbispotterProduct,
 } from "./crudArbispotterProduct.js";
 
@@ -40,17 +41,22 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
   const product = await findProductByLink(domain, procProd.lnk);
   try {
     if (product) {
+      const query = {
+        $set: {
+          ...procProd,
+        },
+      };
       if (!product.bsr && !bsr) {
-        procProd["bsr"] = [];
+        query.$set.procProd["bsr"] = [];
       }
       if (a_lnk && product.a_hash) {
         if (!verifyHash(a_lnk, product.a_hash)) {
           keepaProperties.forEach((prop) => {
-            procProd[prop.name] = null;
+            query.$unset[prop.name] = "";
           });
-          procProd["keepaUpdatedAt"] = subDateDaysISO(14);
-          procProd.a_hash = createHash(a_lnk);
-          procProd.a_vrfd = {
+          query.$unset["keepaUpdatedAt"] = "";
+          query.$set.procProd["a_hash"] = createHash(a_lnk);
+          query.$set.procProd["a_vrfd"] = {
             vrfd: false,
             vrfn_pending: true,
             flags: [],
@@ -60,8 +66,8 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
       }
       if (e_lnk && product.e_hash) {
         if (!verifyHash(e_lnk, product.e_hash)) {
-          procProd["e_hash"] = createHash(e_lnk);
-          procProd["e_vrfd"] = {
+          query.$set.procProd["e_hash"] = createHash(e_lnk);
+          query.$set.procProd["e_vrfd"] = {
             vrfd: false,
             vrfn_pending: true,
             flags: [],
@@ -69,7 +75,7 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
           };
         }
       }
-      return await updateArbispotterProduct(domain, lnk, procProd);
+      return await updateArbispotterProductQuery(domain, lnk, query);
     } else {
       const newProduct = {
         a_pblsh: false,

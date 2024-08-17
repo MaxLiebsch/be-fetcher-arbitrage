@@ -11,7 +11,10 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
+import {
+  updateArbispotterProductSet,
+  updateArbispotterProductQuery,
+} from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -25,12 +28,11 @@ import {
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
-import { resetAznProduct } from "./lookupInfo.js";
+import { resetAznProductQuery } from "./db/util/aznQueries.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, _id, action } = task;
+    const { shopDomain, productLimit, _id, action, concurrency } = task;
 
     let infos = {
       new: 0,
@@ -40,6 +42,7 @@ export default async function crawlAznListings(task) {
       locked: 0,
       missingProperties: {
         bsr: 0,
+        aznCostNeg: 0,
         name: 0,
         price: 0,
         link: 0,
@@ -73,12 +76,28 @@ export default async function crawlAznListings(task) {
     const amazonShop = await getShop("amazon.de");
 
     const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
+      concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
     queue.total = 1;
     await queue.connect();
+
+    const isCompleted = async () => {
+      if (infos.total === _productLimit && !queue.idle()) {
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateCrawlAznListingsProgress(shopDomain);
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
+          handleResult(r, resolve, reject);
+        });
+      }
+    };
 
     const interval = setInterval(
       async () =>
@@ -97,121 +116,99 @@ export default async function crawlAznListings(task) {
     );
 
     for (let index = 0; index < products.length; index++) {
-      const crawlDataProduct = products[index];
-      const productLink = crawlDataProduct.link;
+      const product = products[index];
+      const {
+        qty: buyQty,
+        a_qty: sellQty,
+        prc: buyPrice,
+        costs,
+        asin,
+        eanList,
+        tax,
+        lnk: productLink,
+      } = product;
+
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
+        console.log(eanList[0], " productInfo:", productInfo);
         infos.total++;
         queue.total++;
+        let productUpdate = {};
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const price = infoMap.get("a_prc");
           const image = infoMap.get("a_img");
           const bsr = infoMap.get("bsr");
-          const arbispotterProductUpdate = {};
-          const crawlDataProductUpdate = {
+          productUpdate = {
             aznUpdatedAt: new Date().toISOString(),
-            azn_locked: false,
             azn_taskId: "",
+            ...(image && { a_img: image }),
+            ...(bsr && { bsr }),
           };
-          const {
-            qty: buyQty,
-            a_qty: sellQty,
-            price: buyPrice,
-            costs,
-          } = crawlDataProduct;
-          if (price) {
-            const parsedPrice = safeParsePrice(price);
-            arbispotterProductUpdate["a_prc"] = parsedPrice;
-            arbispotterProductUpdate["a_uprc"] = roundToTwoDecimals(
-              parsedPrice / sellQty
-            );
-            const { a_prc: sellPrice } = arbispotterProductUpdate;
+          if (price > 0) {
+            if (costs.azn > 0) {
+              const parsedPrice = safeParsePrice(price);
+              const a_prc = parsedPrice;
+              const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
+              Object.assign(productUpdate, { a_prc, a_uprc });
+              const { a_prc: sellPrice } = productUpdate;
 
-            if (crawlDataProduct?.costs) {
               const arbitrage = calculateAznArbitrage(
                 buyPrice * (sellQty / buyQty),
                 sellPrice,
-                costs
+                costs,
+                tax
               );
               Object.entries(arbitrage).forEach(([key, val]) => {
-                arbispotterProductUpdate[key] = val;
+                productUpdate[key] = val;
               });
+              await updateArbispotterProductSet(
+                shopDomain,
+                productLink,
+                productUpdate
+              );
+            } else {
+              infos.missingProperties.aznCostNeg++;
+              await updateArbispotterProductQuery(
+                shopDomain,
+                productLink,
+                resetAznProductQuery()
+              );
             }
+            console.log("productUpdate:", productUpdate);
+          } else {
+            infos.missingProperties.price++;
+            await updateArbispotterProductQuery(
+              shopDomain,
+              productLink,
+              resetAznProductQuery()
+            );
           }
-          if (image) {
-            arbispotterProductUpdate["a_img"] = image;
-          }
-          if (bsr) {
-            arbispotterProductUpdate["bsr"] = bsr;
-          }
-          await updateArbispotterProduct(
-            shopDomain,
-            productLink,
-            arbispotterProductUpdate
-          );
-          await updateCrawlDataProduct(
-            shopDomain,
-            productLink,
-            crawlDataProductUpdate
-          );
         } else {
           infos.missingProperties.bsr++;
-          await updateCrawlDataProduct(shopDomain, productLink, {
-            azn_locked: false,
-            azn_taskId: "",
-          });
-          await updateArbispotterProduct(shopDomain, productLink, {
-            a_lnk: url.split("?")[0],
-          });
+          await updateArbispotterProductQuery(
+            shopDomain,
+            productLink,
+            resetAznProductQuery()
+          );
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateCrawlAznListingsProgress(shopDomain);
-            await updateProgressInLookupInfoTask(); // update lookup info task progress
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isCompleted();
       };
       const handleNotFound = async () => {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await updateCrawlDataProduct(shopDomain, productLink, {
-          azn_locked: false,
-          azn_taskId: "",
-        });
-        await updateArbispotterProduct(
+        await updateArbispotterProductQuery(
           shopDomain,
           productLink,
-          resetAznProduct()
+          resetAznProductQuery()
         );
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateCrawlAznListingsProgress(shopDomain);
-            await updateProgressInLookupInfoTask(); // update lookup info task progress
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isCompleted();
       };
 
       let aznLink =
-        "https://www.amazon.de/dp/product/" +
-        crawlDataProduct.asin +
-        "?language=de_DE";
+        "https://www.amazon.de/dp/product/" + asin + "?language=de_DE";
 
       queue.pushTask(queryProductPageQueue, {
         retries: 0,

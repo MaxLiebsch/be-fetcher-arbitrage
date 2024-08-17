@@ -500,25 +500,7 @@ export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
   if (action === "recover") {
     query["azn_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query = {
-      $and: [
-        {
-          $or: [
-            { azn_taskId: { $exists: false } },
-            { azn_taskId: { $eq: "" } },
-          ],
-        },
-        {
-          asin: { $exists: true, $ne: "" },
-        },
-        {
-          $or: [
-            { aznUpdatedAt: { $exists: false } },
-            { aznUpdatedAt: { $lt: subDateDaysISO(7) } },
-          ],
-        },
-      ],
-    };
+    query = countPendingProductsForCrawlAznListingsQuery();
   }
 
   if (limit && action !== "recover") {

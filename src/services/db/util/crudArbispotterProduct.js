@@ -12,7 +12,14 @@ export const findArbispotterProduct = async (domain, query) => {
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
   return collection.findOne({ ...query });
-}
+};
+
+export const insertArbispotterProducts = async (domain, products) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.insertMany(products);
+};
 
 export const findArbispotterProducts = async (
   domain,
@@ -86,7 +93,7 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
     }
   );
 };
-export const updateArbispotterProduct = async (domain, link, update) => {
+export const updateArbispotterProductSet = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
@@ -100,6 +107,7 @@ export const updateArbispotterProduct = async (domain, link, update) => {
     }
   );
 };
+
 export const moveArbispotterProduct = async (from, to, lnk) => {
   try {
     const fromCollectionName = from;
