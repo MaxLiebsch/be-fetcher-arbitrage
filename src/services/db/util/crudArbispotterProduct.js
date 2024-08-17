@@ -93,6 +93,9 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
     }
   );
 };
+
+
+
 export const updateArbispotterProductSet = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
@@ -140,6 +143,15 @@ export const updateArbispotterProducts = async (domain, query, update) => {
     }
   );
 };
+
+
+export const deleteArbispotterProduct = async (domain, link) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection.deleteOne({ link });
+};
+
 export const deleteAllArbispotterProducts = async (domain) => {
   const collectionName = domain;
   const db = await getArbispotterDb();

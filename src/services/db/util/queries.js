@@ -61,18 +61,7 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["ean_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$or"] = [
-      { ean_locked: { $exists: false } },
-      { ean_locked: { $exists: true, $eq: false } },
-    ];
-    query["$or"] = [
-      { ean: { $exists: false } },
-      { ean: { $exists: true, $eq: "" } },
-    ];
-    query["$or"] = [
-      { ean_prop: { $exists: false } },
-      { ean_prop: { $eq: "" } },
-    ];
+    query = countPendingProductsForCrawlEanQuery
 
     if (limit) {
       options["limit"] = limit;
@@ -83,7 +72,6 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
 export const setProductsLockedForCrawlEanQuery = (taskId) => {
   return {
     $set: {
-      ean_locked: true,
       ean_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
@@ -91,7 +79,7 @@ export const setProductsLockedForCrawlEanQuery = (taskId) => {
 export const countPendingProductsForCrawlEanQuery = {
   $and: [
     {
-      $or: [{ ean_locked: { $exists: false } }, { ean_locked: { $eq: false } }],
+      $or: [{ ean_taskId: { $exists: false } }, { ean_taskId: { $eq: "" } }],
     },
     {
       $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],

@@ -21,6 +21,7 @@ import {
 } from "../util/updateProgressInTasks.js";
 import { transformProduct } from "../util/transformProduct.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+import { createHash } from "../util/hash.js";
 
 export default async function crawl(task) {
   return new Promise(async (res, reject) => {
@@ -122,6 +123,8 @@ export default async function crawl(task) {
           queue.total++;
           transformedProduct["qty"] = 1;
           transformedProduct["uprc"] = prc;
+          transformedProduct["s_hash"] = createHash(lnk);
+          
           const result = await createOrUpdateArbispotterProduct(
             shopDomain,
             transformedProduct

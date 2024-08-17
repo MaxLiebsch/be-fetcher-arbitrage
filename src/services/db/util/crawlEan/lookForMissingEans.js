@@ -1,10 +1,10 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "../crudCrawlDataProduct.js";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { hostname } from "../../mongo.js";
 import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
 import { getMissingEanShops } from "./getMissingEanShops.js";
+import { findArbispotterProducts } from "../crudArbispotterProduct.js";
 
 export async function lookForMissingEans(
   taskId,
@@ -87,7 +87,7 @@ export async function getRecoveryCrawlEan(taskId, proxyType, productLimit) {
   let pendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
-      const products = await findCrawlDataProducts(
+      const products = await findArbispotterProducts(
         shop.d,
         {
           ean_taskId: `${hostname}:${taskId.toString()}`,

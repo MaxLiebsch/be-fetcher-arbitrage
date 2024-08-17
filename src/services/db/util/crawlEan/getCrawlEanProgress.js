@@ -1,8 +1,13 @@
-import { getCrawlDataDb } from "../../mongo.js";
-import { countPendingProductsForCrawlEanQuery, countTotalProductsForCrawlEanQuery } from "../queries.js";
+import { getArbispotterDb } from "../../mongo.js";
+import {
+  countPendingProductsForCrawlEanQuery,
+  countTotalProductsForCrawlEanQuery,
+} from "../queries.js";
 
-export const countTotalProductsForCrawlEan = async (shopProductCollectionName) => {
-  const db = await getCrawlDataDb();
+export const countTotalProductsForCrawlEan = async (
+  shopProductCollectionName
+) => {
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countTotalProductsForCrawlEanQuery);
 };
@@ -10,13 +15,13 @@ export const countTotalProductsForCrawlEan = async (shopProductCollectionName) =
 export const countPendingProductsForCrawlEan = async (
   shopProductCollectionName
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countPendingProductsForCrawlEanQuery);
 };
 
 export const getCrawlEanProgress = async (shopDomain) => {
-  const shopProductCollectionName = shopDomain  ;
+  const shopProductCollectionName = shopDomain;
   const pending = await countPendingProductsForCrawlEan(
     shopProductCollectionName
   );
