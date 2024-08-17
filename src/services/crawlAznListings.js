@@ -43,6 +43,7 @@ export default async function crawlAznListings(task) {
       missingProperties: {
         bsr: 0,
         aznCostNeg: 0,
+        infos: 0,
         name: 0,
         price: 0,
         link: 0,
@@ -133,21 +134,20 @@ export default async function crawlAznListings(task) {
         console.log(eanList[0], " productInfo:", productInfo);
         infos.total++;
         queue.total++;
-        let productUpdate = {};
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
           const price = infoMap.get("a_prc");
           const image = infoMap.get("a_img");
           const bsr = infoMap.get("bsr");
-          productUpdate = {
-            aznUpdatedAt: new Date().toISOString(),
-            azn_taskId: "",
-            ...(image && { a_img: image }),
-            ...(bsr && { bsr }),
-          };
           if (price > 0) {
             if (costs.azn > 0) {
+              const productUpdate = {
+                aznUpdatedAt: new Date().toISOString(),
+                azn_taskId: "",
+                ...(image && { a_img: image }),
+                ...(bsr && { bsr }),
+              };
               const parsedPrice = safeParsePrice(price);
               const a_prc = parsedPrice;
               const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
@@ -168,6 +168,7 @@ export default async function crawlAznListings(task) {
                 productLink,
                 productUpdate
               );
+              console.log("productUpdate:", productUpdate);
             } else {
               infos.missingProperties.aznCostNeg++;
               await updateArbispotterProductQuery(
@@ -176,7 +177,6 @@ export default async function crawlAznListings(task) {
                 resetAznProductQuery()
               );
             }
-            console.log("productUpdate:", productUpdate);
           } else {
             infos.missingProperties.price++;
             await updateArbispotterProductQuery(
@@ -186,7 +186,7 @@ export default async function crawlAznListings(task) {
             );
           }
         } else {
-          infos.missingProperties.bsr++;
+          infos.missingProperties.infos++;
           await updateArbispotterProductQuery(
             shopDomain,
             productLink,

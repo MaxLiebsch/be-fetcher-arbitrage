@@ -9,7 +9,10 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProduct } from "./db/util/crudArbispotterProduct.js";
+import {
+  updateArbispotterProductQuery,
+  updateArbispotterProductSet,
+} from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -26,6 +29,8 @@ import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
 import { resetAznProduct } from "./lookupInfo.js";
 import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
+import { resetAznProductQuery } from "./db/util/aznQueries.js";
+import { is } from "date-fns/locale";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -46,8 +51,10 @@ export default async function crawlAznListingsWithSellercentral(task) {
       locked: 0,
       missingProperties: {
         bsr: 0,
+        aznCostNeg: 0,
         name: 0,
         price: 0,
+        infos: 0,
         link: 0,
         image: 0,
       },
@@ -97,6 +104,22 @@ export default async function crawlAznListingsWithSellercentral(task) {
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
+
+    const isCompleted = async (queue) => {
+      if (infos.total === _productLimit && !queue.idle()) {
+        await checkProgress({
+          queue: queryQueues,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          interval && clearInterval(interval);
+          await updateCrawlAznListingsProgress(shopDomain);
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
+          handleResult(r, resolve, reject);
+        });
+      }
+    };
 
     await Promise.all(
       Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
@@ -148,91 +171,77 @@ export default async function crawlAznListingsWithSellercentral(task) {
 
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
-      const crawlDataProduct = products[index];
+      const product = products[index];
       const {
-        link: productLink,
+        lnk: productLink,
         asin,
         ean,
-        uprc: unitPrice,
-        price: buyPrice,
-        a_qty,
-        qty,
-      } = crawlDataProduct;
+        prc: buyPrice,
+        a_qty: sellQty,
+        qty: buyQty
+      } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         infos.total++;
         queue.total++;
+        console.log('productInfo:', productInfo)
         if (productInfo) {
-          const processedProductUpdate = generateUpdate(
+          const productUpdate = generateUpdate(
             productInfo,
             buyPrice,
-            a_qty ?? 1,
-            qty ?? 1
+            sellQty ?? 1,
+            buyQty ?? 1
           );
           let eanList = [];
           if (hasEan || eanSelector) {
             eanList = [ean];
           }
-          await upsertAsin(asin, eanList, processedProductUpdate.costs);
-
-          const arbispotterProductUpdate = {
-            ...processedProductUpdate,
-            aznUpdatedAt: new Date().toISOString(),
-            azn_taskId: "",
-          };
-
-          await updateArbispotterProduct(
-            shopDomain,
-            productLink,
-            arbispotterProductUpdate
-          );
+          if (productUpdate.a_prc > 0) {
+            if (productUpdate.costs.azn > 0) {
+              await upsertAsin(asin, eanList, productUpdate.costs);
+              Object.assign(productUpdate, {
+                aznUpdatedAt: new Date().toISOString(),
+                azn_taskId: "",
+              });
+              console.log("productUpdate:", productUpdate);
+              await updateCrawlDataProduct(productLink, productUpdate);
+            } else {
+              infos.missingProperties.aznCostNeg++;
+              await updateArbispotterProductQuery(
+                shopDomain,
+                productLink,
+                resetAznProductQuery()
+              );
+            }
+          } else {
+            infos.missingProperties.price++;
+            await updateArbispotterProductQuery(
+              shopDomain,
+              productLink,
+              resetAznProductQuery()
+            );
+          }
         } else {
           infos.missingProperties.bsr++;
-          await updateArbispotterProduct(shopDomain, productLink, {
-            azn_taskId: "",
-          });
+          await updateArbispotterProductQuery(
+            shopDomain,
+            productLink,
+            resetAznProductQuery()
+          );
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue: queryQueues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            interval && clearInterval(interval);
-            await updateCrawlAznListingsProgress(shopDomain);
-            await updateProgressInLookupInfoTask(); // update lookup info task progress
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isCompleted(queue);
       };
       const handleNotFound = async () => {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await updateCrawlDataProduct(shopDomain, productLink, {
-          asin: "",
-          a_qty: 0,
-          info_prop: "", // reset lookup info to start over
-        });
-        await updateArbispotterProduct(shopDomain, productLink, {
-          ...resetAznProduct(),
-          azn_taskId: "",
-        });
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue: queryQueues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            interval && clearInterval(interval);
-            await updateCrawlAznListingsProgress(shopDomain);
-            await updateProgressInLookupInfoTask(); // update lookup info task progress
-            handleResult(r, resolve, reject);
-          });
-        }
+        await updateArbispotterProductQuery(
+          shopDomain,
+          productLink,
+          resetAznProductQuery()
+        );
+        await isCompleted(queue);
       };
 
       queue.pushTask(querySellerInfosQueue, {
