@@ -16,6 +16,7 @@ export const resetAznProductQuery = () => {
       a_qty: "",
       a_orgn: "",
       a_hash: "",
+      tax: "",
       a_mrgn: "",
       a_mrgn_pct: "",
       a_w_mrgn: "",

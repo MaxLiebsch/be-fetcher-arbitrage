@@ -61,7 +61,7 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["ean_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query = countPendingProductsForCrawlEanQuery
+    query = countPendingProductsForCrawlEanQuery;
 
     if (limit) {
       options["limit"] = limit;
@@ -567,28 +567,7 @@ export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
   if (action === "recover") {
     query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query = {
-      $and: [
-        {
-          $or: [
-            { eby_taskId: { $exists: false } },
-            { eby_taskId: { $eq: "" } },
-          ],
-        },
-        {
-          esin: { $exists: true, $ne: "" },
-        },
-        {
-          ebyCategories: { $exists: true, $ne: [] },
-        },
-        {
-          $or: [
-            { ebyUpdatedAt: { $exists: false } },
-            { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
-          ],
-        },
-      ],
-    };
+    query = countPendingProductsForCrawlEbyListingsQuery();
   }
 
   if (limit && action !== "recover") {
