@@ -108,19 +108,22 @@ export const scrapeAznListings = (amazon, origin, task) =>
               };
             } else {
               const multiplier = roundToTwoDecimals(costs.azn / a_prc);
-              costs.azn = roundToTwoDecimals(a_prc * multiplier);
+              const newCosts = {
+                ...costs,
+                azn: roundToTwoDecimals(a_prc * multiplier),
+              };
               const arbitrage = calculateAznArbitrage(
                 buyPrice * (a_qty / qty),
                 a_prc,
-                costs,
+                newCosts,
                 tax
               );
-              console.log("arbitrage:", arbitrage);
               processedProductUpdate = {
                 ...processedProductUpdate,
                 ...arbitrage,
-                costs: costs,
+                costs: newCosts,
               };
+              crawlDataUpdate["costs"] = newCosts;
             }
           } else {
             infos.missingProperties.aznPrice.a_prc++;
