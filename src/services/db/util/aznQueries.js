@@ -1,4 +1,4 @@
-import { keepaProperties } from "./createOrUpdateArbispotterProduct";
+import { keepaProperties } from "./createOrUpdateArbispotterProduct.js";
 
 export const resetAznProductQuery = () => {
   const query = {
