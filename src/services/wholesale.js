@@ -152,7 +152,13 @@ export default async function wholesale(task) {
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
       const wholesaleProduct = wholeSaleProducts[index];
-      const { ean, _id: productId, prc, a_qty, qty } = wholesaleProduct;
+      const {
+        ean,
+        _id: productId,
+        prc,
+        a_qty: sellQty,
+        qty: buyQty,
+      } = wholesaleProduct;
 
       //not needed, I swear I will write clean code
       const addProduct = async (product) => {};
@@ -163,8 +169,8 @@ export default async function wholesale(task) {
           const processedProductUpdate = generateUpdate(
             productInfo,
             prc,
-            qty ?? 1,
-            a_qty ?? 1
+            buyQty || 1,
+            sellQty || 1
           );
 
           let reducedCosts = { ...processedProductUpdate.costs };

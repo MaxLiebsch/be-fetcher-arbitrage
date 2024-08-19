@@ -115,16 +115,18 @@ export default async function crawl(task) {
         return;
       }
       const transformedProduct = transformProduct(product);
-      const { lnk, nm, prc } = transformedProduct;
+      const { lnk, nm, prc, qty } = transformedProduct;
       if (nm && prc && lnk) {
         if (!uniqueLinks.includes(lnk)) {
           uniqueLinks.push(lnk);
           infos.total++;
           queue.total++;
-          transformedProduct["qty"] = 1;
-          transformedProduct["uprc"] = prc;
+          transformedProduct["qty"] = qty || 1;
+          transformedProduct["uprc"] = roundToTwoDecimals(
+            prc / transformedProduct["qty"]
+          );
           transformedProduct["s_hash"] = createHash(lnk);
-          
+
           const result = await createOrUpdateArbispotterProduct(
             shopDomain,
             transformedProduct

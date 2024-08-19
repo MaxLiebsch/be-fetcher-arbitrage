@@ -235,8 +235,8 @@ export default async function lookupInfo(task) {
           const processedProductUpdate = generateUpdate(
             productInfo,
             buyPrice,
-            sellQty ?? 1,
-            buyQty ?? 1
+            sellQty || 1,
+            buyQty || 1
           );
 
           if (hasEan && ean) {
@@ -353,8 +353,8 @@ export default async function lookupInfo(task) {
         queue,
         query: {
           product: {
-            value: hasEan ? ean : asin,
-            key: hasEan ? ean : asin,
+            value: hasEan ? asin || ean : asin,
+            key: hasEan ? asin || ean : asin,
           },
         },
         prio: 0,

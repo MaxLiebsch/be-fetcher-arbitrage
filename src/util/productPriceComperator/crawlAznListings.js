@@ -87,8 +87,8 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         ean,
         uprc: unitPrice,
         price: buyPrice,
-        a_qty,
-        qty,
+        a_qty: sellQty,
+        qty: buyQty,
       } = crawlDataProduct;
 
       const addProduct = async (product) => {};
@@ -99,8 +99,8 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
           const processedProductUpdate = generateUpdate(
             productInfo,
             buyPrice,
-            a_qty ?? 1,
-            qty ?? 1
+            sellQty || 1,
+            buyQty || 1
           );
           let eanList = [];
           if (origin.hasEan || origin.eanSelector) {

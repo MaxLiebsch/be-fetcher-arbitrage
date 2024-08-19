@@ -8,6 +8,7 @@ import {
   reduceString,
   matchTargetShopProdsWithRawProd,
   replaceAllHiddenCharacters,
+  roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
 import { createArbispotterCollection } from "./db/mongo.js";
@@ -136,6 +137,8 @@ export default async function match(task) {
         hasMnfctr,
         mnfctr: manufacturer,
         price,
+        e_qty,
+        a_qty,
         promoPrice,
         uprc: unitPrice,
         qty,
@@ -240,7 +243,7 @@ export default async function match(task) {
             const esin = parseEsinFromUrl(procProd.e_lnk);
             if (esin) {
               procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
-              procProd["e_qty"] = 1;
+              procProd["e_qty"] = e_qty || 1;
               procProd["e_uprc"] = procProd.e_prc;
 
               procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
@@ -253,7 +256,7 @@ export default async function match(task) {
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
               procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
-              procProd["a_qty"] = 1;
+              procProd["a_qty"] = a_qty || 1;
               procProd["a_uprc"] = procProd.a_prc;
               procProd["asin"] = asin;
               crawlDataProductUpdate["asin"] = asin;
@@ -307,7 +310,7 @@ export default async function match(task) {
             if (esin) {
               procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
               procProd["e_qty"] = 1;
-              procProd["e_uprc"] = procProd.e_prc;
+              procProd["e_uprc"] = roundToTwoDecimals(procProd.e_prc / e_qty);
               procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
               procProd["esin"] = esin;
               crawlDataProductUpdate["eby_prop"] = "complete";
@@ -317,8 +320,8 @@ export default async function match(task) {
             const asin = parseAsinFromUrl(procProd.a_lnk);
             if (asin) {
               procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
-              procProd["a_qty"] = 1;
-              procProd["a_uprc"] = procProd.a_prc;
+              procProd["a_qty"] = a_qty || 1;
+              procProd["a_uprc"] = roundToTwoDecimals(procProd.a_prc / a_qty);
               procProd.asin = asin;
               crawlDataProductUpdate["asin"] = asin;
             }

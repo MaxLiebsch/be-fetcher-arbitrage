@@ -118,6 +118,7 @@ export default async function queryEansOnEby(task) {
         promoPrice: prmPrc,
         qty,
         uprc,
+        e_qty,
         image: img,
         link,
         shop: s,
@@ -182,7 +183,6 @@ export default async function queryEansOnEby(task) {
             foundProduct.name
           );
 
-          const e_qty = 1;
           if (e_qty) {
             arbispotterProductUpdate["e_qty"] = e_qty;
             arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(

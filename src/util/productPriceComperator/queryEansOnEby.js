@@ -87,6 +87,8 @@ export const queryEansOnEby = async (ebay, task) =>
         price: prc,
         promoPrice: prmPrc,
         qty,
+        e_qty,
+        a_qty,
         uprc,
         image: img,
         link,
@@ -154,7 +156,6 @@ export const queryEansOnEby = async (ebay, task) =>
             foundProduct.name
           );
 
-          const e_qty = 1;
           if (e_qty) {
             arbispotterProductUpdate["e_qty"] = e_qty;
             arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(

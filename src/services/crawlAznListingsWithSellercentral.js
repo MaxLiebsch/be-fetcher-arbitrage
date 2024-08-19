@@ -11,7 +11,6 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
 import {
   updateArbispotterProductQuery,
-  updateArbispotterProductSet,
 } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
@@ -190,8 +189,8 @@ export default async function crawlAznListingsWithSellercentral(task) {
           const productUpdate = generateUpdate(
             productInfo,
             buyPrice,
-            sellQty ?? 1,
-            buyQty ?? 1
+            sellQty || 1,
+            buyQty || 1
           );
           let eanList = [];
           if (hasEan || eanSelector) {
