@@ -186,7 +186,12 @@ export const countPendingProductsLookupInfoQuery = (hasEan) => {
   };
 
   if (hasEan) {
-    query.$and.push({ ean: { $exists: true, $ne: "" } });
+    query.$and.push({
+      $or: [
+        { ean: { $exists: true, $ne: "" } },
+        { asin: { $exists: true, $ne: "" } },
+      ],
+    });
   } else {
     query.$and.push({ asin: { $exists: true, $ne: "" } });
   }

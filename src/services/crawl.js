@@ -117,7 +117,7 @@ export default async function crawl(task) {
           uniqueLinks.push(product.link);
           infos.total++;
           queue.total++;
-          const qty = 1;
+          const qty = product?.qty || 1;
           if (qty) {
             product["qty"] = qty;
             product["uprc"] = roundToTwoDecimals(product.price / qty);

@@ -156,8 +156,8 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
           const processedProductUpdate = generateUpdate(
             productInfo,
             buyPrice,
-            sellQty ?? 1,
-            buyQty ?? 1
+            sellQty || 1,
+            buyQty || 1
           );
 
           if (hasEan && ean) {
@@ -178,7 +178,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
             info_locked: false,
             info_taskId: "",
             qty_prop: "",
-            a_qty: processedProductUpdate.a_qty,
+            a_qty: processedProductUpdate.sellQty,
             info_prop: "complete",
             costs: processedProductUpdate.costs,
             asin: processedProductUpdate.asin,
