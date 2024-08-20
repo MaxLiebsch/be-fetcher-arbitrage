@@ -48,7 +48,6 @@ async function lookupCategory(task) {
     );
 
     shops.forEach(async (info) => {
-      await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
     });
 
@@ -130,13 +129,16 @@ async function lookupCategory(task) {
               await updateArbispotterProductQuery(
                 shopDomain,
                 productLink,
-                resetEbyProductQuery({ cat_prop: "ean_missing" })
+                resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
               );
             } else if (ean !== product.ean) {
               await updateArbispotterProductQuery(
                 shopDomain,
                 productLink,
-                resetEbyProductQuery({ cat_prop: "ean_missmatch" })
+                resetEbyProductQuery({
+                  cat_prop: "ean_missmatch",
+                  eby_prop: "",
+                })
               );
             } else {
               await handleCategoryAndUpdate(
@@ -158,7 +160,7 @@ async function lookupCategory(task) {
           await updateArbispotterProductQuery(
             shopDomain,
             productLink,
-            resetEbyProductQuery({ cat_prop: "missing" })
+            resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
           );
         }
         await isProcessComplete();
@@ -261,14 +263,14 @@ export const handleCategoryAndUpdate = async (
       await updateArbispotterProductQuery(
         shopDomain,
         productLink,
-        resetEbyProductQuery({ cat_prop: "category_not_found" })
+        resetEbyProductQuery({ cat_prop: "category_not_found", eby_prop: "" })
       );
     }
   } else {
     await updateArbispotterProductQuery(
       shopDomain,
       productLink,
-      resetEbyProductQuery({ cat_prop: "categories_missing" })
+      resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
     );
   }
 };

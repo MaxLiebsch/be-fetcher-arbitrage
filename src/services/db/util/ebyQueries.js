@@ -1,11 +1,5 @@
 export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
   const query = {
-    $set: {
-      // query ean on eby
-      eby_prop: eby_prop || "",
-      // lookup category
-      cat_prop: cat_prop || "",
-    },
     $unset: {
       //standard properties
       e_pblsh: "",
@@ -26,6 +20,7 @@ export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
       e_tax: "",
       ebyCategories: "",
       e_vrfd: "",
+      // lookup category
       cat_taskId: "",
       // scrape listing
       ebyUpdatedAt: "",
@@ -35,5 +30,21 @@ export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
       dealEby_taskId: "",
     },
   };
+
+  if (!query["$set"] && (eby_prop || cat_prop)) {
+    query["$set"] = {};
+  }
+  if (eby_prop) {
+    query["$set"]["eby_prop"] = eby_prop;
+  } else {
+    query["$unset"]["eby_prop"] = "";
+  }
+
+  if (cat_prop) {
+    query["$set"]["cat_prop"] = cat_prop;
+  } else {
+    query["$unset"]["cat_prop"] = "";
+  }
+
   return query;
 };

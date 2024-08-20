@@ -24,9 +24,7 @@ import { lookForUnmatchedQueryEansOnEby } from "./db/util/queryEansOnEby/lookFor
 import { createHash } from "../util/hash.js";
 import { getShop } from "./db/util/shops.js";
 import { createArbispotterCollection } from "./db/mongo.js";
-import {
-  updateArbispotterProductQuery,
-} from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -50,12 +48,10 @@ export default async function queryEansOnEby(task) {
     );
 
     shops.forEach(async (info) => {
-      await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
       infos.missingProperties[info.shop.d] = {
         ean: 0,
         image: 0,
-        hashes: [],
       };
     });
 
