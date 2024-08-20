@@ -205,7 +205,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
               await updateArbispotterProductQuery(
                 shopDomain,
                 productLink,
-                resetAznProductQuery()
+                resetAznProductQuery({ info_prop: "", infoUpdatedAt: "" })
               );
             }
           } else {
@@ -213,7 +213,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
             await updateArbispotterProductQuery(
               shopDomain,
               productLink,
-              resetAznProductQuery()
+              resetAznProductQuery({ info_prop: "", infoUpdatedAt: "" })
             );
           }
         } else {
@@ -221,7 +221,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
           await updateArbispotterProductQuery(
             shopDomain,
             productLink,
-            resetAznProductQuery()
+            resetAznProductQuery({ info_prop: "", infoUpdatedAt: "" })
           );
         }
         await isCompleted(queue);
@@ -233,11 +233,16 @@ export default async function crawlAznListingsWithSellercentral(task) {
         await updateArbispotterProductQuery(
           shopDomain,
           productLink,
-          resetAznProductQuery()
+          resetAznProductQuery({ info_prop: "", infoUpdatedAt: "" })
         );
         await isCompleted(queue);
       };
-
+      const query = {
+        product: {
+          value: asin,
+          key: asin,
+        },
+      };
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
@@ -250,12 +255,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
-        query: {
-          product: {
-            value: asin,
-            key: asin,
-          },
-        },
+        query,
         prio: 0,
         extendedLookUp: false,
         pageInfo: {

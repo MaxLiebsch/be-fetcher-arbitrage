@@ -121,16 +121,7 @@ export default async function wholesale(task) {
       )
     );
 
-    const queueIterator = yieldQueues(queues);
-
-    //TODO: Remove this interval
-    const testInterval = setInterval(() => {
-      const workloads = queues.reduce((acc, queue) => {
-        acc[queue.queueId] = queue.workload();
-        return acc;
-      }, {});
-      console.log(workloads);
-    }, 1 * 60 * 1000);
+    const queueIterator = yieldQueues(queues); 
 
     const interval = setInterval(async () => {
       const isDone = queues.every((q) => q.workload() === 0);

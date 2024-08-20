@@ -1,12 +1,4 @@
-import {
-  QueryQueue,
-  calculateEbyArbitrage,
-  findMappedCategory,
-  parseEbyCategories,
-  queryProductPageQueue,
-  roundToTwoDecimals,
-  safeParsePrice,
-} from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -18,15 +10,13 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import {
-  moveArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "./db/util/crudArbispotterProduct.js";
 import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
 import { lookForMissingEbyCategory } from "./db/util/lookupCategory/lookForMissingEbyCategory.js";
 import { getShop } from "./db/util/shops.js";
-import { createArbispotterCollection } from "./db/mongo.js";
-import { resetEbyProductQuery } from "./db/util/ebyQueries.js";
+import {
+  handleLookupCategoryNotFound,
+  handleLookupCategoryProductInfo,
+} from "../util/lookupCategoryHelper.js";
 
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
@@ -114,74 +104,24 @@ async function lookupCategory(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
-        if (productInfo) {
-          const infoMap = new Map();
-          productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const ean = infoMap.get("ean");
-          const ebyListingPrice = infoMap.get("e_prc");
-          const categories = infoMap.get("categories");
-
-          if (srcShop.hasEan || srcShop?.ean) {
-            if (!ean) {
-              await updateArbispotterProductQuery(
-                shopDomain,
-                productLink,
-                resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
-              );
-            } else if (ean !== product.ean) {
-              await updateArbispotterProductQuery(
-                shopDomain,
-                productLink,
-                resetEbyProductQuery({
-                  cat_prop: "ean_missmatch",
-                  eby_prop: "",
-                })
-              );
-            } else {
-              await handleCategoryAndUpdate(
-                shopDomain,
-                product,
-                ebyListingPrice,
-                categories
-              );
-            }
-          } else {
-            await handleCategoryAndUpdate(
-              shopDomain,
-              product,
-              ebyListingPrice,
-              categories
-            );
-          }
-        } else {
-          await updateArbispotterProductQuery(
-            shopDomain,
-            productLink,
-            resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
-          );
-        }
+        await handleLookupCategoryProductInfo(
+          shopDomain,
+          Boolean(srcShop.hasEan || srcShop.ean),
+          { productInfo, url },
+          queue,
+          infos,
+          product
+        );
         await isProcessComplete();
       };
       const handleNotFound = async (cause) => {
-        infos.notFound++;
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
-        if (cause === "timeout") {
-          await updateArbispotterProductQuery(shopDomain, productLink, {
-            $set: {
-              cat_prop: "timeout",
-            },
-            $unset: {
-              cat_taskId: "",
-            },
-          });
-        } else {
-          await moveArbispotterProduct(shopDomain, "grave", productLink);
-        }
+        await handleLookupCategoryNotFound(
+          shopDomain,
+          infos,
+          queue,
+          productLink,
+          cause
+        );
         await isProcessComplete();
       };
 
@@ -211,68 +151,5 @@ async function lookupCategory(task) {
     }
   });
 }
-
-export const handleCategoryAndUpdate = async (
-  shopDomain,
-  product,
-  ebyListingPrice,
-  categories
-) => {
-  const {
-    esin,
-    price: buyPrice,
-    e_qty: sellQty,
-    qty: buyQty,
-    lnk: productLink,
-  } = product;
-
-  if (categories) {
-    const sellPrice = safeParsePrice(ebyListingPrice ?? "0");
-
-    const sellUnitPrice = roundToTwoDecimals(sellPrice / sellQty);
-    const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
-    let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
-
-    if (mappedCategory) {
-      let ebyArbitrage = calculateEbyArbitrage(
-        mappedCategory,
-        sellPrice,
-        buyPrice * (sellQty / buyQty)
-      );
-      const productUpdate = {
-        ...ebyArbitrage,
-        cat_prop: "complete",
-        e_prc: sellPrice,
-        e_uprc: sellUnitPrice,
-        ebyUpdatedAt: new Date().toISOString(),
-        ebyCategories: [
-          {
-            id: mappedCategory.id,
-            createdAt: new Date().toISOString(),
-            category: mappedCategory.category,
-          },
-        ],
-        e_pblsh: true,
-        esin,
-      };
-      await updateArbispotterProductQuery(shopDomain, productLink, {
-        $set: productUpdate,
-        $unset: { cat_taskId: "" },
-      });
-    } else {
-      await updateArbispotterProductQuery(
-        shopDomain,
-        productLink,
-        resetEbyProductQuery({ cat_prop: "category_not_found", eby_prop: "" })
-      );
-    }
-  } else {
-    await updateArbispotterProductQuery(
-      shopDomain,
-      productLink,
-      resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
-    );
-  }
-};
 
 export default lookupCategory;

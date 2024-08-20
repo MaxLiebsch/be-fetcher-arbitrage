@@ -1,5 +1,4 @@
 import {
-  generateUpdate,
   globalEventEmitter,
   QueryQueue,
   querySellerInfosQueue,
@@ -7,12 +6,12 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { getMaxLoadQueue } from "./lookupInfo.js";
 import { proxyAuth } from "../../constants.js";
-import { updateCrawlDataProduct } from "../../services/db/util/crudCrawlDataProduct.js";
-import { updateArbispotterProduct } from "../../services/db/util/crudArbispotterProduct.js";
-import { resetAznProduct } from "../../services/lookupInfo.js";
-import { upsertAsin } from "../../services/db/util/asinTable.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
 import { updateTask } from "../../services/db/util/tasks.js";
+import {
+  handleAznListingNotFound,
+  handleAznListingProductInfo,
+} from "../../util/scrapeAznListingsHelper.js";
 
 export const crawlAznListings = (sellerCentral, origin, task) =>
   new Promise(async (res, rej) => {
@@ -67,7 +66,6 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
           await queuesWithId[queueId].disconnect(true);
           const isDone = queues.every((q) => q.workload() === 0);
           if (isDone) {
-            console.log("infos:", infos.total, "limit: ", productLimit);
             await updateTask(_id, { $set: { progress: task.progress } });
             res(infos);
           }
@@ -76,83 +74,37 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
     });
 
     const queueIterator = yieldQueues(queues);
+
+    async function isProcessComplete(queue) {
+      if (infos.total === productLimit && !queue.idle()) {
+        console.log("infos:", infos.total, "limit: ", productLimit);
+        await updateTask(_id, { $set: { progress: task.progress } });
+        await Promise.all(queues.map((queue) => queue.disconnect(true)));
+        res(infos);
+      }
+    }
+
     while (task.progress.aznListings.length) {
       task.progress.aznListings.pop();
-      const crawlDataProduct = task.aznListings.pop();
-      if (!crawlDataProduct) continue;
+      const product = task.aznListings.pop();
+      if (!product) continue;
       const queue = queueIterator.next().value;
-      const {
-        link: productLink,
-        asin,
-        ean,
-        uprc: unitPrice,
-        price: buyPrice,
-        a_qty: sellQty,
-        qty: buyQty,
-      } = crawlDataProduct;
+      const { link: productLink, asin } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        infos.total++;
-        queue.total++;
-        if (productInfo) {
-          const processedProductUpdate = generateUpdate(
-            productInfo,
-            buyPrice,
-            sellQty || 1,
-            buyQty || 1
-          );
-          let eanList = [];
-          if (origin.hasEan || origin.eanSelector) {
-            eanList = [ean];
-          }
-          await upsertAsin(asin, eanList, processedProductUpdate.costs);
-
-          const arbispotterProductUpdate = {
-            ...processedProductUpdate,
-            aznUpdatedAt: new Date().toISOString(),
-            azn_taskId: "",
-          };
-
-          await updateArbispotterProduct(
-            salesDbName,
-            productLink,
-            arbispotterProductUpdate
-          );
-        } else {
-          infos.missingProperties.bsr++;
-          await updateCrawlDataProduct(salesDbName, productLink, {
-            azn_taskId: "",
-          });
-        }
-        if (infos.total === productLimit && !queue.idle()) {
-          console.log("infos:", infos.total, "limit: ", productLimit);
-          await updateTask(_id, { $set: { progress: task.progress } });
-          await Promise.all(queues.map((queue) => queue.disconnect(true)));
-          res(infos);
-        }
+        await handleAznListingProductInfo(
+          salesDbName,
+          product,
+          { productInfo, url },
+          infos,
+          queue
+        );
+        await isProcessComplete(queue);
       };
       const handleNotFound = async () => {
-        infos.notFound++;
-        infos.total++;
-        queue.total++;
-        await updateCrawlDataProduct(salesDbName, productLink, {
-          azn_taskId: "",
-          asin: "",
-          a_qty: 0,
-          info_prop: "", // reset lookup info to start over
-        });
-        await updateArbispotterProduct(
-          salesDbName,
-          productLink,
-          resetAznProduct()
-        );
-        if (infos.total === productLimit && !queue.idle()) {
-          console.log("infos:", infos.total, "limit: ", productLimit);
-          await updateTask(_id, { $set: { progress: task.progress } });
-          await Promise.all(queues.map((queue) => queue.disconnect(true)));
-          res(infos);
-        }
+        await handleAznListingNotFound(salesDbName, productLink, infos, queue);
+        await isProcessComplete(queue);
       };
 
       queue.pushTask(querySellerInfosQueue, {

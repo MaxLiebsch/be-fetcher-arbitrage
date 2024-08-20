@@ -27,7 +27,6 @@ export const lockProductsForLookupCategory = async (
   // Update documents to mark them as locked
   if (action !== "recover") {
     const query = setProductsLockedForLookupCategoryQuery(taskId);
-    console.log('query:', query)
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

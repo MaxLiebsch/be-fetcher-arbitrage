@@ -24,6 +24,10 @@ import {
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { resetAznProductQuery } from "./db/util/aznQueries.js";
+import {
+  handleAznListingNotFound,
+  handleAznListingProductInfo,
+} from "../util/scrapeAznListingsHelper.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -113,90 +117,21 @@ export default async function crawlAznListings(task) {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      const {
-        qty: buyQty,
-        a_qty: sellQty,
-        prc: buyPrice,
-        costs,
-        asin,
-        eanList,
-        tax,
-        lnk: productLink,
-      } = product;
+      const { asin, lnk: productLink } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        infos.total++;
-        queue.total++;
-        if (productInfo) {
-          const infoMap = new Map();
-          productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const price = infoMap.get("a_prc");
-          const image = infoMap.get("a_img");
-          const bsr = infoMap.get("bsr");
-          if (price > 0) {
-            if (costs.azn > 0) {
-              const productUpdate = {
-                aznUpdatedAt: new Date().toISOString(),
-                ...(image && { a_img: image }),
-                ...(bsr && { bsr }),
-              };
-              const parsedPrice = safeParsePrice(price);
-              const a_prc = parsedPrice;
-              const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
-              Object.assign(productUpdate, { a_prc, a_uprc });
-              const { a_prc: sellPrice } = productUpdate;
-
-              const arbitrage = calculateAznArbitrage(
-                buyPrice * (sellQty / buyQty),
-                sellPrice,
-                costs,
-                tax
-              );
-              Object.entries(arbitrage).forEach(([key, val]) => {
-                productUpdate[key] = val;
-              });
-              await updateArbispotterProductQuery(shopDomain, productLink, {
-                $set: productUpdate,
-                $unset: {
-                  azn_taskId: "",
-                },
-              });
-            } else {
-              infos.missingProperties.aznCostNeg++;
-              await updateArbispotterProductQuery(
-                shopDomain,
-                productLink,
-                resetAznProductQuery()
-              );
-            }
-          } else {
-            infos.missingProperties.price++;
-            await updateArbispotterProductQuery(
-              shopDomain,
-              productLink,
-              resetAznProductQuery()
-            );
-          }
-        } else {
-          infos.missingProperties.infos++;
-          await updateArbispotterProductQuery(
-            shopDomain,
-            productLink,
-            resetAznProductQuery()
-          );
-        }
+        await handleAznListingProductInfo(
+          shopDomain,
+          product,
+          { productInfo, url },
+          infos,
+          queue
+        );
         await isCompleted();
       };
       const handleNotFound = async () => {
-        infos.notFound++;
-        infos.total++;
-        queue.total++;
-        await updateArbispotterProductQuery(
-          shopDomain,
-          productLink,
-          resetAznProductQuery()
-        );
+        await handleAznListingNotFound(shopDomain, productLink, infos, queue);
         await isCompleted();
       };
 

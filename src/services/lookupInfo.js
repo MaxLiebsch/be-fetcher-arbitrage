@@ -18,6 +18,10 @@ import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js
 import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
 import { resetAznProductQuery } from "./db/util/aznQueries.js";
+import {
+  handleLookupInfoNotFound,
+  handleLookupInfoProductInfo,
+} from "../util/lookupInfoHelper.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -130,79 +134,26 @@ export default async function lookupInfo(task) {
       const queue = queueIterator.next().value;
       const { product, shop } = products[index];
       const shopDomain = shop.d;
-      const hasEan = shop.hasEan || shop?.ean;
-      const {
-        ean,
-        asin,
-        prc: buyPrice,
-        qty: buyQty,
-        a_qty: sellQty,
-        lnk: productLink,
-      } = product;
+      const hasEan = Boolean(shop.hasEan || shop?.ean);
+      const { ean, asin, lnk: productLink } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        if (productInfo) {
-          const processedProductUpdate = generateUpdate(
-            productInfo,
-            buyPrice,
-            sellQty || 1,
-            buyQty || 1
-          );
-          const { costs, a_nm, asin } = processedProductUpdate;
-
-          if (costs.azn > 0) {
-            processedProductUpdate["a_nm"] = replaceAllHiddenCharacters(a_nm);
-            processedProductUpdate["a_orgn"] = "a";
-            processedProductUpdate["a_pblsh"] = true;
-            if (hasEan && ean) {
-              await upsertAsin(asin, [ean], costs);
-              processedProductUpdate["eanList"] = [ean];
-            }
-
-            await updateArbispotterProductQuery(shopDomain, productLink, {
-              $set: {
-                ...processedProductUpdate,
-                info_prop: "complete",
-                aznUpdatedAt: new Date().toISOString(),
-                infoUpdatedAt: new Date().toISOString(),
-              },
-              $unset: { info_taskId: "" },
-            });
-          } else {
-            infos.missingProperties.costs++;
-            await updateArbispotterProductQuery(shopDomain, productLink, {
-              $set: {
-                info_prop: "missing",
-                infoUpdatedAt: new Date().toISOString(),
-              },
-              $unset: { info_taskId: "" },
-            });
-          }
-        } else {
-          infos.missingProperties.infos++;
-          await updateArbispotterProductQuery(
-            shopDomain,
-            productLink,
-            resetAznProductQuery({
-              info_prop: "missing",
-              infoUpdatedAt: new Date().toISOString(),
-            })
-          );
-        }
-        await isProcessComplete(queue);
+        await handleLookupInfoProductInfo(
+          shopDomain,
+          hasEan,
+          { productInfo, url },
+          product,
+          infos
+        );
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
+        await isProcessComplete(queue);
       };
       const handleNotFound = async () => {
         infos.notFound++;
-        const query = resetAznProductQuery({
-          info_prop: "missing",
-          infoUpdatedAt: new Date().toISOString(),
-        });
-        await updateArbispotterProductQuery(shopDomain, productLink, query);
-        await isProcessComplete(queue);
+        await handleLookupInfoNotFound(shopDomain, productLink);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;

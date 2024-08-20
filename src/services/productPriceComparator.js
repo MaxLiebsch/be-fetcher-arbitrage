@@ -1,7 +1,6 @@
 import { findShops } from "./db/util/shops.js";
 import {
   createArbispotterCollection,
-  createCrawlDataCollection,
 } from "./db/mongo.js";
 import { crawlProducts } from "../util/productPriceComperator/crawlProducts.js";
 import { crawlEans } from "../util/productPriceComperator/crawlEan.js";
@@ -9,7 +8,7 @@ import { lookupInfo } from "../util/productPriceComperator/lookupInfo.js";
 import { queryEansOnEby } from "../util/productPriceComperator/queryEansOnEby.js";
 import { lookupCategory } from "../util/productPriceComperator/lookupCategory.js";
 import { crawlEbyListings } from "../util/productPriceComperator/crawlEbyListings.js";
-import { findCrawlDataProductsNoLimit } from "./db/util/crudCrawlDataProduct.js";
+import { findArbispotterProductsNoLimit } from "./db/util/crudArbispotterProduct.js";
 import { TaskCompletedStatus } from "../status.js";
 import {
   COMPLETE_FAILURE_THRESHOLD,
@@ -20,7 +19,6 @@ import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "./db/util/tasks.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import { scrapeAznListings } from "../util/productPriceComperator/scrapeAznListings.js";
-import { el } from "date-fns/locale";
 import { getElapsedTime } from "../util/dates.js";
 
 export const salesDbName = "sales";
@@ -51,7 +49,6 @@ export const productPriceComperator = async (task) => {
       aznListings: {},
       ebyListings: {},
     };
-    await createCrawlDataCollection("sales");
     await createArbispotterCollection("sales");
 
     if (
@@ -126,7 +123,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task CrawlEan ", task.progress.crawlEan.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.crawlEan },
       });
       if (products.length) {
@@ -157,7 +154,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task LookupInfo ", task.progress.lookupInfo.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupInfo },
       });
       if (products.length) {
@@ -188,7 +185,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task QueryEansOnEby", task.progress.queryEansOnEby.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.queryEansOnEby },
       });
       if (products.length) {
@@ -219,7 +216,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task LookupCategory ", task.progress.lookupCategory.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupCategory },
       });
       if (products.length) {
@@ -249,7 +246,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task AznListings ", task.progress.aznListings.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.aznListings },
       });
       if (products.length) {
@@ -283,7 +280,7 @@ export const productPriceComperator = async (task) => {
         task.progress.ebyListings.length
       );
       console.log("Task EbyListings ", task.progress.ebyListings.length);
-      const products = await findCrawlDataProductsNoLimit(salesDbName, {
+      const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.ebyListings },
       });
       if (products.length) {

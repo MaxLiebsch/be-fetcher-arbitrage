@@ -87,6 +87,18 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
   }
 
   return collection.updateOne({ lnk: link }, query);
+}
+
+export const findArbispotterProductsNoLimit = async (
+  domain,
+  query,
+) => {
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+  const collection = db.collection(collectionName);
+  return collection
+    .find({ ...query })
+    .toArray();
 };
 
 export const updateArbispotterProductSet = async (domain, link, update) => {

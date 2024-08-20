@@ -1,5 +1,5 @@
 import { getManufacturer, prefixLink } from "@dipmaxtech/clr-pkg";
-import { createHash } from "./hash";
+import { createHash } from "./hash.js";
 
 export const transformProduct = (crawlDataProduct, shopDomain) => {
   let product = { ...crawlDataProduct };

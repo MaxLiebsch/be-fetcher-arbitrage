@@ -25,6 +25,10 @@ import {
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlEbyListings } from "./db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
 import { resetEbyProductQuery } from "./db/util/ebyQueries.js";
+import {
+  handleEbyListingNotFound,
+  handleEbyListingProductInfo,
+} from "../util/scrapeEbyListingsHelper.js";
 
 async function crawlEbyListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -124,96 +128,18 @@ async function crawlEbyListings(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        infos.total++;
-        queue.total++;
-        if (productInfo) {
-          const infoMap = new Map();
-          productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const rawSellPrice = infoMap.get("e_prc");
-          const image = infoMap.get("image");
-          let productUpdate = {
-            e_lnk: url.split("?")[0],
-          };
-          if (rawSellPrice) {
-            const parsedSellPrice = safeParsePrice(rawSellPrice);
-            productUpdate = {
-              ...productUpdate,
-              e_prc: parsedSellPrice,
-              e_uprc: roundToTwoDecimals(parsedSellPrice / buyQty),
-            };
-
-            const mappedCategory = findMappedCategory(
-              ebyCategories.reduce((acc, curr) => {
-                acc.push(curr.id);
-                return acc;
-              }, [])
-            );
-            const { e_prc: sellPrice } = productUpdate;
-            if (mappedCategory) {
-              const arbitrage = calculateEbyArbitrage(
-                mappedCategory,
-                sellPrice, // e_prc, //VK
-                buyPrice * (buyQty / sellQty) // prc * (e_qty / qty) //EK  //QTY Zielshop/QTY Herkunftsshop
-              );
-              if (arbitrage) {
-                Object.entries(arbitrage).forEach(([key, val]) => {
-                  productUpdate[key] = val;
-                });
-                productUpdate = {
-                  ...productUpdate,
-                  ebyUpdatedAt: new Date().toISOString(),
-                  ...(image && { e_img: image }),
-                };
-
-                await updateArbispotterProductQuery(shopDomain, productLink, {
-                  $set: productUpdate,
-                  $unset: { eby_taskId: "" },
-                });
-              } else {
-                infos.missingProperties.calculationFailed++;
-                await updateArbispotterProductQuery(
-                  shopDomain,
-                  productLink,
-                  resetEbyProductQuery()
-                );
-              }
-            } else {
-              infos.missingProperties.mappedCat++;
-              await updateArbispotterProductQuery(
-                shopDomain,
-                productLink,
-                resetEbyProductQuery()
-              );
-            }
-          } else {
-            infos.missingProperties.price++;
-            await updateArbispotterProductQuery(
-              shopDomain,
-              productLink,
-              resetEbyProductQuery()
-            );
-          }
-        } else {
-          await updateArbispotterProductQuery(
-            shopDomain,
-            productLink,
-            resetEbyProductQuery()
-          );
-          infos.notFound++;
-        }
+        await handleEbyListingProductInfo(
+          shopDomain,
+          infos,
+          { productInfo, url },
+          queue,
+          product
+        );
         await isComplete();
       };
 
       const handleNotFound = async () => {
-        console.log("not found at all");
-        infos.notFound++;
-        infos.total++;
-        queue.total++;
-        await updateArbispotterProductQuery(
-          shopDomain,
-          productLink,
-          resetEbyProductQuery()
-        );
+        await handleEbyListingNotFound(shopDomain, productLink, infos, queue);
         await isComplete();
       };
 

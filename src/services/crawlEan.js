@@ -29,6 +29,10 @@ import {
   updateProgressInLookupInfoTask,
   updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
+import {
+  handleCrawlEanNotFound,
+  handleCrawlEanProductInfo,
+} from "../util/crawlEanHelper.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
@@ -127,103 +131,23 @@ export default async function crawlEan(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
-        if (productInfo) {
-          const infoMap = new Map();
-          productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          let ean = infoMap.get("ean");
-          let isEan =
-            ean &&
-            /\b[0-9]{12,13}\b/.test(ean) &&
-            !ean.toString().startsWith("99");
-
-          if (isEan) {
-            const prc = safeParsePrice(infoMap.get("price") ?? 0);
-            const sku = infoMap.get("sku");
-            const image = infoMap.get("image");
-            const mku = infoMap.get("mku");
-            const inStock = infoMap.get("instock");
-
-            const productUpdate = {
-              eanUpdatedAt: new Date().toISOString(),
-              ean_prop: "found",
-              ean,
-              ...(prc && { prc }),
-              ...(image && { img: image }),
-              ...(sku && { sku }),
-              ...(mku && { mku }),
-            };
-            if (inStock) {
-              const stockStr = deliveryTime(inStock);
-              if (stockStr) {
-                productUpdate["a"] = stockStr;
-              }
-            }
-
-            if (url === productLink) {
-              await updateArbispotterProductQuery(shopDomain, productLink, {
-                $set: productUpdate,
-                $unset: { ean_taskId: "" },
-              });
-            } else {
-              const result = await deleteArbispotterProduct(
-                shopDomain,
-                productLink
-              );
-              if (result.deletedCount === 1) {
-                const s_hash = createHash(url);
-                await insertArbispotterProduct(shopDomain, {
-                  ...product,
-                  ...productUpdate,
-                  lnk: url,
-                  s_hash,
-                });
-              }
-            }
-          } else {
-            infos.missingProperties[shopDomain]["ean"]++;
-            const productUpdate = {
-              eanUpdatedAt: new Date().toISOString(),
-              ean_prop: ean ? "invalid" : "missing",
-            };
-            await updateArbispotterProductQuery(shopDomain, productLink, {
-              $set: productUpdate,
-              $unset: { ean_taskId: "" },
-            });
-          }
-        } else {
-          await updateArbispotterProductQuery(shopDomain, productLink, {
-            $set: {
-              ean_prop: "invalid",
-              eanUpdatedAt: new Date().toISOString(),
-            },
-            $unset: {
-              ean_taskId: "",
-            },
-          });
-        }
+        await handleCrawlEanProductInfo(
+          shopDomain,
+          { productInfo, url },
+          queue,
+          product,
+          infos
+        );
         await isComplete();
       };
       const handleNotFound = async (cause) => {
-        infos.notFound++;
-        infos.shops[shopDomain]++;
-        infos.total++;
-        queue.total++;
-        if (cause === "timeout") {
-          await updateArbispotterProductQuery(shopDomain, productLink, {
-            $set: {
-              ean_prop: "timeout",
-              eanUpdatedAt: new Date().toISOString(),
-            },
-            $unset: {
-              ean_taskId: "",
-            },
-          });
-        } else {
-          await moveArbispotterProduct(shopDomain, "grave", productLink);
-        }
+        await handleCrawlEanNotFound(
+          shopDomain,
+          infos,
+          queue,
+          cause,
+          productLink
+        );
         await isComplete();
       };
 

@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { productPriceComperator } from "../src/services/productPriceComparator.js";
+import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 const shopDomain = 'voelkner.de'
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),
@@ -8,7 +9,7 @@ const task = {
   id: "daily_sales_" + shopDomain,
   shopDomain,
   executing: false,
-  productLimit: 178,
+  productLimit: 10,
   lastCrawler: [],
   categories: [
     {
@@ -83,10 +84,45 @@ const task = {
   retry: 0,
 };
 
-productPriceComperator(task).then((r) => {
-  console.log(JSON.stringify(r, null, 2));
-  process.exit(0);
-});
+async function main() {
+  // await deleteAllArbispotterProducts('sales')
+  const infos = await productPriceComperator(task);
+  console.log(JSON.stringify(infos, null, 2));
+}
+
+
+main().then()
+
+const errorHandler = (err, origin) => {
+  const IsTargetError = `${err}`.includes("Target closed");
+  const IsSessionError = `${err}`.includes("Session closed");
+  const IsNavigationDetachedError = `${err}`.includes(
+    "Navigating frame was detached"
+  );
+
+  const metaData = {
+    reason: err?.stack || err,
+    origin,
+  };
+  let type = "unhandledException";
+  if (IsTargetError) {
+    type = "TargetClosed";
+  } else if (IsSessionError) {
+    type = "SessionClosed";
+  } else if (IsNavigationDetachedError) {
+    type = "NavigationDetached";
+  }
+
+  if (type === "unhandledException") {
+    throw err; //unhandledException:  Re-throw all other errors
+  } else {
+    return;
+  }
+};
+process.on("unhandledRejection", errorHandler);
+
+process.on("uncaughtException", errorHandler);
+
 
 
 let task2 = {

@@ -1,7 +1,3 @@
-import {
-  findCrawledProductByLink,
-  upsertCrawlDataProduct,
-} from "../../services/db/util/crudCrawlDataProduct.js";
 import { updateTask } from "../../services/db/util/tasks.js";
 import {
   CrawlerQueue,
@@ -13,10 +9,15 @@ import {
 import { salesDbName } from "../../services/productPriceComparator.js";
 import { proxyAuth, RECHECK_EAN_EBY_AZN_INTERVAL } from "../../constants.js";
 import { parseISO } from "date-fns";
+import { transformProduct } from "../../util/transformProduct.js";
+import {
+  findProductByLink,
+  upsertArbispotterProduct,
+} from "../../services/db/util/crudArbispotterProduct.js";
 
 export const crawlProducts = async (shop, task) =>
   new Promise(async (res, rej) => {
-    const { categories, browserConfig, _id, shopDomain, productLimit } = task;
+    const { categories, browserConfig, _id, productLimit } = task;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks = [];
     let infos = {
@@ -86,23 +87,18 @@ export const crawlProducts = async (shop, task) =>
           await queue.disconnect(true);
           res(infos);
         } else {
-          if (product.name && product.price && product.link) {
-            if (!uniqueLinks.includes(product.link)) {
-              uniqueLinks.push(product.link);
+          const transformedProduct = transformProduct(product);
+          const { lnk, nm, prc: buyPrice, qty: buyQty } = transformedProduct;
+          if (nm && buyPrice && lnk) {
+            if (!uniqueLinks.includes(lnk)) {
+              uniqueLinks.push(lnk);
               infos.total++;
               queue.total++;
-              const qty = 1;
-              if (qty) {
-                product["qty"] = qty;
-                product["uprc"] = roundToTwoDecimals(product.price / qty);
-              } else {
-                product["qty"] = 1;
-                product["uprc"] = product.price;
-              }
-              const existingProduct = await findCrawledProductByLink(
-                salesDbName,
-                product.link
+              transformedProduct["qty"] = buyQty || 1;
+              transformedProduct["uprc"] = roundToTwoDecimals(
+                buyPrice / transformedProduct["qty"]
               );
+              const existingProduct = await findProductByLink(salesDbName, lnk);
               if (existingProduct) {
                 const xDaysAgo = new Date();
                 xDaysAgo.setDate(
@@ -157,9 +153,9 @@ export const crawlProducts = async (shop, task) =>
                   task.progress.aznListings.push(existingProduct._id);
                 }
               } else {
-                const result = await upsertCrawlDataProduct(
+                const result = await upsertArbispotterProduct(
                   salesDbName,
-                  product
+                  transformedProduct
                 );
                 if (result.acknowledged) {
                   if (result.upsertedId) {
@@ -174,7 +170,7 @@ export const crawlProducts = async (shop, task) =>
               }
             }
           } else {
-            const properties = ["name", "price", "link", "image"];
+            const properties = ["nm", "prc", "lnk", "img"];
             properties.forEach((prop) => {
               if (!product[prop]) {
                 infos.missingProperties[prop]++;
