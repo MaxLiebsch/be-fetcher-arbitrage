@@ -1,9 +1,7 @@
 import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
 import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
 import { getAllShopsAsArray } from "../services/db/util/shops.js";
-import {
-  calculateMonthlySales,
-} from "@dipmaxtech/clr-pkg";
+import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 import { countTotal } from "./countProducts.js";
 
 const migrationMonthlySold = async () => {
@@ -27,9 +25,9 @@ const migrationMonthlySold = async () => {
         shop.d,
         {
           $and: [
-            { monthlySold: { $exists: true, $eq: null } },
             { categories: { $exists: true, $ne: null } },
             { salesRanks: { $exists: true, $ne: null } },
+            { categoryTree: { $exists: true, $ne: null } },
           ],
         },
         batchSize,
@@ -40,12 +38,19 @@ const migrationMonthlySold = async () => {
           count++;
           const set = {};
 
-          if (p.monthlySold === null && p.categories && p.salesRanks) {
+          if (
+            p.categories &&
+            p.salesRanks &&
+            p.categoryTree
+          ) {
             const monthlySold = calculateMonthlySales(
               p.categories,
-              p.salesRanks
+              p.salesRanks,
+              p.categoryTree
             );
-            monthlySold !== null && monthlySold > 0 && console.log("Monthly sold: ", monthlySold);
+            monthlySold !== null &&
+              monthlySold > 0 &&
+              console.log("Monthly sold: ", monthlySold);
             if (monthlySold) {
               set["monthlySold"] = monthlySold;
             }
