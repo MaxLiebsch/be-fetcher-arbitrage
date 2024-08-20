@@ -5,7 +5,10 @@ import {
   globalEventEmitter,
   roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
-import { createCrawlDataCollection } from "./db/mongo.js";
+import {
+  createArbispotterCollection,
+  createCrawlDataCollection,
+} from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
@@ -89,7 +92,7 @@ export default async function crawl(task) {
 
     await queue.connect();
 
-    await createCrawlDataCollection(`${shopDomain}`);
+    await createArbispotterCollection(`${shopDomain}`);
 
     const startTime = Date.now();
 
