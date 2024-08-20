@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import {
   COMPLETE_FAILURE_THRESHOLD,
   COOLDOWN,
@@ -47,7 +48,7 @@ async function handleDailySalesTask({
       update["retry"] = retry + 1;
       update["completedAt"] = "";
     } else {
-      update["completedAt"] = new Date().toISOString();
+      update["completedAt"] = new UTCDate().toISOString();
       update["retry"] = 0;
     }
     if (
@@ -111,7 +112,7 @@ async function handleCrawlTask({
       update["retry"] = retry + 1;
       update["completedAt"] = "";
     } else {
-      update["completedAt"] = new Date().toISOString();
+      update["completedAt"] = new UTCDate().toISOString();
       update["retry"] = 0;
     }
     if (
@@ -335,7 +336,7 @@ async function handleScanTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     const update = {
-      completedAt: new Date().toISOString(),
+      completedAt: new UTCDate().toISOString(),
       completed: true,
       executing: false,
       retry: 0,
@@ -371,7 +372,7 @@ async function handleWholesaleTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     const update = {
-      completedAt: new Date().toISOString(),
+      completedAt: new UTCDate().toISOString(),
       executing: false,
       retry: 0,
     };
@@ -382,7 +383,7 @@ async function handleWholesaleTask({
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
-    const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
+    const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString(); // 30 min in future
     await handleTaskFailed(_id, retry);
   }
   const emailBody = {

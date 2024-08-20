@@ -10,6 +10,7 @@ import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCatego
 import { countPendingProductsForCrawlEbyListings } from "./crawlEbyListings/getCrawlEbyListingsProgress.js";
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
 import { MINIMUM_PENDING_PRODUCTS } from "@dipmaxtech/clr-pkg";
+import { UTCDate } from "@date-fns/utc";
 
 const handleComulativTasks = async (task, pendingShops, cooldown) => {
   if (
@@ -64,7 +65,7 @@ export const getNewTask = async () => {
   });
   console.log("Primary:task:", task?.type, " ", task?.id);
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
-  const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
+  const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString(); // 30 min in future
   if (task) {
     if (task.type === "SCAN_SHOP") {
       return task;
@@ -148,7 +149,7 @@ export const getNewTask = async () => {
     });
     console.log("Fallback:task:", task?.type, " ", task?.id);
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN_LONG; // 60 min in future
-    const cooldown = new Date(Date.now() + coolDownFactor).toISOString();
+    const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString();
     if (task) {
       if (task.type === "WHOLESALE_SEARCH") {
         const pending = await countPendingProductsForWholesaleSearch(task._id);

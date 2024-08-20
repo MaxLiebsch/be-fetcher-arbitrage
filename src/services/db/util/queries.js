@@ -6,6 +6,7 @@ import {
   DANGLING_MATCH_THRESHOLD,
   MAX_EARNING_MARGIN,
 } from "../../../constants.js";
+import { UTCDate } from "@date-fns/utc";
 // a_origin setzen when infos ueber lookup ean
 
 /*
@@ -645,12 +646,12 @@ export const crawlDailySalesQueryFn = (start) => {
 /*               Queries: Tasks                                */
 
 export const findTasksQuery = () => {
-  const today = new Date();
+  const today = new UTCDate();
 
-  const fiveMinutesAgo = new Date();
+  const fiveMinutesAgo = new UTCDate();
   fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-  const oneMinuteAgo = new Date();
+  const oneMinuteAgo = new UTCDate();
   oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
   const danglingLookupThreshold =
@@ -676,7 +677,7 @@ export const findTasksQuery = () => {
     },
     $set: {
       executing: true,
-      startedAt: new Date().toISOString(),
+      startedAt: new UTCDate().toISOString(),
     },
   };
 
@@ -734,49 +735,49 @@ export const findTasksQuery = () => {
           {
             $and: [
               ...wholesaleTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...crawlEanTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...queryEansOnEbyTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...lookupInfoTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...lookupCategoryTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...matchTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...crawlAznListingsTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
           {
             $and: [
               ...crawlEbyListingsTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } },
+              { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
         ],

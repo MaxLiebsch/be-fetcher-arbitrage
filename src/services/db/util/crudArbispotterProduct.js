@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import { getArbispotterDb } from "../mongo.js";
 
 export const countProducts = async (domain, query = {}) => {
@@ -53,8 +54,8 @@ export const upsertArbispotterProduct = async (domain, product) => {
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
 
-  product["createdAt"] = new Date().toISOString();
-  product["updatedAt"] = new Date().toISOString();
+  product["createdAt"] = new UTCDate().toISOString();
+  product["updatedAt"] = new UTCDate().toISOString();
 
   return collection.updateOne(
     { lnk: product.lnk },
@@ -70,8 +71,8 @@ export const insertArbispotterProduct = async (domain, product) => {
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
 
-  product["createdAt"] = new Date().toISOString();
-  product["updatedAt"] = new Date().toISOString();
+  product["createdAt"] = new UTCDate().toISOString();
+  product["updatedAt"] = new UTCDate().toISOString();
 
   return collection.insertOne(product);
 };
@@ -81,9 +82,9 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
   if (query?.$set) {
-    query.$set["updatedAt"] = new Date().toISOString();
+    query.$set["updatedAt"] = new UTCDate().toISOString();
   } else {
-    query["$set"] = { updatedAt: new Date().toISOString() };
+    query["$set"] = { updatedAt: new UTCDate().toISOString() };
   }
 
   return collection.updateOne({ lnk: link }, query);
@@ -105,7 +106,7 @@ export const updateArbispotterProductSet = async (domain, link, update) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  update["updatedAt"] = new Date().toISOString();
+  update["updatedAt"] = new UTCDate().toISOString();
   return collection.updateOne(
     { lnk: link },
     {

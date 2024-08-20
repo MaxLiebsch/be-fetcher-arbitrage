@@ -23,8 +23,9 @@ import {
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import { upsertAsin } from "./db/util/asinTable.js";
-import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
+import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import { resetAznProductQuery } from "./db/util/aznQueries.js";
+import { UTCDate } from "@date-fns/utc";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -194,7 +195,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
             if (productUpdate.costs.azn > 0) {
               await upsertAsin(asin, eanList, productUpdate.costs);
               Object.assign(productUpdate, {
-                aznUpdatedAt: new Date().toISOString(),
+                aznUpdatedAt: new UTCDate().toISOString(),
               });
               await updateArbispotterProductQuery(productLink, {
                 $set: productUpdate,

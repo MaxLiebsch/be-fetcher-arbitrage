@@ -5,6 +5,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleAznListingProductInfo(
   collection,
@@ -32,7 +33,7 @@ export async function handleAznListingProductInfo(
     if (price > 0) {
       if (costs.azn > 0) {
         const productUpdate = {
-          aznUpdatedAt: new Date().toISOString(),
+          aznUpdatedAt: new UTCDate().toISOString(),
           ...(image && { a_img: image }),
           ...(bsr && { bsr }),
         };

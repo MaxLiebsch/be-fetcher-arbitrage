@@ -2,6 +2,7 @@ import { sendMail } from "./email.js";
 import os from "os";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks.js";
+import { UTCDate } from "@date-fns/utc";
 
 const hostname = os.hostname();
 const { errorLogger } = LoggerService.getSingleton();
@@ -41,7 +42,7 @@ const errorHandler = (err, origin) => {
     type,
     hostname,
     taskId,
-    created: new Date().toISOString(),
+    created: new UTCDate().toISOString(),
     ...metaData,
   });
 

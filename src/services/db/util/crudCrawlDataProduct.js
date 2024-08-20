@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import { createHash } from "../../../util/hash.js";
 import { getCrawlDataDb } from "../mongo.js";
 
@@ -6,8 +7,8 @@ export const upsertCrawlDataProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
-  product["createdAt"] = new Date().toISOString();
-  product["updatedAt"] = new Date().toISOString();
+  product["createdAt"] = new UTCDate().toISOString();
+  product["updatedAt"] = new UTCDate().toISOString();
 
   const s_hash = createHash(product.link);
 
@@ -24,8 +25,8 @@ export const insertCrawlDataProduct = async (domain, product) => {
   const collectionName = domain;
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
-  product["createdAt"] = new Date().toISOString();
-  product["updatedAt"] = new Date().toISOString();
+  product["createdAt"] = new UTCDate().toISOString();
+  product["updatedAt"] = new UTCDate().toISOString();
   return collection.insertOne(product);
 };
 
@@ -46,7 +47,7 @@ export const updateCrawlDataProduct = async (domain, link, update) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
-  update["updatedAt"] = new Date().toISOString();
+  update["updatedAt"] = new UTCDate().toISOString();
 
   return collection.updateOne(
     { link },
@@ -62,7 +63,7 @@ export const updateCrawlDataProducts = async (domain, query, update) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
-  update["updatedAt"] = new Date().toISOString();
+  update["updatedAt"] = new UTCDate().toISOString();
 
   return collection.updateMany(
     { ...query },

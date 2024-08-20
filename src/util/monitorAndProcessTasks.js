@@ -10,6 +10,7 @@ import { checkForNewTask } from "./checkForNewTask.js";
 import { hostname } from "../services/db/mongo.js";
 import { handleTask } from "./taskHandler.js";
 import clientPool from "../services/db/mongoPool.js";
+import { UTCDate } from "@date-fns/utc";
 
 const { errorLogger } = LoggerService.getSingleton();
 
@@ -76,12 +77,12 @@ export async function monitorAndProcessTasks() {
         type: type,
         hostname,
       });
-      const cooldown = new Date(Date.now() + COOLDOWN).toISOString(); // 30 min from now
+      const cooldown = new UTCDate(Date.now() + COOLDOWN).toISOString(); // 30 min from now
 
       if (error instanceof MissingProductsError) {
         const update = {
           executing: false,
-          completedAt: new Date().toISOString(),
+          completedAt: new UTCDate().toISOString(),
         };
         if (isMatchLookup) {
           update.cooldown = cooldown;

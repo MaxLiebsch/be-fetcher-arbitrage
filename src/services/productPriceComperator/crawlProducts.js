@@ -14,6 +14,7 @@ import {
   findProductByLink,
   upsertArbispotterProduct,
 } from "../../services/db/util/crudArbispotterProduct.js";
+import { UTCDate } from "@date-fns/utc";
 
 export const crawlProducts = async (shop, task) =>
   new Promise(async (res, rej) => {
@@ -100,7 +101,7 @@ export const crawlProducts = async (shop, task) =>
               );
               const existingProduct = await findProductByLink(salesDbName, lnk);
               if (existingProduct) {
-                const xDaysAgo = new Date();
+                const xDaysAgo = new UTCDate();
                 xDaysAgo.setDate(
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
                 );
@@ -115,7 +116,7 @@ export const crawlProducts = async (shop, task) =>
                   return;
                 }
                 if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                  new UTCDate(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!info_prop ||
                       (info_prop !== "missing" && info_prop !== "complete")))
@@ -124,7 +125,7 @@ export const crawlProducts = async (shop, task) =>
                 }
 
                 if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                  new UTCDate(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!eby_prop ||
                       (eby_prop !== "missing" && eby_prop !== "complete")))

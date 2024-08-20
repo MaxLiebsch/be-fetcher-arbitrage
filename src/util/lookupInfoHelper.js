@@ -5,6 +5,7 @@ import {
 import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { upsertAsin } from "../services/db/util/asinTable.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleLookupInfoProductInfo(
   collection,
@@ -42,8 +43,8 @@ export async function handleLookupInfoProductInfo(
         $set: {
           ...processedProductUpdate,
           info_prop: "complete",
-          aznUpdatedAt: new Date().toISOString(),
-          infoUpdatedAt: new Date().toISOString(),
+          aznUpdatedAt: new UTCDate().toISOString(),
+          infoUpdatedAt: new UTCDate().toISOString(),
         },
         $unset: { info_taskId: "" },
       });
@@ -52,7 +53,7 @@ export async function handleLookupInfoProductInfo(
       await updateArbispotterProductQuery(collection, productLink, {
         $set: {
           info_prop: "missing",
-          infoUpdatedAt: new Date().toISOString(),
+          infoUpdatedAt: new UTCDate().toISOString(),
         },
         $unset: { info_taskId: "" },
       });
@@ -64,7 +65,7 @@ export async function handleLookupInfoProductInfo(
       productLink,
       resetAznProductQuery({
         info_prop: "missing",
-        infoUpdatedAt: new Date().toISOString(),
+        infoUpdatedAt: new UTCDate().toISOString(),
       })
     );
   }
@@ -73,7 +74,7 @@ export async function handleLookupInfoProductInfo(
 export async function handleLookupInfoNotFound(collection, productLink) {
   const query = resetAznProductQuery({
     info_prop: "missing",
-    infoUpdatedAt: new Date().toISOString(),
+    infoUpdatedAt: new UTCDate().toISOString(),
   });
   await updateArbispotterProductQuery(collection, productLink, query);
 }

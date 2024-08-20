@@ -9,6 +9,7 @@ import {
 } from "./crudArbispotterProduct.js";
 import { RECHECK_EAN_INTERVAL } from "../../../constants.js";
 import { parseISO } from "date-fns";
+import { UTCDate } from "@date-fns/utc";
 
 //ARBISPOTTER DB UTILS
 // Remove keepa properties
@@ -52,17 +53,17 @@ export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
           ...procProd,
         },
       };
-      const sevenDaysAgo = new Date();
+      const sevenDaysAgo = new UTCDate();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - RECHECK_EAN_INTERVAL);
       if (
         product.eanUpdatedAt &&
-        new Date(parseISO(product.eanUpdatedAt)) < sevenDaysAgo &&
+        new UTCDate(parseISO(product.eanUpdatedAt)) < sevenDaysAgo &&
         (product.ean_prop === "invalid" ||
           product.ean_prop === "missing" ||
           product.ean_prop === "timeout")
       ) {
         query.$set.procProd.ean_prop = "";
-        query.$set.procProd.eanUpdatedAt = new Date().toISOString();
+        query.$set.procProd.eanUpdatedAt = new UTCDate().toISOString();
       }
       if (!product.bsr && !bsr) {
         query.$set.procProd["bsr"] = [];

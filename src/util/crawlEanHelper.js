@@ -6,6 +6,7 @@ import {
   updateArbispotterProductQuery,
 } from "../services/db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleCrawlEanProductInfo(
   collectionName,
@@ -34,7 +35,7 @@ export async function handleCrawlEanProductInfo(
       const inStock = infoMap.get("instock");
 
       const productUpdate = {
-        eanUpdatedAt: new Date().toISOString(),
+        eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: "found",
         ean,
         ...(prc && { prc }),
@@ -76,7 +77,7 @@ export async function handleCrawlEanProductInfo(
     } else {
       infos.missingProperties[collectionName]["ean"]++;
       const productUpdate = {
-        eanUpdatedAt: new Date().toISOString(),
+        eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: ean ? "invalid" : "missing",
       };
       await updateArbispotterProductQuery(collectionName, productLink, {
@@ -88,7 +89,7 @@ export async function handleCrawlEanProductInfo(
     await updateArbispotterProductQuery(collectionName, productLink, {
       $set: {
         ean_prop: "invalid",
-        eanUpdatedAt: new Date().toISOString(),
+        eanUpdatedAt: new UTCDate().toISOString(),
       },
       $unset: {
         ean_taskId: "",
@@ -111,7 +112,7 @@ export async function handleCrawlEanNotFound(
     await updateArbispotterProductQuery(collection, productLink, {
       $set: {
         ean_prop: "timeout",
-        eanUpdatedAt: new Date().toISOString(),
+        eanUpdatedAt: new UTCDate().toISOString(),
       },
       $unset: {
         ean_taskId: "",

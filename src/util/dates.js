@@ -1,5 +1,7 @@
+import { UTCDate } from "@date-fns/utc";
+
 export const subDateDaysISO = (days) =>
-  new Date(Date.now() - 1000 * 60 * 60 * 24 * days).toISOString();
+  new UTCDate(Date.now() - 1000 * 60 * 60 * 24 * days).toISOString();
 
 export const getElapsedTime = (start) => {
   const endTime = Date.now();

@@ -10,6 +10,7 @@ import {
   updateArbispotterProductQuery,
 } from "../services/db/util/crudArbispotterProduct.js";
 import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleLookupCategoryProductInfo(
   collection,
@@ -127,11 +128,11 @@ export const handleCategoryAndUpdate = async (
         cat_prop: "complete",
         e_prc: sellPrice,
         e_uprc: sellUnitPrice,
-        ebyUpdatedAt: new Date().toISOString(),
+        ebyUpdatedAt: new UTCDate().toISOString(),
         ebyCategories: [
           {
             id: mappedCategory.id,
-            createdAt: new Date().toISOString(),
+            createdAt: new UTCDate().toISOString(),
             category: mappedCategory.category,
           },
         ],

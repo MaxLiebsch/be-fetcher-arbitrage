@@ -6,6 +6,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleEbyListingProductInfo(
   collection,
@@ -58,7 +59,7 @@ export async function handleEbyListingProductInfo(
           });
           productUpdate = {
             ...productUpdate,
-            ebyUpdatedAt: new Date().toISOString(),
+            ebyUpdatedAt: new UTCDate().toISOString(),
             ...(image && { e_img: image }),
           };
 

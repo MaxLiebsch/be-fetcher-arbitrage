@@ -55,6 +55,7 @@
     }
   },
   "dependencies": {
+    "@date-fns/utc": "^1.2.0",
     "axios": "^1.7.2",
     "be-fetcher-arbitrage": "file:",
     "concurrently": "^8.2.2",

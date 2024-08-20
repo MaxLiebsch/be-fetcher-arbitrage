@@ -1,4 +1,5 @@
 import { getCrawlDataDb, hostname } from "../../mongo.js";
+import { UTCDate } from "@date-fns/utc";
 
 const collectionName = "wholesale";
 
@@ -62,7 +63,7 @@ export const updateWholeSaleProduct = async (productId, update) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 
-  update["updatedAt"] = new Date().toISOString();
+  update["updatedAt"] = new UTCDate().toISOString();
 
   return collection.updateOne(
     { _id: productId },

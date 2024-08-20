@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import {
   COOLDOWN,
   COOLDOWN_MULTIPLIER,
@@ -10,7 +11,7 @@ import {
 
 export const handleTaskFailed = async (id, retry) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
-  const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
+  const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString(); // 30 min in future
 
   const update = {
     cooldown,
@@ -20,10 +21,10 @@ export const handleTaskFailed = async (id, retry) => {
     update["retry"] = retry + 1;
     update["completedAt"] = "";
   } else {
-    update["cooldown"] = new Date(
+    update["cooldown"] = new UTCDate(
       Date.now() + COOLDOWN * COOLDOWN_MULTIPLIER
     ).toISOString();
-    update["completedAt"] = new Date().toISOString();
+    update["completedAt"] = new UTCDate().toISOString();
     update["retry"] = 0;
   }
 
