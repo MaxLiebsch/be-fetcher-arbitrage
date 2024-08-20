@@ -127,20 +127,7 @@ export const lockProductsForLookupInfoQuery = (
   if (action === "recover") {
     query["info_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$or"] = [
-      { info_locked: { $exists: false } },
-      { info_locked: { $exists: true, $eq: false } },
-    ];
-    query["$or"] = [
-      { info_prop: { $eq: "" } },
-      { info_prop: { $exists: false } },
-    ];
-
-    if (hasEan) {
-      query["ean"] = { $exists: true, $ne: "" };
-    } else {
-      query["asin"] = { $exists: true, $ne: "" };
-    }
+    query = countPendingProductsLookupInfoQuery(hasEan);
 
     if (limit) {
       options["limit"] = limit;
@@ -151,7 +138,6 @@ export const lockProductsForLookupInfoQuery = (
 export const setProductsLockedForLookupInfoQuery = (taskId) => {
   return {
     $set: {
-      info_locked: true,
       info_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
@@ -159,12 +145,7 @@ export const setProductsLockedForLookupInfoQuery = (taskId) => {
 export const countPendingProductsLookupInfoQuery = (hasEan) => {
   const query = {
     $and: [
-      {
-        $or: [
-          { info_locked: { $exists: false } },
-          { info_locked: { $eq: false } },
-        ],
-      },
+      { info_taskId: { $exists: false } },
       {
         $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: "" } }],
       },
@@ -181,6 +162,7 @@ export const countPendingProductsLookupInfoQuery = (hasEan) => {
   } else {
     query.$and.push({ asin: { $exists: true, $ne: "" } });
   }
+
 
   return query;
 };

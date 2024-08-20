@@ -1,6 +1,6 @@
 import { keepaProperties } from "./createOrUpdateArbispotterProduct.js";
 
-export const resetAznProductQuery = () => {
+export const resetAznProductQuery = ({ info_prop, infoUpdatedAt }) => {
   const query = {
     $unset: {
       //standard properties
@@ -24,10 +24,10 @@ export const resetAznProductQuery = () => {
       a_p_w_mrgn: "",
       a_p_w_mrgn_pct: "",
       a_p_mrgn: "",
-      a_vrfd: '',
+      a_vrfd: "",
       a_p_mrgn_pct: "",
-      // lockup info
-      info_prop: "",
+      // lookup info
+      info_taskId: "",
       // keepa properties
       keepaUpdatedAt: "",
       keepa_lckd: "",
@@ -42,5 +42,22 @@ export const resetAznProductQuery = () => {
   keepaProperties.forEach((prop) => {
     query.$unset[prop.name] = "";
   });
+
+  if (!query["$set"] && (info_prop || infoUpdatedAt)) {
+    query["$set"] = {};
+  }
+
+  if (infoUpdatedAt) {
+    query["$set"]["infoUpdatedAt"] = infoUpdatedAt;
+  } else {
+    query["$unset"]["infoUpdatedAt"] = "";
+  }
+
+  if (info_prop) {
+    query["$set"]["info_prop"] = info_prop;
+  } else {
+    query["$unset"]["info_prop"] = "";
+  }
+
   return query;
 };
