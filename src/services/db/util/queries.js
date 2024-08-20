@@ -163,7 +163,6 @@ export const countPendingProductsLookupInfoQuery = (hasEan) => {
     query.$and.push({ asin: { $exists: true, $ne: "" } });
   }
 
-
   return query;
 };
 export const countTotalProductsForLookupInfoQuery = (hasEan) => {
@@ -215,22 +214,13 @@ export const lookupInfoTaskQueryFn = (
 
 export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
   const options = {};
-  const query = {};
+  let query = {};
 
   if (action === "recover") {
     query["taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$and"] = [
-      { $or: [{ locked: { $exists: false } }, { locked: { $eq: false } }] },
-      { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
-      {
-        $or: [
-          { matchedAt: { $exists: false } },
-          { matchedAt: { $lte: new Date().toISOString() } },
-        ],
-      },
-    ];
-    if (hasEan) query.$and["ean"] = { $exists: true, $ne: "" };
+    query = countPendingProductsForMatchQuery(hasEan);
+
     if (limit) {
       options["limit"] = limit;
     }
@@ -240,23 +230,19 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
 export const setProductsLockedForMatchQuery = (taskId) => {
   return {
     $set: {
-      locked: true,
       taskId: `${hostname}:${taskId.toString()}`,
     },
   };
 };
 export const countPendingProductsForMatchQuery = (hasEan) => {
-  const twentyFourAgo = new Date();
-  twentyFourAgo.setHours(twentyFourAgo.getHours() - 24);
   let query = {
     $and: [
-      { $or: [{ locked: { $exists: false } }, { locked: { $eq: false } }] },
+      { taskId: { $exists: false } },
       { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
     ],
   };
-
   if (hasEan) {
-    query.$and.push({ ean: { $exists: true, $ne: "" } });
+    query["$and"].push({ ean: { $exists: true, $ne: "" } });
   }
   return query;
 };

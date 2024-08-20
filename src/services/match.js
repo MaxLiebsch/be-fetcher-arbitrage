@@ -1,21 +1,15 @@
 import {
   QueryQueue,
-  getManufacturer,
-  segmentString,
-  prefixLink,
   queryTargetShops,
   standardTargetRetailerList,
   reduceString,
   matchTargetShopProdsWithRawProd,
   replaceAllHiddenCharacters,
-  roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
-import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { getShop, getShops } from "./db/util/shops.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -30,25 +24,26 @@ import {
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForMatch } from "./db/util/match/lockProductsForMatch.js";
-import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, productLimit, startShops, test, _id, action } = task;
-    const collectionName = test ? `test.${shopDomain}` : shopDomain;
-    await createArbispotterCollection(collectionName);
+    const { shopDomain, concurrency, productLimit, startShops, _id, action } =
+      task;
 
     const srcShop = await getShop(shopDomain);
 
     if (!srcShop) return reject(new MissingShopError("", task));
 
+    const { hasEan, ean } = srcShop;
+
     const lockedProducts = await lockProductsForMatch(
       _id,
       shopDomain,
       action,
-      srcShop.hasEan || srcShop?.ean,
+      Boolean(hasEan || ean),
       productLimit
     );
 
@@ -81,7 +76,7 @@ export default async function match(task) {
     infos.locked = lockedProducts.length;
 
     //Update task progress
-    await updateMatchProgress(shopDomain, srcShop.hasEan);
+    await updateMatchProgress(shopDomain, hasEan);
 
     const startTime = Date.now();
 
@@ -96,7 +91,7 @@ export default async function match(task) {
     if (shops === null) return reject(new MissingShopError("", task));
 
     const queue = new QueryQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
+      concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
@@ -113,7 +108,7 @@ export default async function match(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
+          await updateMatchProgress(shopDomain, hasEan); // update match progress
           await updateProgressInLookupInfoTask(); // update lookup info task progress
           await updateProgressInLookupCategoryTask();
           handleResult(r, resolve, reject);
@@ -121,59 +116,68 @@ export default async function match(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
+    async function isProcessComplete() {
+      if (infos.total === _productLimit && !queue.idle()) {
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateMatchProgress(shopDomain, hasEan); // update match progress
+          await updateProgressInLookupInfoTask(); // update lookup info task progress
+          await updateProgressInLookupCategoryTask();
+          handleResult(r, resolve, reject);
+        });
+      }
+    }
+
     const shuffled = shuffle(lockedProducts);
 
     const sliced = shuffled;
 
-    for (let index = 0; index < sliced.length; index++) {
-      const rawProd = sliced[index];
+    const handleOutput = async (procProd, product) => {
+      const { e_qty, a_qty, lnk: productLink } = product;
+      const { e_lnk, a_lnk, a_nm, e_nm, e_prc, a_prc } = procProd;
+      let productUpdate = {};
 
-      const {
-        name,
-        description,
-        category: ctgry,
-        nameSub,
-        ean,
-        hasMnfctr,
-        mnfctr: manufacturer,
-        price,
-        e_qty,
-        a_qty,
-        promoPrice,
-        uprc: unitPrice,
-        qty,
-        image: img,
-        link: lnk,
-        shop: s,
-      } = rawProd;
+      await handleRelocateLinks(procProd, infos);
 
-      let mnfctr = "";
-      let prodNm = "";
-
-      if (hasMnfctr && manufacturer) {
-        mnfctr = manufacturer;
-        prodNm = name;
-      } else {
-        const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
-        mnfctr = _mnfctr;
-        prodNm = _prodNm;
+      const esin = parseEsinFromUrl(e_lnk);
+      if (esin) {
+        productUpdate["e_nm"] = replaceAllHiddenCharacters(e_nm);
+        productUpdate["e_qty"] = e_qty || 1;
+        productUpdate["e_uprc"] = e_prc;
+        productUpdate["e_lnk"] = e_lnk.split("?")[0];
+        productUpdate["esin"] = esin;
+        productUpdate["eby_prop"] = "complete";
       }
-      const dscrptnSegments = segmentString(description);
-      const nmSubSegments = segmentString(nameSub);
 
-      let procProd = {
-        ctgry,
-        asin: "",
-        mnfctr,
-        nm: prodNm,
-        img: prefixLink(img, s),
-        lnk: prefixLink(lnk, s),
-        prc: promoPrice ? promoPrice : price,
-        uprc: unitPrice,
-        qty,
-      };
+      const asin = parseAsinFromUrl(a_lnk);
+      if (asin) {
+        productUpdate["a_nm"] = replaceAllHiddenCharacters(a_nm);
+        productUpdate["a_qty"] = a_qty || 1;
+        productUpdate["a_uprc"] = a_prc;
+        productUpdate["asin"] = asin;
+        productUpdate["bsr"] = [];
+      }
+      productUpdate["matched"] = true;
 
-      const reducedName = mnfctr + " " + reduceString(prodNm, 55);
+      await updateArbispotterProductQuery(shopDomain, productLink, {
+        $set: productUpdate,
+        $unset: {
+          taskId: "",
+        },
+      });
+    };
+
+    for (let index = 0; index < sliced.length; index++) {
+      const product = sliced[index];
+
+      const { nm, ean, mnfctr } = product;
+
+      const reducedName = mnfctr + " " + reduceString(nm, 55);
 
       const query = {
         ...defaultQuery,
@@ -184,15 +188,11 @@ export default async function match(task) {
         category: "default",
       };
 
-      if (ean) {
-        procProd["eanList"] = [ean];
-      }
-
       const prodInfo = {
-        procProd,
-        rawProd,
-        dscrptnSegments,
-        nmSubSegments,
+        procProd: product,
+        rawProd: product,
+        dscrptnSegments: [],
+        nmSubSegments: [],
       };
 
       const _shops = await queryTargetShops(
@@ -209,140 +209,24 @@ export default async function match(task) {
         Promise.all(_shops).then(async (targetShopProducts) => {
           infos.total++;
           queue.total++;
-          if (infos.total === _productLimit && !queue.idle()) {
-            await checkProgress({
-              queue,
-              infos,
-              startTime,
-              productLimit: _productLimit,
-            }).catch(async (r) => {
-              clearInterval(interval);
-              await updateMatchProgress(shopDomain, srcShop.hasEan); // update match progress
-              await updateProgressInLookupInfoTask(); // update lookup info task progress
-              await updateProgressInLookupCategoryTask();
-              handleResult(r, resolve, reject);
-            });
-          }
+          console.log(
+            "total products:",
+            infos.total,
+            "total queue:",
+            _productLimit
+          );
           if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
             const procProd = targetShopProducts[0]?.procProd;
-            const path = targetShopProducts[0].path;
-            const crawlDataProductUpdate = {
-              taskId: "",
-              dscrptnSegments,
-              matched: true,
-              locked: false,
-              nmSubSegments,
-              path,
-              query: query.product.value,
-              mnfctr,
-              matchedAt: new Date().toISOString(),
-            };
-
-            await handleRelocateLinks(procProd, infos);
-
-            const esin = parseEsinFromUrl(procProd.e_lnk);
-            if (esin) {
-              procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
-              procProd["e_qty"] = e_qty || 1;
-              procProd["e_uprc"] = procProd.e_prc;
-
-              procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
-              procProd["esin"] = esin;
-              crawlDataProductUpdate["e_qty"] = procProd["e_qty"];
-              crawlDataProductUpdate["eby_prop"] = "complete";
-              crawlDataProductUpdate["esin"] = esin;
-            }
-
-            const asin = parseAsinFromUrl(procProd.a_lnk);
-            if (asin) {
-              procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
-              procProd["a_qty"] = a_qty || 1;
-              procProd["a_uprc"] = procProd.a_prc;
-              procProd["asin"] = asin;
-              crawlDataProductUpdate["asin"] = asin;
-            }
-
-            procProd["bsr"] = [];
-
-            const result = await createOrUpdateArbispotterProduct(
-              collectionName,
-              procProd
-            );
-            if (result.acknowledged) {
-              if (result.upsertedId) infos.new++;
-              else infos.old++;
-            } else {
-              infos.failedSave++;
-            }
-            if (targetShopProducts[0]?.candidates) {
-              crawlDataProductUpdate.candidates =
-                targetShopProducts[0]?.candidates;
-            }
-            await updateCrawlDataProduct(
-              shopDomain,
-              rawProd.link,
-              crawlDataProductUpdate
-            );
-            return procProd;
+            await handleOutput(procProd, product);
           } else {
-            const path = targetShopProducts[0].path;
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
               targetShopProducts,
               prodInfo
             );
-            const crawlDataProductUpdate = {
-              dscrptnSegments,
-              nmSubSegments,
-              asin: procProd.asin,
-              path,
-              bsr: [],
-              query: query.product.value,
-              mnfctr,
-              matchedAt: new Date().toISOString(),
-              taskId: "",
-              matched: true,
-              locked: false,
-              candidates,
-            };
-            await handleRelocateLinks(procProd, infos);
-
-            const esin = parseEsinFromUrl(procProd.e_lnk);
-            if (esin) {
-              procProd["e_nm"] = replaceAllHiddenCharacters(procProd.e_nm);
-              procProd["e_qty"] = 1;
-              procProd["e_uprc"] = roundToTwoDecimals(procProd.e_prc / e_qty);
-              procProd["e_lnk"] = procProd.e_lnk.split("?")[0];
-              procProd["esin"] = esin;
-              crawlDataProductUpdate["eby_prop"] = "complete";
-              crawlDataProductUpdate["esin"] = esin;
-            }
-
-            const asin = parseAsinFromUrl(procProd.a_lnk);
-            if (asin) {
-              procProd["a_nm"] = replaceAllHiddenCharacters(procProd.a_nm);
-              procProd["a_qty"] = a_qty || 1;
-              procProd["a_uprc"] = roundToTwoDecimals(procProd.a_prc / a_qty);
-              procProd.asin = asin;
-              crawlDataProductUpdate["asin"] = asin;
-            }
-
-            const result = await createOrUpdateArbispotterProduct(
-              collectionName,
-              procProd
-            );
-            if (result.acknowledged) {
-              if (result.upsertedId) infos.new++;
-              else infos.old++;
-            } else {
-              infos.failedSave++;
-            }
-            await updateCrawlDataProduct(
-              shopDomain,
-              rawProd.link,
-              crawlDataProductUpdate
-            );
-            return procProd;
+            await handleOutput(procProd, product);
           }
+          await isProcessComplete();
+          return;
         })
       );
     }

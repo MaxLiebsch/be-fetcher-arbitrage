@@ -1,15 +1,19 @@
-import { getCrawlDataDb, hostname } from "../../mongo.js";
-import { lockProductsForMatchQuery, setProductsLockedForMatchQuery } from "../../util/queries.js";
+import { getArbispotterDb } from "../../mongo.js";
+import {
+  lockProductsForMatchQuery,
+  setProductsLockedForMatchQuery,
+} from "../../util/queries.js";
 
 export const lockProductsForMatch = async (
   taskId,
   domain,
   action,
   hasEan,
-  limit = 0,
+  limit = 0
 ) => {
-  const collectionName = domain  ;
-  const db = await getCrawlDataDb();
+  const collectionName = domain;
+  const db = await getArbispotterDb();
+
 
   const { query, options } = lockProductsForMatchQuery(
     limit,
@@ -17,7 +21,6 @@ export const lockProductsForMatch = async (
     action,
     hasEan
   );
-
   const documents = await db
     .collection(collectionName)
     .find(query, options)
@@ -35,8 +38,8 @@ export const lockProductsForMatch = async (
 };
 
 export const unlockProduts = async (domain, products) => {
-  const collectionName = domain  ;
-  const db = await getCrawlDataDb();
+  const collectionName = domain;
+  const db = await getArbispotterDb();
   return db.collection(collectionName).updateMany(
     {
       _id: {

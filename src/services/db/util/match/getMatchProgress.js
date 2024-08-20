@@ -1,4 +1,4 @@
-import { getCrawlDataDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   countTotalProductsForMatchQuery,
   countPendingProductsForMatchQuery,
@@ -8,7 +8,7 @@ export const countPendingProductsForMatch = async (
   shopProductCollectionName,
   hasEan
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
 
   return shopProductCollection.count(countPendingProductsForMatchQuery(hasEan));
@@ -18,7 +18,7 @@ export const countTotalProductsForMatch = async (
   shopProductCollectionName,
   hasEan
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countTotalProductsForMatchQuery(hasEan));
 };
