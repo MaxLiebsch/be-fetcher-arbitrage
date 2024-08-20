@@ -6,7 +6,6 @@ import {
 } from "../services/db/mongo.js";
 import {
   findArbispotterProducts,
-  updateArbispotterProduct,
 } from "../services/db/util/crudArbispotterProduct.js";
 import { createOrUpdateCrawlDataProduct } from "../services/db/util/createOrUpdateCrawlDataProduct.js";
 import { findCrawlDataProducts } from "../services/db/util/crudCrawlDataProduct.js";

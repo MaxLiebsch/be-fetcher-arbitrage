@@ -1,60 +1,107 @@
-export const transformProduct = (crawlDataProduct) => {
+import { getManufacturer, prefixLink } from "@dipmaxtech/clr-pkg";
+import { createHash } from "./hash";
+
+export const transformProduct = (crawlDataProduct, shopDomain) => {
   let product = { ...crawlDataProduct };
-  if (product.name) {
-    product["nm"] = product.name;
+  let {
+    name,
+    hasMnfctr,
+    mnfctr,
+    price,
+    link,
+    promoPrice,
+    dscrptnSegments,
+    category,
+    nmSubSegments,
+    query,
+    description,
+    nameSub,
+    locked,
+    cat_locked,
+    info_locked,
+    eby_locked,
+    vendor,
+    candidates,
+    ean,
+    image,
+  } = product;
+
+  if (name) {
+    let title = "";
+    let mnfctr = "";
+    if (hasMnfctr && mnfctr) {
+      mnfctr = mnfctr;
+      title = title;
+    } else {
+      const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
+      mnfctr = _mnfctr;
+      title = _prodNm;
+    }
+    product["nm"] = title;
+    product["mnfctr"] = mnfctr;
+
     delete product.name;
   }
-  if (product.price) {
-    product["prc"] = product.price;
+  if (price) {
+    if (promoPrice) {
+      product["prc"] = promoPrice;
+    } else {
+      product["prc"] = price;
+    }
     delete product.price;
   }
-  if (product.link) {
-    product["lnk"] = product.link;
+  if (link) {
+    product["lnk"] = prefixLink(link, shopDomain);
+    product["s_hash"] = createHash(link);
     delete product.link;
   }
-  if (product.image) {
-    product["img"] = product.image;
+
+  if (image) {
+    product["img"] = prefixLink(image, shopDomain);
     delete product.image;
   }
-  if (product.ean) {
+  if (ean) {
     product["eanList"] = [product.ean];
     delete product.ean;
   }
-  if (product.category) {
+  if (category) {
     product["ctgry"] = product.category;
     delete product.category;
   }
-  if (product.dscrptnSegments) {
+  if (dscrptnSegments) {
     delete product.dscrptnSegments;
   }
-  if (product.candidates) {
+  if (candidates) {
     delete product.candidates;
   }
-  if (product.promoPrice === 0) {
+  if (promoPrice === 0) {
     delete product.promoPrice;
   }
-  if (product.description || product.description === "") {
+  if (description || description === "") {
     delete product.description;
   }
-  if (product.nameSub || product.nameSub === "") {
+  if (nameSub || nameSub === "") {
     delete product.nameSub;
   }
-  if (product.nmSubSegments || product.nmSubSegments === "") {
+  if (nmSubSegments || nmSubSegments === "") {
     delete product.nmSubSegments;
   }
-  if (product.vendor || product.vendor === "") {
+  if (vendor || vendor === "") {
     delete product.vendor;
   }
-  if (product.query) {
+  if (query) {
     delete product.query;
   }
-  if (typeof product.locked === "boolean") {
+  if (typeof eby_locked === "boolean") {
+    delete product.eby_locked;
+  }
+  if (typeof info_locked === "boolean") {
     delete product.info_locked;
   }
-  if (typeof product.locked === "boolean") {
+  if (typeof cat_locked === "boolean") {
     delete product.cat_locked;
   }
-  if (typeof product.locked === "boolean") {
+  if (typeof locked === "boolean") {
     delete product.locked;
   }
 

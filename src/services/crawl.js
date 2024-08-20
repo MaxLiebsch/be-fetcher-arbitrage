@@ -128,8 +128,6 @@ export default async function crawl(task) {
           transformedProduct["uprc"] = roundToTwoDecimals(
             prc / transformedProduct["qty"]
           );
-          transformedProduct["s_hash"] = createHash(lnk);
-
           const result = await createOrUpdateArbispotterProduct(
             shopDomain,
             transformedProduct

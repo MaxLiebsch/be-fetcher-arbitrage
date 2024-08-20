@@ -16,7 +16,7 @@ describe("Transform Product", () => {
     mnfctr: "",
     hasMnfctr: false,
     price: 105,
-    promoPrice: 0,
+    promoPrice: 95,
     prime: false,
     description: "ddddddd",
     nameSub: "ddddd",
@@ -669,6 +669,8 @@ describe("Transform Product", () => {
       description,
       nameSub,
       prc,
+      promoPrice,
+      mnfctr,
       vendor,
       ctgry,
       query,
@@ -677,12 +679,12 @@ describe("Transform Product", () => {
       eanList,
       candidates,
     } = transformProduct(oldProduct);
-    expect(nm).toBe(oldProduct.name)
+    expect(nm).toBe(oldProduct.name.replace(mnfctr, "").trim())
     expect(lnk).toBe(oldProduct.link)
     expect(info_locked).toBeUndefined()
     expect(cat_locked).toBeUndefined()
     expect(locked).toBeUndefined()
-    expect(prc).toBe(oldProduct.price)
+    expect(prc).toBe(oldProduct.promoPrice)
     expect(ctgry).toBe(oldProduct.category)
     expect(query).toBeUndefined()
     expect(nmSubSegments).toBeUndefined()
