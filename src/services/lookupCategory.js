@@ -19,33 +19,14 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import {
-  moveCrawledProduct,
-  updateCrawlDataProduct,
-} from "./db/util/crudCrawlDataProduct.js";
-import {
   moveArbispotterProduct,
-  updateArbispotterProduct,
+  updateArbispotterProductQuery,
 } from "./db/util/crudArbispotterProduct.js";
 import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
 import { lookForMissingEbyCategory } from "./db/util/lookupCategory/lookForMissingEbyCategory.js";
 import { getShop } from "./db/util/shops.js";
 import { createArbispotterCollection } from "./db/mongo.js";
-
-export const resetEbayProduct = {
-  esin: "",
-  e_pblsh: false,
-  e_uprc: 0,
-  e_qty: 0,
-  e_prc: 0,
-  e_lnk: "",
-  e_hash: "",
-  e_nm: "",
-  e_mrgn: 0,
-  e_ns_mrgn: 0,
-  e_mrgn_prc: 0,
-  ebyCategories: [],
-  e_ns_mrgn_prc: 0,
-};
+import { resetEbyProductQuery } from "./db/util/ebyQueries.js";
 
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
@@ -60,26 +41,27 @@ async function lookupCategory(task) {
       shops: {},
     };
 
-    const { products: crawlDataProducts, shops } =
-      await lookForMissingEbyCategory(_id, proxyType, action, productLimit);
+    const { products: products, shops } = await lookForMissingEbyCategory(
+      _id,
+      action,
+      productLimit
+    );
 
     shops.forEach(async (info) => {
       await createArbispotterCollection(info.shop.d);
       infos.shops[info.shop.d] = 0;
     });
 
-    if (!crawlDataProducts.length)
+    if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      crawlDataProducts.length < productLimit
-        ? crawlDataProducts.length
-        : productLimit;
+      products.length < productLimit ? products.length : productLimit;
     task.actualProductLimit = _productLimit;
 
-    infos.locked = crawlDataProducts.length;
+    infos.locked = products.length;
 
-    await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
+    await updateProgressInLookupCategoryTask(); // update lookup category task
 
     const startTime = Date.now();
 
@@ -102,18 +84,32 @@ async function lookupCategory(task) {
           productLimit: _productLimit,
         }).catch(async (r) => {
           clearInterval(interval);
-          await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
+          await updateProgressInLookupCategoryTask(); // update lookup category task
           handleResult(r, resolve, reject);
         }),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    for (let index = 0; index < crawlDataProducts.length; index++) {
-      let { shop: srcShop, product } = crawlDataProducts[index];
+    const isProcessComplete = async () => {
+      if (infos.total === _productLimit && !queue.idle()) {
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateProgressInLookupCategoryTask(); // update lookup category task
+          handleResult(r, resolve, reject);
+        });
+      }
+    };
 
-      const crawledProductLink = product.link;
+    for (let index = 0; index < products.length; index++) {
+      let { shop: srcShop, product } = products[index];
+      const { lnk: productLink, esin } = product;
 
-      const queryUrl = "https://www.ebay.de/itm/" + product.esin;
+      const queryUrl = "https://www.ebay.de/itm/" + esin;
 
       const shopDomain = srcShop.d;
 
@@ -125,82 +121,47 @@ async function lookupCategory(task) {
         if (productInfo) {
           const infoMap = new Map();
           productInfo.forEach((info) => infoMap.set(info.key, info.value));
-          const crawlDataProductUpdate = {
-            cat_locked: false,
-            cat_prop: "complete",
-            cat_taskId: "",
-          };
           const ean = infoMap.get("ean");
           const ebyListingPrice = infoMap.get("e_prc");
           const categories = infoMap.get("categories");
 
           if (srcShop.hasEan || srcShop?.ean) {
             if (!ean) {
-              await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-                cat_locked: false,
-                cat_prop: "ean_missing",
-                cat_taskId: "",
-                esin: "",
-              });
-              await updateArbispotterProduct(
+              await updateArbispotterProductQuery(
                 shopDomain,
-                crawledProductLink,
-                resetEbayProduct
+                productLink,
+                resetEbyProductQuery({ cat_prop: "ean_missing" })
               );
             } else if (ean !== product.ean) {
-              await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-                cat_locked: false,
-                cat_prop: "ean_missmatch",
-                cat_taskId: "",
-                esin: "",
-                e_qty: 0,
-              });
-              await updateArbispotterProduct(
+              await updateArbispotterProductQuery(
                 shopDomain,
-                crawledProductLink,
-                resetEbayProduct
+                productLink,
+                resetEbyProductQuery({ cat_prop: "ean_missmatch" })
               );
             } else {
               await handleCategoryAndUpdate(
                 shopDomain,
-                crawledProductLink,
                 product,
                 ebyListingPrice,
-                categories,
-                crawlDataProductUpdate
+                categories
               );
             }
           } else {
             await handleCategoryAndUpdate(
               shopDomain,
-              crawledProductLink,
               product,
               ebyListingPrice,
-              categories,
-              crawlDataProductUpdate
+              categories
             );
           }
         } else {
-          await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-            cat_locked: false,
-            cat_prop: "missing",
-            cat_taskId: "",
-            esin: "",
-            e_qty: 0,
-          });
+          await updateArbispotterProductQuery(
+            shopDomain,
+            productLink,
+            resetEbyProductQuery({ cat_prop: "missing" })
+          );
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isProcessComplete();
       };
       const handleNotFound = async (cause) => {
         infos.notFound++;
@@ -208,27 +169,18 @@ async function lookupCategory(task) {
         infos.total++;
         queue.total++;
         if (cause === "timeout") {
-          await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-            cat_locked: false,
-            cat_prop: "timeout",
-            cat_taskId: "",
+          await updateArbispotterProductQuery(shopDomain, productLink, {
+            $set: {
+              cat_prop: "timeout",
+            },
+            $unset: {
+              cat_taskId: "",
+            },
           });
         } else {
-          await moveCrawledProduct(shopDomain, "grave", crawledProductLink);
-          await moveArbispotterProduct(shopDomain, "grave", crawledProductLink);
+          await moveArbispotterProduct(shopDomain, "grave", productLink);
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateProgressInLookupCategoryTask(proxyType); // update lookup category task
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isProcessComplete();
       };
 
       queue.pushTask(queryProductPageQueue, {
@@ -260,18 +212,18 @@ async function lookupCategory(task) {
 
 export const handleCategoryAndUpdate = async (
   shopDomain,
-  crawledProductLink,
-  crawlDataProduct,
+  product,
   ebyListingPrice,
-  categories,
-  crawlDataProductUpdate
+  categories
 ) => {
   const {
     esin,
     price: buyPrice,
     e_qty: sellQty,
     qty: buyQty,
-  } = crawlDataProduct;
+    lnk: productLink,
+  } = product;
+
   if (categories) {
     const sellPrice = safeParsePrice(ebyListingPrice ?? "0");
 
@@ -285,10 +237,12 @@ export const handleCategoryAndUpdate = async (
         sellPrice,
         buyPrice * (sellQty / buyQty)
       );
-      await updateArbispotterProduct(shopDomain, crawledProductLink, {
+      const productUpdate = {
         ...ebyArbitrage,
+        cat_prop: "complete",
         e_prc: sellPrice,
         e_uprc: sellUnitPrice,
+        ebyUpdatedAt: new Date().toISOString(),
         ebyCategories: [
           {
             id: mappedCategory.id,
@@ -298,39 +252,24 @@ export const handleCategoryAndUpdate = async (
         ],
         e_pblsh: true,
         esin,
+      };
+      await updateArbispotterProductQuery(shopDomain, productLink, {
+        $set: productUpdate,
+        $unset: { cat_taskId: "" },
       });
-      delete crawlDataProduct._id;
-      crawlDataProductUpdate["ebyCategories"] = [
-        {
-          id: mappedCategory.id,
-          createdAt: new Date().toISOString(),
-          category: mappedCategory.category,
-        },
-      ];
-      crawlDataProductUpdate["ebyUpdatedAt"] = new Date().toISOString();
-
-      await updateCrawlDataProduct(
-        shopDomain,
-        crawledProductLink,
-        crawlDataProductUpdate
-      );
     } else {
-      await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-        cat_locked: false,
-        cat_prop: "category_not_found",
-        cat_taskId: "",
-        esin: "",
-        e_qty: 0,
-      });
+      await updateArbispotterProductQuery(
+        shopDomain,
+        productLink,
+        resetEbyProductQuery({ cat_prop: "category_not_found" })
+      );
     }
   } else {
-    await updateCrawlDataProduct(shopDomain, crawledProductLink, {
-      cat_locked: false,
-      cat_prop: "categories_missing",
-      cat_taskId: "",
-      esin: "",
-      e_qty: 0,
-    });
+    await updateArbispotterProductQuery(
+      shopDomain,
+      productLink,
+      resetEbyProductQuery({ cat_prop: "categories_missing" })
+    );
   }
 };
 

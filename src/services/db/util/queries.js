@@ -78,9 +78,7 @@ export const setProductsLockedForCrawlEanQuery = (taskId) => {
 };
 export const countPendingProductsForCrawlEanQuery = {
   $and: [
-    {
-      $or: [{ ean_taskId: { $exists: false } }, { ean_taskId: { $eq: "" } }],
-    },
+    { ean_taskId: { $exists: false } },
     {
       $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
     },
@@ -333,15 +331,7 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$or"] = [
-      { eby_locked: { $exists: false } },
-      { eby_locked: { $exists: true, $eq: false } },
-    ];
-    query["$or"] = [
-      { eby_prop: { $eq: "" } },
-      { eby_prop: { $exists: false } },
-    ];
-    query["ean"] = { $exists: true, $ne: "" };
+    query = countPendingProductsQueryEansOnEbyQuery;
     if (limit) {
       options["limit"] = limit;
     }
@@ -351,16 +341,13 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
 export const setProductsLockedForQueryEansOnEbyQuery = (taskId) => {
   return {
     $set: {
-      eby_locked: true,
       eby_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
 };
 export const countPendingProductsQueryEansOnEbyQuery = {
   $and: [
-    {
-      $or: [{ eby_locked: { $exists: false } }, { eby_locked: { $eq: false } }],
-    },
+    { eby_taskId: { $exists: false } },
     {
       ean: { $exists: true, $ne: "" },
     },
@@ -415,16 +402,8 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["cat_taskId"] = `${hostname}:${taskId.toString()}`;
   } else {
-    query["$or"] = [
-      { cat_locked: { $exists: false } },
-      { cat_locked: { $exists: true, $eq: false } },
-    ];
-    query["$or"] = [
-      { cat_prop: { $eq: "" } },
-      { cat_prop: { $exists: false } },
-    ];
-    query["eby_prop"] = { $exists: true, $eq: "complete" };
-    query["esin"] = { $exists: true, $ne: "" };
+    query = countPendingProductsForLookupCategoryQuery;
+
     if (limit) {
       options["limit"] = limit;
     }
@@ -434,23 +413,23 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
 export const setProductsLockedForLookupCategoryQuery = (taskId) => {
   return {
     $set: {
-      cat_locked: true,
       cat_taskId: `${hostname}:${taskId.toString()}`,
     },
   };
 };
 export const countPendingProductsForLookupCategoryQuery = {
   $and: [
+    { cat_taskId: { $exists: false } },
     {
-      $or: [{ cat_locked: { $exists: false } }, { cat_locked: { $eq: false } }],
+      $or: [
+        { cat_prop: { $exists: false } },
+        { cat_prop: { $in: ["", "timeout"] } },
+      ],
     },
     {
       eby_prop: { $exists: true, $eq: "complete" },
     },
     { esin: { $exists: true, $ne: "" } },
-    {
-      $or: [{ cat_prop: { $exists: false } }, { cat_prop: { $eq: "" } }],
-    },
   ],
 };
 export const countTotalProductsForLookupCategoryQuery = {
@@ -511,9 +490,7 @@ export const setProductsLockedForCrawlAznListingsQuery = (taskId) => {
 export const countPendingProductsForCrawlAznListingsQuery = () => {
   const query = {
     $and: [
-      {
-        $or: [{ azn_taskId: { $exists: false } }, { azn_taskId: { $eq: "" } }],
-      },
+      { azn_taskId: { $exists: false } },
       {
         asin: { $exists: true, $ne: "" },
       },
@@ -590,9 +567,7 @@ export const setProductsLockedForCrawlEbyListingsQuery = (taskId) => {
 export const countPendingProductsForCrawlEbyListingsQuery = () => {
   const query = {
     $and: [
-      {
-        $or: [{ eby_taskId: { $exists: false } }, { eby_taskId: { $eq: "" } }],
-      },
+      { eby_taskId: { $exists: false } },
       {
         esin: { $exists: true, $ne: "" },
       },

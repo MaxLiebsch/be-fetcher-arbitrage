@@ -10,10 +10,7 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import {
-  updateArbispotterProductQuery,
-  updateArbispotterProductSet,
-} from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -165,15 +162,13 @@ async function crawlEbyListings(task) {
                 productUpdate = {
                   ...productUpdate,
                   ebyUpdatedAt: new Date().toISOString(),
-                  eby_taskId: "",
                   ...(image && { e_img: image }),
                 };
 
-                await updateArbispotterProductSet(
-                  shopDomain,
-                  productLink,
-                  productUpdate
-                );
+                await updateArbispotterProductQuery(shopDomain, productLink, {
+                  $set: productUpdate,
+                  $unset: { eby_taskId: "" },
+                });
               } else {
                 infos.missingProperties.calculationFailed++;
                 await updateArbispotterProductQuery(
@@ -210,7 +205,7 @@ async function crawlEbyListings(task) {
       };
 
       const handleNotFound = async () => {
-        console.log('not found at all')
+        console.log("not found at all");
         infos.notFound++;
         infos.total++;
         queue.total++;

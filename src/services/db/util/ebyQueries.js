@@ -1,6 +1,11 @@
-
-export const resetEbyProductQuery = () => {
+export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
   const query = {
+    $set: {
+      // query ean on eby
+      eby_prop: eby_prop || "",
+      // lookup category
+      cat_prop: cat_prop || "",
+    },
     $unset: {
       //standard properties
       e_pblsh: "",
@@ -19,13 +24,9 @@ export const resetEbyProductQuery = () => {
       e_ns_mrgn: "",
       e_ns_mrgn_pct: "",
       e_tax: "",
-      ebyCategories: '',
+      ebyCategories: "",
       e_vrfd: "",
-      // query ean on eby
-      eby_prop: "",
-      // lookup category
-      cat_prop: "",
-      cat_taskId: '',
+      cat_taskId: "",
       // scrape listing
       ebyUpdatedAt: "",
       eby_taskId: "",
@@ -33,6 +34,6 @@ export const resetEbyProductQuery = () => {
       dealEbyUpdatedAt: "",
       dealEby_taskId: "",
     },
-  }
+  };
   return query;
 };

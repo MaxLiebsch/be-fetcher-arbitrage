@@ -1,4 +1,4 @@
-import { getCrawlDataDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   countPendingProductsForLookupCategoryQuery,
   countTotalProductsForLookupCategoryQuery,
@@ -7,7 +7,7 @@ import {
 export const countTotalProductsForLookupCategory = async (
   shopProductCollectionName
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(countTotalProductsForLookupCategoryQuery);
 };
@@ -15,7 +15,7 @@ export const countTotalProductsForLookupCategory = async (
 export const countPendingProductsForLookupCategory = async (
   shopProductCollectionName
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.count(
     countPendingProductsForLookupCategoryQuery

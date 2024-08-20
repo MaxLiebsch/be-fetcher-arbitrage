@@ -1,4 +1,4 @@
-import { getCrawlDataDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   lockProductsForLookupCategoryQuery,
   setProductsLockedForLookupCategoryQuery,
@@ -11,7 +11,7 @@ export const lockProductsForLookupCategory = async (
   taskId
 ) => {
   const collectionName = domain;
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
 
   const { query, options } = lockProductsForLookupCategoryQuery(
     taskId,
@@ -27,6 +27,7 @@ export const lockProductsForLookupCategory = async (
   // Update documents to mark them as locked
   if (action !== "recover") {
     const query = setProductsLockedForLookupCategoryQuery(taskId);
+    console.log('query:', query)
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

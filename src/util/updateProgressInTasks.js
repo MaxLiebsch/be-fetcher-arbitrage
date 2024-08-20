@@ -70,8 +70,8 @@ export const updateProgressInCrawlEanTask = async (proxyType = "mix") => {
   return progress;
 };
 
-export const updateProgressInLookupCategoryTask = async (proxyType = "mix") => {
-  const pendingShops = await getMissingEbyCategoryShops(proxyType);
+export const updateProgressInLookupCategoryTask = async () => {
+  const pendingShops = await getMissingEbyCategoryShops();
   const progress = pendingShops.reduce((acc, { shop, pending }) => {
     acc.push({
       shop: shop.d,
@@ -79,7 +79,7 @@ export const updateProgressInLookupCategoryTask = async (proxyType = "mix") => {
     });
     return acc;
   }, []);
-  await updateTaskWithQuery({ id: "lookup_category", proxyType }, { progress });
+  await updateTaskWithQuery({ id: "lookup_category" }, { progress });
   return progress;
 };
 

@@ -9,9 +9,7 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import {
-  updateArbispotterProductQuery,
-} from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -24,12 +22,9 @@ import {
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import { upsertAsin } from "./db/util/asinTable.js";
-import { resetAznProduct } from "./lookupInfo.js";
 import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
 import { resetAznProductQuery } from "./db/util/aznQueries.js";
-import { is } from "date-fns/locale";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -177,14 +172,13 @@ export default async function crawlAznListingsWithSellercentral(task) {
         ean,
         prc: buyPrice,
         a_qty: sellQty,
-        qty: buyQty
+        qty: buyQty,
       } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         infos.total++;
         queue.total++;
-        console.log('productInfo:', productInfo)
         if (productInfo) {
           const productUpdate = generateUpdate(
             productInfo,
@@ -201,10 +195,11 @@ export default async function crawlAznListingsWithSellercentral(task) {
               await upsertAsin(asin, eanList, productUpdate.costs);
               Object.assign(productUpdate, {
                 aznUpdatedAt: new Date().toISOString(),
-                azn_taskId: "",
               });
-              console.log("productUpdate:", productUpdate);
-              await updateCrawlDataProduct(productLink, productUpdate);
+              await updateArbispotterProductQuery(productLink, {
+                $set: productUpdate,
+                $unset: { azn_taskId: "" },
+              });
             } else {
               infos.missingProperties.aznCostNeg++;
               await updateArbispotterProductQuery(

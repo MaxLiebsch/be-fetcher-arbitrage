@@ -21,7 +21,7 @@ import {
   deleteArbispotterProduct,
   insertArbispotterProduct,
   moveArbispotterProduct,
-  updateArbispotterProductSet,
+  updateArbispotterProductQuery,
 } from "./db/util/crudArbispotterProduct.js";
 import { createHash } from "../util/hash.js";
 import {
@@ -147,7 +147,6 @@ export default async function crawlEan(task) {
             const inStock = infoMap.get("instock");
 
             const productUpdate = {
-              ean_taskId: "",
               eanUpdatedAt: new Date().toISOString(),
               ean_prop: "found",
               ean,
@@ -164,11 +163,10 @@ export default async function crawlEan(task) {
             }
 
             if (url === productLink) {
-              await updateArbispotterProductSet(
-                shopDomain,
-                productLink,
-                productUpdate
-              );
+              await updateArbispotterProductQuery(shopDomain, productLink, {
+                $set: productUpdate,
+                $unset: { ean_taskId: "" },
+              });
             } else {
               const result = await deleteArbispotterProduct(
                 shopDomain,
@@ -187,21 +185,23 @@ export default async function crawlEan(task) {
           } else {
             infos.missingProperties[shopDomain]["ean"]++;
             const productUpdate = {
-              ean_taskId: "",
               eanUpdatedAt: new Date().toISOString(),
               ean_prop: ean ? "invalid" : "missing",
             };
-            await updateArbispotterProductSet(
-              shopDomain,
-              productLink,
-              productUpdate
-            );
+            await updateArbispotterProductQuery(shopDomain, productLink, {
+              $set: productUpdate,
+              $unset: { ean_taskId: "" },
+            });
           }
         } else {
-          await updateArbispotterProductSet(shopDomain, productLink, {
-            ean_prop: "invalid",
-            eanUpdatedAt: new Date().toISOString(),
-            ean_taskId: "",
+          await updateArbispotterProductQuery(shopDomain, productLink, {
+            $set: {
+              ean_prop: "invalid",
+              eanUpdatedAt: new Date().toISOString(),
+            },
+            $unset: {
+              ean_taskId: "",
+            },
           });
         }
         await isComplete();
@@ -212,10 +212,14 @@ export default async function crawlEan(task) {
         infos.total++;
         queue.total++;
         if (cause === "timeout") {
-          await updateArbispotterProductSet(shopDomain, productLink, {
-            ean_prop: "timeout",
-            eanUpdatedAt: new Date().toISOString(),
-            ean_taskId: "",
+          await updateArbispotterProductQuery(shopDomain, productLink, {
+            $set: {
+              ean_prop: "timeout",
+              eanUpdatedAt: new Date().toISOString(),
+            },
+            $unset: {
+              ean_taskId: "",
+            },
           });
         } else {
           await moveArbispotterProduct(shopDomain, "grave", productLink);

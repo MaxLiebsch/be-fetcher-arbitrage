@@ -118,7 +118,6 @@ export const queryEansOnEby = async (ebay, task) =>
 
       let procProd = {
         ctgry,
-        asin: "",
         mnfctr,
         nm: prodNm,
         img: prefixLink(img, s),

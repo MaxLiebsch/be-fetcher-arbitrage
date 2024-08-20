@@ -1,7 +1,7 @@
 import { getAllShopsAsArray } from "../shops.js";
 import { getLookupCategoryProgress } from "./getLookupCategoryProgress.js";
 
-export async function getMissingEbyCategoryShops(proxyType) {
+export async function getMissingEbyCategoryShops() {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
     (shop) => shop.active 

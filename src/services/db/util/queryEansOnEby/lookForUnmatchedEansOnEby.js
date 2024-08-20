@@ -1,10 +1,10 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "../crudCrawlDataProduct.js";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { hostname } from "../../mongo.js";
 import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
 import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
+import { findArbispotterProducts } from "../crudArbispotterProduct.js";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId,
@@ -84,13 +84,12 @@ export async function getRecoveryQueryEansOnEby(
 ) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter(
-    (shop) =>
-      (shop.hasEan || shop?.ean) && shop.active 
+    (shop) => (shop.hasEan || shop?.ean) && shop.active
   );
   let pendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
-      const products = await findCrawlDataProducts(
+      const products = await findArbispotterProducts(
         shop.d,
         {
           eby_taskId: `${hostname}:${taskId.toString()}`,

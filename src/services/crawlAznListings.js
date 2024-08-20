@@ -1,8 +1,6 @@
 import {
   QueryQueue,
   calculateAznArbitrage,
-  calculateOnlyArbitrage,
-  lookupProductQueue,
   queryProductPageQueue,
   roundToTwoDecimals,
   safeParsePrice,
@@ -11,10 +9,7 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import {
-  updateArbispotterProductSet,
-  updateArbispotterProductQuery,
-} from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -131,7 +126,6 @@ export default async function crawlAznListings(task) {
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
-        console.log(eanList[0], " productInfo:", productInfo);
         infos.total++;
         queue.total++;
         if (productInfo) {
@@ -144,7 +138,6 @@ export default async function crawlAznListings(task) {
             if (costs.azn > 0) {
               const productUpdate = {
                 aznUpdatedAt: new Date().toISOString(),
-                azn_taskId: "",
                 ...(image && { a_img: image }),
                 ...(bsr && { bsr }),
               };
@@ -163,12 +156,12 @@ export default async function crawlAznListings(task) {
               Object.entries(arbitrage).forEach(([key, val]) => {
                 productUpdate[key] = val;
               });
-              await updateArbispotterProductSet(
-                shopDomain,
-                productLink,
-                productUpdate
-              );
-              console.log("productUpdate:", productUpdate);
+              await updateArbispotterProductQuery(shopDomain, productLink, {
+                $set: productUpdate,
+                $unset: {
+                  azn_taskId: "",
+                },
+              });
             } else {
               infos.missingProperties.aznCostNeg++;
               await updateArbispotterProductQuery(

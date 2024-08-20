@@ -1,21 +1,15 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "../crudCrawlDataProduct.js";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { hostname } from "../../mongo.js";
 import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
 import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
+import { findArbispotterProducts } from "../crudArbispotterProduct.js";
 
-export async function lookForMissingEbyCategory(
-  taskId,
-  proxyType,
-  action,
-  productLimit
-) {
+export async function lookForMissingEbyCategory(taskId, action, productLimit) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryLookupCategory(
       taskId,
-      proxyType,
       productLimit
     );
     console.log(
@@ -26,7 +20,7 @@ export async function lookForMissingEbyCategory(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getMissingEbyCategoryShops(proxyType);
+    const pendingShops = await getMissingEbyCategoryShops();
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -79,19 +73,13 @@ export async function lookForMissingEbyCategory(
   }
 }
 
-export async function getRecoveryLookupCategory(
-  taskId,
-  proxyType,
-  productLimit
-) {
+export async function getRecoveryLookupCategory(taskId, productLimit) {
   const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.active 
-  );
+  const filteredShops = shops.filter((shop) => shop.active);
   let pendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
-      const products = await findCrawlDataProducts(
+      const products = await findArbispotterProducts(
         shop.d,
         {
           cat_taskId: `${hostname}:${taskId.toString()}`,

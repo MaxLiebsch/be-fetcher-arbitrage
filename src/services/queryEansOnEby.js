@@ -1,12 +1,9 @@
 import {
   QueryQueue,
-  getManufacturer,
-  prefixLink,
   queryEansOnEbyQueue,
   queryURLBuilder,
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
-  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -19,7 +16,6 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateCrawlDataProduct } from "./db/util/crudCrawlDataProduct.js";
 import {
   updateProgressInLookupCategoryTask,
   updateProgressInQueryEansOnEbyTask,
@@ -28,7 +24,9 @@ import { lookForUnmatchedQueryEansOnEby } from "./db/util/queryEansOnEby/lookFor
 import { createHash } from "../util/hash.js";
 import { getShop } from "./db/util/shops.js";
 import { createArbispotterCollection } from "./db/mongo.js";
-import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+import {
+  updateArbispotterProductQuery,
+} from "./db/util/crudArbispotterProduct.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -44,13 +42,12 @@ export default async function queryEansOnEby(task) {
       missingProperties: {},
     };
 
-    const { products: rawProducts, shops } =
-      await lookForUnmatchedQueryEansOnEby(
-        _id,
-        proxyType,
-        action,
-        productLimit
-      );
+    const { products, shops } = await lookForUnmatchedQueryEansOnEby(
+      _id,
+      proxyType,
+      action,
+      productLimit
+    );
 
     shops.forEach(async (info) => {
       await createArbispotterCollection(info.shop.d);
@@ -62,14 +59,14 @@ export default async function queryEansOnEby(task) {
       };
     });
 
-    if (!rawProducts.length)
+    if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      rawProducts.length < productLimit ? rawProducts.length : productLimit;
+      products.length < productLimit ? products.length : productLimit;
     task.actualProductLimit = _productLimit;
 
-    infos.locked = rawProducts.length;
+    infos.locked = products.length;
 
     //Update task progress
     await updateProgressInQueryEansOnEbyTask();
@@ -104,59 +101,26 @@ export default async function queryEansOnEby(task) {
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
-    for (let index = 0; index < rawProducts.length; index++) {
-      const { shop: srcShop, product: rawCrawlDataProduct } =
-        rawProducts[index];
-      const srcShopDomain = srcShop.d;
-      const {
-        name,
-        category: ctgry,
-        ean,
-        hasMnfctr,
-        mnfctr: manufacturer,
-        price: prc,
-        promoPrice: prmPrc,
-        qty,
-        uprc,
-        e_qty,
-        image: img,
-        link,
-        shop: s,
-      } = rawCrawlDataProduct;
-
-      const query = {
-        ...defaultQuery,
-        product: {
-          value: ean,
-          key: ean,
-        },
-        category: "default",
-      };
-
-      let mnfctr = "";
-      let prodNm = "";
-
-      if (hasMnfctr && manufacturer) {
-        mnfctr = manufacturer;
-        prodNm = name;
-      } else {
-        const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
-        mnfctr = _mnfctr;
-        prodNm = _prodNm;
+    async function isProcessComplete() {
+      if (infos.total === _productLimit && !queue.idle()) {
+        await checkProgress({
+          queue,
+          infos,
+          startTime,
+          productLimit: _productLimit,
+        }).catch(async (r) => {
+          clearInterval(interval);
+          await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
+          await updateProgressInLookupCategoryTask(); // update lookup category task
+          handleResult(r, resolve, reject);
+        });
       }
+    }
 
-      let procProd = {
-        ctgry,
-        asin: "",
-        mnfctr,
-        nm: prodNm,
-        img: prefixLink(img, s),
-        lnk: prefixLink(link, s),
-        s_hash: rawCrawlDataProduct.s_hash,
-        prc: prmPrc ? safeParsePrice(prmPrc) : safeParsePrice(prc),
-        uprc,
-        qty,
-      };
+    for (let index = 0; index < products.length; index++) {
+      const { shop, product } = products[index];
+      const srcShopDomain = shop.d;
+      let { ean, e_qty: sellQty, lnk: productLink } = product;
 
       const foundProducts = [];
 
@@ -167,79 +131,50 @@ export default async function queryEansOnEby(task) {
         infos.shops[srcShopDomain]++;
         infos.total++;
         queue.total++;
-        const arbispotterProductUpdate = {};
+        let productUpdate = {};
         const foundProduct = foundProducts.find((p) => p.link && p.price);
         if (foundProduct) {
-          arbispotterProductUpdate["e_img"] = foundProduct.image;
+          const { image, price, name, link } = foundProduct;
           const shortLink = foundProduct.link.split("?")[0];
-          arbispotterProductUpdate["e_lnk"] = shortLink;
-          arbispotterProductUpdate["e_hash"] = createHash(shortLink);
-          arbispotterProductUpdate["eanList"] = [ean];
-          arbispotterProductUpdate["e_orgn"] = "e";
-          arbispotterProductUpdate["e_pblsh"] = false;
+          const esin = new URL(link).pathname.split("/")[2];
 
-          arbispotterProductUpdate["e_prc"] = foundProduct.price;
-          arbispotterProductUpdate["e_nm"] = replaceAllHiddenCharacters(
-            foundProduct.name
-          );
+          productUpdate["e_img"] = image;
+          productUpdate["e_lnk"] = shortLink;
+          productUpdate["e_hash"] = createHash(shortLink);
+          productUpdate["eanList"] = [ean];
+          productUpdate["e_orgn"] = "e";
+          productUpdate["e_pblsh"] = false;
+          productUpdate["esin"] = esin;
+          productUpdate["e_prc"] = price;
+          productUpdate["e_nm"] = replaceAllHiddenCharacters(name);
 
-          if (e_qty) {
-            arbispotterProductUpdate["e_qty"] = e_qty;
-            arbispotterProductUpdate["e_uprc"] = roundToTwoDecimals(
-              foundProduct.price / e_qty
-            );
+          if (sellQty) {
+            productUpdate["e_qty"] = sellQty;
+            productUpdate["e_uprc"] = roundToTwoDecimals(price / sellQty);
           } else {
-            arbispotterProductUpdate["e_qty"] = 1;
-            arbispotterProductUpdate["e_uprc"] = foundProduct.price;
+            productUpdate["e_qty"] = 1;
+            productUpdate["e_uprc"] = price;
           }
-
-          const esin = new URL(foundProduct.link).pathname.split("/")[2];
-          arbispotterProductUpdate["esin"] = esin;
-
-          const crawlDataProductUpdate = {
-            eby_locked: false,
-            qty_prop: "",
-            e_qty: arbispotterProductUpdate["e_qty"],
-            eby_taskId: "",
-            esin,
-            eby_prop: "complete",
-          };
-          const updatedProduct = { ...procProd, ...arbispotterProductUpdate };
-          const result = await createOrUpdateArbispotterProduct(
-            srcShopDomain,
-            updatedProduct
-          );
-          if (result.acknowledged) {
-            if (result.upsertedId) infos.new++;
-            else infos.old++;
-          } else {
-            infos.failedSave++;
-          }
-          await updateCrawlDataProduct(
-            srcShopDomain,
-            link,
-            crawlDataProductUpdate
-          );
+          await updateArbispotterProductQuery(srcShopDomain, productLink, {
+            $set: {
+              ...productUpdate,
+              eby_prop: "complete",
+            },
+            $unset: {
+              eby_taskId: "",
+            },
+          });
         } else {
-          await updateCrawlDataProduct(srcShopDomain, link, {
-            eby_locked: false,
-            eby_prop: "missing",
-            eby_taskId: "",
+          await updateArbispotterProductQuery(srcShopDomain, productLink, {
+            $set: {
+              eby_prop: "missing",
+            },
+            $unset: {
+              eby_taskId: "",
+            },
           });
         }
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-            await updateProgressInLookupCategoryTask(); // update lookup category task
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isProcessComplete();
       };
       const handleNotFound = async () => {
         infos.notFound++;
@@ -247,27 +182,24 @@ export default async function queryEansOnEby(task) {
         infos.total++;
         queue.total++;
 
-        await updateCrawlDataProduct(srcShopDomain, link, {
-          eby_locked: false,
-          eby_prop: "missing",
-          eby_taskId: "",
+        await updateArbispotterProductQuery(srcShopDomain, productLink, {
+          $set: {
+            eby_prop: "missing",
+          },
+          $unset: {
+            eby_taskId: "",
+          },
         });
-
-        if (infos.total === _productLimit && !queue.idle()) {
-          await checkProgress({
-            queue,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            clearInterval(interval);
-            await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-            await updateProgressInLookupCategoryTask(); // update lookup category task
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isProcessComplete();
       };
-
+      const query = {
+        ...defaultQuery,
+        product: {
+          value: ean,
+          key: ean,
+        },
+        category: "default",
+      };
       const queryLink = queryURLBuilder(toolInfo.queryUrlSchema, query).url;
 
       queue.pushTask(queryEansOnEbyQueue, {

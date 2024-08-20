@@ -86,15 +86,8 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
     query["$set"] = { updatedAt: new Date().toISOString() };
   }
 
-  return collection.updateOne(
-    { lnk: link },
-    {
-      ...query,
-    }
-  );
+  return collection.updateOne({ lnk: link }, query);
 };
-
-
 
 export const updateArbispotterProductSet = async (domain, link, update) => {
   const collectionName = domain;
@@ -143,7 +136,6 @@ export const updateArbispotterProducts = async (domain, query, update) => {
     }
   );
 };
-
 
 export const deleteArbispotterProduct = async (domain, link) => {
   const collectionName = domain;
