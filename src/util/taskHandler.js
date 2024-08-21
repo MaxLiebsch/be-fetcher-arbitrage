@@ -23,15 +23,7 @@ async function handleDailySalesTask({
 }) {
   const { result, name, message } = taskResult;
   const { infos, statistics } = result;
-  const {
-    browserConfig,
-    productLimit,
-    retry,
-    _id,
-    id,
-    categories,
-    shopDomain,
-  } = task;
+  const { browserConfig, _id, id, categories, shopDomain } = task;
   const { limit } = browserConfig.crawlShop;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
@@ -42,33 +34,8 @@ async function handleDailySalesTask({
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
       executing: false,
-      visitedPages: statistics.visitedPages,
+      visitedPages: statistics?.visitedPages || [],
     };
-    if (retry < MAX_TASK_RETRIES) {
-      update["retry"] = retry + 1;
-      update["completedAt"] = "";
-    } else {
-      update["completedAt"] = new UTCDate().toISOString();
-      update["retry"] = 0;
-    }
-    if (
-      result.infos.total > COMPLETE_FAILURE_THRESHOLD &&
-      limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
-    ) {
-      const newPageLimit = calculatePageLimit(
-        limit.pages,
-        productLimit,
-        result.infos.total
-      );
-
-      update["browserConfig.crawlShop.limit"] = {
-        ...limit,
-        pages: newPageLimit,
-      };
-    }
-    if (retry === MAX_TASK_RETRIES && result.infos.total > 0) {
-      update["productLimit"] = result.infos.total;
-    }
     await updateTask(_id, {
       $set: update,
       $pull: { lastCrawler: hostname },
