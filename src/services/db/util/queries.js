@@ -634,10 +634,14 @@ const wholesaleTaskQuery = [
 export const crawlDailySalesQueryFn = (start) => {
   return [
     { type: "DAILY_SALES" },
-    { recurrent: { $eq: true } },
-    { executing: { $eq: false } },
     {
-      $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+      $and: [
+        { recurrent: { $eq: true } },
+        { executing: { $eq: false } },
+        {
+          $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+        },
+      ],
     },
   ];
 };
