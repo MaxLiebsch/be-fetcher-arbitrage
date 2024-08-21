@@ -19,7 +19,7 @@ const shopDomain = "idealo.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '123.0.6312.105');
+    await myBeforeAll(shopDomain, false, '127.0.6533.119');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

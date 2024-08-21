@@ -1,10 +1,10 @@
 import { getArbispotterDb } from "../services/db/mongo.js";
 import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
 import { getAllShopsAsArray } from "../services/db/util/shops.js";
-import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 import { countTotal } from "./countProducts.js";
+import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
 
-const migrationMonthlySold = async () => {
+const migrationAznListings = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
   const activeShops = shops.filter((shop) => shop.active);
@@ -24,11 +24,7 @@ const migrationMonthlySold = async () => {
       const products = await findArbispotterProducts(
         shop.d,
         {
-          $and: [
-            { categories: { $exists: true, $ne: null } },
-            { salesRanks: { $exists: true, $ne: null } },
-            { categoryTree: { $exists: true, $ne: null } },
-          ],
+          $or: [{ "costs.azn": 0 }, { info_prop: "missing" }],
         },
         batchSize,
         cnt
@@ -36,26 +32,18 @@ const migrationMonthlySold = async () => {
       if (products.length) {
         products.map((p) => {
           count++;
-          const set = {};
+          let update = {};
 
-          if (p.categories && p.salesRanks && p.categoryTree) {
-            const monthlySold = calculateMonthlySales(
-              p.categories,
-              p.salesRanks,
-              p.categoryTree
-            );
-            monthlySold !== null &&
-              monthlySold > 0 &&
-              console.log("Monthly sold: ", monthlySold);
-            if (monthlySold) {
-              set["monthlySold"] = monthlySold;
+          if (p.info_prop === "missing" || p.costs.azn === 0) {
+            update = resetAznProductQuery({ info_prop: "missing" });
+            if(p.infoUpdatedAt){
+              update.$set.infoUpdatedAt = p.infoUpdatedAt;
             }
           }
-
           let spotterBulk = {
             updateOne: {
               filter: { _id: p._id },
-              update: { $set: { ...set } },
+              update,
             },
           };
 
@@ -83,6 +71,6 @@ const migrationMonthlySold = async () => {
   }
 };
 
-migrationMonthlySold().then((r) => {
+migrationAznListings().then((r) => {
   process.exit(0);
 });

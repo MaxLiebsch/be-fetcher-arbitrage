@@ -4,7 +4,6 @@ import {
   deleteTasks,
   findTasks,
 } from "../src/services/db/util/tasks.js";
-import { deleteAllProducts } from "../src/services/db/util/crudCrawlDataProduct.js";
 import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import os from "os";
@@ -186,14 +185,12 @@ const main = async () => {
     shops.map(async ({ d }) => {
       //empty DBs
       return Promise.all([
-        deleteAllProducts(d),
         deleteAllArbispotterProducts(d),
         updateShopStats(d),
       ]);
     })
   );
   await Promise.all([
-    deleteAllProducts("sales"),
     deleteAllArbispotterProducts("sales"),
     updateShopStats("sales"),
   ]);

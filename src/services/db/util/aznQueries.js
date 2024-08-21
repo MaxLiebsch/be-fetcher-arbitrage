@@ -1,6 +1,7 @@
+import { UTCDate } from "@date-fns/utc";
 import { keepaProperties } from "./createOrUpdateArbispotterProduct.js";
 
-export const resetAznProductQuery = ({ info_prop, infoUpdatedAt }) => {
+export const resetAznProductQuery = ({ info_prop }) => {
   const query = {
     $unset: {
       //standard properties
@@ -43,20 +44,16 @@ export const resetAznProductQuery = ({ info_prop, infoUpdatedAt }) => {
     query.$unset[prop.name] = "";
   });
 
-  if (!query["$set"] && (info_prop || infoUpdatedAt)) {
+  if (!query["$set"] && info_prop) {
     query["$set"] = {};
-  }
-
-  if (infoUpdatedAt) {
-    query["$set"]["infoUpdatedAt"] = infoUpdatedAt;
-  } else {
-    query["$unset"]["infoUpdatedAt"] = "";
   }
 
   if (info_prop) {
     query["$set"]["info_prop"] = info_prop;
+    query["$set"]["infoUpdatedAt"] = new UTCDate().toISOString();
   } else {
     query["$unset"]["info_prop"] = "";
+    query["$unset"]["infoUpdatedAt"] = "";
   }
 
   return query;

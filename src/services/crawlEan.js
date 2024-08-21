@@ -1,8 +1,6 @@
 import {
   QueryQueue,
-  deliveryTime,
   queryProductPageQueue,
-  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -17,13 +15,6 @@ import {
 import { checkProgress } from "../util/checkProgress.js";
 import { lookForMissingEans } from "./db/util/crawlEan/lookForMissingEans.js";
 import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
-import {
-  deleteArbispotterProduct,
-  insertArbispotterProduct,
-  moveArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "./db/util/crudArbispotterProduct.js";
-import { createHash } from "../util/hash.js";
 import {
   updateProgressInCrawlEanTask,
   updateProgressInLookupInfoTask,

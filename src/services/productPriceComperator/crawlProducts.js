@@ -110,7 +110,10 @@ export const crawlProducts = async (shop, task) =>
                   existingProduct;
                 if (
                   !ean_prop ||
-                  (ean_prop !== "missing" && ean_prop !== "found")
+                  (ean_prop !== "missing" &&
+                    ean_prop !== "invalid" &&
+                    ean_prop !== "timeout" &&
+                    ean_prop !== "found")
                 ) {
                   task.progress.crawlEan.push(existingProduct._id);
                   return;
@@ -137,7 +140,7 @@ export const crawlProducts = async (shop, task) =>
                   eby_prop === "complete" &&
                   (!cat_prop ||
                     (cat_prop !== "complete" &&
-                      cat_prop !== "missing" &&
+                      cat_prop !== "timeout" &&
                       cat_prop !== "ean_missing" &&
                       cat_prop !== "ean_missmatch" &&
                       cat_prop !== "categories_missing" &&

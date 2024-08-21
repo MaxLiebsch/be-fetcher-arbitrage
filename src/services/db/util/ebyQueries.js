@@ -1,3 +1,5 @@
+import { UTCDate } from "@date-fns/utc";
+
 export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
   const query = {
     $unset: {
@@ -36,14 +38,18 @@ export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
   }
   if (eby_prop) {
     query["$set"]["eby_prop"] = eby_prop;
+    query["$set"]["qEbyUpdatedAt"] = new UTCDate().toISOString();
   } else {
     query["$unset"]["eby_prop"] = "";
+    query["$unset"]["qEbyUpdatedAt"] = "";
   }
 
   if (cat_prop) {
     query["$set"]["cat_prop"] = cat_prop;
+    query["set"]["catUpdatedAt"] = new UTCDate().toISOString();
   } else {
     query["$unset"]["cat_prop"] = "";
+    query["$unset"]["catUpdatedAt"] = "";
   }
 
   return query;

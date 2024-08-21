@@ -21,7 +21,7 @@ import {
 } from "./db/util/wholesaleSearch/crudWholeSaleSearch.js";
 import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
 import { upsertAsin } from "./db/util/asinTable.js";
-import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
+import { getMaxLoadQueue } from "./productPriceComperator/lookupInfo.js";
 
 export default async function wholesale(task) {
   return new Promise(async (resolve, reject) => {

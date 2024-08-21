@@ -4,6 +4,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
+import { UTCDate } from "@date-fns/utc";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection,
@@ -44,6 +45,7 @@ export async function handleQueryEansOnEbyIsFinished(
     await updateArbispotterProductQuery(collection, productLink, {
       $set: {
         ...productUpdate,
+        qEbyUpdatedAt: new UTCDate().toISOString(),
         eby_prop: "complete",
       },
       $unset: {

@@ -14,7 +14,7 @@ describe("Transform Product", () => {
     name: "Apple HomePod mini weiß",
     vendor: "",
     mnfctr: "",
-    hasMnfctr: false,
+    hasMnfctr:true,
     price: 105,
     promoPrice: 95,
     prime: false,
@@ -658,8 +658,10 @@ describe("Transform Product", () => {
     qty_batchId: "",
     qty_prop: "complete",
   };
-
+  
   test(`TransformProduct`, () => {
+    const p  = transformProduct(oldProduct);
+    console.log('p:', p)
     const {
       nm,
       lnk,
@@ -678,7 +680,8 @@ describe("Transform Product", () => {
       dscrptnSegments,
       eanList,
       candidates,
-    } = transformProduct(oldProduct);
+    } = p; 
+    console.log('mnfctr', mnfctr)
     expect(nm).toBe(oldProduct.name.replace(mnfctr, "").trim())
     expect(lnk).toBe(oldProduct.link)
     expect(info_locked).toBeUndefined()

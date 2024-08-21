@@ -4,7 +4,6 @@ import { hostname } from "../mongo.js";
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
-  MAX_EARNING_MARGIN,
 } from "../../../constants.js";
 import { UTCDate } from "@date-fns/utc";
 // a_origin setzen when infos ueber lookup ean

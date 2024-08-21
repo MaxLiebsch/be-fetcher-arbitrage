@@ -10,7 +10,7 @@ import { getShop } from "../src/services/db/util/shops.js";
 // };
 
 const secureMode = async () => {
-  const browser = await mainBrowser({ id: "test" }, proxyAuth, "126.0.6478.63");
+  const browser = await mainBrowser({ id: "test" }, proxyAuth, "127.0.6533.119");
   
   const shop = await getShop("gamestop.de");
   const page = await getPage(

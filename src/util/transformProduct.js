@@ -5,7 +5,6 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
   let product = { ...crawlDataProduct };
   let {
     name,
-    hasMnfctr,
     mnfctr,
     price,
     link,
@@ -22,23 +21,128 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
     eby_locked,
     vendor,
     candidates,
+    info_taskId,
+    cat_taskId,
+    eby_taskId,
+    taskId,
+    migrationCompleted,
+    migrationAt,
+    azn_taskId,
+    eby_prop,
+    qEbyUpdatedAt,
+    cat_prop,
+    catUpdatedAt,
+    info_prop,
+    infoUpdatedAt,
+    ean_prop,
+    eanUpdatedAt,
     ean,
+    prime,
+    esin,
+    asin,
+    a_qty,
+    e_qty,
+    qty_batchId,
+    qty_prop,
+    updatedAt, 
     image,
   } = product;
 
-  if (name) {
-    let title = "";
-    let mnfctr = "";
-    if (hasMnfctr && mnfctr) {
-      mnfctr = mnfctr;
-      title = title;
-    } else {
-      const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
-      mnfctr = _mnfctr;
-      title = _prodNm;
+  if (migrationCompleted) {
+    delete product.migrationCompleted;
+  }
+  if (migrationAt) {
+    delete product.migrationAt;
+  }
+
+  if (typeof prime === "boolean") {
+    delete product.prime;
+  }
+
+  if (!eby_prop) {
+    delete product.eby_prop;
+  } else {
+    if (!qEbyUpdatedAt) {
+      product.qEbyUpdatedAt = updatedAt;
     }
-    product["nm"] = title;
-    product["mnfctr"] = mnfctr;
+  }
+
+  if (!cat_prop) {
+    delete product.cat_prop;
+  } else {
+    if (!catUpdatedAt) {
+      product.catUpdatedAt = updatedAt;
+    }
+  }
+
+  if (!ean_prop) {
+    delete product.ean_prop;
+  }else{
+    if (!eanUpdatedAt) {
+      product.eanUpdatedAt = updatedAt;
+    }
+  }
+
+  if (!info_prop) {
+    delete product.info_prop;
+  } else {
+    if (!infoUpdatedAt) {
+      product.infoUpdatedAt = updatedAt;
+    }
+  }
+
+  if (!taskId) {
+    delete product.taskId;
+  }
+
+  if (!azn_taskId) {
+    delete product.azn_taskId;
+  }
+
+  if (!info_taskId) {
+    delete product.info_taskId;
+  }
+
+  if (!cat_taskId) {
+    delete product.cat_taskId;
+  }
+
+  if (!eby_taskId) {
+    delete product.eby_taskId;
+  }
+
+  if (!esin) {
+    delete product.esin;
+  }
+
+  if (!e_qty) {
+    delete product.e_qty;
+  }
+
+  if (!asin) {
+    delete product.asin;
+  }
+
+  if (!a_qty) {
+    delete product.a_qty;
+  }
+
+  if (!qty_batchId) {
+    delete product.qty_batchId;
+  }
+  if (!qty_prop) {
+    delete product.qty_prop;
+  }
+
+  if (name) {
+    if (!mnfctr || mnfctr === "") {
+      const { mnfctr: _mnfctr, prodNm: _prodNm } = getManufacturer(name);
+      product["nm"] = _prodNm;
+      product["mnfctr"] = _mnfctr;
+    } else {
+      product["nm"] = name;
+      product["mnfctr"] = mnfctr;
+    }
 
     delete product.name;
   }
@@ -62,6 +166,9 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
   }
   if (ean) {
     product["eanList"] = [product.ean];
+    if (!eanUpdatedAt) {
+      product.eanUpdatedAt = updatedAt;
+    }
     delete product.ean;
   }
   if (category) {

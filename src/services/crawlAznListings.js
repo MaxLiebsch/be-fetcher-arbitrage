@@ -1,15 +1,11 @@
 import {
   QueryQueue,
-  calculateAznArbitrage,
   queryProductPageQueue,
-  roundToTwoDecimals,
-  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -23,7 +19,6 @@ import {
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
-import { resetAznProductQuery } from "./db/util/aznQueries.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,

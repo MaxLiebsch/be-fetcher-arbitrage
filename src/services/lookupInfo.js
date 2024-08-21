@@ -1,9 +1,7 @@
 import {
   QueryQueue,
-  generateUpdate,
   globalEventEmitter,
   querySellerInfosQueue,
-  replaceAllHiddenCharacters,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -11,13 +9,10 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
 import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { upsertAsin } from "./db/util/asinTable.js";
 import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
-import { getMaxLoadQueue } from "../util/productPriceComperator/lookupInfo.js";
-import { resetAznProductQuery } from "./db/util/aznQueries.js";
+import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,

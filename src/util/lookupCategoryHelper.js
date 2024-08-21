@@ -22,7 +22,7 @@ export async function handleLookupCategoryProductInfo(
 ) {
   infos.total++;
   queue.total++;
-  const {ean: exisitingEan, lnk: productLink } = product;
+  const { ean: exisitingEan, lnk: productLink } = product;
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -107,6 +107,7 @@ export const handleCategoryAndUpdate = async (
     price: buyPrice,
     e_qty: sellQty,
     qty: buyQty,
+    e_vrfd,
     lnk: productLink,
   } = product;
 
@@ -126,6 +127,7 @@ export const handleCategoryAndUpdate = async (
       const productUpdate = {
         ...ebyArbitrage,
         cat_prop: "complete",
+        catUpdatedAt: new UTCDate().toISOString(),
         e_prc: sellPrice,
         e_uprc: sellUnitPrice,
         ebyUpdatedAt: new UTCDate().toISOString(),
@@ -139,6 +141,15 @@ export const handleCategoryAndUpdate = async (
         e_pblsh: true,
         esin,
       };
+      
+      if (!e_vrfd) {
+        productUpdate["e_vrfd"] = {
+          vrfd: false,
+          vrfn_pending: true,
+          flags: [],
+          flag_cnt: 0,
+        };
+      }
       await updateArbispotterProductQuery(shopDomain, productLink, {
         $set: productUpdate,
         $unset: { cat_taskId: "" },

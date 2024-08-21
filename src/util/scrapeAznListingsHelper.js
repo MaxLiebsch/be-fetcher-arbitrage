@@ -63,7 +63,7 @@ export async function handleAznListingProductInfo(
         await updateArbispotterProductQuery(
           collection,
           productLink,
-          resetAznProductQuery({info_prop: "", infoUpdatedAt: ""})
+          resetAznProductQuery({info_prop: ""})
         );
       }
     } else {
@@ -71,7 +71,7 @@ export async function handleAznListingProductInfo(
       await updateArbispotterProductQuery(
         collection,
         productLink,
-        resetAznProductQuery({info_prop: "", infoUpdatedAt: ""})
+        resetAznProductQuery({info_prop: ""})
       );
     }
   } else {
@@ -79,7 +79,7 @@ export async function handleAznListingProductInfo(
     await updateArbispotterProductQuery(
       collection,
       productLink,
-      resetAznProductQuery({info_prop: "", infoUpdatedAt: ""})
+      resetAznProductQuery({info_prop: ""})
     );
   }
 }
@@ -95,6 +95,6 @@ export async function handleAznListingNotFound(
   await updateArbispotterProductQuery(
     collection,
     productLink,
-    resetAznProductQuery({info_prop: "", infoUpdatedAt: ""})
+    resetAznProductQuery({info_prop: ""})
   );
 }

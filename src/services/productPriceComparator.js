@@ -1,13 +1,11 @@
 import { findShops } from "./db/util/shops.js";
-import {
-  createArbispotterCollection,
-} from "./db/mongo.js";
-import { crawlProducts } from "../util/productPriceComperator/crawlProducts.js";
-import { crawlEans } from "../util/productPriceComperator/crawlEan.js";
-import { lookupInfo } from "../util/productPriceComperator/lookupInfo.js";
-import { queryEansOnEby } from "../util/productPriceComperator/queryEansOnEby.js";
-import { lookupCategory } from "../util/productPriceComperator/lookupCategory.js";
-import { crawlEbyListings } from "../util/productPriceComperator/crawlEbyListings.js";
+import { createArbispotterCollection } from "./db/mongo.js";
+import { crawlProducts } from "./productPriceComperator/crawlProducts.js";
+import { crawlEans } from "./productPriceComperator/crawlEan.js";
+import { lookupInfo } from "./productPriceComperator/lookupInfo.js";
+import { queryEansOnEby } from "./productPriceComperator/queryEansOnEby.js";
+import { lookupCategory } from "./productPriceComperator/lookupCategory.js";
+import { crawlEbyListings } from "./productPriceComperator/crawlEbyListings.js";
 import { findArbispotterProductsNoLimit } from "./db/util/crudArbispotterProduct.js";
 import { TaskCompletedStatus } from "../status.js";
 import {
@@ -18,7 +16,7 @@ import {
 import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "./db/util/tasks.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import { scrapeAznListings } from "../util/productPriceComperator/scrapeAznListings.js";
+import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings.js";
 import { getElapsedTime } from "../util/dates.js";
 
 export const salesDbName = "sales";
@@ -89,7 +87,7 @@ export const productPriceComperator = async (task) => {
           };
           console.log("New limit", task.browserConfig.crawlShop.limit);
         }
-        if (retry >= MAX_TASK_RETRIES && infos.total > 1) {
+        if (retry === MAX_TASK_RETRIES && infos.total > 1) {
           console.log(
             "Limit never reached after ",
             retry,
@@ -102,6 +100,15 @@ export const productPriceComperator = async (task) => {
         }
         if (infos.total > 1) {
           retry++;
+        } else if (infos.total === 1 && retry < MAX_TASK_RETRIES) {
+          retry++;
+        } else if (infos.total === 1 && retry === MAX_TASK_RETRIES) {
+          return res(
+            new TaskCompletedStatus("DAILY_DEALS FAILED", task, {
+              infos,
+              statistics: task.statistics,
+            })
+          );
         }
       }
     }

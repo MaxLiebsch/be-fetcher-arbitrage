@@ -1,16 +1,11 @@
 import {
   QueryQueue,
-  calculateEbyArbitrage,
-  findMappedCategory,
   queryProductPageQueue,
-  roundToTwoDecimals,
-  safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -24,7 +19,6 @@ import {
   updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlEbyListings } from "./db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
-import { resetEbyProductQuery } from "./db/util/ebyQueries.js";
 import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,

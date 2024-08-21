@@ -19,6 +19,7 @@ export async function handleLookupInfoProductInfo(
     q_qty: sellQty,
     qty: buyQty,
     ean,
+    a_vrfd,
     lnk: productLink,
   } = product;
   if (productInfo) {
@@ -39,6 +40,15 @@ export async function handleLookupInfoProductInfo(
         processedProductUpdate["eanList"] = [ean];
       }
 
+      if (!a_vrfd) {
+        processedProductUpdate["a_vrfd"] = {
+          vrfd: false,
+          vrfn_pending: true,
+          flags: [],
+          flag_cnt: 0,
+        };
+      }
+
       await updateArbispotterProductQuery(collection, productLink, {
         $set: {
           ...processedProductUpdate,
@@ -50,13 +60,13 @@ export async function handleLookupInfoProductInfo(
       });
     } else {
       infos.missingProperties.costs++;
-      await updateArbispotterProductQuery(collection, productLink, {
-        $set: {
+      await updateArbispotterProductQuery(
+        collection,
+        productLink,
+        resetAznProductQuery({
           info_prop: "missing",
-          infoUpdatedAt: new UTCDate().toISOString(),
-        },
-        $unset: { info_taskId: "" },
-      });
+        })
+      );
     }
   } else {
     infos.missingProperties.infos++;
@@ -65,7 +75,6 @@ export async function handleLookupInfoProductInfo(
       productLink,
       resetAznProductQuery({
         info_prop: "missing",
-        infoUpdatedAt: new UTCDate().toISOString(),
       })
     );
   }
@@ -74,7 +83,6 @@ export async function handleLookupInfoProductInfo(
 export async function handleLookupInfoNotFound(collection, productLink) {
   const query = resetAznProductQuery({
     info_prop: "missing",
-    infoUpdatedAt: new UTCDate().toISOString(),
   });
   await updateArbispotterProductQuery(collection, productLink, query);
 }
