@@ -1,10 +1,10 @@
 import { shuffle } from "underscore";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
-import { hostname } from "../../mongo.js";
 import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
 import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
 import { findArbispotterProducts } from "../crudArbispotterProduct.js";
+import { recoveryLookupCategoryQuery } from "../queries.js";
 
 export async function lookForMissingEbyCategory(taskId, action, productLimit) {
   if (action === "recover") {
@@ -81,9 +81,7 @@ export async function getRecoveryLookupCategory(taskId, productLimit) {
     filteredShops.map(async (shop) => {
       const products = await findArbispotterProducts(
         shop.d,
-        {
-          cat_taskId: `${hostname}:${taskId.toString()}`,
-        },
+        recoveryLookupCategoryQuery(taskId),
         productLimit
       );
       if (products.length > 0) {

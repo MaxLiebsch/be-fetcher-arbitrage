@@ -154,7 +154,6 @@ const migrationPackage = async () => {
           spotter.collection(shop.d).bulkWrite(spotterBulkWrites),
           crawlData.collection(shop.d).bulkWrite(crawlDataBulkWrites),
         ]);
-        await new Promise((r) => setTimeout(r, 1000));
       } else {
         console.log(`Done ${shop.d}`);
       }

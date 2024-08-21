@@ -7,17 +7,18 @@ import {
   myAfterAll,
   myBeforeAll,
 } from "../utils/commonTests.js";
+import { add } from "date-fns";
 
-const shopDomain = "dm.de";
+const shopDomain = "cyberport.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '123.0.6312.105');
+    await myBeforeAll(shopDomain, false, '124.0.6367.207');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
     await mimicTest();
-  }, 1000000); 
+  }, 1000000);
 
   test("Extract product Infos", async () => {
     const addProductInfo = async ({
@@ -28,19 +29,19 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
+        console.log('productInfo:', productInfo)
         const ean = productInfo.find((info) => info.key === "ean");
-        const sku = productInfo.find((info) => info.key === "sku");
-        
-        expect(ean.value).toBe("4066447443073");
-        expect(sku.value).toBe("1686838");
+        const image = productInfo.find((info) => info.key === "image");
+        expect(ean.value).toBe("4262402599902");
+        expect(image.value).toBeDefined();
       } else {
         expect(1).toBe(2);
       }
     };
     await extractProductInfos(addProductInfo);
-  });
+  },60000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

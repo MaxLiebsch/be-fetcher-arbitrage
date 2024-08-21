@@ -113,11 +113,7 @@ async function crawlEbyListings(task) {
       const product = products[index];
       const {
         lnk: productLink,
-        e_qty: buyQty,
-        prc: buyPrice,
-        qty: sellQty,
         esin,
-        ebyCategories,
       } = product;
 
       const addProduct = async (product) => {};

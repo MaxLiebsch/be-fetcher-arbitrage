@@ -1,32 +1,34 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../shops.js";
-import { updateTaskWithQuery } from "../tasks.js";
-import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
-import { getMissingEanShops } from "./getMissingEanShops.js";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryCrawlEanQuery} from "../queries.js";
+import { findCrawlDataProducts } from "../../crudCrawlDataProduct.js";
+import { getAllShopsAsArray } from "../../shops.js";
+import { updateTaskWithQuery } from "../../tasks.js";
+import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";
+import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops.js";
+import { recoveryDealsOnEbyQuery } from "../../queries.js";
+import { findArbispotterProducts } from "../../crudArbispotterProduct.js";
+import { shopProxyTypeFilter } from "../../filter.js";
 
-export async function lookForMissingEans(
+export async function lookForOutdatedDealsOnEby(
   taskId,
   proxyType,
   action,
   productLimit
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryCrawlEan(
+    const recoveryProducts = await getRecoveryDealsOnEby(
       taskId,
       proxyType,
       productLimit
     );
     console.log(
-      "Missing Eans:\n",
+      "Deals On Eby:\n",
       recoveryProducts.shops
         .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
         .join("")
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getMissingEanShops(proxyType);
+    const pendingShops = await getOutdatedDealsOnEbyShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -34,13 +36,11 @@ export async function lookForMissingEans(
 
     const numberOfShops = pendingShops.length;
     const productsPerShop = Math.round(productLimit / numberOfShops);
-
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
-        const limit = Math.min(pending, productsPerShop);
-        const products = await lockProductsForCrawlEan(
+        const products = await lockProductsForDealsOnEby(
           shop.d,
-          limit,
+          productsPerShop,
           action,
           taskId
         );
@@ -62,7 +62,7 @@ export async function lookForMissingEans(
     }, []);
 
     console.log(
-      "Missing Eans:\n",
+      "Deals On Eby:\n",
       Object.values(stats)
         .map(
           (info) => `${info.shopDomain}: p: ${info.pending} b: ${info?.batch}\n`
@@ -79,17 +79,17 @@ export async function lookForMissingEans(
   }
 }
 
-export async function getRecoveryCrawlEan(taskId, proxyType, productLimit) {
+export async function getRecoveryDealsOnEby(taskId, proxyType, productLimit) {
   const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
+  const filteredShops = shops.filter((shop) =>
+    shopProxyTypeFilter(shop, proxyType)
   );
   let pendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
       const products = await findArbispotterProducts(
         shop.d,
-        recoveryCrawlEanQuery(taskId),
+        recoveryDealsOnEbyQuery(taskId),
         productLimit
       );
       if (products.length > 0) {

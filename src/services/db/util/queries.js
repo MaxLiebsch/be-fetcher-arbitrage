@@ -4,6 +4,7 @@ import { hostname } from "../mongo.js";
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
+  MAX_EARNING_MARGIN,
 } from "../../../constants.js";
 import { UTCDate } from "@date-fns/utc";
 // a_origin setzen when infos ueber lookup ean
@@ -38,6 +39,100 @@ System of dependencies:
     and end of the task
 */
 
+/*               General                                       */
+
+export const totalPositivAmazon = {
+  $and: [
+    { a_pblsh: true },
+    { a_prc: { $gt: 0 } },
+    { a_uprc: { $gt: 0 } },
+    { a_mrgn: { $gt: 0 } },
+    { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+  ],
+};
+export const totalNegativAmazon = {
+  $and: [
+    { a_prc: { $gt: 0 } },
+    { a_uprc: { $gt: 0 } },
+    { a_mrgn: { $lte: 0 } },
+    { a_mrgn_pct: { $lte: 0 } },
+  ],
+};
+export const totalPositivEbay = {
+  $and: [
+    { e_pblsh: true },
+    { e_prc: { $gt: 0 } },
+    { e_uprc: { $gt: 0 } },
+    { e_mrgn: { $gt: 0 } },
+    { e_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+  ],
+};
+export const totalNegativEbay = {
+  $and: [
+    { e_prc: { $gt: 0 } },
+    { e_uprc: { $gt: 0 } },
+    { e_mrgn: { $lte: 0 } },
+    { e_mrgn_pct: { $lte: 0 } },
+  ],
+};
+
+/*               Aggregations                                   */
+
+export const ebayMarginCalculationAggregationStep = [
+  {
+    $addFields: {
+      e_mrgn: {
+        $round: [
+          {
+            $subtract: [
+              "$e_prc",
+              {
+                $add: [
+                  {
+                    $divide: [
+                      {
+                        $multiply: ["$prc", { $divide: ["$e_qty", "$qty"] }],
+                      },
+                      {
+                        $add: [
+                          1,
+                          { $divide: [{ $ifNull: ["$tax", 19] }, 100] },
+                        ],
+                      },
+                    ],
+                  },
+                  "$e_tax",
+                  0,
+                  0,
+                  "$e_costs",
+                ],
+              },
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+  {
+    $addFields: {
+      e_mrgn_pct: {
+        $round: [
+          {
+            $multiply: [
+              {
+                $divide: ["$e_mrgn", "$e_prc"],
+              },
+              100,
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+];
+
 /*               Queries Crawl (1)                            */
 
 export const crawlShopTaskQueryFn = (start, weekday) => {
@@ -59,7 +154,7 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
   let options = {};
 
   if (action === "recover") {
-    query["ean_taskId"] = `${hostname}:${taskId.toString()}`;
+    query["ean_taskId"] = setTaskId(taskId);
   } else {
     query = countPendingProductsForCrawlEanQuery;
 
@@ -71,9 +166,7 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
 };
 export const setProductsLockedForCrawlEanQuery = (taskId) => {
   return {
-    $set: {
-      ean_taskId: `${hostname}:${taskId.toString()}`,
-    },
+    $set: recoveryCrawlEanQuery(taskId),
   };
 };
 export const countPendingProductsForCrawlEanQuery = {
@@ -87,8 +180,10 @@ export const countPendingProductsForCrawlEanQuery = {
     },
   ],
 };
+export const recoveryCrawlEanQuery = (taskId) => {
+  return { ean_taskId: setTaskId(taskId) };
+};
 export const countTotalProductsForCrawlEanQuery = {};
-
 export const crawlEanTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "CRAWL_EAN" },
@@ -125,7 +220,7 @@ export const lockProductsForLookupInfoQuery = (
   let options = {};
 
   if (action === "recover") {
-    query["info_taskId"] = `${hostname}:${taskId.toString()}`;
+    query["info_taskId"] = setTaskId(taskId);
   } else {
     query = countPendingProductsLookupInfoQuery(hasEan);
 
@@ -137,10 +232,11 @@ export const lockProductsForLookupInfoQuery = (
 };
 export const setProductsLockedForLookupInfoQuery = (taskId) => {
   return {
-    $set: {
-      info_taskId: `${hostname}:${taskId.toString()}`,
-    },
+    $set: recoveryLookupInfoQuery(taskId),
   };
+};
+export const recoveryLookupInfoQuery = (taskId) => {
+  return { info_taskId: setTaskId(taskId) };
 };
 export const countPendingProductsLookupInfoQuery = (hasEan) => {
   const query = {
@@ -217,10 +313,9 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
   let query = {};
 
   if (action === "recover") {
-    query["taskId"] = `${hostname}:${taskId.toString()}`;
+    query["taskId"] = setTaskId(taskId);
   } else {
     query = countPendingProductsForMatchQuery(hasEan);
-
     if (limit) {
       options["limit"] = limit;
     }
@@ -230,7 +325,8 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
 export const setProductsLockedForMatchQuery = (taskId) => {
   return {
     $set: {
-      taskId: `${hostname}:${taskId.toString()}`,
+      locked: true,
+      taskId: setTaskId(taskId),
     },
   };
 };
@@ -239,6 +335,12 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
     $and: [
       { taskId: { $exists: false } },
       { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
+      {
+        $or: [
+          { matchedAt: { $exists: false } },
+          { matchedAt: { $lte: twentyFourAgo.toISOString() } },
+        ],
+      },
     ],
   };
   if (hasEan) {
@@ -297,7 +399,7 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
   let options = {};
 
   if (action === "recover") {
-    query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
+    query["eby_taskId"] = setTaskId(taskId);
   } else {
     query = countPendingProductsQueryEansOnEbyQuery;
     if (limit) {
@@ -309,7 +411,7 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
 export const setProductsLockedForQueryEansOnEbyQuery = (taskId) => {
   return {
     $set: {
-      eby_taskId: `${hostname}:${taskId.toString()}`,
+eby_taskId: setTaskId(taskId),
     },
   };
 };
@@ -324,10 +426,12 @@ export const countPendingProductsQueryEansOnEbyQuery = {
     },
   ],
 };
+export const recoveryQueryEansOnEby = (taskId) => {
+  return { eby_taskId: setTaskId(taskId) };
+};
 export const countTotalProductsForQueryEansOnEbyQuery = {
   ean: { $exists: true, $ne: "" },
 };
-
 export const queryEansOnEbyTaskQueryFn = (
   lowerThenStartedAt,
   danglingMatchThreshold
@@ -368,10 +472,9 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
   let options = {};
 
   if (action === "recover") {
-    query["cat_taskId"] = `${hostname}:${taskId.toString()}`;
+    query = recoveryLookupCategoryQuery(taskId);
   } else {
     query = countPendingProductsForLookupCategoryQuery;
-
     if (limit) {
       options["limit"] = limit;
     }
@@ -381,7 +484,7 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
 export const setProductsLockedForLookupCategoryQuery = (taskId) => {
   return {
     $set: {
-      cat_taskId: `${hostname}:${taskId.toString()}`,
+cat_taskId: setTaskId(taskId),
     },
   };
 };
@@ -400,8 +503,11 @@ export const countPendingProductsForLookupCategoryQuery = {
     { esin: { $exists: true, $ne: "" } },
   ],
 };
+export const recoveryLookupCategoryQuery = (taskId) => {
+  return { cat_taskId: setTaskId(taskId) };
+};
 export const countTotalProductsForLookupCategoryQuery = {
-  eby_prop: { $exists: true, $eq: "complete" },
+  esin: { $exists: true, $ne: "" },
 };
 export const lookupCategoryTaskQueryFn = (
   lowerThenStartedAt,
@@ -432,13 +538,30 @@ export const lookupCategoryTaskQueryFn = (
   ];
 };
 
-/*          Queries: Crawl Azn listings (4.1) - crawl-data               */
+/*          Queries: Scrape Azn listings (4.1) - arbispotter               */
 
+export const pendingScrapeAznListingsQuery = {
+  $and: [
+    {
+      $or: [{ azn_taskId: { $exists: false } }, { azn_taskId: { $eq: "" } }],
+    },
+    {
+      asin: { $exists: true, $ne: "" },
+    },
+    {
+      $or: [
+        { aznUpdatedAt: { $exists: false } },
+        { aznUpdatedAt: { $lt: subDateDaysISO(7) } },
+      ],
+    },
+    { ...totalNegativAmazon },
+  ],
+};
 export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
   let query = {};
   let options = {};
   if (action === "recover") {
-    query["azn_taskId"] = `${hostname}:${taskId.toString()}`;
+    query = recoveryCrawlAznListingsQuery(taskId);
   } else {
     query = countPendingProductsForCrawlAznListingsQuery();
   }
@@ -451,26 +574,15 @@ export const lockProductsForCrawlAznListingsQuery = (limit, taskId, action) => {
 export const setProductsLockedForCrawlAznListingsQuery = (taskId) => {
   return {
     $set: {
-      azn_taskId: `${hostname}:${taskId.toString()}`,
+      azn_taskId: setTaskId(taskId),
     },
   };
 };
+export const recoveryCrawlAznListingsQuery = (taskId) => {
+  return { azn_taskId: setTaskId(taskId) };
+};
 export const countPendingProductsForCrawlAznListingsQuery = () => {
-  const query = {
-    $and: [
-      { azn_taskId: { $exists: false } },
-      {
-        asin: { $exists: true, $ne: "" },
-      },
-      {
-        $or: [
-          { aznUpdatedAt: { $exists: false } },
-          { aznUpdatedAt: { $lt: subDateDaysISO(7) } },
-        ],
-      },
-    ],
-  };
-  return query;
+  return pendingScrapeAznListingsQuery;
 };
 export const countCompletedProductsForCrawlAznListingsQuery = () => {
   return {
@@ -484,11 +596,12 @@ export const countCompletedProductsForCrawlAznListingsQuery = () => {
           { aznUpdatedAt: { $gte: subDateDaysISO(7) } },
         ],
       },
+      { ...totalNegativAmazon },
     ],
   };
 };
 export const countTotalProductsCrawlAznListingsQuery = {
-  asin: { $exists: true, $ne: "" },
+  $and: [{ asin: { $exists: true, $ne: "" } }, ...totalNegativAmazon.$and],
 };
 export const crawlAznListingsTaskQueryFn = (
   lowerThenStartedAt,
@@ -509,13 +622,13 @@ export const crawlAznListingsTaskQueryFn = (
   ];
 };
 
-/*          Queries: Crawl Eby listings (4.2) - crawl-data              */
+/*          Queries: Scrape Eby listings (4.2) - arbispotter       */
 
 export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
   let query = {};
   let options = {};
   if (action === "recover") {
-    query["eby_taskId"] = `${hostname}:${taskId.toString()}`;
+    query["eby_taskId"] = setTaskId(taskId);
   } else {
     query = countPendingProductsForCrawlEbyListingsQuery();
   }
@@ -528,7 +641,7 @@ export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
 export const setProductsLockedForCrawlEbyListingsQuery = (taskId) => {
   return {
     $set: {
-      eby_taskId: `${hostname}:${taskId.toString()}`,
+      eby_taskId: setTaskId(taskId),
     },
   };
 };
@@ -580,6 +693,106 @@ export const countTotalProductsCrawlEbyListingsQuery = {
     },
   ],
 };
+
+/* Queries: Scrape Eby listings (4.2) - aggregation - arbispotter */
+
+const pendingScrapeEbyListingsMatchStage = [
+  {
+    $or: [{ eby_taskId: { $exists: false } }, { eby_taskId: { $eq: "" } }],
+  },
+  {
+    esin: { $exists: true, $ne: "" },
+  },
+  {
+    ebyCategories: { $exists: true, $ne: [] },
+  },
+  {
+    $or: [
+      { ebyUpdatedAt: { $exists: false } },
+      { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
+    ],
+  },
+  ...totalNegativEbay.$and,
+];
+export const lockProductsForCrawlEbyListingsAggregation = (
+  limit,
+  taskId,
+  action
+) => {
+  let agg = [];
+  if (action === "recover") {
+    agg.push({ $match: recoveryScrapeEbyListingsQuery(taskId) });
+  } else {
+    agg = countPendingProductsForCrawlEbyListingsAggregation({
+      returnTotal: false,
+      limit: limit && action !== "recover" ? limit : null,
+    });
+  }
+  return agg;
+};
+export const countPendingProductsForCrawlEbyListingsAggregation = ({
+  returnTotal,
+  limit,
+}) => {
+  const agg = [
+    ...ebayMarginCalculationAggregationStep,
+    {
+      $match: {
+        $and: pendingScrapeEbyListingsMatchStage,
+      },
+    },
+  ];
+  if (returnTotal) {
+    agg.push({ $count: "total" });
+  }
+  if (limit) {
+    agg.push({ $limit: limit });
+  }
+  return agg;
+};
+export const recoveryScrapeEbyListingsQuery = (taskId) => {
+  return { eby_taskId: setTaskId(taskId) };
+};
+export const countCompletedProductsForCrawlEbyListingsAggregation = [
+  ...ebayMarginCalculationAggregationStep,
+  {
+    $match: {
+      $and: [
+        {
+          esin: { $exists: true, $ne: "" },
+        },
+        {
+          ebyCategories: { $exists: true, $ne: [] },
+        },
+        {
+          $or: [
+            { ebyUpdatedAt: { $exists: true } },
+            { ebyUpdatedAt: { $gte: subDateDaysISO(7) } },
+          ],
+        },
+        ...totalNegativEbay.$and,
+      ],
+    },
+  },
+  { $count: "total" },
+];
+export const countTotalProductsCrawlEbyListingsAggregation = [
+  ...ebayMarginCalculationAggregationStep,
+  {
+    $match: {
+      $and: [
+        {
+          esin: { $exists: true, $ne: "" },
+        },
+        {
+          ebyCategories: { $exists: true, $ne: [] },
+        },
+        ...totalNegativEbay.$and,
+      ],
+    },
+  },
+  { $count: "total" },
+];
 export const crawlEbyListingsTaskQueryFn = (
   lowerThenStartedAt,
   danglingLookupThreshold
@@ -609,6 +822,7 @@ const scanTaskQuery = [
 ];
 
 /*               Queries: Wholesale  (6)                         */
+
 export const countPendingProductsForWholesaleSearchQuery = (taskId) => {
   const query = {
     taskId: taskId.toString(),
@@ -623,7 +837,6 @@ export const countCompletedProductsForWholesaleSearchQuery = (taskId) => {
     status: { $in: ["complete", "not found"] },
   };
 };
-
 const wholesaleTaskQuery = [
   { type: "WHOLESALE_SEARCH" },
   { "progress.pending": { $gt: 0 } },
@@ -638,6 +851,352 @@ export const crawlDailySalesQueryFn = (start) => {
     { executing: { $eq: false } },
     {
       $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+    },
+  ];
+};
+
+/*              Queries: deals on Eby (8) - arbispotter   
+                  dealsEby
+                 dealEbyUpdatedAt
+                 dealEbyTaskId       
+
+*/
+
+export const lockProductsForDealsOnEbyAgg = (limit, taskId, action) => {
+  let agg = [];
+  if (action === "recover") {
+    agg.push({ $match: { dealEbyTaskId: setTaskId(taskId) } });
+  } else {
+    agg = countPendingProductsForDealsOnEbyAgg({
+      returnTotal: false,
+      limit: limit && action !== "recover" ? limit : null,
+    });
+  }
+  return agg;
+};
+export const countPendingProductsForDealsOnEbyAgg = ({
+  returnTotal,
+  limit,
+}) => {
+  const agg = [
+    ...ebayMarginCalculationAggregationStep,
+    {
+      $match: {
+        $and: [
+          {
+            $or: [
+              { dealEbyTaskId: { $exists: false } },
+              { dealEbyTaskId: { $eq: "" } },
+            ],
+          },
+          {
+            esin: { $exists: true, $ne: "" },
+          },
+          {
+            ebyCategories: { $exists: true, $ne: [] },
+          },
+          {
+            $or: [
+              { dealEbyUpdatedAt: { $exists: false } },
+              { dealEbyUpdatedAt: { $lt: subDateDaysISO(7) } },
+            ],
+          },
+          ...totalPositivEbay.$and,
+        ],
+      },
+    },
+  ];
+  if (returnTotal) {
+    agg.push({ $count: "total" });
+  }
+  if (limit) {
+    agg.push({ $limit: limit });
+  }
+  return agg;
+};
+export const recoveryDealsOnEbyQuery = (taskId) => {
+  return { dealEbyTaskId: setTaskId(taskId) };
+};
+export const countCompletedProductsForDealsOnEbyAgg = [
+  ...ebayMarginCalculationAggregationStep,
+  {
+    $match: {
+      $and: [
+        {
+          esin: { $exists: true, $ne: "" },
+        },
+        {
+          ebyCategories: { $exists: true, $ne: [] },
+        },
+        {
+          $or: [
+            { ebyUpdatedAt: { $exists: true } },
+            { ebyUpdatedAt: { $gte: subDateDaysISO(7) } },
+          ],
+        },
+        ...totalPositivEbay.$and,
+      ],
+    },
+  },
+  { $count: "total" },
+];
+export const setProductsLockedForDealsOnEbyQuery = (taskId) => {
+  return {
+    $set: recoveryDealsOnEbyQuery(taskId),
+  };
+};
+export const countTotalProductsDealsOnEbyAgg = [
+  ...ebayMarginCalculationAggregationStep,
+  {
+    $match: {
+      $and: [
+        {
+          esin: { $exists: true, $ne: "" },
+        },
+        {
+          ebyCategories: { $exists: true, $ne: [] },
+        },
+        ...totalPositivEbay.$and,
+      ],
+    },
+  },
+  { $count: "total" },
+];
+export const dealsOnEbyTaskQueryFn = (start) => {
+  return [
+    { type: "DEALS_ON_EBY" },
+    {
+      $or: [
+        { startedAt: { $exists: false } },
+        { startedAt: "" },
+        {
+          startedAt: { $lt: start },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+  ];
+};
+
+/*               Queries: deals on Azn (8) - arbispotter     
+              dealsAzn
+                dealAznUpdatedAt
+                dealAznTaskId                   
+*/
+
+export const pendingDealsOnAznQuery = {
+  $and: [
+    {
+      $or: [
+        { dealAznTaskId: { $exists: false } },
+        { dealAznTaskId: { $eq: "" } },
+      ],
+    },
+    {
+      asin: { $exists: true, $ne: "" },
+    },
+    {
+      $or: [
+        { dealAznUpdatedAt: { $exists: false } },
+        { dealAznUpdatedAt: { $lt: subDateDaysISO(1) } },
+      ],
+    },
+    ...totalPositivAmazon.$and,
+  ],
+};
+
+export const recoveryDealsOnAznQuery = (taskId) => {
+  return { dealAznTaskId: setTaskId(taskId) };
+};
+export const lockProductsForDealsOnAznQuery = (limit, taskId, action) => {
+  let query = {};
+  let options = {};
+  if (action === "recover") {
+    query["azn_taskId"] = setTaskId(taskId);
+  } else {
+    query = pendingDealsOnAznQuery;
+  }
+
+  if (limit && action !== "recover") {
+    options["limit"] = limit;
+  }
+  return { options, query };
+};
+export const setProductsLockedForDealsOnAznQuery = (taskId) => {
+  return {
+    $set: recoveryDealsOnAznQuery(taskId),
+  };
+};
+export const countPendingProductsForDealsOnAznQuery = () => {
+  return pendingDealsOnAznQuery;
+};
+export const countCompletedProductsForDealsOnAznQuery = () => {
+  return {
+    $and: [
+      {
+        asin: { $exists: true, $ne: "" },
+      },
+      {
+        $or: [
+          { aznUpdatedAt: { $exists: true } },
+          { aznUpdatedAt: { $gte: subDateDaysISO(7) } },
+        ],
+      },
+      totalPositivAmazon.$and,
+    ],
+  };
+};
+export const countTotalProductsDealsOnAznQuery = {
+  $and: [{ asin: { $exists: true, $ne: "" } }, ...totalPositivAmazon.$and],
+};
+export const dealsOnAznTaskQueryFn = (start) => {
+  return [
+    { type: "DEALS_ON_AZN" },
+    {
+      $or: [
+        { startedAt: { $exists: false } },
+        { startedAt: "" },
+        {
+          startedAt: { $lt: start },
+        },
+      ],
+    },
+    { recurrent: { $eq: true } },
+  ];
+};
+
+/*   Queries: update product info (8) - arbispotter             */
+
+export const lockProductsForUpdateProductinfoQuery = (
+  taskId,
+  limit,
+  action
+) => {
+  let query = {};
+  let options = {};
+
+  if (action === "recover") {
+    query["availTaskId"] = setTaskId(taskId);
+  } else {
+    query = countPendingProductsUpdateProductinfoAgg;
+    if (limit) {
+      options["limit"] = limit;
+    }
+  }
+  return { query, options };
+};
+export const setProductsLockedForUpdateProductinfoQuery = (taskId) => {
+  return {
+    $set: {
+      availTaskId: setTaskId(taskId),
+    },
+  };
+};
+
+const availTaskPendingStages = [
+  {
+    $or: [
+      { availUpdatedAt: { $exists: false } },
+      { availUpdatedAt: { $lt: subDateDaysISO(1) } },
+    ],
+  },
+  {
+    $or: [{ availTaskId: { $exists: false } }, { availTaskId: "" }],
+  },
+];
+const availTaskCompletedStage = [
+  {
+    $or: [
+      { availUpdatedAt: { $exists: true } },
+      { availUpdatedAt: { $gte: subDateDaysISO(1) } },
+    ],
+  },
+];
+
+export const countTotalProductsForUpdateProductinfoAgg = [
+  {
+    $facet: {
+      ebay: [
+        ...ebayMarginCalculationAggregationStep,
+        {
+          $match: { $and: [...totalPositivEbay.$and] },
+        },
+        { $count: "total" },
+      ],
+      amazon: [
+        {
+          $match: {
+            $and: [...totalPositivAmazon.$and],
+          },
+        },
+        { $count: "total" },
+      ],
+    },
+  },
+];
+export const countPendingProductsUpdateProductinfoAgg = [
+  {
+    $facet: {
+      ebay: [
+        ...ebayMarginCalculationAggregationStep,
+        {
+          $match: {
+            $and: [...totalPositivEbay.$and, ...availTaskPendingStages],
+          },
+        },
+        { $count: "total" },
+      ],
+      amazon: [
+        {
+          $match: {
+            $and: [...totalPositivAmazon.$and, ...availTaskPendingStages],
+          },
+        },
+        { $count: "total" },
+      ],
+    },
+  },
+];
+export const countCompletedProductsUpdateProductinfoAgg = [
+  {
+    $facet: {
+      ebay: [
+        ...ebayMarginCalculationAggregationStep,
+        {
+          $match: {
+            $and: [...totalPositivEbay.$and, ...availTaskCompletedStage],
+          },
+        },
+        { $count: "total" },
+      ],
+      amazon: [
+        {
+          $match: {
+            $and: [...totalPositivAmazon.$and, ...availTaskCompletedStage],
+          },
+        },
+        { $count: "total" },
+      ],
+    },
+  },
+];
+
+export const updateProductinfoTaskQueryFn = (start, danglingMatchThreshold) => {
+  return [
+    { type: "UPDATE_PRODUCT_INFO" },
+    {
+      $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+    },
+    { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
     },
   ];
 };
@@ -682,6 +1241,8 @@ export const findTasksQuery = () => {
 
   const crawlShopTaskQuery = crawlShopTaskQueryFn(start, weekday); // (1)
   const dailySalesTaskQuery = crawlDailySalesQueryFn(start);
+  const dealsOnEbyTaskQuery = dealsOnEbyTaskQueryFn(start); // (8)
+  const dealsOnAznTaskQuery = dealsOnAznTaskQueryFn(start); // (8)
 
   const crawlEanTaskQuery = crawlEanTaskQueryFn(lowerThenStartedAt); // (2)
   const lookupInfoTaskQuery = lookupInfoTaskQueryFn(lowerThenStartedAt); // (3.1)
@@ -715,6 +1276,12 @@ export const findTasksQuery = () => {
           },
           {
             $and: dailySalesTaskQuery,
+          },
+          {
+            $and: dealsOnEbyTaskQuery,
+          },
+          {
+            $and: dealsOnAznTaskQuery,
           },
         ],
       },
@@ -818,4 +1385,10 @@ export const findTasksQuery = () => {
     danglingMatchThreshold,
     danglingLookupThreshold,
   };
+};
+
+/*               Helper Functions                             */
+
+export const setTaskId = (taskId) => {
+  return `${hostname}:${taskId.toString()}`;
 };

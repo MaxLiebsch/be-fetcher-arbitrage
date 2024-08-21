@@ -1,28 +1,32 @@
 import { getArbispotterDb } from "../../mongo.js";
 import {
-  lockProductsForCrawlEbyListingsAggregation,
-  setProductsLockedForCrawlEbyListingsQuery,
+  lockProductsForUpdateProductinfoQuery,
+  setProductsLockedForUpdateProductinfoQuery,
 } from "../queries.js";
 
-export const lockProductsForCrawlEbyListings = async (
+export const lockProductsForUpdateProductinfo = async (
   domain,
   limit = 0,
-  taskId,
-  action
+  action,
+  taskId
 ) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const agg = lockProductsForCrawlEbyListingsAggregation(limit, taskId, action);
+  const { query, options } = lockProductsForUpdateProductinfoQuery(
+    taskId,
+    limit,
+    action
+  );
 
   const documents = await db
     .collection(collectionName)
-    .aggregate(agg)
+    .find(query, options)
     .toArray();
 
   // Update documents to mark them as locked
   if (action !== "recover") {
-    const query = setProductsLockedForCrawlEbyListingsQuery(taskId);
+    const query = setProductsLockedForUpdateProductinfoQuery(taskId);
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

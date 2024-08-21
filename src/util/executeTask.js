@@ -9,9 +9,17 @@ import lookupCategory from "../services/lookupCategory.js";
 import crawlEbyListings from "../services/crawlEbyListings.js";
 import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellercentral.js";
 import { productPriceComperator } from "../services/productPriceComparator.js";
+import dealsOnEby from "../services/dealsOnEby.js";
+import dealsOnAzn from "../services/dealsOnAzn.js";
 
 export async function executeTask(task) {
   const { type } = task;
+  if(type === 'DEALS_ON_EBY') {
+   return await dealsOnEby(task);
+  }
+  if(type === 'DEALS_ON_AZN') {
+   return await dealsOnAzn(task);
+  }
   if (type === "DAILY_SALES") {
     return await productPriceComperator(task);
   }

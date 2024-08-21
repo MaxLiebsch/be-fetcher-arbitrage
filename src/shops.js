@@ -107,6 +107,18 @@ export const shops = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
+        content: "price",
+        path: "offers.lowPrice",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
         content: "ean",
         path: "gtin",
       },
@@ -934,7 +946,7 @@ export const shops = {
       min: 700,
       max: 800,
     },
-    product: [
+    product: [ 
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",

@@ -12,7 +12,7 @@ const shopDomain = "mueller.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '123.0.6312.105');
+    await myBeforeAll(shopDomain, false,'124.0.6367.207');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

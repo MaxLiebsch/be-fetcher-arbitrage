@@ -36,3 +36,35 @@
 
 
 - [x] infinit loop in scrapeProductPrice when only one product is found.
+- [ ] handle recover properly
+- [ ] check sales categories
+
+
+# Daily Product Updates
+
+Branch
+- [x] scrape eby listings to spotter db
+- [x] migrate relevant properties
+
+- [x] scrape azn listings to spotter db
+- [x] migrate relevant properties
+
+
+- [] daily product updates look only for positive margins
+- [] daily product update 
+     checks availability and price of sourceshop
+     check price and existence in eby listing and azn listing
+     when not available (sourceshop listing nicht verfuegbar) move to grave yard
+     set a_pblsh or e_pblsh to true
+- [] add availability to shops
+- [] availupdatedAt checken, herkunftsshop availUpdatedAt setzen am Beginn der Abfrage
+
+
+- [x] CrawlEbyListings
+     lockproducts with aggregation lockProductsForCrawlEbyListingsQuery
+
+
+Tests 
+- CrawlEbyListings aggregation
+
+
