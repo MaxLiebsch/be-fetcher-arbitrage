@@ -1,4 +1,8 @@
-import { deliveryTime, safeParsePrice } from "@dipmaxtech/clr-pkg";
+import {
+  deliveryTime,
+  roundToTwoDecimals,
+  safeParsePrice,
+} from "@dipmaxtech/clr-pkg";
 import {
   deleteArbispotterProduct,
   insertArbispotterProduct,
@@ -14,9 +18,9 @@ export async function handleCrawlEanProductInfo(
   queue,
   product,
   infos,
-  task = null,
+  task = null
 ) {
-  const { lnk: productLink } = product;
+  const { lnk: productLink, qty: buyQty } = product;
   infos.shops[collectionName]++;
   infos.total++;
   queue.total++;
@@ -38,12 +42,12 @@ export async function handleCrawlEanProductInfo(
         eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: "found",
         ean,
-        ...(prc && { prc }),
+        ...(prc && { prc, uprc: roundToTwoDecimals(prc / buyQty) }),
         ...(image && { img: image }),
         ...(sku && { sku }),
         ...(mku && { mku }),
       };
-      if(task){
+      if (task) {
         task.progress.queryEansOnEby.push(product._id);
         task.progress.lookupInfo.push(product._id);
       }
