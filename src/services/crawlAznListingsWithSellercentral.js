@@ -207,7 +207,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
               await updateArbispotterProductQuery(
                 shopDomain,
                 productLink,
-                resetAznProductQuery({ info_prop: "" })
+                resetAznProductQuery()
               );
             }
           } else {
@@ -215,7 +215,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
             await updateArbispotterProductQuery(
               shopDomain,
               productLink,
-              resetAznProductQuery({ info_prop: "" })
+              resetAznProductQuery()
             );
           }
         } else {
@@ -223,7 +223,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
           await updateArbispotterProductQuery(
             shopDomain,
             productLink,
-            resetAznProductQuery({ info_prop: "" })
+            resetAznProductQuery()
           );
         }
         await isCompleted(queue);
@@ -235,7 +235,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         await updateArbispotterProductQuery(
           shopDomain,
           productLink,
-          resetAznProductQuery({ info_prop: "" })
+          resetAznProductQuery()
         );
         await isCompleted(queue);
       };

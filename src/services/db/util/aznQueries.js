@@ -1,7 +1,8 @@
 import { UTCDate } from "@date-fns/utc";
 import { keepaProperties } from "./createOrUpdateArbispotterProduct.js";
 
-export const resetAznProductQuery = ({ info_prop }) => {
+export const resetAznProductQuery = (props = { info_prop: "" }) => {
+  const { info_prop } = props;
   const query = {
     $unset: {
       //standard properties
@@ -37,7 +38,7 @@ export const resetAznProductQuery = ({ info_prop }) => {
       azn_taskId: "",
       // dealazn properties
       dealAznUpdatedAt: "",
-      dealAzn_taskId: "",
+      dealAznTaskId: "",
     },
   };
   keepaProperties.forEach((prop) => {
