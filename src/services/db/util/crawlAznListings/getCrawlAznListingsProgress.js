@@ -29,9 +29,9 @@ export const countPendingProductsForCrawlAznListings = async (
 ) => {
   const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
-  return shopProductCollection.count(
-    countPendingProductsForCrawlAznListingsQuery()
-  );
+  const query = countPendingProductsForCrawlAznListingsQuery();
+  console.log('Query: ', JSON.stringify(query,null,2))
+  return shopProductCollection.count(query);
 };
 
 export const getCrawlAznListingsProgress = async (shopDomain) => {

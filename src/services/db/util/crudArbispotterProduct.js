@@ -154,7 +154,7 @@ export const deleteArbispotterProduct = async (domain, link) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  return collection.deleteOne({ link });
+  return collection.deleteOne({ lnk: link });
 };
 
 export const deleteAllArbispotterProducts = async (domain) => {

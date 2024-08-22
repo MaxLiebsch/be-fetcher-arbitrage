@@ -411,7 +411,7 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
 export const setProductsLockedForQueryEansOnEbyQuery = (taskId) => {
   return {
     $set: {
-eby_taskId: setTaskId(taskId),
+      eby_taskId: setTaskId(taskId),
     },
   };
 };
@@ -484,7 +484,7 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
 export const setProductsLockedForLookupCategoryQuery = (taskId) => {
   return {
     $set: {
-cat_taskId: setTaskId(taskId),
+      cat_taskId: setTaskId(taskId),
     },
   };
 };
@@ -542,9 +542,7 @@ export const lookupCategoryTaskQueryFn = (
 
 export const pendingScrapeAznListingsQuery = {
   $and: [
-    {
-      $or: [{ azn_taskId: { $exists: false } }, { azn_taskId: { $eq: "" } }],
-    },
+    { azn_taskId: { $exists: false } },
     {
       asin: { $exists: true, $ne: "" },
     },
@@ -697,9 +695,7 @@ export const countTotalProductsCrawlEbyListingsQuery = {
 /* Queries: Scrape Eby listings (4.2) - aggregation - arbispotter */
 
 const pendingScrapeEbyListingsMatchStage = [
-  {
-    $or: [{ eby_taskId: { $exists: false } }, { eby_taskId: { $eq: "" } }],
-  },
+  { eby_taskId: { $exists: false } },
   {
     esin: { $exists: true, $ne: "" },
   },
