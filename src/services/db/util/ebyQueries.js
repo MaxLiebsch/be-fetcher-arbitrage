@@ -46,7 +46,7 @@ export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
 
   if (cat_prop) {
     query["$set"]["cat_prop"] = cat_prop;
-    query["set"]["catUpdatedAt"] = new UTCDate().toISOString();
+    query["$set"]["catUpdatedAt"] = new UTCDate().toISOString();
   } else {
     query["$unset"]["cat_prop"] = "";
     query["$unset"]["catUpdatedAt"] = "";
