@@ -1,5 +1,6 @@
 import {
   calculateAznArbitrage,
+  detectCurrency,
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
@@ -30,22 +31,26 @@ export async function handleAznListingProductInfo(
     const price = infoMap.get("a_prc");
     const image = infoMap.get("a_img");
     const bsr = infoMap.get("bsr");
-    if (price > 0) {
+    const parsedPrice = safeParsePrice(price || "0");
+
+    if (parsedPrice > 0) {
       if (costs.azn > 0) {
+        const currency = detectCurrency(price); 
+        const a_prc = parsedPrice;
+        const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
+
         const productUpdate = {
           aznUpdatedAt: new UTCDate().toISOString(),
+          a_prc,
+          a_uprc,
+          ...(currency && { a_cur: currency }),
           ...(image && { a_img: image }),
           ...(bsr && { bsr }),
         };
-        const parsedPrice = safeParsePrice(price);
-        const a_prc = parsedPrice;
-        const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
-        Object.assign(productUpdate, { a_prc, a_uprc });
-        const { a_prc: sellPrice } = productUpdate;
 
         const arbitrage = calculateAznArbitrage(
           buyPrice * (sellQty / buyQty),
-          sellPrice,
+          a_prc,
           costs,
           tax
         );
@@ -63,7 +68,7 @@ export async function handleAznListingProductInfo(
         await updateArbispotterProductQuery(
           collection,
           productLink,
-          resetAznProductQuery({info_prop: ""})
+          resetAznProductQuery({ info_prop: "" })
         );
       }
     } else {
@@ -71,7 +76,7 @@ export async function handleAznListingProductInfo(
       await updateArbispotterProductQuery(
         collection,
         productLink,
-        resetAznProductQuery({info_prop: ""})
+        resetAznProductQuery({ info_prop: "" })
       );
     }
   } else {
@@ -79,22 +84,14 @@ export async function handleAznListingProductInfo(
     await updateArbispotterProductQuery(
       collection,
       productLink,
-      resetAznProductQuery({info_prop: ""})
+      resetAznProductQuery({ info_prop: "" })
     );
   }
 }
-export async function handleAznListingNotFound(
-  collection,
-  productLink,
-  infos,
-  queue
-) {
-  infos.notFound++;
-  infos.total++;
-  queue.total++;
+export async function handleAznListingNotFound(collection, productLink) {
   await updateArbispotterProductQuery(
     collection,
     productLink,
-    resetAznProductQuery({info_prop: ""})
+    resetAznProductQuery({ info_prop: "" })
   );
 }

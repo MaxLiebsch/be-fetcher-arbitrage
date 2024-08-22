@@ -1,5 +1,6 @@
 import {
   calculateEbyArbitrage,
+  detectCurrency,
   findMappedCategory,
   roundToTwoDecimals,
   safeParsePrice,
@@ -34,8 +35,11 @@ export async function handleEbyListingProductInfo(
     };
     if (rawSellPrice) {
       const parsedSellPrice = safeParsePrice(rawSellPrice);
+      const currency = detectCurrency(rawSellPrice);
+
       productUpdate = {
         ...productUpdate,
+        ...(currency && { e_cur: currency }),
         e_prc: parsedSellPrice,
         e_uprc: roundToTwoDecimals(parsedSellPrice / buyQty),
       };
@@ -101,16 +105,7 @@ export async function handleEbyListingProductInfo(
   }
 }
 
-export async function handleEbyListingNotFound(
-  collection,
-  productLink,
-  infos,
-  queue
-) {
-  console.log("not found at all");
-  infos.notFound++;
-  infos.total++;
-  queue.total++;
+export async function handleEbyListingNotFound(collection, productLink) {
   await updateArbispotterProductQuery(
     collection,
     productLink,
