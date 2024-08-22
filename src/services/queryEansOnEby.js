@@ -24,6 +24,7 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../util/queryEansOnEbyHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -57,8 +58,7 @@ export default async function queryEansOnEby(task) {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;

@@ -26,6 +26,7 @@ import { upsertAsin } from "./db/util/asinTable.js";
 import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import { resetAznProductQuery } from "./db/util/aznQueries.js";
 import { UTCDate } from "@date-fns/utc";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -68,7 +69,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
       );
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;

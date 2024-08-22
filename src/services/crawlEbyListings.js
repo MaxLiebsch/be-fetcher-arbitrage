@@ -1,7 +1,4 @@
-import {
-  QueryQueue,
-  queryProductPageQueue,
-} from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -23,6 +20,7 @@ import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
 } from "../util/scrapeEbyListingsHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 async function crawlEbyListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -56,8 +54,7 @@ async function crawlEbyListings(task) {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -111,10 +108,7 @@ async function crawlEbyListings(task) {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      const {
-        lnk: productLink,
-        esin,
-      } = product;
+      const { lnk: productLink, esin } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -129,7 +123,10 @@ async function crawlEbyListings(task) {
       };
 
       const handleNotFound = async () => {
-        await handleEbyListingNotFound(shopDomain, productLink, infos, queue);
+        infos.notFound++;
+        infos.total++;
+        queue.total++;
+        await handleEbyListingNotFound(shopDomain, productLink);
         await isComplete();
       };
 

@@ -16,6 +16,7 @@ import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../util/lookupCategoryHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
@@ -44,7 +45,7 @@ async function lookupCategory(task) {
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;

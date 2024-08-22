@@ -24,6 +24,7 @@ import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
 } from "../util/crawlEanHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
@@ -56,7 +57,7 @@ export default async function crawlEan(task) {
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
