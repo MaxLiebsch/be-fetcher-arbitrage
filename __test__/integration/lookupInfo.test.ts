@@ -20,9 +20,9 @@ describe("lookup info", () => {
     );
 
     if (!aznListings) {
-      throw new Error("No azn listings found for " + shopDomain);
+      throw new Error("No lookup info listings found for " + shopDomain);
     }
-    console.log("aznListings", aznListings.length);
+    console.log("lookup info listings", aznListings.length);
     await deleteAllArbispotterProducts(shopDomain);
     await insertArbispotterProducts(
       shopDomain,
@@ -32,7 +32,7 @@ describe("lookup info", () => {
     );
   }, 100000);
 
-  test("crawl azn listings", async () => {
+  test("lookup info listings", async () => {
     const infos = await lookupInfo({
       productLimit,
       type: "LOOKUP_INFO",

@@ -24,8 +24,8 @@ import {
 
 const main = async () => {
  
-  const a = await getCrawlAznListingsProgress('alternate.de')
-  console.log('a:', a)
+  const a = await getOutdatedDealsOnAznShops('mix')
+  console.log('a:', a.map((x)=> x.shop.d + " " + x.pending));
  
 };
 
