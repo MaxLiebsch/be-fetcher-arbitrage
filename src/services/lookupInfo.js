@@ -170,6 +170,7 @@ export default async function lookupInfo(task) {
           name: shopDomain,
         },
         addProduct,
+        lookupRetryLimit: 0,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
