@@ -38,6 +38,18 @@ System of dependencies:
     and end of the task
 */
 
+/*               General                                    */
+
+const eanExistsQuery = [
+  { ean: { $exists: true, $ne: "" } },
+  { eanList: { $size: 1 } },
+];
+
+const eanNotExistsQuery = [
+  { $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }] },
+  { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
+];
+
 /*               Queries Crawl (1)                            */
 
 export const crawlShopTaskQueryFn = (start, weekday) => {
@@ -79,9 +91,7 @@ export const setProductsLockedForCrawlEanQuery = (taskId) => {
 export const countPendingProductsForCrawlEanQuery = {
   $and: [
     { ean_taskId: { $exists: false } },
-    {
-      $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
-    },
+    { $or: eanNotExistsQuery },
     {
       $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: "" } }],
     },
@@ -155,7 +165,9 @@ export const countPendingProductsLookupInfoQuery = (hasEan) => {
   if (hasEan) {
     query.$and.push({
       $or: [
-        { ean: { $exists: true, $ne: "" } },
+        {
+          $or: eanExistsQuery,
+        },
         { asin: { $exists: true, $ne: "" } },
       ],
     });
@@ -169,10 +181,12 @@ export const countTotalProductsForLookupInfoQuery = (hasEan) => {
   let query = {};
 
   if (hasEan) {
-    query["ean"] = {
-      $exists: true,
-      $ne: "",
-    };
+    query["$or"] = [
+      {
+        $or: eanExistsQuery,
+      },
+      { asin: { $exists: true, $ne: "" } },
+    ];
   } else {
     query["asin"] = {
       $exists: true,
@@ -242,7 +256,7 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
     ],
   };
   if (hasEan) {
-    query["$and"].push({ ean: { $exists: true, $ne: "" } });
+    query["$and"].push({ $or: eanExistsQuery });
   }
   return query;
 };
@@ -250,10 +264,7 @@ export const countTotalProductsForMatchQuery = (hasEan) => {
   let query = {};
 
   if (hasEan) {
-    query["ean"] = {
-      $exists: true,
-      $ne: "",
-    };
+    query["$or"] = eanExistsQuery;
   }
   return query;
 };
@@ -317,7 +328,7 @@ export const countPendingProductsQueryEansOnEbyQuery = {
   $and: [
     { eby_taskId: { $exists: false } },
     {
-      ean: { $exists: true, $ne: "" },
+      $or: eanExistsQuery,
     },
     {
       $or: [{ eby_prop: { $exists: false } }, { eby_prop: { $eq: "" } }],
@@ -325,7 +336,7 @@ export const countPendingProductsQueryEansOnEbyQuery = {
   ],
 };
 export const countTotalProductsForQueryEansOnEbyQuery = {
-  ean: { $exists: true, $ne: "" },
+  $or: eanExistsQuery,
 };
 
 export const queryEansOnEbyTaskQueryFn = (

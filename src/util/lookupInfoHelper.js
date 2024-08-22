@@ -29,10 +29,9 @@ export async function handleLookupInfoProductInfo(
         buyPrice,
         sellQty || 1,
         buyQty || 1
-      ); 
+      );
       const { costs, a_nm, asin } = update;
 
-      update["a_nm"] = replaceAllHiddenCharacters(a_nm);
       update["a_orgn"] = "a";
       update["a_pblsh"] = true;
       if (hasEan) {
@@ -52,6 +51,9 @@ export async function handleLookupInfoProductInfo(
       await updateArbispotterProductQuery(collection, productLink, {
         $set: {
           ...update,
+          ...(a_nm && typeof a_nm === "string"
+            ? { a_nm: replaceAllHiddenCharacters(a_nm) }
+            : {}),
           info_prop: "complete",
           aznUpdatedAt: new UTCDate().toISOString(),
           infoUpdatedAt: new UTCDate().toISOString(),
