@@ -1,7 +1,4 @@
-import {
-  QueryQueue,
-  queryProductPageQueue,
-} from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -23,6 +20,7 @@ import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../util/scrapeAznListingsHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -57,8 +55,7 @@ export default async function crawlAznListings(task) {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -126,7 +123,10 @@ export default async function crawlAznListings(task) {
         await isCompleted();
       };
       const handleNotFound = async () => {
-        await handleAznListingNotFound(shopDomain, productLink, infos, queue);
+        infos.notFound++;
+        infos.total++;
+        queue.total++;
+        await handleAznListingNotFound(shopDomain, productLink);
         await isCompleted();
       };
 

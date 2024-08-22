@@ -106,7 +106,7 @@ export const productPriceComperator = async (task) => {
           return res(
             new TaskCompletedStatus("DAILY_DEALS FAILED", task, {
               infos,
-              statistics: task.statistics,
+              statistics: {},
             })
           );
         }

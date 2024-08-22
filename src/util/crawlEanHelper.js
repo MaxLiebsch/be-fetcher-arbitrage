@@ -1,5 +1,6 @@
 import {
   deliveryTime,
+  detectCurrency,
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
@@ -32,7 +33,9 @@ export async function handleCrawlEanProductInfo(
       ean && /\b[0-9]{12,13}\b/.test(ean) && !ean.toString().startsWith("99");
 
     if (isEan) {
-      const prc = safeParsePrice(infoMap.get("price") ?? 0);
+      const rawPrice = infoMap.get("price");
+      const prc = safeParsePrice(rawPrice || 0);
+      const currency = detectCurrency(rawPrice);
       const sku = infoMap.get("sku");
       const image = infoMap.get("image");
       const mku = infoMap.get("mku");
@@ -44,6 +47,7 @@ export async function handleCrawlEanProductInfo(
         ean,
         eanList: [ean],
         ...(prc && { prc, uprc: roundToTwoDecimals(prc / buyQty) }),
+        ...(currency && { cur: currency }),
         ...(image && { img: image }),
         ...(sku && { sku }),
         ...(mku && { mku }),

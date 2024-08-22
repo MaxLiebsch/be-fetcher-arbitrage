@@ -1,19 +1,9 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "../utils/testParamter.js";
 import {
-  extractProducts,
-  extractProductsFromSecondPage,
-  extractProductsFromSecondPageQueueless,
-  findPaginationAndNextPage,
-  findSubCategories,
   extractProductInfos,
   mimicTest,
-  myAfterAll,
   myBeforeAll,
-  productPageCount,
 } from "../utils/commonTests.js";
-import { add } from "date-fns";
 
 const shopDomain = "idealo.de";
 
@@ -35,6 +25,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
+        console.log('productInfo:', productInfo)
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
         expect(ean.value).toBe("0730143312745");

@@ -6,7 +6,7 @@ import { getUnmatchedEanShops } from "../services/db/util/lookupInfo/getUnmatche
 import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import { updateTaskWithQuery } from "../services/db/util/tasks.js";
 import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
-import { getCrawlEbyListingsProgress } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgress.js";
+import { getCrawlEbyListingsProgressAggregation } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
 
 export const updateMatchProgress = async (shopDomain, hasEan) => {
   const progress = await getMatchProgress(shopDomain, hasEan);
@@ -32,7 +32,7 @@ export const updateCrawlAznListingsProgress = async (shopDomain) => {
 };
 
 export const updateCrawlEbyListingsProgress = async (shopDomain) => {
-  const progress = await getCrawlEbyListingsProgress(shopDomain);
+  const progress = await getCrawlEbyListingsProgressAggregation(shopDomain);
 
   await updateTaskWithQuery(
     {

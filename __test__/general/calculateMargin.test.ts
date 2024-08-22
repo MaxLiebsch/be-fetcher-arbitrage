@@ -5,10 +5,10 @@ import { getArbispotterDb } from "../../src/services/db/mongo.js";
 
 describe("calculate arbitrage", () => {
   let product: null | any = null;
-  let ean = "4008239216434";
+  let ean = "8012335000138";
   beforeAll(async () => {
     const db = await getArbispotterDb();
-    const shopDomain = "fressnapf.de";
+    const shopDomain = "sales";
     const col = db.collection(shopDomain);
     product = await col.findOne({ eanList: ean }, { limit: 1 });
   }, 1000000);

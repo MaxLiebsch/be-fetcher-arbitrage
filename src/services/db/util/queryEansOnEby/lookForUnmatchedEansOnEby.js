@@ -1,10 +1,10 @@
 import { shuffle } from "underscore";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
-import { hostname } from "../../mongo.js";
 import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
 import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
 import { findArbispotterProducts } from "../crudArbispotterProduct.js";
+import { recoveryQueryEansOnEby} from "../queries.js";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId,
@@ -91,9 +91,7 @@ export async function getRecoveryQueryEansOnEby(
     filteredShops.map(async (shop) => {
       const products = await findArbispotterProducts(
         shop.d,
-        {
-          eby_taskId: `${hostname}:${taskId.toString()}`,
-        },
+        recoveryQueryEansOnEby(taskId),
         productLimit
       );
       if (products.length > 0) {

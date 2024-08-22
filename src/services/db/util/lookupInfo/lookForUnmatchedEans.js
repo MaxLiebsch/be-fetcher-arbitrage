@@ -1,14 +1,17 @@
 import { shuffle } from "underscore";
 import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
-import { hostname } from "../../mongo.js";
 import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
 import { getUnmatchedEanShops } from "./getUnmatchedEanShops.js";
 import { findArbispotterProducts } from "../crudArbispotterProduct.js";
+import { recoveryLookupInfoQuery } from "../queries.js";
 
 export async function lookForUnmatchedEans(taskId, action, productLimit) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryEanLookups(taskId, productLimit);
+    const recoveryProducts = await getRecoveryLookupInfoProduts(
+      taskId,
+      productLimit
+    );
     console.log(
       "Lookup Info:\n",
       recoveryProducts.shops
@@ -25,7 +28,7 @@ export async function lookForUnmatchedEans(taskId, action, productLimit) {
 
     const numberOfShops = pendingShops.length;
     const productsPerShop = Math.round(productLimit / numberOfShops);
-    
+
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const products = await lockProductsForLookupInfo(
@@ -70,7 +73,10 @@ export async function lookForUnmatchedEans(taskId, action, productLimit) {
   }
 }
 
-export async function getRecoveryEanLookups(taskId, productLimit) {
+export async function getRecoveryLookupInfoProduts(
+  taskId,
+  productLimit
+) {
   const shops = await getAllShopsAsArray();
   const filteredShops = shops.filter((shop) => shop.active);
   let pendingShops = [];
@@ -78,9 +84,7 @@ export async function getRecoveryEanLookups(taskId, productLimit) {
     filteredShops.map(async (shop) => {
       const products = await findArbispotterProducts(
         shop.d,
-        {
-          info_taskId: `${hostname}:${taskId.toString()}`,
-        },
+        recoveryLookupInfoQuery(taskId),
         productLimit
       );
       if (products.length > 0) {

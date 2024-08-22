@@ -28,6 +28,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
+        console.log('productInfo:', productInfo)
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
         const mku = productInfo.find((info) => info.key === "mku");

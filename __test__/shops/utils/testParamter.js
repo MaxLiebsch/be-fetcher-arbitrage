@@ -2,35 +2,37 @@ import { sub } from "date-fns";
 
 const testParameters = {
   "amazon.de": {
-    productPageUrl: "https://www.amazon.de/dp/product/B0CZF84L12?language=de_DE"
+    productPageUrl: "https://www.amazon.de/dp/product/B0BZ9NMMW4?language=de_DE"
   },
   "ebay.de": {
-    productPageUrl: "https://www.ebay.de/p/180305085542"
-    
+    productPageUrl: "https://www.ebay.de/p/180305085542",
   },
   "bergfreunde.de": {
-    productPageUrl: "https://www.bergfreunde.de/stoic-womens-performance-merino150-bydalenst-shirt-merinoshirt",
+    productPageUrl:
+      "https://www.bergfreunde.de/hunter-collar-convenience-hundehalsband/?cnid=7213b99a7a48b405e9410053d1d0f8b3",
   },
   "mueller.de": {
     productPageUrl:
-      "https://www.mueller.de/p/annemarie-boerlind-liquid-eyeliner-2849185/",
+      "https://www.mueller.de/p/mjamjam-katzennassfutter-quetschie-insekt-mit-saftigem-huehnchen-IPN2912009/",
   },
   "reichelt.de": {
     productPageUrl:
-      "https://www.reichelt.de/netzwerktester-mit-digital-multimeter-peaktech-3365-p81095.html?&trstct=pol_11&nbc=1",
+      "https://www.reichelt.de/compact-anschlussklemme-serie-221-the-same-in-green--wago-221-423-p355729.html?&trstct=pos_7&nbc=1",
   },
   "voelkner.de": {
     productPageUrl:
-      "https://www.voelkner.de/products/3033086/Maul-MAULjoy-touch-of-rose-8200623-LED-Tischlampe-7W-EEK-D-A-G-Touch-of-Rose.html?offer=2cd3f55cee8dd6c0af91e54672f0143b",
+      "https://www.voelkner.de/products/1320099/Digitus-2-Port-Serielle-Steckkarte-Seriell-9pol.-PCI.html?offer=92b13922a56b1ef0318dab1bad8b94b8",
   },
   "alternate.de": {
     productPageUrl:
-      "https://www.alternate.de/Ubiquiti/UniFi-Switch-Pro-Max-48/html/product/100047357",
+      "https://www.alternate.de/Duracell/AAAA-Ultra-M3-MN-2500-1-5V-Batterie/html/product/1219348",
   },
   "cyberport.de": {
     productsPerPage: 15,
     subCategoriesCount: 27,
     mainCategoriesCount: 8,
+    productPageUrl:
+      "https://www.cyberport.de/pc-und-zubehoer/drucker-scanner/druckerzubehoer/oki/pdp/6k07-170/oki-46539501-ic-halter-fuer-kartenleser.html",
     initialProductPageUrl:
       "https://www.cyberport.de/notebook-und-tablet/tablets.html",
     nextPageUrl:
@@ -45,7 +47,7 @@ const testParameters = {
     nextPageUrl: "https://www.weltbild.de/buecher/dystopie?seite=2",
   },
   "dm.de": {
-    productPageUrl: "https://www.dm.de/dmbio-kichererbsen-p4066447443073.html",
+    productPageUrl: "https://www.dm.de/nutrisse-haarfarbe-6n-nude-natuerliches-dunkelblond-p3600541901643.html",
     productsPerPage: 30,
     productsPerPageAfterLoadMore: 150,
     subCategoriesCount: 3,
@@ -54,10 +56,11 @@ const testParameters = {
     nextPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao?currentPage0=2",
   },
   "fressnapf.de": {
-    countProductPageUrl: "https://www.fressnapf.de/c/katze/katzenfutter/nassfutter/",
+    countProductPageUrl:
+      "https://www.fressnapf.de/c/katze/katzenfutter/nassfutter/",
     pages: 20,
     productPageUrl:
-      "https://www.fressnapf.de/p/orijen-original-cat-340-g-1261000/",
+      "https://www.fressnapf.de/p/tetra-reptomin-energy-250ml-1035195/",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,
@@ -70,7 +73,7 @@ const testParameters = {
   },
   "saturn.de": {
     productPageUrl:
-      "https://www.saturn.de/de/product/_philips-hr-1949-20-avance-2208438.html",
+      "https://www.saturn.de/de/product/_apple-iphone-xs-64gb-silver-64-gb-silber-dual-sim-142207689.html",
     productsPerPage: 12,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 30,
@@ -84,7 +87,7 @@ const testParameters = {
   },
   "alza.de": {
     productPageUrl:
-      "https://www.alza.de/soundmaster-pdb1600sw-d6361089.htm",
+      "https://www.alza.de/amazon-echo-show-8-2nd-gen-charcoal-d6994664.htm",
     productsPerPage: 24,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 48,
@@ -96,7 +99,7 @@ const testParameters = {
   },
   "gamestop.de": {
     productPageUrl:
-      "https://www.gamestop.de/Accessories/Games/63594/pulse-3d-wireless-headset-midnight-black",
+      "https://www.gamestop.de/PS4/Games/63744/kontrolfreek-galaxy",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 48,
     subCategoriesCount: 6,
@@ -109,7 +112,7 @@ const testParameters = {
   },
   "idealo.de": {
     productPageUrl:
-      "https://www.idealo.de/preisvergleich/OffersOfProduct/202961754_-sport-bag-2023-satch.html",
+      "https://www.idealo.de/preisvergleich/OffersOfProduct/202152796_-echo-dot-5-generation-weiss-amazon.html",
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,

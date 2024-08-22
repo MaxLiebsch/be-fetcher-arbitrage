@@ -103,7 +103,10 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         await isProcessComplete(queue);
       };
       const handleNotFound = async () => {
-        await handleAznListingNotFound(salesDbName, productLink, infos, queue);
+        infos.notFound++;
+        infos.total++;
+        queue.total++;
+        await handleAznListingNotFound(salesDbName, productLink);
         await isProcessComplete(queue);
       };
 

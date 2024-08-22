@@ -67,7 +67,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
       );
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;

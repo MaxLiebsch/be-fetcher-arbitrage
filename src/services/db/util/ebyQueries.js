@@ -1,6 +1,9 @@
 import { UTCDate } from "@date-fns/utc";
 
-export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
+export const resetEbyProductQuery = (
+  props = { eby_prop: "", cat_prop: "" }
+) => {
+  const { eby_prop, cat_prop } = props;
   const query = {
     $unset: {
       //standard properties
@@ -29,7 +32,7 @@ export const resetEbyProductQuery = ({ eby_prop, cat_prop }) => {
       eby_taskId: "",
       // dealeby properties
       dealEbyUpdatedAt: "",
-      dealEby_taskId: "",
+      dealEbyTaskId: "",
     },
   };
 

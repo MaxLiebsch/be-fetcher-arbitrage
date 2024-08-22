@@ -106,8 +106,22 @@ export const crawlProducts = async (shop, task) =>
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
                 );
                 infos.old++;
-                const { ean_prop, info_prop, eby_prop, cat_prop } =
-                  existingProduct;
+                const {
+                  ean_prop, //scrape ean
+                  info_prop, // scrape info
+                  eby_prop, // query ean on eby
+                  cat_prop, // lookup category
+                } = existingProduct;
+
+                // hasEan is a flag to check if the product has an ean in the listing
+                // ean is the ean that was scraped from the product link
+
+                if (!shop.hasEan && shop.ean) {
+                  task.progress.lookupInfo.push(existingProduct._id);
+                  task.progress.queryEansOnEby.push(existingProduct._id);
+                  return;
+                }
+                //ean_prop can have the following values: missing, found
                 if (
                   !ean_prop ||
                   (ean_prop !== "missing" &&
@@ -118,6 +132,9 @@ export const crawlProducts = async (shop, task) =>
                   task.progress.crawlEan.push(existingProduct._id);
                   return;
                 }
+
+                // ean_prop is found and info_prop is missing or completed
+                // info_prop can have the following values: missing, complete
                 if (
                   new UTCDate(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&

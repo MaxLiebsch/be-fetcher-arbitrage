@@ -21,6 +21,8 @@ export const crawlEbyListings = (ebay, task) =>
       locked: 0,
       missingProperties: {
         bsr: 0,
+        mappedCat: 0,
+        calculationFailed: 0,
         name: 0,
         price: 0,
         link: 0,
@@ -73,7 +75,11 @@ export const crawlEbyListings = (ebay, task) =>
         await isProcessComplete();
       };
       const handleNotFound = async () => {
-        await handleEbyListingNotFound(salesDbName, productLink, infos, queue);
+        console.log("not found at all");
+        infos.notFound++;
+        infos.total++;
+        queue.total++;
+        await handleEbyListingNotFound(salesDbName, productLink);
         await isProcessComplete();
       };
 

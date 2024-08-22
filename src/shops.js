@@ -107,6 +107,18 @@ export const shops = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
+        content: "price",
+        path: "offers.lowPrice",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
         content: "ean",
         path: "gtin",
       },
@@ -380,6 +392,12 @@ export const shops = {
       max: 800,
     },
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "cur",
+        path: "offers.priceCurrency",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -762,7 +780,18 @@ export const shops = {
         },
       },
     ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 800,
+    }, 
     product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "[0].offers[0].price",
+      },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -934,7 +963,7 @@ export const shops = {
       min: 700,
       max: 800,
     },
-    product: [
+    product: [ 
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -2524,7 +2553,7 @@ export const shops = {
     pauseOnProductPage: {
       pause: true,
       min: 800,
-      max: 1000,
+      max: 1500,
     },
     product: [
       {
@@ -2543,7 +2572,6 @@ export const shops = {
         keys: ["Amazon Bestseller-Rang"],
         content: "bsr",
       },
-
       {
         type: "src",
         parent: "#imgTagWrapperId",

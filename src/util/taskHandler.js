@@ -421,6 +421,12 @@ export async function handleTask(taskResult, task) {
   if (type === "MATCH_PRODUCTS") {
     return await handleMatchTask(infos);
   }
+  if (type === "DEALS_ON_AZN") {
+    return await handleCrawlAznListingsTask(infos);
+  }
+  if (type === "DEALS_ON_EBY") {
+    return await handleCrawlEbyListingsTask(infos);
+  }
   if (type === "CRAWL_AZN_LISTINGS") {
     return await handleCrawlAznListingsTask(infos);
   }

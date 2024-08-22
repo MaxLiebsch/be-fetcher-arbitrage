@@ -6,12 +6,20 @@ import lookupInfo from "../services/lookupInfo.js";
 import wholesale from "../services/wholesale.js";
 import queryEansOnEby from "../services/queryEansOnEby.js";
 import lookupCategory from "../services/lookupCategory.js";
-import crawlEbyListings from "../services/crawlEbyListings.js";
-import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellercentral.js";
 import { productPriceComperator } from "../services/productPriceComparator.js";
+import dealsOnEby from "../services/deals/daily/dealsOnEby.js";
+import dealsOnAzn from "../services/deals/daily/dealsOnAzn.js";
+import negEbyDeals from "../services/deals/weekly/negEbyDeals.js";
+import negAznDeals from "../services/deals/weekly/negAznDeals.js";
 
 export async function executeTask(task) {
   const { type } = task;
+  if (type === "DEALS_ON_EBY") {
+    return await dealsOnEby(task);
+  }
+  if (type === "DEALS_ON_AZN") {
+    return await dealsOnAzn(task);
+  }
   if (type === "DAILY_SALES") {
     return await productPriceComperator(task);
   }
@@ -28,10 +36,10 @@ export async function executeTask(task) {
     return await match(task);
   }
   if (type === "CRAWL_AZN_LISTINGS") {
-    return await crawlAznListingsWithSellercentral(task);
+    return await negAznDeals(task);
   }
   if (type === "CRAWL_EBY_LISTINGS") {
-    return await crawlEbyListings(task);
+    return await negEbyDeals(task);
   }
   if (type === "CRAWL_EAN") {
     return await crawlEan(task);

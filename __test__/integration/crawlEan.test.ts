@@ -22,7 +22,6 @@ describe("crawl eans", () => {
     if (!products) {
       throw new Error("No azn listings found for " + shopDomain);
     }
-    productLimit = products.length;
     console.log("products", products.length);
     await deleteAllArbispotterProducts(shopDomain);
     await insertArbispotterProducts(

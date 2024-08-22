@@ -1,5 +1,6 @@
 import {
   calculateEbyArbitrage,
+  detectCurrency,
   findMappedCategory,
   parseEbyCategories,
   roundToTwoDecimals,
@@ -116,8 +117,8 @@ export const handleCategoryAndUpdate = async (
   } = product;
 
   if (categories) {
-    const sellPrice = safeParsePrice(ebyListingPrice ?? "0");
-
+    const sellPrice = safeParsePrice(ebyListingPrice || "0");
+    const currency = detectCurrency(ebyListingPrice || "");
     const sellUnitPrice = roundToTwoDecimals(sellPrice / sellQty);
     const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
     let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
@@ -130,6 +131,15 @@ export const handleCategoryAndUpdate = async (
       );
       const productUpdate = {
         ...ebyArbitrage,
+        ...(currency && { e_cur: currency }),
+        ...(!e_vrfd && {
+          e_vrfd: {
+            vrfd: false,
+            vrfn_pending: true,
+            flags: [],
+            flag_cnt: 0,
+          },
+        }),
         cat_prop: "complete",
         catUpdatedAt: new UTCDate().toISOString(),
         e_prc: sellPrice,
@@ -145,15 +155,6 @@ export const handleCategoryAndUpdate = async (
         e_pblsh: true,
         esin,
       };
-
-      if (!e_vrfd) {
-        productUpdate["e_vrfd"] = {
-          vrfd: false,
-          vrfn_pending: true,
-          flags: [],
-          flag_cnt: 0,
-        };
-      }
       await updateArbispotterProductQuery(shopDomain, productLink, {
         $set: productUpdate,
         $unset: { cat_taskId: "" },

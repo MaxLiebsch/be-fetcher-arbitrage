@@ -22,6 +22,10 @@ export const getTaskSymbol = (type) => {
       return "🔍";
     case "CRAWL_EAN":
       return "🆕";
+    case "DEALS_ON_EBY":
+      return "🔍";
+    case "DEALS_ON_AZN":
+      return "🔍";
     default:
       return "🤷‍♂️";
   }

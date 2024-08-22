@@ -1,6 +1,4 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "../utils/testParamter.js";
 import {
   extractProductInfos,
   mimicTest,
@@ -12,7 +10,7 @@ const shopDomain = "saturn.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '123.0.6312.105');
+    await myBeforeAll(shopDomain, false, '126.0.6478.63');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -28,6 +26,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
+        console.log('productInfo:', productInfo)
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
         const image = productInfo.find((info) => info.key === "image");

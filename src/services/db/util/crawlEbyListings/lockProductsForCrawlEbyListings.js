@@ -1,6 +1,6 @@
 import { getArbispotterDb } from "../../mongo.js";
 import {
-  lockProductsForCrawlEbyListingsQuery,
+  lockProductsForCrawlEbyListingsAggregation,
   setProductsLockedForCrawlEbyListingsQuery,
 } from "../queries.js";
 
@@ -13,15 +13,11 @@ export const lockProductsForCrawlEbyListings = async (
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const { query, options } = lockProductsForCrawlEbyListingsQuery(
-    limit,
-    taskId,
-    action
-  );
+  const agg = lockProductsForCrawlEbyListingsAggregation(limit, taskId, action);
 
   const documents = await db
     .collection(collectionName)
-    .find(query, options)
+    .aggregate(agg)
     .toArray();
 
   // Update documents to mark them as locked
