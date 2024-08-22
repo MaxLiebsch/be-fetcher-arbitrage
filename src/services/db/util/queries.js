@@ -22,9 +22,18 @@ import { UTCDate } from "@date-fns/utc";
 3.4 Lookup Category
   - lookup category on ebay
 4.1 Crawl Azn Listings
-  - crawl amazon listings 
+  - neg azn listings 
 4.2 Crawl Eby Listings
-  - crawl ebay listings
+  - neg eby listings
+5.  Scan Shop
+6.  Wholesale Search
+  - search for wholesale products
+7.  Daily Sales
+  - daily sales
+8.  Deals on Eby
+  - pos deals on ebay
+9.  Deals on Azn
+  - pos deals on amazon
 
 System of dependencies:
   - crawl ean depends on crawl shop 
@@ -138,7 +147,6 @@ const eanExistsQuery = [
   { ean: { $exists: true, $ne: "" } },
   { eanList: { $size: 1 } },
 ];
-
 const eanNotExistsQuery = [
   { $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }] },
   { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
@@ -344,6 +352,7 @@ export const setProductsLockedForMatchQuery = (taskId) => {
   };
 };
 export const countPendingProductsForMatchQuery = (hasEan) => {
+  const twentyFourAgo = subDateDaysISO(1)
   let query = {
     $and: [
       { taskId: { $exists: false } },
@@ -351,7 +360,7 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
       {
         $or: [
           { matchedAt: { $exists: false } },
-          { matchedAt: { $lte: twentyFourAgo.toISOString() } },
+          { matchedAt: { $lte: twentyFourAgo } },
         ],
       },
     ],
@@ -872,14 +881,14 @@ export const crawlDailySalesQueryFn = (start) => {
 
 */
 
-export const lockProductsForDealsOnEbyAgg = (limit, taskId, action) => {
+export const lockProductsForDealsOnEbyAgg = (taskId, limit, action) => {
   let agg = [];
   if (action === "recover") {
     agg.push({ $match: { dealEbyTaskId: setTaskId(taskId) } });
   } else {
     agg = countPendingProductsForDealsOnEbyAgg({
       returnTotal: false,
-      limit: limit && action !== "recover" ? limit : null,
+      limit: (limit && action !== "recover") ? limit : null,
     });
   }
   return agg;
@@ -972,23 +981,34 @@ export const countTotalProductsDealsOnEbyAgg = [
   },
   { $count: "total" },
 ];
-export const dealsOnEbyTaskQueryFn = (start) => {
+export const dealsOnEbyTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_EBY" },
+
     {
       $or: [
         { startedAt: { $exists: false } },
         { startedAt: "" },
         {
-          startedAt: { $lt: start },
+          startedAt: { $lt: lowerThenStartedAt },
         },
       ],
     },
     { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
   ];
 };
 
-/*               Queries: deals on Azn (8) - arbispotter     
+/*               Queries: deals on Azn (9) - arbispotter     
               dealsAzn
                 dealAznUpdatedAt
                 dealAznTaskId                   
@@ -1014,7 +1034,6 @@ export const pendingDealsOnAznQuery = {
     ...totalPositivAmazon.$and,
   ],
 };
-
 export const recoveryDealsOnAznQuery = (taskId) => {
   return { dealAznTaskId: setTaskId(taskId) };
 };
@@ -1059,7 +1078,7 @@ export const countCompletedProductsForDealsOnAznQuery = () => {
 export const countTotalProductsDealsOnAznQuery = {
   $and: [{ asin: { $exists: true, $ne: "" } }, ...totalPositivAmazon.$and],
 };
-export const dealsOnAznTaskQueryFn = (start) => {
+export const dealsOnAznTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_AZN" },
     {
@@ -1067,15 +1086,25 @@ export const dealsOnAznTaskQueryFn = (start) => {
         { startedAt: { $exists: false } },
         { startedAt: "" },
         {
-          startedAt: { $lt: start },
+          startedAt: { $lt: lowerThenStartedAt },
         },
       ],
     },
     { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
   ];
 };
 
-/*   Queries: update product info (8) - arbispotter             */
+/*   Queries: update product info (10) - arbispotter             */
 
 export const lockProductsForUpdateProductinfoQuery = (
   taskId,
@@ -1251,8 +1280,8 @@ export const findTasksQuery = () => {
 
   const crawlShopTaskQuery = crawlShopTaskQueryFn(start, weekday); // (1)
   const dailySalesTaskQuery = crawlDailySalesQueryFn(start);
-  const dealsOnEbyTaskQuery = dealsOnEbyTaskQueryFn(start); // (8)
-  const dealsOnAznTaskQuery = dealsOnAznTaskQueryFn(start); // (8)
+  const dealsOnEbyTaskQuery = dealsOnEbyTaskQueryFn(lowerThenStartedAt); // (8)
+  const dealsOnAznTaskQuery = dealsOnAznTaskQueryFn(lowerThenStartedAt); // (9)
 
   const crawlEanTaskQuery = crawlEanTaskQueryFn(lowerThenStartedAt); // (2)
   const lookupInfoTaskQuery = lookupInfoTaskQueryFn(lowerThenStartedAt); // (3.1)
@@ -1286,12 +1315,6 @@ export const findTasksQuery = () => {
           },
           {
             $and: dailySalesTaskQuery,
-          },
-          {
-            $and: dealsOnEbyTaskQuery,
-          },
-          {
-            $and: dealsOnAznTaskQuery,
           },
         ],
       },
@@ -1356,6 +1379,18 @@ export const findTasksQuery = () => {
               { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
+          {
+            $and: [
+              ...dealsOnAznTaskQuery,
+              { cooldown: { $lt: new UTCDate().toISOString() } },
+            ],
+          },
+          {
+            $and: [
+              ...dealsOnEbyTaskQuery,
+              { cooldown: { $lt: new UTCDate().toISOString() } },
+            ],
+          },
         ],
       },
     ],
@@ -1382,6 +1417,10 @@ export const findTasksQuery = () => {
           {
             $and: lookupCategoryTaskQuery,
           },
+          { $and: dealsOnAznTaskQuery },
+          { $and: dealsOnEbyTaskQuery },
+          { $and: crawlAznListingsTaskQuery },
+          { $and: crawlEbyListingsTaskQuery },
         ],
       },
     ],

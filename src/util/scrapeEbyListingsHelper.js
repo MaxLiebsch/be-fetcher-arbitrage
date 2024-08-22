@@ -8,13 +8,15 @@ import {
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
 import { UTCDate } from "@date-fns/utc";
+import { defaultEbyDealTask } from "../constants.js";
 
 export async function handleEbyListingProductInfo(
   collection,
   infos,
   { productInfo, url },
   queue,
-  product
+  product,
+  processProps = defaultEbyDealTask
 ) {
   const {
     qty: buyQty,
@@ -23,6 +25,7 @@ export async function handleEbyListingProductInfo(
     e_qty: sellQty,
     lnk: productLink,
   } = product;
+  const { timestamp, taskIdProp } = processProps;
   infos.total++;
   queue.total++;
   if (productInfo) {
@@ -63,14 +66,15 @@ export async function handleEbyListingProductInfo(
           });
           productUpdate = {
             ...productUpdate,
-            ebyUpdatedAt: new UTCDate().toISOString(),
+            [timestamp]: new UTCDate().toISOString(),
             ...(image && { e_img: image }),
           };
-
-          await updateArbispotterProductQuery(collection, productLink, {
+          const query = {
             $set: productUpdate,
-            $unset: { eby_taskId: "" },
-          });
+            $unset: { [taskIdProp]: "" },
+          };
+
+          await updateArbispotterProductQuery(collection, productLink, query);
         } else {
           infos.missingProperties.calculationFailed++;
           await updateArbispotterProductQuery(

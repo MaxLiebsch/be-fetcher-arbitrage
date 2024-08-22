@@ -6,11 +6,9 @@ import lookupInfo from "../services/lookupInfo.js";
 import wholesale from "../services/wholesale.js";
 import queryEansOnEby from "../services/queryEansOnEby.js";
 import lookupCategory from "../services/lookupCategory.js";
-import crawlEbyListings from "../services/crawlEbyListings.js";
-import crawlAznListingsWithSellercentral from "../services/crawlAznListingsWithSellercentral.js";
 import { productPriceComperator } from "../services/productPriceComparator.js";
-import dealsOnEby from "../services/dealsOnEby.js";
-import dealsOnAzn from "../services/dealsOnAzn.js";
+import dealsOnEby from "../services/deals/daily/dealsOnEby.js";
+import dealsOnAzn from "../services/deals/daily/dealsOnAzn.js";
 import negEbyDeals from "../services/deals/weekly/negEbyDeals.js";
 import negAznDeals from "../services/deals/weekly/negAznDeals.js";
 

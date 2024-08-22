@@ -40,8 +40,14 @@ export const getDealsOnEbyProgressAgg = async (shopDomain) => {
   const [pending] = await countPendingProductsForDealsOnEbyAggregationFn(
     shopProductCollectionName
   );
-  console.log(shopDomain, "pending:", pending);
   const [total] = await countTotalProductsDealsOnEby(shopProductCollectionName);
+  if (!pending || !total) {
+    return {
+      percentage: "0 %",
+      pending: 0,
+      total: 0,
+    };
+  }
   return {
     percentage: `${(
       ((total.total - pending.total) / total.total) *

@@ -6,7 +6,11 @@ import {
   QueryQueue,
 } from "@dipmaxtech/clr-pkg";
 import { lockProductsForCrawlEbyListings } from "../../db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
-import { defaultQuery, proxyAuth } from "../../../constants.js";
+import {
+  defaultEbyDealTask,
+  defaultQuery,
+  proxyAuth,
+} from "../../../constants.js";
 import { differenceInHours } from "date-fns";
 import { handleDealsProductInfo } from "../../../util/deals/scrapeProductInfoHelper.js";
 import {
@@ -26,11 +30,13 @@ const negEbyDeals = async (task) => {
       _id,
       action
     );
-    const ebay = await getShop("ebay.de");
+    const eby = await getShop("ebay.de");
     const source = await getShop(shopDomain);
 
     const infos = {
       total: 0,
+      new: 0,
+      old: 0,
       notFound: 0,
       locked: 0,
       scrapeProducts: {
@@ -74,15 +80,10 @@ const negEbyDeals = async (task) => {
             source,
             product
           );
-          if (isValidProduct) {
-            console.log("isValidProduct:", isValidProduct);
-            console.log(
-              product.lnk,
-              " is valid product ...scraping ebay listings"
-            );
+          if (isValidProduct) { 
             await scrapeEbyListings(
               queue,
-              ebay,
+              eby,
               source,
               ebyLink,
               {
@@ -93,22 +94,17 @@ const negEbyDeals = async (task) => {
             );
           } else {
             infos.total++;
-            console.log(product.lnk, " is not valid product");
             await deleteArbispotterProduct(shopDomain, productLink);
             //DELETE PRODUCT
           }
         } else {
-          console.log(
-            product.lnk,
-            " product updated within 24 hours ...scraping ebay listings"
-          );
-          await scrapeEbyListings(queue, ebay, source, ebyLink, product, infos);
+          await scrapeEbyListings(queue, eby, source, ebyLink, product, infos);
         }
       })
     );
-
+    await queue.clearQueue("CRAWL_EBY_LISTINGS_COMPLETE", infos);
     res(
-      new TaskCompletedStatus("CRAWL_EBY_LISTINGS", task, {
+      new TaskCompletedStatus("CRAWL_EBY_LISTINGS_COMPLETE", task, {
         infos,
         statistics: task.statistics,
       })
@@ -154,13 +150,14 @@ export async function scrapeProductInfo(queue, source, product) {
     });
   });
 }
-async function scrapeEbyListings(
+export async function scrapeEbyListings(
   queue,
   target,
   source,
   targetLink,
   product,
-  infos
+  infos,
+  processProps = defaultEbyDealTask
 ) {
   return new Promise((res, rej) => {
     const { d } = target;
@@ -168,13 +165,13 @@ async function scrapeEbyListings(
     const { lnk: productLink } = product;
     const addProduct = async (product) => {};
     const addProductInfo = async ({ productInfo, url }) => {
-      console.log("productInfo:", productInfo);
       await handleEbyListingProductInfo(
         shopDomain,
         infos,
         { productInfo, url },
         queue,
-        product
+        product,
+        processProps
       );
       res("done");
     };

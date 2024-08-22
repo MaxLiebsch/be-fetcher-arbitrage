@@ -25,6 +25,7 @@ import {
   handleQueryEansOnEbyNotFound,
 } from "../util/queryEansOnEbyHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -115,7 +116,7 @@ export default async function queryEansOnEby(task) {
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
       const srcShopDomain = shop.d;
-      let { ean } = product;
+      const ean = getEanFromProduct(product)
 
       const foundProducts = [];
 

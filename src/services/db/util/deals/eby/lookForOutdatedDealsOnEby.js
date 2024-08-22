@@ -1,5 +1,4 @@
 import { shuffle } from "underscore";
-import { findCrawlDataProducts } from "../../crudCrawlDataProduct.js";
 import { getAllShopsAsArray } from "../../shops.js";
 import { updateTaskWithQuery } from "../../tasks.js";
 import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";

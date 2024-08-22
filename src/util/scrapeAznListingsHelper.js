@@ -13,7 +13,8 @@ export async function handleAznListingProductInfo(
   product,
   { productInfo, url },
   infos,
-  queue
+  queue,
+  processProps
 ) {
   const {
     costs,
@@ -23,8 +24,10 @@ export async function handleAznListingProductInfo(
     tax,
     lnk: productLink,
   } = product;
+  const { timestamp, taskIdProp } = processProps;
   infos.total++;
   queue.total++;
+
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -35,12 +38,12 @@ export async function handleAznListingProductInfo(
 
     if (parsedPrice > 0) {
       if (costs.azn > 0) {
-        const currency = detectCurrency(price); 
+        const currency = detectCurrency(price);
         const a_prc = parsedPrice;
         const a_uprc = roundToTwoDecimals(parsedPrice / sellQty);
 
         const productUpdate = {
-          aznUpdatedAt: new UTCDate().toISOString(),
+          [timestamp]: new UTCDate().toISOString(),
           a_prc,
           a_uprc,
           ...(currency && { a_cur: currency }),
@@ -60,7 +63,7 @@ export async function handleAznListingProductInfo(
         await updateArbispotterProductQuery(collection, productLink, {
           $set: productUpdate,
           $unset: {
-            azn_taskId: "",
+            [taskIdProp]: "",
           },
         });
       } else {

@@ -12,6 +12,8 @@ const isTaskComplete = (type, infos, productLimit) => {
     type === "MATCH_PRODUCTS" ||
     type === "CRAWL_AZN_LISTINGS" ||
     type === "CRAWL_EBY_LISTINGS" ||
+    type === 'DEALS_ON_EBY'|| 
+    type === "DEALS_ON_AZN" ||
     type === "WHOLESALE_SEARCH" ||
     type === "CRAWL_EAN" ||
     type === "LOOKUP_INFO" ||

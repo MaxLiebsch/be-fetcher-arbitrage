@@ -1,10 +1,12 @@
-import { shopFilter } from "../../filter.js";
+import { shopProxyTypeFilter } from "../../filter.js";
 import { getAllShopsAsArray } from "../../shops.js";
 import { getDealsOnAznProgress } from "./getDealsOnAznProgress.js";
 
-export async function getOutdatedDealsOnAznShops() {
+export async function getOutdatedDealsOnAznShops(proxyType) {
   const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(shopFilter);
+  const filteredShops = shops.filter((shop) =>
+    shopProxyTypeFilter(shop, proxyType)
+  );
   const dealsOnAznProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
       const progress = await getDealsOnAznProgress(shop.d);

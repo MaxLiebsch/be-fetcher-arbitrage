@@ -1,7 +1,7 @@
 import { getShop } from "../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import { queryProductPageQueue, QueryQueue } from "@dipmaxtech/clr-pkg";
-import { defaultQuery, proxyAuth } from "../../../constants.js";
+import { defaultAznDealTask, defaultQuery, proxyAuth } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
@@ -29,6 +29,8 @@ const negAznDeals = async (task) => {
       total: 0,
       notFound: 0,
       locked: 0,
+      old: 0,
+      new: 0,
       scrapeProducts: {
         elapsedTime: "",
       },
@@ -47,7 +49,6 @@ const negAznDeals = async (task) => {
     };
 
     const _productLimit = getProductLimit(products.length, productLimit);
-    console.log("_productLimit:", _productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -72,11 +73,6 @@ const negAznDeals = async (task) => {
             product
           );
           if (isValidProduct) {
-            console.log(productLink, " isValidProduct:", isValidProduct);
-            console.log(
-              product.lnk,
-              " is valid product ...scraping azn listings"
-            );
             await scrapeAznListings(
               queue,
               ebay,
@@ -90,21 +86,16 @@ const negAznDeals = async (task) => {
             );
           } else {
             infos.total++;
-            console.log(product.lnk, " is not valid product");
             await deleteArbispotterProduct(shopDomain, productLink);
           }
         } else {
-          console.log(
-            product.lnk,
-            " product updated within 24 hours ...scraping ebay listings"
-          );
           await scrapeAznListings(queue, ebay, source, aznLink, product, infos);
         }
       })
     );
-
+    await queue.clearQueue("CRAWL_AZN_LISTINGS_COMPLETE", infos);
     res(
-      new TaskCompletedStatus("CRAWL_AZN_LISTINGS", task, {
+      new TaskCompletedStatus("CRAWL_AZN_LISTINGS_COMPLETE", task, {
         infos,
         statistics: task.statistics,
       })
@@ -114,13 +105,14 @@ const negAznDeals = async (task) => {
 
 export default negAznDeals;
 
-async function scrapeAznListings(
+export async function scrapeAznListings(
   queue,
   target,
   source,
   targetLink,
   product,
-  infos
+  infos,
+  processProps = defaultAznDealTask
 ) {
   return new Promise((res, rej) => {
     const { d } = target;
@@ -134,7 +126,8 @@ async function scrapeAznListings(
         product,
         { productInfo, url },
         infos,
-        queue
+        queue,
+        processProps
       );
       res("done");
     };

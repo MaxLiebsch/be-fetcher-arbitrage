@@ -2,11 +2,12 @@ import { shuffle } from "underscore";
 import { getAllShopsAsArray } from "../../shops.js";
 import { updateTaskWithQuery } from "../../tasks.js";
 import { lockProductsForDealsOnAzn } from "./lockProductsForDealsOnAzn.js";
-import { getUnmatchedDealsOnAznShops } from "./getOutdatedDealsOnAznShops.js";
+import { getOutdatedDealsOnAznShops } from "./getOutdatedDealsOnAznShops.js";
 import { findArbispotterProducts } from "../../crudArbispotterProduct.js";
 import { recoveryDealsOnAznQuery } from "../../queries.js";
+import { shopProxyTypeFilter } from "../../filter.js";
 
-export async function lookForUnmatchedDealsOnAzn(
+export async function lookForOutdatedDealsOnAzn(
   taskId,
   proxyType,
   action,
@@ -26,7 +27,7 @@ export async function lookForUnmatchedDealsOnAzn(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getUnmatchedDealsOnAznShops();
+    const pendingShops = await getOutdatedDealsOnAznShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -79,7 +80,9 @@ export async function lookForUnmatchedDealsOnAzn(
 
 export async function getRecoveryDealsOnAzn(taskId, proxyType, productLimit) {
   const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) => shop.active);
+  const filteredShops = shops.filter((shop) =>
+    shopProxyTypeFilter(shop, proxyType)
+  );
   let pendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
