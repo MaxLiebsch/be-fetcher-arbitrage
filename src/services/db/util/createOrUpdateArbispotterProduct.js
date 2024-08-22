@@ -44,86 +44,15 @@ export const keepaProperties = [
 ];
 
 export const createOrUpdateArbispotterProduct = async (domain, procProd) => {
-  const { lnk, a_lnk, e_lnk, bsr } = procProd;
-  const product = await findProductByLink(domain, procProd.lnk);
+  const { lnk } = procProd;
+  const product = await findProductByLink(domain, lnk);
   try {
     if (product) {
-      const query = {
-        $set: {
-          ...procProd,
-        },
-      };
-      const sevenDaysAgo = new UTCDate();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - RECHECK_EAN_INTERVAL);
-      if (
-        product.eanUpdatedAt &&
-        new UTCDate(parseISO(product.eanUpdatedAt)) < sevenDaysAgo &&
-        (product.ean_prop === "invalid" ||
-          product.ean_prop === "missing" ||
-          product.ean_prop === "timeout")
-      ) {
-        query.$set.procProd.ean_prop = "";
-        query.$set.procProd.eanUpdatedAt = new UTCDate().toISOString();
-      }
-      if (!product.bsr && !bsr) {
-        query.$set.procProd["bsr"] = [];
-      }
-      if (a_lnk && product.a_hash) {
-        if (!verifyHash(a_lnk, product.a_hash)) {
-          keepaProperties.forEach((prop) => {
-            query.$unset[prop.name] = "";
-          });
-          query.$unset["keepaUpdatedAt"] = "";
-          query.$set.procProd["a_hash"] = createHash(a_lnk);
-          query.$set.procProd["a_vrfd"] = {
-            vrfd: false,
-            vrfn_pending: true,
-            flags: [],
-            flag_cnt: 0,
-          };
-        }
-      }
-      if (e_lnk && product.e_hash) {
-        if (!verifyHash(e_lnk, product.e_hash)) {
-          query.$set.procProd["e_hash"] = createHash(e_lnk);
-          query.$set.procProd["e_vrfd"] = {
-            vrfd: false,
-            vrfn_pending: true,
-            flags: [],
-            flag_cnt: 0,
-          };
-        }
-      }
-      return await updateArbispotterProductQuery(domain, lnk, query);
+      return await updateArbispotterProductQuery(domain, lnk, {
+        $set: procProd,
+      });
     } else {
-      const newProduct = {
-        a_pblsh: false,
-        a_vrfd: {
-          vrfd: false,
-          vrfn_pending: true,
-          flags: [],
-          flag_cnt: 0,
-        },
-        e_pblsh: false,
-        e_vrfd: {
-          vrfd: false,
-          vrfn_pending: true,
-          flags: [],
-          flag_cnt: 0,
-        },
-        ...procProd,
-      };
-
-      if (newProduct.a_lnk) {
-        const a_hash = createHash(newProduct.a_lnk);
-        newProduct["a_hash"] = a_hash;
-      }
-
-      if (newProduct.e_lnk) {
-        const e_hash = createHash(newProduct.e_lnk);
-        newProduct["e_hash"] = e_hash;
-      }
-
+      const newProduct = procProd;
       return await upsertArbispotterProduct(domain, newProduct);
     }
   } catch (error) {
