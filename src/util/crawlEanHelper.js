@@ -45,6 +45,7 @@ export async function handleCrawlEanProductInfo(
         eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: "found",
         ean,
+        eanList: [ean],
         ...(prc && { prc, uprc: roundToTwoDecimals(prc / buyQty) }),
         ...(currency && { cur: currency }),
         ...(image && { img: image }),

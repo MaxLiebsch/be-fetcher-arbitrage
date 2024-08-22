@@ -31,6 +31,8 @@ export const resetAznProductQuery = (props = { info_prop: "" }) => {
       // lookup info
       info_taskId: "",
       // keepa properties
+      keepaEanUpdatedAt: "",
+      keepaEan_lckd: "",
       keepaUpdatedAt: "",
       keepa_lckd: "",
       // scrape listing

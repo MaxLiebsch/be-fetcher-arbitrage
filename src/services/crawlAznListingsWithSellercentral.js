@@ -1,6 +1,5 @@
 import {
   QueryQueue,
-  generateUpdate,
   globalEventEmitter,
   querySellerInfosQueue,
   yieldQueues,
@@ -9,7 +8,6 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -22,11 +20,11 @@ import {
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { lockProductsForCrawlAznListings } from "./db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
-import { upsertAsin } from "./db/util/asinTable.js";
 import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
-import { resetAznProductQuery } from "./db/util/aznQueries.js";
-import { UTCDate } from "@date-fns/utc";
-import { getProductLimit } from "../util/getProductLimit.js";
+import {
+  handleLookupInfoNotFound,
+  handleLookupInfoProductInfo,
+} from "../util/lookupInfoHelper.js";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -168,75 +166,26 @@ export default async function crawlAznListingsWithSellercentral(task) {
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
       const product = products[index];
-      const {
-        lnk: productLink,
-        asin,
-        ean,
-        prc: buyPrice,
-        a_qty: sellQty,
-        qty: buyQty,
-      } = product;
+      const { lnk: productLink, asin } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         infos.total++;
         queue.total++;
-        if (productInfo) {
-          const productUpdate = generateUpdate(
-            productInfo,
-            buyPrice,
-            sellQty || 1,
-            buyQty || 1
-          );
-          let eanList = [];
-          if (hasEan || eanSelector) {
-            eanList = [ean];
-          }
-          if (productUpdate.a_prc > 0) {
-            if (productUpdate.costs.azn > 0) {
-              await upsertAsin(asin, eanList, productUpdate.costs);
-              Object.assign(productUpdate, {
-                aznUpdatedAt: new UTCDate().toISOString(),
-              });
-              await updateArbispotterProductQuery(productLink, {
-                $set: productUpdate,
-                $unset: { azn_taskId: "" },
-              });
-            } else {
-              infos.missingProperties.aznCostNeg++;
-              await updateArbispotterProductQuery(
-                shopDomain,
-                productLink,
-                resetAznProductQuery()
-              );
-            }
-          } else {
-            infos.missingProperties.price++;
-            await updateArbispotterProductQuery(
-              shopDomain,
-              productLink,
-              resetAznProductQuery()
-            );
-          }
-        } else {
-          infos.missingProperties.bsr++;
-          await updateArbispotterProductQuery(
-            shopDomain,
-            productLink,
-            resetAznProductQuery()
-          );
-        }
+        await handleLookupInfoProductInfo(
+          shopDomain,
+          Boolean(hasEan || eanSelector),
+          { productInfo, url },
+          product,
+          infos
+        );
         await isCompleted(queue);
       };
       const handleNotFound = async () => {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await updateArbispotterProductQuery(
-          shopDomain,
-          productLink,
-          resetAznProductQuery()
-        );
+        await handleLookupInfoNotFound(shopDomain, productLink);
         await isCompleted(queue);
       };
       const query = {
@@ -249,6 +198,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         retries: 0,
         shop: toolInfo,
         addProduct,
+        lookupRetryLimit: 0,
         targetShop: {
           prefix: "",
           d: shopDomain,

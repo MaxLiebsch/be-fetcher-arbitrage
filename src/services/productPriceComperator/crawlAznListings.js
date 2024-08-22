@@ -114,6 +114,7 @@ export const crawlAznListings = (sellerCentral, origin, task) =>
         retries: 0,
         shop: sellerCentral,
         addProduct,
+        lookupRetryLimit: 0,
         targetShop: {
           prefix: "",
           d: shopDomain,
