@@ -165,7 +165,7 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
     delete product.image;
   }
   if (ean) {
-    product["eanList"] = [product.ean];
+    product["eanList"] = [ean];
     if (!eanUpdatedAt) {
       product.eanUpdatedAt = updatedAt;
     }

@@ -51,6 +51,7 @@ export default async function wholesale(task) {
         price: 0,
         link: 0,
         image: 0,
+        costs: 0,
       },
     };
 
@@ -121,7 +122,7 @@ export default async function wholesale(task) {
       )
     );
 
-    const queueIterator = yieldQueues(queues); 
+    const queueIterator = yieldQueues(queues);
 
     const interval = setInterval(async () => {
       const isDone = queues.every((q) => q.workload() === 0);
@@ -157,28 +158,51 @@ export default async function wholesale(task) {
         infos.total++;
         queue.total++;
         if (productInfo) {
-          const processedProductUpdate = generateUpdate(
-            productInfo,
-            prc,
-            buyQty || 1,
-            sellQty || 1
-          );
+          try {
+            const productUpdate = generateUpdate(
+              productInfo,
+              prc,
+              buyQty || 1,
+              sellQty || 1
+            );
 
-          let reducedCosts = { ...processedProductUpdate.costs };
-          delete reducedCosts.azn;
-          await upsertAsin(processedProductUpdate.asin, [ean], reducedCosts);
-          const result = await updateWholeSaleProduct(productId, {
-            ...processedProductUpdate,
-            status: "complete",
-            lookup_pending: false,
-            locked: false,
-            clrName: "",
-          });
-          if (result.acknowledged) {
-            if (result.upsertedId) infos.new++;
-            else infos.old++;
-          } else {
-            infos.failedSave++;
+            let reducedCosts = { ...productUpdate.costs };
+            delete reducedCosts.azn;
+            await upsertAsin(productUpdate.asin, [ean], reducedCosts);
+            const result = await updateWholeSaleProduct(productId, {
+              ...productUpdate,
+              status: "complete",
+              lookup_pending: false,
+              locked: false,
+              clrName: "",
+            });
+            if (result.acknowledged) {
+              if (result.upsertedId) infos.new++;
+              else infos.old++;
+            } else {
+              infos.failedSave++;
+            }
+          } catch (error) {
+            if (error instanceof Error) {
+              if (error.message === "a_prc is 0") {
+                infos.missingProperties.price++;
+              }
+              if (error.message === "costs.azn is 0") {
+                infos.missingProperties.costs++;
+              }
+              const result = await updateWholeSaleProduct(productId, {
+                status: "not found",
+                lookup_pending: false,
+                locked: false,
+                clrName: "",
+              });
+              if (result.acknowledged) {
+                if (result.upsertedId) infos.new++;
+                else infos.old++;
+              } else {
+                infos.failedSave++;
+              }
+            }
           }
         } else {
           const result = await updateWholeSaleProduct(productId, {

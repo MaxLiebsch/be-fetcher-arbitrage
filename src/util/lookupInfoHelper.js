@@ -23,25 +23,25 @@ export async function handleLookupInfoProductInfo(
     lnk: productLink,
   } = product;
   if (productInfo) {
-    const processedProductUpdate = generateUpdate(
-      productInfo,
-      buyPrice,
-      sellQty || 1,
-      buyQty || 1
-    );
-    const { costs, a_nm, asin } = processedProductUpdate;
+    try {
+      const update = generateUpdate(
+        productInfo,
+        buyPrice,
+        sellQty || 1,
+        buyQty || 1
+      ); 
+      const { costs, a_nm, asin } = update;
 
-    if (costs.azn > 0) {
-      processedProductUpdate["a_nm"] = replaceAllHiddenCharacters(a_nm);
-      processedProductUpdate["a_orgn"] = "a";
-      processedProductUpdate["a_pblsh"] = true;
+      update["a_nm"] = replaceAllHiddenCharacters(a_nm);
+      update["a_orgn"] = "a";
+      update["a_pblsh"] = true;
       if (hasEan) {
         await upsertAsin(asin, [ean], costs);
-        processedProductUpdate["eanList"] = [ean];
+        update["eanList"] = [ean];
       }
 
       if (!a_vrfd) {
-        processedProductUpdate["a_vrfd"] = {
+        update["a_vrfd"] = {
           vrfd: false,
           vrfn_pending: true,
           flags: [],
@@ -51,22 +51,29 @@ export async function handleLookupInfoProductInfo(
 
       await updateArbispotterProductQuery(collection, productLink, {
         $set: {
-          ...processedProductUpdate,
+          ...update,
           info_prop: "complete",
           aznUpdatedAt: new UTCDate().toISOString(),
           infoUpdatedAt: new UTCDate().toISOString(),
         },
         $unset: { info_taskId: "" },
       });
-    } else {
-      infos.missingProperties.costs++;
-      await updateArbispotterProductQuery(
-        collection,
-        productLink,
-        resetAznProductQuery({
-          info_prop: "missing",
-        })
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "a_prc is 0") {
+          infos.missingProperties.price++;
+        }
+        if (error.message === "costs.azn is 0") {
+          infos.missingProperties.costs++;
+        }
+        await updateArbispotterProductQuery(
+          collection,
+          productLink,
+          resetAznProductQuery({
+            info_prop: "missing",
+          })
+        );
+      }
     }
   } else {
     infos.missingProperties.infos++;

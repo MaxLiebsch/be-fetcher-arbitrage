@@ -1508,6 +1508,11 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@date-fns/utc@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@date-fns/utc/-/utc-1.2.0.tgz"
+  integrity sha512-YLq+crMPJiBmIdkRmv9nZuZy1mVtMlDcUKlg4mvI0UsC/dZeIaGoGB5p/C4FrpeOhZ7zBTK03T58S0DFkRNMnw==
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.npmjs.org/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz"
@@ -2578,6 +2583,7 @@ bcrypt-pbkdf@^1.0.0:
   version "0.0.103"
   resolved "file:"
   dependencies:
+    "@date-fns/utc" "^1.2.0"
     axios "^1.7.2"
     be-fetcher-arbitrage "file:"
     concurrently "^8.2.2"
