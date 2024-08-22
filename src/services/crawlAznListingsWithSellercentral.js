@@ -185,7 +185,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        handleLookupInfoNotFound(shopDomain, productLink);
+        await handleLookupInfoNotFound(shopDomain, productLink);
         await isCompleted(queue);
       };
       const query = {
