@@ -3,7 +3,6 @@ import { describe, expect, test, beforeAll } from "@jest/globals";
 import testParameters from "./utils/testParamter.js";
 import {
   extractProducts,
-  extractProductsFromSecondPage,
   extractProductsFromSecondPageQueueless,
   findPaginationAndNextPage,
   findSubCategories,
@@ -13,7 +12,6 @@ import {
   myBeforeAll,
   productPageCount,
 } from "./utils/commonTests.js";
-import { add } from "date-fns";
 
 const shopDomain = "idealo.de";
 

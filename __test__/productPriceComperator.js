@@ -9,7 +9,7 @@ const task = {
   id: "daily_sales_" + shopDomain,
   shopDomain,
   executing: false,
-  productLimit: 10,
+  productLimit: 100,
   lastCrawler: [],
   categories: [
     {
@@ -85,7 +85,7 @@ const task = {
 };
 
 async function main() {
-  // await deleteAllArbispotterProducts('sales')
+  await deleteAllArbispotterProducts('sales')
   const infos = await productPriceComperator(task);
   console.log(JSON.stringify(infos, null, 2));
 }

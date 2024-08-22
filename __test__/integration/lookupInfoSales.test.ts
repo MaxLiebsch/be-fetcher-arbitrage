@@ -1,0 +1,50 @@
+import { describe, expect, test, beforeAll } from "@jest/globals";
+import { path, read } from "fs-jetpack";
+//@ts-ignore
+import { shuffle } from "underscore";
+import {
+  deleteAllArbispotterProducts,
+  insertArbispotterProducts,
+  //@ts-ignore
+} from "../../src/services/db/util/crudArbispotterProduct.js";
+//@ts-ignore
+import lookupInfo from "../../src/services/lookupInfo.js";
+import { ObjectId } from "mongodb";
+
+const shopDomain = "sales";
+
+describe("lookup info", () => {
+  let productLimit = 10;
+  beforeAll(async () => {
+    const aznListings = read(
+      path("__test__/static/collections/arbispotter.sales-with-eans.json"),
+      "json"
+    );
+
+    if (!aznListings) {
+      throw new Error("No azn listings found for " + shopDomain);
+    }
+    console.log("aznListings", aznListings.length);
+    const shuffled = shuffle(aznListings).slice(0, productLimit);
+    await deleteAllArbispotterProducts('voelkner.de');
+    await insertArbispotterProducts(
+      'voelkner.de',
+      shuffled.map((l) => {
+        return { ...l, _id: new ObjectId(l._id.$oid) };
+      })
+    );
+  }, 100000);
+
+  test("crawl azn listings", async () => {
+    const infos = await lookupInfo({
+      productLimit,
+      type: "LOOKUP_INFO",
+      browserConcurrency: 3,
+      concurrency: 1,
+      shopDomain,
+      _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
+      action: "",
+    });
+    console.log("infos:", infos);
+  }, 1000000);
+});
