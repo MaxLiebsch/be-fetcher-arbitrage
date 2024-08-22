@@ -5,6 +5,7 @@ import {
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
+import { getEanFromProduct } from "./getEanFromProduct.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection,
@@ -14,37 +15,39 @@ export async function handleQueryEansOnEbyIsFinished(
   foundProducts,
   task = null
 ) {
-  const { ean, e_qty: sellQty, lnk: productLink } = product;
+  const { e_qty: sellQty, lnk: productLink } = product;
+  const ean = getEanFromProduct(product);
+
   infos.shops[collection]++;
   infos.total++;
   queue.total++;
-  let productUpdate = {};
+  let update = {};
   const foundProduct = foundProducts.find((p) => p.link && p.price);
   if (foundProduct) {
     const { image, price, name, link } = foundProduct;
     const shortLink = foundProduct.link.split("?")[0];
     const esin = new URL(link).pathname.split("/")[2];
 
-    productUpdate["e_img"] = image;
-    productUpdate["e_lnk"] = shortLink;
-    productUpdate["e_hash"] = createHash(shortLink);
-    productUpdate["eanList"] = [ean];
-    productUpdate["e_orgn"] = "e";
-    productUpdate["e_pblsh"] = false;
-    productUpdate["esin"] = esin;
-    productUpdate["e_prc"] = price;
-    productUpdate["e_nm"] = replaceAllHiddenCharacters(name);
+    update["e_img"] = image;
+    update["e_lnk"] = shortLink;
+    update["e_hash"] = createHash(shortLink);
+    update["eanList"] = [ean];
+    update["e_orgn"] = "e";
+    update["e_pblsh"] = false;
+    update["esin"] = esin;
+    update["e_prc"] = price;
+    update["e_nm"] = replaceAllHiddenCharacters(name);
 
     if (sellQty) {
-      productUpdate["e_qty"] = sellQty;
-      productUpdate["e_uprc"] = roundToTwoDecimals(price / sellQty);
+      update["e_qty"] = sellQty;
+      update["e_uprc"] = roundToTwoDecimals(price / sellQty);
     } else {
-      productUpdate["e_qty"] = 1;
-      productUpdate["e_uprc"] = price;
+      update["e_qty"] = 1;
+      update["e_uprc"] = price;
     }
     await updateArbispotterProductQuery(collection, productLink, {
       $set: {
-        ...productUpdate,
+        ...update,
         qEbyUpdatedAt: new UTCDate().toISOString(),
         eby_prop: "complete",
       },

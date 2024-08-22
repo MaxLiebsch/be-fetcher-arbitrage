@@ -18,6 +18,7 @@ import {
   handleLookupInfoProductInfo,
 } from "../util/lookupInfoHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -131,8 +132,8 @@ export default async function lookupInfo(task) {
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
-      const { ean, asin, lnk: productLink } = product;
-
+      const { asin, lnk: productLink } = product;
+      const ean = getEanFromProduct(product)
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         await handleLookupInfoProductInfo(

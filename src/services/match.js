@@ -27,6 +27,7 @@ import { lockProductsForMatch } from "./db/util/match/lockProductsForMatch.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
 import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -175,7 +176,8 @@ export default async function match(task) {
     for (let index = 0; index < sliced.length; index++) {
       const product = sliced[index];
 
-      const { nm, ean, mnfctr } = product;
+      const { nm, mnfctr } = product;
+      const ean = getEanFromProduct(product);
 
       const reducedName = mnfctr + " " + reduceString(nm, 55);
 

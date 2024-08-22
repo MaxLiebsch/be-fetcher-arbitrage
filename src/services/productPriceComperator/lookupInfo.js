@@ -12,6 +12,7 @@ import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
 } from "../../util/lookupInfoHelper.js";
+import { getEanFromProduct } from "../../util/getEanFromProduct.js";
 
 export const getMaxLoadQueue = (queues) => {
   const queueLoad = queues.map((queue) => queue.workload());
@@ -33,12 +34,15 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
       failedSave: 0,
       notFound: 0,
       locked: 0,
-      shops: {},
+      shops: {
+        [shopDomain]: 0,
+      },
       missingProperties: {
         infos: 0,
         costs: 0,
       },
     };
+
     const eventEmitter = globalEventEmitter;
     const queryQueues = [];
     const queuesWithId = {};
@@ -109,12 +113,12 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
       if (!product) continue;
       const queue = queueIterator.next().value;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
-      const { lnk: productLink, asin, ean, _id } = product;
+      const { lnk: productLink, asin, _id } = product;
+      const ean = getEanFromProduct(product);
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         completedProducts.push(_id);
-        infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
         await handleLookupInfoProductInfo(
@@ -130,7 +134,6 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
         completedProducts.push(product._id);
         await handleLookupInfoNotFound(salesDbName, productLink);
         infos.notFound++;
-        infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
         await isProcessComplete(queue);
@@ -150,8 +153,8 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
         queue,
         query: {
           product: {
-            value: hasEan ? ean : asin,
-            key: hasEan ? ean : asin,
+            value: hasEan ? asin || ean : asin,
+            key: hasEan ? asin || ean : asin,
           },
         },
         prio: 0,

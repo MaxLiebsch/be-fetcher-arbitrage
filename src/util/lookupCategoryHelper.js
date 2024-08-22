@@ -12,6 +12,7 @@ import {
 } from "../services/db/util/crudArbispotterProduct.js";
 import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
 import { UTCDate } from "@date-fns/utc";
+import { getEanFromProduct } from "./getEanFromProduct.js";
 
 export async function handleLookupCategoryProductInfo(
   collection,
@@ -23,7 +24,10 @@ export async function handleLookupCategoryProductInfo(
 ) {
   infos.total++;
   queue.total++;
-  const { ean: exisitingEan, lnk: productLink } = product;
+  const { lnk: productLink } = product;
+
+  const exisitingEan = getEanFromProduct(product);
+
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
