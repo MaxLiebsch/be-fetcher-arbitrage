@@ -17,6 +17,7 @@ import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
 } from "../util/lookupInfoHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
@@ -51,7 +52,7 @@ export default async function lookupInfo(task) {
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      products.length < productLimit ? products.length : productLimit;
+      getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     const toolInfo = await getShop("sellercentral.amazon.de");
