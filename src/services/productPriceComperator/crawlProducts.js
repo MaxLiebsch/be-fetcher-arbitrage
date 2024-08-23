@@ -206,6 +206,7 @@ export const crawlProducts = async (shop, task) =>
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
+        retriesOnFail: 5,
         queue: queue,
         retries: 0,
         prio: 0,

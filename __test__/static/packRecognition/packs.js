@@ -1,7 +1,7 @@
 export const packs = [
   {
     input: "Holle - Bio-Fol­ge­milch 2 aus Zie­gen­milch - 0,4 kg - 6er Pack",
-    package: 6,
+    package: 1,
   },
   {
     input: "Hama SpotLight Steady 120 Set",
@@ -9,11 +9,11 @@ export const packs = [
   },
   {
     input: "Compeed Blasenpflaster Mixpack - Hydrokolloid-Pflaster in verschiedenen Gren - gegen Blasen an Fersen, Zehen und fr kleine Blasen, 6 stck",
-    package: 6,
+    package: 1,
   },
   {
     input: "Gillette Fusion 5 Rasierklingen für Rasierer, 14 Ersatzklingen für Nassrasierer Herren mit 5-fach Klinge, Made in Germany",
-    package: 14,
+    package: 1,
   },
 
   { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
@@ -41,7 +41,7 @@ export const packs = [
   },
   {
     input: "12 Pck. 3M Deutschland Atemschutzmaske 8710 (VE20) Atemschutzmasken 7000034734",
-    package: 12,
+    package: 1,
   },
   {
     input: "Bosch 1000x Klammer Typ 53 (Textilien/Gewebe, Teppich, Akustikplatten, Rasenteppich, 11.4 x 0.74 x 8 mm, Zubehr Tacker)",
@@ -90,7 +90,7 @@ export const packs = [
   {
     input:
       "o.b. Original Tampons normal mit geschwungenen Rillen Saugfähig 64er",
-    package: 64,
+    package: 1,
   },
   {
     input: "JBL Bar 800",
