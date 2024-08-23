@@ -109,6 +109,7 @@ export const crawlEans = async (shop, task) =>
           d: shopDomain,
         },
         onNotFound: handleNotFound,
+        retriesOnFail: 5,
         addProductInfo,
         queue: queue,
         query: defaultQuery,

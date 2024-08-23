@@ -1301,6 +1301,12 @@ export const findTasksQuery = () => {
           {
             $and: dailySalesTaskQuery,
           },
+          {
+            $and: dealsOnAznTaskQuery,
+          }
+          ,{
+            $and: dealsOnEbyTaskQuery,
+          }
         ],
       },
     ],
@@ -1364,18 +1370,6 @@ export const findTasksQuery = () => {
               { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
-          {
-            $and: [
-              ...dealsOnAznTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
-            ],
-          },
-          {
-            $and: [
-              ...dealsOnEbyTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
-            ],
-          },
         ],
       },
     ],
@@ -1402,8 +1396,6 @@ export const findTasksQuery = () => {
           {
             $and: lookupCategoryTaskQuery,
           },
-          { $and: dealsOnAznTaskQuery },
-          { $and: dealsOnEbyTaskQuery },
           { $and: crawlAznListingsTaskQuery },
           { $and: crawlEbyListingsTaskQuery },
         ],

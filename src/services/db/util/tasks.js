@@ -155,16 +155,7 @@ export const getNewTask = async () => {
       console.log("LOOKUP_CATEGORY: pendingShops:", pendingShops.length);
       return await handleComulativTasks(task, pendingShops, cooldown);
     }
-    if (task.type === "DEALS_ON_EBY") {
-      const pendingShops = await getOutdatedDealsOnEbyShops(task.proxyType);
-      console.log("DEALS_ON_EBY: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
-    }
-    if (task.type === "DEALS_ON_AZN") {
-      const pendingShops = await getOutdatedDealsOnAznShops(task.proxyType);
-      console.log("DEALS_ON_AZN: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
-    }
+  
   } else {
     //fallback
     const task = await taskCollection.findOneAndUpdate(fallbackQuery, update, {
@@ -250,16 +241,6 @@ export const getNewTask = async () => {
       if (task.type === "LOOKUP_CATEGORY") {
         const pendingShops = await getMissingEbyCategoryShops();
         console.log("LOOKUP_CATEGORY: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
-      }
-      if (task.type === "DEALS_ON_EBY") {
-        const pendingShops = await getOutdatedDealsOnEbyShops(task.proxyType);
-        console.log("DEALS_ON_EBY: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
-      }
-      if (task.type === "DEALS_ON_AZN") {
-        const pendingShops = await getOutdatedDealsOnAznShops(task.proxyType);
-        console.log("DEALS_ON_AZN: pendingShops:", pendingShops.length);
         return await handleComulativTasks(task, pendingShops, cooldown);
       }
     }
