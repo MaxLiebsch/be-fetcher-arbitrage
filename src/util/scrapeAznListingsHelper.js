@@ -7,6 +7,7 @@ import {
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
 import { UTCDate } from "@date-fns/utc";
+import { defaultAznDealTask } from "../constants.js";
 
 export async function handleAznListingProductInfo(
   collection,
@@ -14,7 +15,7 @@ export async function handleAznListingProductInfo(
   { productInfo, url },
   infos,
   queue,
-  processProps
+  processProps = defaultAznDealTask
 ) {
   const {
     costs,
