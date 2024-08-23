@@ -34,6 +34,7 @@ async function handleDailySalesTask({
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
       executing: false,
+      completedAt: new UTCDate().toISOString(),
       visitedPages: statistics?.visitedPages || [],
     };
     await updateTask(_id, {

@@ -21,11 +21,12 @@ import {
   countTotalProductsForUpdateProductinfo,
   getUpdateProductinfoProgress,
 } from "../services/db/util/updateProductinfo/getUpdateProductInfoProgress.js";
+import { updateProgressDealTasks } from "../util/updateProgressInTasks.js";
 
 const main = async () => {
  
-  const a = await getOutdatedDealsOnAznShops('mix')
-  console.log('a:', a.map((x)=> x.shop.d + " " + x.pending));
+  const a = await updateProgressDealTasks('mix')
+  console.log('a:', a)
  
 };
 

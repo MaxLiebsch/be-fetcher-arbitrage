@@ -352,7 +352,7 @@ export const setProductsLockedForMatchQuery = (taskId) => {
   };
 };
 export const countPendingProductsForMatchQuery = (hasEan) => {
-  const twentyFourAgo = subDateDaysISO(1)
+  const twentyFourAgo = subDateDaysISO(1);
   let query = {
     $and: [
       { taskId: { $exists: false } },
@@ -866,9 +866,7 @@ export const crawlDailySalesQueryFn = (start) => {
       $and: [
         { recurrent: { $eq: true } },
         { executing: { $eq: false } },
-        {
-          $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
-        },
+        { completedAt: { $lt: start } },
       ],
     },
   ];
@@ -888,7 +886,7 @@ export const lockProductsForDealsOnEbyAgg = (taskId, limit, action) => {
   } else {
     agg = countPendingProductsForDealsOnEbyAgg({
       returnTotal: false,
-      limit: (limit && action !== "recover") ? limit : null,
+      limit: limit && action !== "recover" ? limit : null,
     });
   }
   return agg;
@@ -984,15 +982,8 @@ export const countTotalProductsDealsOnEbyAgg = [
 export const dealsOnEbyTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_EBY" },
-
     {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
+      startedAt: { $lt: lowerThenStartedAt },
     },
     { recurrent: { $eq: true } },
     {
@@ -1082,13 +1073,7 @@ export const dealsOnAznTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_AZN" },
     {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
+      startedAt: { $lt: lowerThenStartedAt },
     },
     { recurrent: { $eq: true } },
     {

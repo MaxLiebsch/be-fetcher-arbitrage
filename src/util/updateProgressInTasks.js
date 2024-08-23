@@ -7,6 +7,7 @@ import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOn
 import { updateTaskWithQuery } from "../services/db/util/tasks.js";
 import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
 import { getCrawlEbyListingsProgressAggregation } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { getOutdatedDealsOnAznShops } from "../services/db/util/deals/azn/getOutdatedDealsOnAznShops.js";
 
 export const updateMatchProgress = async (shopDomain, hasEan) => {
   const progress = await getMatchProgress(shopDomain, hasEan);
@@ -16,6 +17,27 @@ export const updateMatchProgress = async (shopDomain, hasEan) => {
     { progress }
   );
   return progress;
+};
+
+export const updateProgressDealTasks = async (proxyType) => {
+  const aprogress = await getOutdatedDealsOnAznShops(proxyType);
+  const eprogress = await getOutdatedDealsOnAznShops(proxyType);
+  return await Promise.all([
+    await updateTaskWithQuery(
+      {
+        type: "DEALS_ON_AZN",
+        proxyType: proxyType,
+      },
+      { progress: aprogress }
+    ),
+    await updateTaskWithQuery(
+      {
+        type: "DEALS_ON_EBY",
+        proxyType: proxyType,
+      },
+      { progress: eprogress }
+    ),
+  ]);
 };
 
 export const updateCrawlAznListingsProgress = async (shopDomain) => {
