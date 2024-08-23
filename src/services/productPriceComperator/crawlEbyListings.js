@@ -67,9 +67,9 @@ export const crawlEbyListings = (ebay, task) =>
       const addProductInfo = async ({ productInfo, url }) => {
         await handleEbyListingProductInfo(
           salesDbName,
-          product,
-          { productInfo, url },
           infos,
+          { productInfo, url },
+          product,
           queue
         );
         await isProcessComplete();

@@ -14,8 +14,8 @@ export async function handleEbyListingProductInfo(
   collection,
   infos,
   { productInfo, url },
-  queue,
   product,
+  queue,
   processProps = defaultEbyDealTask
 ) {
   const {
