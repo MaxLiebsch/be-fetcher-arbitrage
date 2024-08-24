@@ -5,9 +5,9 @@ import { proxyAuth } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
-import { scrapeProductInfo } from "../weekly/negEbyDeals.js";
 import { lookForOutdatedDealsOnAzn } from "../../db/util/deals/azn/lookForOutdatedDealsOnAzn.js";
 import { scrapeAznListings } from "../weekly/negAznDeals.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 
 const dealsOnAzn = async (task) => {
   const { productLimit } = task;

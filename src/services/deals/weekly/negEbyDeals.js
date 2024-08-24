@@ -9,6 +9,7 @@ import { lockProductsForCrawlEbyListings } from "../../db/util/crawlEbyListings/
 import {
   defaultEbyDealTask,
   defaultQuery,
+  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
@@ -19,6 +20,7 @@ import {
 } from "../../../util/scrapeEbyListingsHelper.js";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 
 const negEbyDeals = async (task) => {
   const { productLimit } = task;
@@ -114,42 +116,7 @@ const negEbyDeals = async (task) => {
 
 export default negEbyDeals;
 
-export async function scrapeProductInfo(queue, source, product) {
-  return new Promise((res, rej) => {
-    const { lnk: productLink } = product;
-    const { d: shopDomain } = source;
-    const addProduct = async (product) => {};
-    const addProductInfo = async ({ productInfo, url }) => {
-      res(
-        await handleDealsProductInfo(shopDomain, { productInfo, url }, product)
-      );
-    };
-    const handleNotFound = async (cause) => {
-      res(null);
-    };
 
-    queue.pushTask(queryProductPageQueue, {
-      retries: 0,
-      shop: source,
-      addProduct,
-      targetShop: {
-        name: shopDomain,
-        prefix: "",
-        d: shopDomain,
-      },
-      onNotFound: handleNotFound,
-      addProductInfo,
-      queue: queue,
-      query: defaultQuery,
-      prio: 0,
-      extendedLookUp: false,
-      pageInfo: {
-        link: productLink,
-        name: shopDomain,
-      },
-    });
-  });
-}
 export async function scrapeEbyListings(
   queue,
   target,

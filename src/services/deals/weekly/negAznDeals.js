@@ -10,7 +10,7 @@ import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../../util/scrapeAznListingsHelper.js";
-import { scrapeProductInfo } from "./negEbyDeals.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 
 const negAznDeals = async (task) => {
   const { productLimit } = task;

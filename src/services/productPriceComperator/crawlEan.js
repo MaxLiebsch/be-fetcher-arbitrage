@@ -8,6 +8,7 @@ import { salesDbName } from "../../services/productPriceComparator.js";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
+  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from "../../constants.js";
 import {
@@ -109,7 +110,7 @@ export const crawlEans = async (shop, task) =>
           d: shopDomain,
         },
         onNotFound: handleNotFound,
-        retriesOnFail: 5,
+        retriesOnFail: MAX_RETRIES_SCRAPE_EAN,
         addProductInfo,
         queue: queue,
         query: defaultQuery,

@@ -7,7 +7,7 @@ import {
   sleep,
 } from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../../services/productPriceComparator.js";
-import { proxyAuth, RECHECK_EAN_EBY_AZN_INTERVAL } from "../../constants.js";
+import { MAX_RETIRES_SCRAPE_SHOP, proxyAuth, RECHECK_EAN_EBY_AZN_INTERVAL } from "../../constants.js";
 import { parseISO } from "date-fns";
 import { transformProduct } from "../../util/transformProduct.js";
 import {
@@ -206,7 +206,7 @@ export const crawlProducts = async (shop, task) =>
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
-        retriesOnFail: 5,
+        retriesOnFail: MAX_RETIRES_SCRAPE_SHOP,
         queue: queue,
         retries: 0,
         prio: 0,

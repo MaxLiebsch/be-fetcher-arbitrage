@@ -10,6 +10,7 @@ import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
+  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
@@ -150,7 +151,7 @@ export default async function crawlEan(task) {
         retries: 0,
         shop,
         addProduct,
-        retriesOnFail: 5,
+        retriesOnFail: MAX_RETRIES_SCRAPE_EAN,
         targetShop: {
           name: shopDomain,
           prefix: "",

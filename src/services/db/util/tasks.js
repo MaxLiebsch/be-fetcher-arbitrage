@@ -58,16 +58,15 @@ export const getNewTask = async () => {
   const prioTask = await taskCollection.findOneAndUpdate(prioQuery, update, {
     returnNewDocument: true,
   });
-
+  console.log("Prio:task:", prioTask?.type, " ", prioTask ?.id);
   if (prioTask) {
-    console.log("Prio:task:", prioTask?.type, " ", prioTask?.id);
     if (prioTask.type === "DEALS_ON_EBY") {
-      const pendingShops = await getOutdatedDealsOnEbyShops();
+      const pendingShops = await getOutdatedDealsOnEbyShops(prioTask.proxyType);
       console.log("DEALS_ON_EBY: pendingShops:", pendingShops.length);
       return await handleComulativTasks(prioTask, pendingShops, cooldown);
     }
     if (prioTask.type === "DEALS_ON_AZN") {
-      const pendingShops = await getOutdatedDealsOnAznShops();
+      const pendingShops = await getOutdatedDealsOnAznShops(prioTask.proxyType);
       console.log("DEALS_ON_AZN: pendingShops:", pendingShops.length);
       return await handleComulativTasks(prioTask, pendingShops, cooldown);
     }

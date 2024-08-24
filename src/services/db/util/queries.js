@@ -1303,10 +1303,10 @@ export const findTasksQuery = () => {
           },
           {
             $and: dealsOnAznTaskQuery,
-          }
-          ,{
+          },
+          {
             $and: dealsOnEbyTaskQuery,
-          }
+          },
         ],
       },
     ],
@@ -1355,18 +1355,6 @@ export const findTasksQuery = () => {
           {
             $and: [
               ...matchTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
-            ],
-          },
-          {
-            $and: [
-              ...crawlAznListingsTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
-            ],
-          },
-          {
-            $and: [
-              ...crawlEbyListingsTaskQuery,
               { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
           },
