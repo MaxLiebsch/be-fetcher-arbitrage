@@ -136,8 +136,8 @@ export async function scrapeEbyListings(
         shopDomain,
         infos,
         { productInfo, url },
-        queue,
         product,
+        queue,
         processProps
       );
       res("done");

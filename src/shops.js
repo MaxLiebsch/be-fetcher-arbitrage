@@ -1864,6 +1864,11 @@ export const shops = {
     hasEan: true,
     manualCategories: [],
     mimic: "label[for=loginb]",
+    javascript: {
+      sharedWorker: "disabled",
+      webWorker: "disabled",
+      serviceWorker: "enabled",
+    },
     paginationEl: [
       {
         type: "pagination",

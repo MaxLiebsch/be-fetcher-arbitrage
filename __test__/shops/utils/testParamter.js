@@ -17,7 +17,7 @@ const testParameters = {
   },
   "reichelt.de": {
     productPageUrl:
-      "https://www.reichelt.de/compact-anschlussklemme-serie-221-the-same-in-green--wago-221-423-p355729.html?&trstct=pos_7&nbc=1",
+      "https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html",
   },
   "voelkner.de": {
     productPageUrl:

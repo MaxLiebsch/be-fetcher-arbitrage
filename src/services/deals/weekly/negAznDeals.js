@@ -120,7 +120,6 @@ export async function scrapeAznListings(
     const { lnk: productLink } = product;
     const addProduct = async (product) => {};
     const addProductInfo = async ({ productInfo, url }) => {
-      console.log(targetLink," productInfo:", productInfo);
       await handleAznListingProductInfo(
         shopDomain,
         product,
