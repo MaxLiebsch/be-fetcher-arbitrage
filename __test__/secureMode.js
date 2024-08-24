@@ -10,14 +10,14 @@ import { getShop } from "../src/services/db/util/shops.js";
 // };
 
 const secureMode = async () => {
-  const browser = await mainBrowser({ id: "test" }, proxyAuth, "127.0.6533.119");
+  const browser = await mainBrowser({ id: "test" }, proxyAuth, '127.0.6533.119');
   
   const shop = await getShop("gamestop.de");
   const page = await getPage(
     browser,
     shop,
     1,
-    shop.resourceTypes["crawl"],
+    [],
     shop.exceptions
   );
   // const page = await browser.newPage();
