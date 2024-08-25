@@ -21,9 +21,12 @@ const secureMode = async () => {
     shop.exceptions
   );
   // const page = await browser.newPage();
-  await page.goto('https://www.gamestop.de/SearchResult/QuickSearch?variantType=1&shippingMethod=2');
-
-  
+  const result = await page.goto('https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html');
+  const status = result?.status();
+  if(status !== 200) {
+    const response = await page.reload();
+    const newStatus = response?.status()
+  }
 };
 
 secureMode().then(() => console.log("Secure mode test passed"));

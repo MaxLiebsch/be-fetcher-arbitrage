@@ -2,10 +2,10 @@ import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
 import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 
-const shopDomain = "gamestop.de";
+const shopDomain = "reichelt.de";
 
 const today = new Date();
-const productLimit = 50;
+const productLimit = 200;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -13,6 +13,7 @@ const task = {
   type: "CRAWL_SHOP",
   id: `crawl_shop_${shopDomain}_1_of_4`,
   shopDomain,
+  proxyType: 'de',
   limit: {
     mainCategory: 9,
     subCategory: 100,
@@ -20,9 +21,22 @@ const task = {
   },
   categories: [
     {
-      name: "Abholung im Store",
-      link: "https://www.gamestop.de/SearchResult/QuickSearch?variantType=1&shippingMethod=2",
-      size: 4633,
+      name: "Neu",
+      link: "https://www.reichelt.de/?PAGE=2",
+      limit: {
+        subCategories: 100,
+        pages: 10,
+      },
+      productLimit: 20,
+    },
+    {
+      name: "Sale",
+      link: "https://www.reichelt.de/sale-l2568.html",
+      limit: {
+        subCategories: 100,
+        pages: 10,
+      },
+      productLimit: 20,
     },
   ],
   recurrent: true,
