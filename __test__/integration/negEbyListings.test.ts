@@ -8,8 +8,16 @@ import {
 //@ts-ignore
 import negEbyDeals from "../../src/services/deals/weekly/negEbyDeals.js";
 import { ObjectId } from "mongodb";
+//@ts-ignore
+import { getAllShopsAsArray } from "../../src/services/db/util/shops.js";
+//@ts-ignore
+import { getArbispotterDb } from "../../src/services/db/mongo.js";
+//@ts-ignore
+import { shopProxyTypeFilter } from "../../src/services/db/util/filter.js";
+import { sub } from "date-fns";
 
 const shopDomain = "alternate.de";
+const proxyType = "mix";
 
 describe("crawl eby listings", () => {
   let productLimit = 10;
@@ -33,11 +41,28 @@ describe("crawl eby listings", () => {
         return { ...l, _id: new ObjectId(l._id.$oid) };
       })
     );
+
+    const shops = await getAllShopsAsArray();
+    const filteredShops = shops.filter((shop) =>
+      shopProxyTypeFilter(shop, proxyType)
+    );
+    const spotter = await getArbispotterDb();
+    await Promise.all(
+      filteredShops.map(async (shop) => {
+        return spotter.collection(shop.d).updateMany(
+          {},
+          {
+            $set: { availUpdatedAt: sub(new Date(), { days: 2 }) },
+            $unset: { eby_taskId: "", ebyUpdatedAt: "" },
+          }
+        );
+      })
+    );
   }, 100000);
 
   test("crawl eby listings", async () => {
     const infos = await negEbyDeals({
-      shopDomain,
+      proxyType,
       productLimit,
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "",

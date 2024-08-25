@@ -44,6 +44,14 @@ export const getCrawlEbyListingsProgressAggregation = async (shopDomain) => {
   const [total] = await countTotalProductsCrawlEbyListings(
     shopProductCollectionName
   );
+  
+  if(!total || !pending) {
+    return {
+      percentage: '0 %',
+      pending: 0,
+      total: 0,
+    };
+  }
   return {
     percentage: `${(
       ((total.total - pending.total) / total.total) *

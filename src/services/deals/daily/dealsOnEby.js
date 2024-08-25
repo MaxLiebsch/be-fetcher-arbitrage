@@ -8,6 +8,7 @@ import { getProductLimit } from "../../../util/getProductLimit.js";
 import { scrapeEbyListings } from "../weekly/negEbyDeals.js";
 import { lookForOutdatedDealsOnEby } from "../../db/util/deals/eby/lookForOutdatedDealsOnEby.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
 
 const dealsOnEby = async (task) => {
   const { productLimit } = task;
@@ -16,8 +17,8 @@ const dealsOnEby = async (task) => {
     const { products: productsWithShop } = await lookForOutdatedDealsOnEby(
       _id,
       proxyType,
-      productLimit,
-      action
+      action,
+      productLimit
     );
 
     const eby = await getShop("ebay.de");
@@ -50,8 +51,9 @@ const dealsOnEby = async (task) => {
       productLimit
     );
     task.actualProductLimit = _productLimit;
-
     infos.locked = productsWithShop.length;
+
+    await updateProgressDealsOnEbyTasks(proxyType);
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();

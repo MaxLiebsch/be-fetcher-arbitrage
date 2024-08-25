@@ -1,19 +1,12 @@
 import { getShop } from "../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
-import {
-  LoggerService,
-  queryProductPageQueue,
-  QueryQueue,
-} from "@dipmaxtech/clr-pkg";
-import { lockProductsForCrawlEbyListings } from "../../db/util/crawlEbyListings/lockProductsForCrawlEbyListings.js";
+import { queryProductPageQueue, QueryQueue } from "@dipmaxtech/clr-pkg";
 import {
   defaultEbyDealTask,
   defaultQuery,
-  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
-import { handleDealsProductInfo } from "../../../util/deals/scrapeProductInfoHelper.js";
 import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
@@ -21,19 +14,20 @@ import {
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { lookForOudatedNegMarginEbyListings } from "../../db/util/deals/eby/lookForOutdatedNegMarginEbyListings.js";
+import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
 
 const negEbyDeals = async (task) => {
   const { productLimit } = task;
-  const { _id, action, shopDomain, concurrency } = task;
+  const { _id, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {
-    const products = await lockProductsForCrawlEbyListings(
-      shopDomain,
-      productLimit,
+    const { products, shops } = await lookForOudatedNegMarginEbyListings(
       _id,
-      action
+      proxyType,
+      action,
+      productLimit
     );
     const eby = await getShop("ebay.de");
-    const source = await getShop(shopDomain);
 
     const infos = {
       total: 0,
@@ -60,29 +54,30 @@ const negEbyDeals = async (task) => {
 
     const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
-
     infos.locked = products.length;
+    await updateProgressNegDealEbyTasks(proxyType);
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
 
     await Promise.all(
-      products.map(async (product) => {
-        const { lnk: productLink, esin, e_mrgn, e_mrgn_pct } = product;
+      products.map(async (productShop) => {
+        const { product, shop: source } = productShop;
+        const { d: shopDomain } = source;
+        const { lnk: productLink, esin } = product;
 
         const diffHours = differenceInHours(
           new Date(),
           new Date(product.availUpdatedAt || product.updatedAt)
         );
         const ebyLink = "https://www.ebay.de/itm/" + esin;
-
         if (diffHours > 24) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
             product
           );
-          if (isValidProduct) { 
+          if (isValidProduct) {
             await scrapeEbyListings(
               queue,
               eby,
@@ -115,7 +110,6 @@ const negEbyDeals = async (task) => {
 };
 
 export default negEbyDeals;
-
 
 export async function scrapeEbyListings(
   queue,

@@ -116,8 +116,8 @@ async function crawlEbyListings(task) {
           shopDomain,
           infos,
           { productInfo, url },
-          product,
-          queue
+          queue,
+          product
         );
         await isComplete();
       };

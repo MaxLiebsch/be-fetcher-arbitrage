@@ -8,6 +8,9 @@ import { updateTaskWithQuery } from "../services/db/util/tasks.js";
 import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
 import { getCrawlEbyListingsProgressAggregation } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
 import { getOutdatedDealsOnAznShops } from "../services/db/util/deals/azn/getOutdatedDealsOnAznShops.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "../services/db/util/deals/azn/getOutdatedNegMarginAznListingsPerShop.js";
+import { getOutdatedNegMarginEbyListingsPerShop } from "../services/db/util/deals/eby/getOutdatedNegMarginEbyListingsPerShop.js";
+import { getOutdatedDealsOnEbyShops } from "../services/db/util/deals/eby/getOutdatedDealsOnEbyShops.js";
 
 export const updateMatchProgress = async (shopDomain, hasEan) => {
   const progress = await getMatchProgress(shopDomain, hasEan);
@@ -19,9 +22,31 @@ export const updateMatchProgress = async (shopDomain, hasEan) => {
   return progress;
 };
 
+export const updateProgressDealsOnAznTasks = async (proxyType) => {
+  const aprogress = await getOutdatedDealsOnAznShops(proxyType);
+  return await updateTaskWithQuery(
+    {
+      type: "DEALS_ON_AZN",
+      proxyType: proxyType,
+    },
+    { progress: aprogress }
+  );
+};
+
+export const updateProgressDealsOnEbyTasks = async (proxyType) => {
+  const eprogress = await getOutdatedDealsOnEbyShops(proxyType);
+  return await updateTaskWithQuery(
+    {
+      type: "DEALS_ON_EBY",
+      proxyType: proxyType,
+    },
+    { progress: eprogress }
+  );
+};
+
 export const updateProgressDealTasks = async (proxyType) => {
   const aprogress = await getOutdatedDealsOnAznShops(proxyType);
-  const eprogress = await getOutdatedDealsOnAznShops(proxyType);
+  const eprogress = await getOutdatedDealsOnEbyShops(proxyType);
   return await Promise.all([
     await updateTaskWithQuery(
       {
@@ -33,6 +58,49 @@ export const updateProgressDealTasks = async (proxyType) => {
     await updateTaskWithQuery(
       {
         type: "DEALS_ON_EBY",
+        proxyType: proxyType,
+      },
+      { progress: eprogress }
+    ),
+  ]);
+};
+
+export const updateProgressNegDealAznTasks = async (proxyType) => {
+  const aprogress = await getOutdatedNegMarginAznListingsPerShop(proxyType);
+  return await updateTaskWithQuery(
+    {
+      type: "CRAWL_AZN_LISTINGS",
+      proxyType: proxyType,
+    },
+    { progress: aprogress }
+  );
+};
+
+export const updateProgressNegDealEbyTasks = async (proxyType) => {
+  const eprogress = await getOutdatedNegMarginEbyListingsPerShop(proxyType);
+  return await updateTaskWithQuery(
+    {
+      type: "CRAWL_EBY_LISTINGS",
+      proxyType: proxyType,
+    },
+    { progress: eprogress }
+  );
+};
+
+export const updateProgressNegDealTasks = async (proxyType) => {
+  const aprogress = await getOutdatedNegMarginAznListingsPerShop(proxyType);
+  const eprogress = await getOutdatedNegMarginEbyListingsPerShop(proxyType);
+  return await Promise.all([
+    await updateTaskWithQuery(
+      {
+        type: "CRAWL_AZN_LISTINGS",
+        proxyType: proxyType,
+      },
+      { progress: aprogress }
+    ),
+    await updateTaskWithQuery(
+      {
+        type: "CRAWL_EBY_LISTINGS",
         proxyType: proxyType,
       },
       { progress: eprogress }

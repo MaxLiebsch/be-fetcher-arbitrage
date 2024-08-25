@@ -11,7 +11,10 @@ import { hostname } from "../services/db/mongo.js";
 import { handleTask } from "./taskHandler.js";
 import clientPool from "../services/db/mongoPool.js";
 import { UTCDate } from "@date-fns/utc";
-import { updateProgressDealTasks } from "./updateProgressInTasks.js";
+import {
+  updateProgressDealTasks,
+  updateProgressNegDealTasks,
+} from "./updateProgressInTasks.js";
 
 const { errorLogger } = LoggerService.getSingleton();
 
@@ -51,11 +54,11 @@ export async function monitorAndProcessTasks() {
         return;
       }
       if (taskResult instanceof TaskCompletedStatus) {
-
         if (task.type === "CRAWL_SHOP") {
           await updateProgressDealTasks("mix");
+          await updateProgressNegDealTasks("mix");
         }
-        
+
         const { priority, subject, htmlBody } = await handleTask(
           taskResult,
           task

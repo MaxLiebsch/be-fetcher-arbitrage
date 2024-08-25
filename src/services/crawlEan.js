@@ -27,6 +27,7 @@ import {
   handleCrawlEanProductInfo,
 } from "../util/crawlEanHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
+import { removeSearchParams } from "../util/removeSearch.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
@@ -122,6 +123,7 @@ export default async function crawlEan(task) {
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
       let { lnk: productLink } = product;
+      productLink = removeSearchParams(productLink);
 
       const shopDomain = shop.d;
 

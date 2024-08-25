@@ -1,29 +1,33 @@
 import { getShop } from "../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import { queryProductPageQueue, QueryQueue } from "@dipmaxtech/clr-pkg";
-import { defaultAznDealTask, defaultQuery, proxyAuth } from "../../../constants.js";
+import {
+  defaultAznDealTask,
+  defaultQuery,
+  proxyAuth,
+} from "../../../constants.js";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
-import { lockProductsForCrawlAznListings } from "../../db/util/crawlAznListings/lockProductsForCrawlAznListings.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../../util/scrapeAznListingsHelper.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { lookForOutdatedNegMarginAznListings } from "../../db/util/deals/azn/lookForOutdatedNegMarginAznListings.js";
+import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks.js";
 
 const negAznDeals = async (task) => {
   const { productLimit } = task;
-  const { _id, action, shopDomain, concurrency } = task;
+  const { _id, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {
-    const products = await lockProductsForCrawlAznListings(
-      shopDomain,
-      productLimit,
+    const { products, shops } = await lookForOutdatedNegMarginAznListings(
       _id,
-      action
+      proxyType,
+      action,
+      productLimit
     );
     const ebay = await getShop("amazon.de");
-    const source = await getShop(shopDomain);
 
     const infos = {
       total: 0,
@@ -50,14 +54,17 @@ const negAznDeals = async (task) => {
 
     const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
-
     infos.locked = products.length;
+
+    await updateProgressNegDealAznTasks(proxyType);
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
 
     await Promise.all(
-      products.map(async (product) => {
+      products.map(async (productShop) => {
+        const { product, shop: source } = productShop;
+        const { d: shopDomain } = source;
         const { asin, lnk: productLink } = product;
         const diffHours = differenceInHours(
           new Date(),

@@ -15,6 +15,7 @@ import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
 } from "../../util/crawlEanHelper.js";
+import { removeSearchParams } from "../../util/removeSearch.js";
 
 export const crawlEans = async (shop, task) =>
   new Promise(async (res, rej) => {
@@ -75,7 +76,8 @@ export const crawlEans = async (shop, task) =>
       const product = task.crawlEan.pop();
       if (!product) continue;
       let { lnk: productLink } = product;
-
+      productLink = removeSearchParams(productLink);
+      
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         completedProducts.push(product._id);

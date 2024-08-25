@@ -8,6 +8,7 @@ import { getProductLimit } from "../../../util/getProductLimit.js";
 import { lookForOutdatedDealsOnAzn } from "../../db/util/deals/azn/lookForOutdatedDealsOnAzn.js";
 import { scrapeAznListings } from "../weekly/negAznDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
 
 const dealsOnAzn = async (task) => {
   const { productLimit } = task;
@@ -16,8 +17,8 @@ const dealsOnAzn = async (task) => {
     const { products: productsWithShop } = await lookForOutdatedDealsOnAzn(
       _id,
       proxyType,
-      productLimit,
-      action
+      action,
+      productLimit
     );
     const azn = await getShop("amazon.de");
 
@@ -49,8 +50,9 @@ const dealsOnAzn = async (task) => {
       productLimit
     );
     task.actualProductLimit = _productLimit;
-
     infos.locked = productsWithShop.length;
+
+    await updateProgressDealsOnAznTasks(proxyType);
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();

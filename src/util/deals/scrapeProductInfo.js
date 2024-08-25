@@ -1,10 +1,12 @@
 import { queryProductPageQueue } from "@dipmaxtech/clr-pkg";
 import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
 import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants.js";
+import { removeSearchParams } from "../removeSearch.js";
 
 export async function scrapeProductInfo(queue, source, product) {
   return new Promise((res, rej) => {
-    const { lnk: productLink } = product;
+    let { lnk: productLink } = product;
+    productLink = removeSearchParams(productLink);
     const { d: shopDomain } = source;
     const addProduct = async (product) => {};
     const addProductInfo = async ({ productInfo, url }) => {

@@ -557,7 +557,7 @@ export const lookupCategoryTaskQueryFn = (
   ];
 };
 
-/*          Queries: Scrape Azn listings (4.1) - arbispotter               */
+/*          Queries: Scrape Neg Azn listings (4.1) - arbispotter               */
 
 export const pendingScrapeAznListingsQuery = {
   $and: [
@@ -636,6 +636,16 @@ export const crawlAznListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
   ];
 };
 
@@ -711,7 +721,7 @@ export const countTotalProductsCrawlEbyListingsQuery = {
   ],
 };
 
-/* Queries: Scrape Eby listings (4.2) - aggregation - arbispotter */
+/* Queries: Scrape Neg Eby listings (4.2) - aggregation - arbispotter */
 
 const pendingScrapeEbyListingsMatchStage = [
   { eby_taskId: { $exists: false } },
@@ -824,6 +834,16 @@ export const crawlEbyListingsTaskQueryFn = (
       ],
     },
     { recurrent: { $eq: true } },
+    {
+      $or: [
+        {
+          progress: { $exists: false },
+        },
+        {
+          progress: { $elemMatch: { pending: { $gt: 0 } } },
+        },
+      ],
+    },
   ];
 };
 

@@ -10,9 +10,10 @@ import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCatego
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
 import { MINIMUM_PENDING_PRODUCTS } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { countPendingProductsForCrawlEbyListingsAggregationFn } from "./crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
 import { getOutdatedDealsOnEbyShops } from "./deals/eby/getOutdatedDealsOnEbyShops.js";
 import { getOutdatedDealsOnAznShops } from "./deals/azn/getOutdatedDealsOnAznShops.js";
+import { getOutdatedNegMarginEbyListingsPerShop } from "./deals/eby/getOutdatedNegMarginEbyListingsPerShop.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "./deals/azn/getOutdatedNegMarginAznListingsPerShop.js";
 
 const handleComulativTasks = async (task, pendingShops, cooldown) => {
   if (
@@ -58,7 +59,7 @@ export const getNewTask = async () => {
   const prioTask = await taskCollection.findOneAndUpdate(prioQuery, update, {
     returnNewDocument: true,
   });
-  console.log("Prio:task:", prioTask?.type, " ", prioTask ?.id);
+  console.log("Prio:task:", prioTask?.type, " ", prioTask?.id);
   if (prioTask) {
     if (prioTask.type === "DEALS_ON_EBY") {
       const pendingShops = await getOutdatedDealsOnEbyShops(prioTask.proxyType);
@@ -111,50 +112,24 @@ export const getNewTask = async () => {
       return await handleSingleTask(task, pending, cooldown);
     }
     if (task.type === "CRAWL_AZN_LISTINGS") {
-      const shopProductCollectionName = task.shopDomain;
-      const pending = await countPendingProductsForCrawlAznListings(
-        shopProductCollectionName
+      const pendingShops = await getOutdatedNegMarginAznListingsPerShop(
+        task.proxyType
       );
-      console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-      if (pending < task.minPendingProducts) {
-        await updateTask(task._id, {
-          $set: {
-            executing: false,
-            cooldown,
-          },
-          $pull: { lastCrawler: hostname },
-        });
-        return null;
-      } else {
-        return task;
-      }
+      console.log("CRAWL_AZN_LISTINGS: pendingShops:", pendingShops.length);
+      return await handleComulativTasks(task, pendingShops, cooldown);
     }
     if (task.type === "CRAWL_EBY_LISTINGS") {
-      const shopProductCollectionName = task.shopDomain;
-      const [pending] =
-        await countPendingProductsForCrawlEbyListingsAggregationFn(
-          shopProductCollectionName
-        );
-      console.log("CRAWL_EBY_LISTINGS: pending:", pending.total);
-      if (pending.total < task.minPendingProducts) {
-        await updateTask(task._id, {
-          $set: {
-            executing: false,
-            cooldown,
-          },
-          $pull: { lastCrawler: hostname },
-        });
-        return null;
-      } else {
-        return task;
-      }
+      const pendingShops = await getOutdatedNegMarginEbyListingsPerShop(
+        task.proxyType
+      );
+      console.log("CRAWL_EBY_LISTINGS: pendingShops:", pendingShops.length);
+      return await handleComulativTasks(task, pendingShops, cooldown);
     }
     if (task.type === "LOOKUP_CATEGORY") {
       const pendingShops = await getMissingEbyCategoryShops();
       console.log("LOOKUP_CATEGORY: pendingShops:", pendingShops.length);
       return await handleComulativTasks(task, pendingShops, cooldown);
     }
-  
   } else {
     //fallback
     const task = await taskCollection.findOneAndUpdate(fallbackQuery, update, {
@@ -189,43 +164,18 @@ export const getNewTask = async () => {
         return await handleComulativTasks(task, pendingShops, cooldown);
       }
       if (task.type === "CRAWL_AZN_LISTINGS") {
-        const shopColName = task.shopDomain;
-        const pending = await countPendingProductsForCrawlAznListings(
-          shopColName
+        const pendingShops = await getOutdatedNegMarginAznListingsPerShop(
+          task.proxyType
         );
-        console.log("CRAWL_AZN_LISTINGS: pending:", pending);
-        if (pending < task.minPendingProducts) {
-          await updateTask(task._id, {
-            $set: {
-              executing: false,
-              cooldown,
-            },
-            $pull: { lastCrawler: hostname },
-          });
-          return null;
-        } else {
-          return task;
-        }
+        console.log("CRAWL_AZN_LISTINGS: pendingShops:", pendingShops.length);
+        return await handleComulativTasks(task, pendingShops, cooldown);
       }
       if (task.type === "CRAWL_EBY_LISTINGS") {
-        const shopColName = task.shopDomain;
-        const [pending] =
-          await countPendingProductsForCrawlEbyListingsAggregationFn(
-            shopColName
-          );
-        console.log("CRAWL_EBY_LISTINGS: pending:", pending.total);
-        if (pending.total < task.minPendingProducts) {
-          await updateTask(task._id, {
-            $set: {
-              executing: false,
-              cooldown,
-            },
-            $pull: { lastCrawler: hostname },
-          });
-          return null;
-        } else {
-          return task;
-        }
+        const pendingShops = await getOutdatedNegMarginEbyListingsPerShop(
+          task.proxyType
+        );
+        console.log("CRAWL_EBY_LISTINGS: pendingShops:", pendingShops.length);
+        return await handleComulativTasks(task, pendingShops, cooldown);
       }
       if (task.type === "CRAWL_EAN") {
         const pendingShops = await getMissingEanShops(task.proxyType);
