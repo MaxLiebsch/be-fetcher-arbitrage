@@ -14,8 +14,8 @@ export const lockProductsForDealsOnAzn = async (
   const db = await getArbispotterDb();
 
   const { query, options } = lockProductsForDealsOnAznQuery(
-    taskId,
     limit,
+    taskId,
     action
   );
 

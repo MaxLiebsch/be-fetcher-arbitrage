@@ -33,7 +33,7 @@ const main = async () => {
   // console.log('result:', result)
   // const b = await getOutdatedNegMarginEbyListingsPerShop('mix')
   // console.log('b:', b)
-  await updateProgressDealsOnAznTasks('mix')
+  await updateProgressDealTasks('mix')
 };
 
 main().then((r)=> process.exit(0));
