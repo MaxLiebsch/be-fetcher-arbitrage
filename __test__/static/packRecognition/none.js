@@ -22,7 +22,7 @@ export const none = [
   },
   {
     input: "NOCTUA NA-FG1-14 Sx5 - NOCTUA NA-FG1-14 Lüftergitter 140 mm 5er Set",
-    package: 1,
+    package: 5,
   },
   {
     input: "HP Nr. 59X schwarz (CF259X)",

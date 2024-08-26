@@ -95,14 +95,8 @@ export const shops = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "price",
-        path: "offers.lowPrice",
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: "parse_json_element",
-        content: "instock",
-        path: "offers.availability",
+        content: "image",
+        path: "image[0]"
       },
       {
         sel: "script[type='application/ld+json']",
@@ -127,13 +121,7 @@ export const shops = {
         type: "parse_json_element",
         content: "sku",
         path: "sku",
-      },
-      {
-        sel: "img",
-        parent: "div[class=simple-carousel-item][id=slide-0]",
-        type: "src",
-        content: "image",
-      },
+      }
     ],
     productList: [
       {

@@ -1,7 +1,7 @@
 export const packs = [
   {
     input: "Holle - Bio-Fol­ge­milch 2 aus Zie­gen­milch - 0,4 kg - 6er Pack",
-    package: 1,
+    package: 6,
   },
   {
     input: "Hama SpotLight Steady 120 Set",
@@ -9,11 +9,11 @@ export const packs = [
   },
   {
     input: "Compeed Blasenpflaster Mixpack - Hydrokolloid-Pflaster in verschiedenen Gren - gegen Blasen an Fersen, Zehen und fr kleine Blasen, 6 stck",
-    package: 1,
+    package: 6,
   },
   {
     input: "Gillette Fusion 5 Rasierklingen für Rasierer, 14 Ersatzklingen für Nassrasierer Herren mit 5-fach Klinge, Made in Germany",
-    package: 1,
+    package: 14,
   },
 
   { input: 'Kneipp Brennnessel Dragees, natürlich durchspülend, auch bei Entwässerungskuren, 1 x 90 Dragees | 90 Stück (1er Pack)',
@@ -25,7 +25,7 @@ export const packs = [
   },
   {
     input: "Pampers Pampers Ninjamas Nachthöschen / Höschenwindeln für Mädchen (27-43kg), 54 Pyjama Höschen, 8-12 Jahre, MONATSBOX, absorbierende Windelhöschen, Auslaufschutz für die ganze Nacht",
-    package: 1,
+    package: 54,
   },
   {
     input: 'TRIXIE glutenfreie Hhnchen Kaurolle Denta Fun Chicken Chewing Rolls, 12 cm, 30 St./240 g - 31378 (Packung mit 2)',
@@ -41,7 +41,7 @@ export const packs = [
   },
   {
     input: "12 Pck. 3M Deutschland Atemschutzmaske 8710 (VE20) Atemschutzmasken 7000034734",
-    package: 1,
+    package: 12,
   },
   {
     input: "Bosch 1000x Klammer Typ 53 (Textilien/Gewebe, Teppich, Akustikplatten, Rasenteppich, 11.4 x 0.74 x 8 mm, Zubehr Tacker)",
@@ -50,7 +50,7 @@ export const packs = [
   {
     input:
       "Lavazza Crema e Gusto Classico, 108 Kaffeepads für Espressomaschinen",
-    package: 108,
+    package:1,
   },
   {
     input: "WELLER WR 2002 - Lötstation, Entlötstation, WR 2002 Set, 300 W, 2-Kanal, ESD",
@@ -90,7 +90,7 @@ export const packs = [
   {
     input:
       "o.b. Original Tampons normal mit geschwungenen Rillen Saugfähig 64er",
-    package: 1,
+    package: 64,
   },
   {
     input: "JBL Bar 800",
@@ -117,7 +117,7 @@ export const packs = [
   },
   {
     input: "Pampers Harmonie Aqua Baby Feuchttücher Box, 720 Tücher (15 x 48), sanfter Hautschutz für zarte Haut mit 99% Wasser",
-    package: 720,
+    package: 1,
   },
   {
     input:
@@ -131,7 +131,7 @@ export const packs = [
   },
   {
     input: "STABILO Point 88 50 Stück Metallgehäuse",
-    package: 50,
+    package: 1,
   },
   {
     input: "Eschenbach powerlux 7x LED (8000K)",
@@ -140,7 +140,7 @@ export const packs = [
   {
     input:
       "4x new Retro Wheels RONAL R10 Turbo 7x15 4x100 ET:37 VW Golf 2 3 Jetta - USA",
-    package: 1,
+    package: 4,
   },
   {
     input: 'Pampers Windeln Größe 7 (15kg+) Baby-Dry, Extra Large, MONATSBOX, bis zu 12 Stunden Rundum-Auslaufschutz, (1er Pack) 132 Stück',
@@ -158,7 +158,7 @@ export const packs = [
   },
   {
     input: "EFB-Elektronik Spleißschutz TS0338/96 (VE150) Spleißschutz 53100.32-150",
-    package: 150,
+    package: 1,
   },
   {
     input: "Cartrend Caravan Stützbock 4er-Set (10306)",
@@ -218,7 +218,7 @@ export const packs = [
   {
     input:
       "JACOBS Lungo 8 Intenso 200 Nespresso®* kompatible Kaffeekapseln +2x 20 gratis",
-    package: 1,
+    package: 2,
   },
   {
     input: "Cenovis Klare Gemüsebrühe 4x12 Stück",
@@ -248,7 +248,7 @@ export const packs = [
   {
     input:
       "Bosch Professional 18V System Akku GBA 18V 4.0Ah (2 x 65 Waschladungen) hochkonzentriert",
-    package: 2,
+    package: 1,
   },
   {
     input:
@@ -342,7 +342,7 @@ export const packs = [
   },
   {
     input: "BIG 800001191 - Big Bobby Car - Pylonen Set 4 - Neu",
-    package: 4,
+    package: 1,
   },
   {
     input:
@@ -352,7 +352,7 @@ export const packs = [
   {
     input:
       "Neues AngebotMülltonnenbox Gerätebox Westmann 7x3 Geräteschuppen Gartenbox 3er Verkleidung",
-    package: 3,
+    package: 1,
   },
   {
     input: "Scheppach HC06 Set",
@@ -373,7 +373,7 @@ export const packs = [
   },
   {
     input: "STAR WARS - Mystery Bitty Pop (Box 36 pi?¿ces) (US IMPORT) ACC NEU",
-    package: 36,
+    package: 1,
   },
   {
     input: "Red Bull Waldbeere Sugarfree Dose The Spring Edition 24x0,25l",
@@ -385,7 +385,7 @@ export const packs = [
   },
   {
     input: "TEEKANNE frio Himbeere Zitrone Tee 18 Beutel à 2,5 g",
-    package: 18,
+    package: 1,
   },
   {
     input: "1000er Multipack Briefumschlag DIN lang mF sk ws 1.000 St./Pack.",
@@ -393,12 +393,12 @@ export const packs = [
   },
   {
     input: "HELLMA Sugar Balls Happy Zuckersticks 400 x 3,6 g",
-    package: 400,
+    package: 1,
   },
   {
     input:
       "Lavazza Crema e Gusto, Arabica und Robusta, zart geröstet 5x10= 50 Kapseln",
-    package: 50,
+    package: 5,
   },
   {
     input: "HP Nr. 302XL 3-farbig (F6U67AE)",
@@ -477,7 +477,7 @@ export const packs = [
   },
   {
     input: "STAEDTLER Farbstifte Noris Club 127 12+4er-Bonuspack",
-    package: 1,
+    package: 12,
   },
   {
     input: "House of the Dragon - Staffel 1 [4 BRs]",
@@ -554,7 +554,7 @@ export const packs = [
   {
     input:
       "10X SMK1 089 Fassung für LEDs 5mm Metall konvex IP67 SIGNAL-CONSTRUCT",
-    package: 10,
+    package: 1,
   },
   {
     input:
@@ -564,21 +564,21 @@ export const packs = [
   {
     input:
       "10X RTF-5010 Halter für LED 5mm Kunststoff konvex KINGBRIGHT ELECTRONIC",
-    package: 10,
+    package: 1,
   },
   {
     input: "4x 3M Scotch Klebefilm Magic 811, ablösbar, 19 mm x 33 m",
-    package: 1,
+    package: 4,
   },
   {
     input:
       "8er Multipack Maul Kleiderbügel 9453370 (B x H) 45 cm x 22 cm Holz Holz 8 St.",
-    package: 1,
+    package: 8,
   },
   {
     input:
       "DOMETIC Power-Care für Camping-WCs & Chemietoiletten – Sanitär-Zusatz zersetzt Fäkalien und verhindert unangenehme Gerüche – Alternative zu Sanitärflüssigkeit (20 Tabs für 20 Tankfüllungen)",
-    package: 1,
+    package: 20,
   },
   {
     input: "Dometic Powercare Tabs 20 Stck.",

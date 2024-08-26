@@ -52,8 +52,7 @@ export default async function lookupInfo(task) {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit =
-      getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     const toolInfo = await getShop("sellercentral.amazon.de");
@@ -100,7 +99,15 @@ export default async function lookupInfo(task) {
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
-                  await isProcessComplete(queue);
+                  await checkProgress({
+                    queue: queryQueues,
+                    infos,
+                    startTime,
+                    productLimit: _productLimit,
+                  }).catch(async (r) => {
+                    await updateProgressInLookupInfoTask();
+                    handleResult(r, resolve, reject);
+                  });
                 }
               }
             }
@@ -133,7 +140,7 @@ export default async function lookupInfo(task) {
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
       const { asin, lnk: productLink } = product;
-      const ean = getEanFromProduct(product)
+      const ean = getEanFromProduct(product);
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         await handleLookupInfoProductInfo(

@@ -10,9 +10,9 @@ import { getShop } from "../src/services/db/util/shops.js";
 // };
 
 const secureMode = async () => {
-  const browser = await mainBrowser({ id: "test" }, proxyAuth, '127.0.6533.119');
+  const browser = await mainBrowser({ id: "test", proxyType: "de" }, proxyAuth, '127.0.6533.119');
   
-  const shop = await getShop("gamestop.de");
+  const shop = await getShop("saturn.de");
   const page = await getPage(
     browser,
     shop,
@@ -21,7 +21,7 @@ const secureMode = async () => {
     shop.exceptions
   );
   // const page = await browser.newPage();
-  const result = await page.goto('https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html');
+  const result = await page.goto('https://www.saturn.de/de/product/_neff-d65ifn1s0-dunstabzugshaube-590-mm-breit-433-mm-tief-2903408.html');
   const status = result?.status();
   if(status !== 200) {
     const response = await page.reload();

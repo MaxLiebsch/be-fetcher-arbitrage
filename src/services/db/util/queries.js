@@ -4,7 +4,6 @@ import { hostname } from "../mongo.js";
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
-  MAX_EARNING_MARGIN,
 } from "../../../constants.js";
 import { UTCDate } from "@date-fns/utc";
 // a_origin setzen when infos ueber lookup ean
@@ -56,7 +55,7 @@ export const totalPositivAmazon = {
     { a_prc: { $gt: 0 } },
     { a_uprc: { $gt: 0 } },
     { a_mrgn: { $gt: 0 } },
-    { a_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+    { a_mrgn_pct: { $gt: 0 } },
   ],
 };
 export const totalNegativAmazon = {
@@ -73,7 +72,7 @@ export const totalPositivEbay = {
     { e_prc: { $gt: 0 } },
     { e_uprc: { $gt: 0 } },
     { e_mrgn: { $gt: 0 } },
-    { e_mrgn_pct: { $gt: 0, $lte: MAX_EARNING_MARGIN } },
+    { e_mrgn_pct: { $gt: 0 } },
   ],
 };
 export const totalNegativEbay = {
