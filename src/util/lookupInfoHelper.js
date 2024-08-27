@@ -36,7 +36,6 @@ export async function handleLookupInfoProductInfo(
       update["a_pblsh"] = true;
       if (hasEan) {
         await upsertAsin(asin, [ean], costs);
-        update["eanList"] = [ean];
       }
 
       if (!a_vrfd) {

@@ -37,8 +37,7 @@ export async function handleDealsProductInfo(
     };
 
     await updateArbispotterProductQuery(collectionName, productLink, {
-      $set: productUpdate,
-      $unset: { eby_taskId: "" },
+      $set: productUpdate
     });
     return productUpdate;
   } else {

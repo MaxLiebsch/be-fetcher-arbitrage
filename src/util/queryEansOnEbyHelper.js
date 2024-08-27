@@ -31,7 +31,6 @@ export async function handleQueryEansOnEbyIsFinished(
     update["e_img"] = image;
     update["e_lnk"] = shortLink;
     update["e_hash"] = createHash(shortLink);
-    update["eanList"] = [ean];
     update["e_orgn"] = "e";
     update["e_pblsh"] = false;
     update["esin"] = esin;
