@@ -31,6 +31,26 @@ import {
 } from "../util/updateProgressInTasks.js";
 
 const main = async () => {
+  const { pendingShops: a } = await getOutdatedDealsOnAznShops("mix");
+  const { products, shops } = await lookForOutdatedDealsOnAzn(
+    "test",
+    "mix",
+    '',
+    30
+  );
+
+  const product = products.find((p) => p.shop.d === "sales");
+    
+  console.log('product: with sales', JSON.stringify(product, null,2))
+  console.log("No. products ", products.length);
+  console.log('products', products);
+  // const a = await getUnmatchedQueryEansOnEbyShops();
+  // console.log('a:', a)
+  // const a = await getOutdatedDealsOnAznShops('mix')
+  console.log(
+    "a:",
+    a.reduce((acc, val) => acc + `${val.shop.d}:${val.pending}\n`, "")
+  );
   // const result = await getRecoveryDealsOnAzn('66c76dee5c74f136b98af654', 'mix', 1000).then((r) => console.log('r:', r));
   // console.log('result:', result)
   // const b = await getOutdatedNegMarginEbyListingsPerShop('mix')

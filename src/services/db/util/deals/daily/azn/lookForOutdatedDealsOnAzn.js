@@ -32,9 +32,7 @@ export async function lookForOutdatedDealsOnAzn(
     }, {});
 
     const numberOfShops = pendingShops.length;
-    console.log('numberOfShops:', numberOfShops)
     const productsPerShop = Math.round(productLimit / numberOfShops);
-    console.log('productsPerShop:', productsPerShop)
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const products = await lockProductsForDealsOnAzn(

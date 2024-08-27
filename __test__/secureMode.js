@@ -2,6 +2,7 @@ import { proxyAuth } from "../src/constants.js";
 
 import { getPage, mainBrowser } from "@dipmaxtech/clr-pkg";
 import { getShop } from "../src/services/db/util/shops.js";
+import { changeRequestProxy } from "../src/util/changeRequestProxy.js";
 
 // const proxyAuth = {
 //   host: "rp.proxyscrape.com:6060",
@@ -18,6 +19,7 @@ const secureMode = async () => {
 
   const shop = await getShop("saturn.de");
   const { exceptions } = shop;
+  const lnk = "https://www.browserleaks.com/ip";
   const page = await getPage({
     browser,
     shop,
@@ -27,7 +29,7 @@ const secureMode = async () => {
     proxyType: 'de'
   });
   // const page = await browser.newPage();
-  const result = await page.goto("https://www.browserleaks.com/ip");
+  const result = await page.goto(lnk);
   const status = result?.status();
   if (status !== 200) {
     const response = await page.reload();
