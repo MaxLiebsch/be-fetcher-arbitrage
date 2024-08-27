@@ -14,14 +14,15 @@ import {
   handleAznListingProductInfo,
 } from "../../../util/scrapeAznListingsHelper.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { lookForOutdatedNegMarginAznListings } from "../../db/util/deals/azn/lookForOutdatedNegMarginAznListings.js";
 import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedNegMarginAznListings } from "../../db/util/deals/weekly/azn/lookForOutdatedNegMarginAznListings.js";
 
 const negAznDeals = async (task) => {
   const { productLimit } = task;
   const { _id, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {
-    const { products, shops } = await lookForOutdatedNegMarginAznListings(
+    const { products, shops } = await lookForOutdatedNegMarginAznListings
+    (
       _id,
       proxyType,
       action,

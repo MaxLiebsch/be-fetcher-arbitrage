@@ -1,11 +1,9 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../../shops.js";
-import { updateTaskWithQuery } from "../../tasks.js";
+import { updateTaskWithQuery } from "../../../tasks.js";
 import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";
 import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops.js";
-import { recoveryDealsOnEbyQuery } from "../../queries.js";
-import { findArbispotterProducts } from "../../crudArbispotterProduct.js";
-import { shopProxyTypeFilter } from "../../filter.js";
+import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby.js";
+import { getProductsWithShop } from "../../../getProductsWithShop.js";
 
 export async function lookForOutdatedDealsOnEby(
   taskId,
@@ -27,7 +25,7 @@ export async function lookForOutdatedDealsOnEby(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getOutdatedDealsOnEbyShops(proxyType);
+    const {pendingShops, shops} = await getOutdatedDealsOnEbyShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -44,9 +42,7 @@ export async function lookForOutdatedDealsOnEby(
           taskId
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -78,30 +74,4 @@ export async function lookForOutdatedDealsOnEby(
   }
 }
 
-export async function getRecoveryDealsOnEby(taskId, proxyType, productLimit) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) =>
-    shopProxyTypeFilter(shop, proxyType)
-  );
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryDealsOnEbyQuery(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
-}
+

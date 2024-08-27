@@ -1,10 +1,9 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
 import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryLookupCategoryQuery } from "../queries.js";
+import { getRecoveryLookupCategory } from "./getRecoveryLookupCategory.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 
 export async function lookForMissingEbyCategory(taskId, action, productLimit) {
   if (action === "recover") {
@@ -20,7 +19,7 @@ export async function lookForMissingEbyCategory(taskId, action, productLimit) {
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getMissingEbyCategoryShops();
+    const {pendingShops, shops} = await getMissingEbyCategoryShops();
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -39,9 +38,7 @@ export async function lookForMissingEbyCategory(taskId, action, productLimit) {
           taskId
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -73,28 +70,3 @@ export async function lookForMissingEbyCategory(taskId, action, productLimit) {
   }
 }
 
-export async function getRecoveryLookupCategory(taskId, productLimit) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) => shop.active);
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryLookupCategoryQuery(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
-}

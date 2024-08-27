@@ -1,12 +1,8 @@
-import { shopFilter, shopProxyTypeFilter } from "../../filter.js";
-import { getAllShopsAsArray } from "../../shops.js";
+import { getShopsForService } from "../../../filteredShops.js";
 import { getDealsOnEbyProgressAgg } from "./getDealsOnEbyListingsProgressAggregation.js";
 
 export async function getOutdatedDealsOnEbyShops(proxyType) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) =>
-    shopProxyTypeFilter(shop, proxyType)
-  );
+  const {filteredShops, shops} = await getShopsForService("dealsOnEby", proxyType);  
   const dealsOnEbyProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
       const progress = await getDealsOnEbyProgressAgg(shop.d);
@@ -17,5 +13,5 @@ export async function getOutdatedDealsOnEbyShops(proxyType) {
   const pendingShops = dealsOnEbyProgressPerShop.filter(
     (shop) => shop.pending > 0
   );
-  return pendingShops;
+  return {pendingShops, shops}
 }

@@ -1,6 +1,8 @@
 import { getManufacturer, prefixLink } from "@dipmaxtech/clr-pkg";
 import { createHash } from "./hash.js";
 
+
+//Shopdomain must be a real domain, since it is used to prefix the link
 export const transformProduct = (crawlDataProduct, shopDomain) => {
   let product = { ...crawlDataProduct };
   let {

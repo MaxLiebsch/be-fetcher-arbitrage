@@ -16,5 +16,5 @@ export async function getOutdatedUpdateProductinfoShops() {
   const pendingShops = UpdateProductinfoProgressPerShop.filter(
     (shop) => shop.pending > 0
   );
-  return pendingShops;
+  return {pendingShops, shops}
 }

@@ -68,7 +68,8 @@ export const scrapeAznListings = (amazon, origin, task) =>
           product,
           { productInfo, url },
           infos,
-          queue
+          queue,
+          {timestamp: 'dealAznUpdatedAt', taskIdProp: "dealAznTaskId"}
         );
         await isProcessComplete();
       };

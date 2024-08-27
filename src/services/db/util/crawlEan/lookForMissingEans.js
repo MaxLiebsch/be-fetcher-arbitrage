@@ -1,10 +1,9 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
 import { getMissingEanShops } from "./getMissingEanShops.js";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryCrawlEanQuery} from "../queries.js";
+import { getRecoveryCrawlEan } from "./getRecoveryCrawlEan.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 
 export async function lookForMissingEans(
   taskId,
@@ -26,7 +25,7 @@ export async function lookForMissingEans(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getMissingEanShops(proxyType);
+    const {pendingShops, shops} = await getMissingEanShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -45,9 +44,7 @@ export async function lookForMissingEans(
           taskId
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -79,30 +76,4 @@ export async function lookForMissingEans(
   }
 }
 
-export async function getRecoveryCrawlEan(taskId, proxyType, productLimit) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
-  );
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryCrawlEanQuery(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
-}
+

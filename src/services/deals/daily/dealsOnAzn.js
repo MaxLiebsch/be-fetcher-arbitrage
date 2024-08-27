@@ -5,16 +5,17 @@ import { proxyAuth } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
-import { lookForOutdatedDealsOnAzn } from "../../db/util/deals/azn/lookForOutdatedDealsOnAzn.js";
 import { scrapeAznListings } from "../weekly/negAznDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedDealsOnAzn } from "../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
 
 const dealsOnAzn = async (task) => {
   const { productLimit } = task;
   const { _id, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {
-    const { products: productsWithShop } = await lookForOutdatedDealsOnAzn(
+    const { products: productsWithShop } = await lookForOutdatedDealsOnAzn
+    (
       _id,
       proxyType,
       action,

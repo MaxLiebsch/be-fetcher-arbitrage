@@ -70,7 +70,8 @@ export const crawlEbyListings = (ebay, task) =>
           infos,
           { productInfo, url },
           product,
-          queue
+          queue,
+          {timestamp: 'dealEbyUpdatedAt', taskIdProp: "dealEbyTaskId"}
         );
         await isProcessComplete();
       };

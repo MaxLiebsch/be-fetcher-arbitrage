@@ -6,9 +6,9 @@ import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
 import { scrapeEbyListings } from "../weekly/negEbyDeals.js";
-import { lookForOutdatedDealsOnEby } from "../../db/util/deals/eby/lookForOutdatedDealsOnEby.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedDealsOnEby } from "../../db/util/deals/daily/eby/lookForOutdatedDealsOnEby.js";
 
 const dealsOnEby = async (task) => {
   const { productLimit } = task;

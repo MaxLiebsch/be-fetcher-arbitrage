@@ -2580,7 +2580,7 @@ bcrypt-pbkdf@^1.0.0:
     tweetnacl "^0.14.3"
 
 "be-fetcher-arbitrage@file:":
-  version "0.0.106"
+  version "0.0.107"
   resolved "file:"
   dependencies:
     "@date-fns/utc" "^1.2.0"

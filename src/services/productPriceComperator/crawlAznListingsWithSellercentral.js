@@ -6,14 +6,14 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { getMaxLoadQueue } from "./lookupInfo.js";
 import { proxyAuth } from "../../constants.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
-import { updateTask } from "../../services/db/util/tasks.js";
+import { salesDbName } from "../productPriceComparator.js";
+import { updateTask } from "../db/util/tasks.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../util/scrapeAznListingsHelper.js";
 
-export const crawlAznListings = (sellerCentral, origin, task) =>
+export const crawlAznListingsWithSellercentral = (sellerCentral, origin, task) =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id, shopDomain } = task;
     const { concurrency, productLimit, browserConcurrency } =

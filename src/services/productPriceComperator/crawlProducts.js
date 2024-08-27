@@ -7,11 +7,16 @@ import {
   sleep,
 } from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../../services/productPriceComparator.js";
-import { MAX_RETIRES_SCRAPE_SHOP, proxyAuth, RECHECK_EAN_EBY_AZN_INTERVAL } from "../../constants.js";
+import {
+  MAX_RETIRES_SCRAPE_SHOP,
+  proxyAuth,
+  RECHECK_EAN_EBY_AZN_INTERVAL,
+} from "../../constants.js";
 import { parseISO } from "date-fns";
 import { transformProduct } from "../../util/transformProduct.js";
 import {
   findProductByLink,
+  updateArbispotterProductSet,
   upsertArbispotterProduct,
 } from "../../services/db/util/crudArbispotterProduct.js";
 import { UTCDate } from "@date-fns/utc";
@@ -99,8 +104,13 @@ export const crawlProducts = async (shop, task) =>
               transformedProduct["uprc"] = roundToTwoDecimals(
                 buyPrice / transformedProduct["qty"]
               );
+              transformedProduct["availUpdatedAt"] =
+                new UTCDate().toISOString();
               const existingProduct = await findProductByLink(salesDbName, lnk);
               if (existingProduct) {
+                await updateArbispotterProductSet(salesDbName, lnk, {
+                  availUpdatedAt: transformedProduct["availUpdatedAt"],
+                });
                 const xDaysAgo = new UTCDate();
                 xDaysAgo.setDate(
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL

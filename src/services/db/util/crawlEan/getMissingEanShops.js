@@ -1,12 +1,8 @@
-import { getAllShopsAsArray } from "../shops.js";
+import { getShopsForService } from "../filteredShops.js";
 import { getCrawlEanProgress } from "./getCrawlEanProgress.js";
 
 export async function getMissingEanShops(proxyType) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => shop.hasEan && shop.active && shop.proxyType === proxyType
-  );
-
+  const {filteredShops, shops} = await getShopsForService("crawlEan", proxyType);
   const crawlEanProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
       const progress = await getCrawlEanProgress(shop.d);
@@ -17,5 +13,5 @@ export async function getMissingEanShops(proxyType) {
   const pendingShops = crawlEanProgressPerShop.filter(
     (shop) => shop.pending > 0
   );
-  return pendingShops;
+  return {pendingShops, shops}
 }

@@ -14,7 +14,7 @@ import {
 import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { lookForOudatedNegMarginEbyListings } from "../../db/util/deals/eby/lookForOutdatedNegMarginEbyListings.js";
+import { lookForOudatedNegMarginEbyListings } from "../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings.js";
 import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
 
 const negEbyDeals = async (task) => {

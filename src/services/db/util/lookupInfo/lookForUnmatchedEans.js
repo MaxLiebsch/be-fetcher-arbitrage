@@ -1,14 +1,14 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../shops.js";
+
 import { updateTaskWithQuery } from "../tasks.js";
 import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
 import { getUnmatchedEanShops } from "./getUnmatchedEanShops.js";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryLookupInfoQuery } from "../queries.js";
+import { getRecoveryLookupInfoProducts } from "./getRecoveryLookupInfoProducts.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 
 export async function lookForUnmatchedEans(taskId, action, productLimit) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryLookupInfoProduts(
+    const recoveryProducts = await getRecoveryLookupInfoProducts(
       taskId,
       productLimit
     );
@@ -20,7 +20,7 @@ export async function lookForUnmatchedEans(taskId, action, productLimit) {
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getUnmatchedEanShops();
+    const {pendingShops, shops} = await getUnmatchedEanShops();
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -39,9 +39,7 @@ export async function lookForUnmatchedEans(taskId, action, productLimit) {
           shop.hasEan || shop?.ean
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -71,33 +69,4 @@ export async function lookForUnmatchedEans(taskId, action, productLimit) {
       shops: pendingShops,
     };
   }
-}
-
-export async function getRecoveryLookupInfoProduts(
-  taskId,
-  productLimit
-) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) => shop.active);
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryLookupInfoQuery(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
 }

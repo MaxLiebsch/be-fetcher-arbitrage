@@ -1,11 +1,9 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../../shops.js";
-import { updateTaskWithQuery } from "../../tasks.js";
+import { updateTaskWithQuery } from "../../../tasks.js";
 import { lockProductsForDealsOnAzn } from "./lockProductsForDealsOnAzn.js";
 import { getOutdatedDealsOnAznShops } from "./getOutdatedDealsOnAznShops.js";
-import { findArbispotterProducts } from "../../crudArbispotterProduct.js";
-import { recoveryDealsOnAznQuery } from "../../queries.js";
-import { shopProxyTypeFilter } from "../../filter.js";
+import { getRecoveryDealsOnAzn } from "./getRecoveryDealsOnAzn.js";
+import { getProductsWithShop } from "../../../getProductsWithShop.js";
 
 export async function lookForOutdatedDealsOnAzn(
   taskId,
@@ -27,14 +25,16 @@ export async function lookForOutdatedDealsOnAzn(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getOutdatedDealsOnAznShops(proxyType);
+    const {pendingShops, shops} = await getOutdatedDealsOnAznShops(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
     }, {});
 
     const numberOfShops = pendingShops.length;
+    console.log('numberOfShops:', numberOfShops)
     const productsPerShop = Math.round(productLimit / numberOfShops);
+    console.log('productsPerShop:', productsPerShop)
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const products = await lockProductsForDealsOnAzn(
@@ -44,9 +44,7 @@ export async function lookForOutdatedDealsOnAzn(
           taskId
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -78,30 +76,3 @@ export async function lookForOutdatedDealsOnAzn(
   }
 }
 
-export async function getRecoveryDealsOnAzn(taskId, proxyType, productLimit) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter((shop) =>
-    shopProxyTypeFilter(shop, proxyType)
-  );
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryDealsOnAznQuery(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
-}

@@ -29,7 +29,7 @@ import { getEanFromProduct } from "../util/getEanFromProduct.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, proxyType, type } = task;
+    const { productLimit, _id, action, type } = task;
 
     let infos = {
       new: 0,
@@ -43,7 +43,6 @@ export default async function queryEansOnEby(task) {
 
     const { products, shops } = await lookForUnmatchedQueryEansOnEby(
       _id,
-      proxyType,
       action,
       productLimit
     );

@@ -1,8 +1,8 @@
-import { getArbispotterDb, getCrawlDataDb } from "../../../mongo.js";
+import { getArbispotterDb, getCrawlDataDb } from "../../../../mongo.js";
 import {
   lockProductsForDealsOnEbyAgg,
   setProductsLockedForDealsOnEbyQuery,
-} from "../../../util/queries.js";
+} from "../../../../util/queries.js";
 
 export const lockProductsForDealsOnEby = async (
   domain,

@@ -25,6 +25,7 @@ import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
 } from "../util/lookupInfoHelper.js";
+import { getProductLimit } from "../util/getProductLimit.js";
 
 export default async function crawlAznListingsWithSellercentral(task) {
   return new Promise(async (resolve, reject) => {
@@ -66,8 +67,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    const _productLimit =
-      getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;

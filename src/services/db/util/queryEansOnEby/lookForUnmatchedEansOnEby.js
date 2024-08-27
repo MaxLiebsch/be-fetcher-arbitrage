@@ -1,21 +1,18 @@
 import { shuffle } from "underscore";
-import { getAllShopsAsArray } from "../shops.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
 import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryQueryEansOnEby} from "../queries.js";
+import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId,
-  proxyType,
   action,
   productLimit
 ) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryQueryEansOnEby(
       taskId,
-      proxyType,
       productLimit
     );
     console.log(
@@ -26,7 +23,7 @@ export async function lookForUnmatchedQueryEansOnEby(
     );
     return recoveryProducts;
   } else {
-    const pendingShops = await getUnmatchedQueryEansOnEbyShops();
+    const {pendingShops, shops} = await getUnmatchedQueryEansOnEbyShops();
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -43,9 +40,7 @@ export async function lookForUnmatchedQueryEansOnEby(
           taskId
         );
 
-        const productsWithShop = products.map((product) => {
-          return { shop, product };
-        });
+        const productsWithShop = getProductsWithShop(products, shop, shops)
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
@@ -75,36 +70,4 @@ export async function lookForUnmatchedQueryEansOnEby(
       shops: pendingShops,
     };
   }
-}
-
-export async function getRecoveryQueryEansOnEby(
-  taskId,
-  proxyType,
-  productLimit
-) {
-  const shops = await getAllShopsAsArray();
-  const filteredShops = shops.filter(
-    (shop) => (shop.hasEan || shop?.ean) && shop.active
-  );
-  let pendingShops = [];
-  const products = await Promise.all(
-    filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryQueryEansOnEby(taskId),
-        productLimit
-      );
-      if (products.length > 0) {
-        pendingShops.push({ shop, pending: products.length });
-      }
-      const productsWithShop = products.map((product) => {
-        return { shop, product };
-      });
-      return productsWithShop;
-    })
-  );
-  return {
-    products: shuffle(products).flatMap((ps) => ps),
-    shops: pendingShops,
-  };
 }
