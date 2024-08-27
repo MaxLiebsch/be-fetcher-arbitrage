@@ -7,6 +7,7 @@ import { config } from "dotenv";
 
 import { allowed } from "@dipmaxtech/clr-pkg";
 import { TTL_UPCOMING_REQUEST } from "./constants.js";
+import UpcomingRequestCache from "./util/UpcomingRequestCache.js";
 
 config({
   path: [`.env.${process.env.NODE_ENV}`],
@@ -21,9 +22,9 @@ const hosts = {
   de: process.env.PROXY_GATEWAY_URL_DE || "",
   mix: process.env.PROXY_GATEWAY_URL || "",
 };
-const options = { max: 2000, ttl: TTL_UPCOMING_REQUEST, ttlAutopurge: true };
-const upcomingRequest = new LRUCache(options);
 
+const upcomingRequest = new UpcomingRequestCache()
+ 
 function handleErrors(res, statusCode, message) {
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
@@ -56,10 +57,10 @@ const server = http.createServer((req, res) => {
     const { proxy, host } = query;
     switch (true) {
       case proxy === "de":
-        upcomingRequest.set(host, hosts.de);
+        upcomingRequest.set(host,hosts.de)
         break;
       case proxy === "mix":
-        upcomingRequest.set(host, hosts.mix);
+        upcomingRequest.set(host,hosts.mix)
         break;
     }
     handleSuccess(res, 200, `Request proxy changed to ${query.proxy}`);
@@ -74,9 +75,7 @@ server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
 
   if (!allowed.some((domain) => hostname.includes(domain))) {
-    if (upcomingRequest.has(hostname)) {
-      upcomingRequest.delete(hostname);
-    }
+    upcomingRequest.kill(hostname);
     const responseMessage = "This domain is blocked.";
     const responseHeaders = [
       "HTTP/1.1 403 Forbidden",
@@ -89,13 +88,10 @@ server.on("connect", (req, clientSocket, head) => {
     return;
   }
   const targetHostPort = `${hostname}:${port}`;
-  const requestHost = upcomingRequest.get(hostname);
-  if (requestHost) {
-    upcomingRequest.delete(hostname);
-  }
+  const requestHost = upcomingRequest.get(hostname) || host;
 
-  const proxyUrlStr = `http://${username}:${password}@${requestHost || host}`;
-  console.log("Hostname: ", hostname, 'Host:', requestHost || host)
+
+  const proxyUrlStr = `http://${username}:${password}@${requestHost}`;
   const forwardProxyUrl = new URL(proxyUrlStr);
 
   const proxyAuth = Buffer.from(

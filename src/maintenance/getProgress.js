@@ -31,26 +31,47 @@ import {
 } from "../util/updateProgressInTasks.js";
 
 const main = async () => {
-  const { pendingShops: a } = await getOutdatedDealsOnAznShops("mix");
-  const { products, shops } = await lookForOutdatedDealsOnAzn(
-    "test",
-    "mix",
-    '',
-    30
-  );
+  // const { pendingShops: a } = await getOutdatedDealsOnAznShops("mix");
+  // const { products, shops } = await lookForOutdatedDealsOnAzn(
+  //   "test",
+  //   "mix",
+  //   '',
+  //   30
+  // );
 
-  const product = products.find((p) => p.shop.d === "sales");
-    
-  console.log('product: with sales', JSON.stringify(product, null,2))
-  console.log("No. products ", products.length);
-  console.log('products', products);
+  // const product = products.find((p) => p.shop.d === "sales");
+
+  // console.log('product: with sales', JSON.stringify(product, null,2))
+  // console.log("No. products ", products.length);
+  // console.log('products', products);
   // const a = await getUnmatchedQueryEansOnEbyShops();
   // console.log('a:', a)
   // const a = await getOutdatedDealsOnAznShops('mix')
-  console.log(
-    "a:",
-    a.reduce((acc, val) => acc + `${val.shop.d}:${val.pending}\n`, "")
-  );
+  // const a = await updateProgressDealsOnAznTasks("mix");
+  // console.log(
+  //   "a:",
+  //   a.reduce((acc, val) => acc + `${val.shop.d}:${val.pending}\n`, "")
+  // );
+  const usePremiumProxyTasks = [
+    "CRAWL_SHOP",
+    "CRAWL_EAN",
+    "DEALS_ON_EBY",
+    "DEALS_ON_AZN",
+    "CRAWL_EBY_LISTINGS",
+    "CRAWL_AZN_LISTINGS",
+  ];
+  const neverUsePremiumProxyDomains = ["amazon.de", "ebay.de"];
+  const eligableForPremium = (link, taskType) => {
+    const url = new URL(link);
+    return (
+      usePremiumProxyTasks.includes(taskType) &&
+      !neverUsePremiumProxyDomains.some((domain) =>
+        url.hostname.includes(domain)
+      )
+    );
+  };
+
+  console.log(eligableForPremium("https://www.sellercentral.amazon.de/preisvergleich/OffersOfProduct/201481785_-dura-beam-classic-downy-airbed-cot-64756-intex-pools.html", "DEALS_ON_AZN"));
   // const result = await getRecoveryDealsOnAzn('66c76dee5c74f136b98af654', 'mix', 1000).then((r) => console.log('r:', r));
   // console.log('result:', result)
   // const b = await getOutdatedNegMarginEbyListingsPerShop('mix')

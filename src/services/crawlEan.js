@@ -1,6 +1,7 @@
 import {
   QueryQueue,
   queryProductPageQueue,
+  sleep,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -59,7 +60,9 @@ export default async function crawlEan(task) {
       return reject(new MissingProductsError(`No products ${type}`, task));
 
     const _productLimit =
-      getProductLimit(products.length, productLimit);
+    getProductLimit(products.length, productLimit);
+    console.log('products.length:', products.length)
+    console.log('_productLimit:', _productLimit)
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -79,6 +82,7 @@ export default async function crawlEan(task) {
 
     const isComplete = async () => {
       if (infos.total === _productLimit && !queue.idle()) {
+        await sleep(30000);
         await checkProgress({
           queue,
           infos,

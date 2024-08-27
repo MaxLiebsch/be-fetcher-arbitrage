@@ -12,7 +12,7 @@ import { ObjectId } from "mongodb";
 const shopDomain = "gamestop.de";
 
 describe("crawl eans", () => {
-  let productLimit = 10;
+  let productLimit = 60;
   beforeAll(async () => {
     const products = read(
       path("__test__/static/collections/arbispotter.gamestop.de.json"),
@@ -35,7 +35,7 @@ describe("crawl eans", () => {
   test("crawl eans", async () => {
     const infos = await crawlEan({
       concurrency: 4,
-      type: "CRAWL_EANS",
+      type: "CRAWL_EAN",
       shopDomain,
       proxyType: 'mix',
       productLimit,

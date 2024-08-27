@@ -75,6 +75,7 @@ export async function handleCrawlEanProductInfo(
         );
         if (result.deletedCount === 1) {
           const s_hash = createHash(url);
+          delete product.ean_taskId;
           await insertArbispotterProduct(collectionName, {
             ...product,
             ...productUpdate,
