@@ -95,6 +95,7 @@ server.on("connect", (req, clientSocket, head) => {
   }
 
   const proxyUrlStr = `http://${username}:${password}@${requestHost || host}`;
+  console.log("Hostname: ", hostname, 'Host:', requestHost || host)
   const forwardProxyUrl = new URL(proxyUrlStr);
 
   const proxyAuth = Buffer.from(
