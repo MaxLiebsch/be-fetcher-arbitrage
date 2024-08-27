@@ -10,22 +10,28 @@ import { getShop } from "../src/services/db/util/shops.js";
 // };
 
 const secureMode = async () => {
-  const browser = await mainBrowser({ id: "test", proxyType: "de" }, proxyAuth, '127.0.6533.119');
-  
+  const browser = await mainBrowser(
+    { id: "test" },
+    proxyAuth,
+    "127.0.6533.119"
+  );
+
   const shop = await getShop("saturn.de");
-  const page = await getPage(
+  const { exceptions } = shop;
+  const page = await getPage({
     browser,
     shop,
-    1,
-    [],
-    shop.exceptions
-  );
+    requestCount: 1,
+    disAllowedResourceTypes: [],
+    exceptions,
+    proxyType: 'de'
+  });
   // const page = await browser.newPage();
-  const result = await page.goto('https://www.saturn.de/de/product/_neff-d65ifn1s0-dunstabzugshaube-590-mm-breit-433-mm-tief-2903408.html');
+  const result = await page.goto("https://www.browserleaks.com/ip");
   const status = result?.status();
-  if(status !== 200) {
+  if (status !== 200) {
     const response = await page.reload();
-    const newStatus = response?.status()
+    const newStatus = response?.status();
   }
 };
 

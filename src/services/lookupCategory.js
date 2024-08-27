@@ -44,8 +44,7 @@ async function lookupCategory(task) {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit =
-      getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -64,33 +63,27 @@ async function lookupCategory(task) {
     queue.total = 1;
     await queue.connect();
 
+    const isCompleted = async () => {
+      await checkProgress({
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      }).catch(async (r) => {
+        clearInterval(interval);
+        await updateProgressInLookupCategoryTask(); // update lookup category task
+        handleResult(r, resolve, reject);
+      });
+    };
+
     const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInLookupCategoryTask(); // update lookup category task
-          handleResult(r, resolve, reject);
-        }),
+      async () => await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
     const isProcessComplete = async () => {
       if (infos.total === _productLimit && !queue.idle()) {
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInLookupCategoryTask(); // update lookup category task
-          handleResult(r, resolve, reject);
-        });
+        await isCompleted();
       }
     };
 

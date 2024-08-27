@@ -17,7 +17,6 @@ import { checkProgress } from "../util/checkProgress.js";
 import { lookForMissingEans } from "./db/util/crawlEan/lookForMissingEans.js";
 import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import {
-  updateProgressDealTasks,
   updateProgressInCrawlEanTask,
   updateProgressInLookupInfoTask,
   updateProgressInQueryEansOnEbyTask,
@@ -92,7 +91,6 @@ export default async function crawlEan(task) {
             updateProgressInMatchTasks(shops), // update matching tasks
             updateProgressInLookupInfoTask(), // update lookup info task
             updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-            updateProgressDealTasks(proxyType) // update deal tasks
           ]);
           handleResult(r, resolve, reject);
         });
@@ -113,7 +111,6 @@ export default async function crawlEan(task) {
             updateProgressInMatchTasks(shops), // update matching tasks
             updateProgressInLookupInfoTask(), // update lookup info task
             updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-            updateProgressDealTasks(proxyType) // update deal tasks
           ]);
           handleResult(r, resolve, reject);
         }),

@@ -1038,7 +1038,7 @@ export const pendingDealsOnAznQuery = {
     {
       $or: [
         { dealAznUpdatedAt: { $exists: false } },
-        { dealAznUpdatedAt: { $lt: subDateDaysISO(1) } },
+        { dealAznUpdatedAt: { $lte: subDateDaysISO(1) } },
       ],
     },
     ...totalPositivAmazon.$and,

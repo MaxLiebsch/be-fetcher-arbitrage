@@ -11,7 +11,9 @@ import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
-import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
+import {
+  updateProgressInLookupInfoTask,
+} from "../util/updateProgressInTasks.js";
 import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import {
   handleLookupInfoNotFound,
@@ -68,6 +70,18 @@ export default async function lookupInfo(task) {
     const queuesWithId = {};
     const eventEmitter = globalEventEmitter;
 
+    const isCompleted = async () => {
+      await checkProgress({
+        queue: queryQueues,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      }).catch(async (r) => {
+        await updateProgressInLookupInfoTask();
+        handleResult(r, resolve, reject);
+      });
+    };
+
     await Promise.all(
       Array.from({ length: browserConcurrency || 1 }, (v, k) => k + 1).map(
         async () => {
@@ -99,15 +113,7 @@ export default async function lookupInfo(task) {
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
-                  await checkProgress({
-                    queue: queryQueues,
-                    infos,
-                    startTime,
-                    productLimit: _productLimit,
-                  }).catch(async (r) => {
-                    await updateProgressInLookupInfoTask();
-                    handleResult(r, resolve, reject);
-                  });
+                  await isCompleted();
                 }
               }
             }
@@ -120,15 +126,7 @@ export default async function lookupInfo(task) {
 
     async function isProcessComplete(queue) {
       if (infos.total === _productLimit && !queue.idle()) {
-        await checkProgress({
-          queue: queryQueues,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          await updateProgressInLookupInfoTask();
-          handleResult(r, resolve, reject);
-        });
+        await isCompleted();
       }
     }
 

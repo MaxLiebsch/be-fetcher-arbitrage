@@ -5,21 +5,31 @@ import net from "net";
 import "dotenv/config";
 import { config } from "dotenv";
 
-import os from "os";
 import { allowed } from "@dipmaxtech/clr-pkg";
 
-const osHostname = os.hostname();
-
 config({
-  path: [
-    `.env.${process.env.NODE_ENV}`,
-  ],
+  path: [`.env.${process.env.NODE_ENV}`],
 });
 
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 const PORT = 8080;
+
+const hosts = {
+  de: process.env.PROXY_GATEWAY_URL_DE,
+  mix: process.env.PROXY_GATEWAY_URL,
+};
+
+const upcomingRequest  = new Set();
+function handleErrors(res, statusCode, message) {
+  res.writeHead(statusCode, { "Content-Type": "text/plain" });
+  return res.end(message);
+}
+function handleSuccess(res, statusCode, message) {
+  res.writeHead(statusCode, { "Content-Type": "application/json" });
+  return res.end(JSON.stringify({ status: "ok", message }));
+}
 
 // Create your custom server and define the logic
 const server = http.createServer((req, res) => {
@@ -28,18 +38,25 @@ const server = http.createServer((req, res) => {
     const query = parsedUrl.query;
 
     if (!query.proxy) {
-      res.writeHead(400, { "Content-Type": "text/plain" });
-      return res.end("Bad Request");
+      handleErrors(res, 400, "Bad Request");
     }
     if (query.proxy === "de") {
       host = process.env.PROXY_GATEWAY_URL_DE;
     } else if (query.proxy === "mix") {
       host = process.env.PROXY_GATEWAY_URL;
     }
-    // Set the response HTTP headers
-    res.writeHead(200, { "Content-Type": "application/json" });
-    // Send the health check response
-    res.end(JSON.stringify({ status: "ok", proxy: query.proxy }));
+    handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
+  } else if (req.method === "GET" && parsedUrl.pathname === "/notify") {
+    const query = parsedUrl.query;
+    if (!query) {
+      handleErrors(res, 400, "Bad Request");
+    }
+    switch (true){
+      case query.type === 'de':
+        
+    }
+
+
   } else {
     // Handle other requests with a 404 Not Found response
     res.writeHead(404, { "Content-Type": "text/plain" });
@@ -63,7 +80,6 @@ server.on("connect", (req, clientSocket, head) => {
     clientSocket.end(`${responseHeaders}${responseMessage}`);
     return;
   }
-
   const targetHostPort = `${hostname}:${port}`;
   const proxyUrlStr = `http://${username}:${password}@${host}`;
   const forwardProxyUrl = new URL(proxyUrlStr);

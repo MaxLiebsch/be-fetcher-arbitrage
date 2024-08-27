@@ -54,10 +54,8 @@ export async function monitorAndProcessTasks() {
         return;
       }
       if (taskResult instanceof TaskCompletedStatus) {
-        if (task.type === "CRAWL_SHOP") {
-          await updateProgressDealTasks("mix");
-          await updateProgressNegDealTasks("mix");
-        }
+        await updateProgressDealTasks("mix");
+        await updateProgressNegDealTasks("mix");
 
         const { priority, subject, htmlBody } = await handleTask(
           taskResult,
