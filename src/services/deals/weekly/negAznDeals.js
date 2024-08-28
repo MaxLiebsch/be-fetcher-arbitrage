@@ -21,8 +21,7 @@ const negAznDeals = async (task) => {
   const { productLimit } = task;
   const { _id, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {
-    const { products, shops } = await lookForOutdatedNegMarginAznListings
-    (
+    const { products, shops } = await lookForOutdatedNegMarginAznListings(
       _id,
       proxyType,
       action,

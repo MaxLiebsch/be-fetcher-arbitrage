@@ -25,9 +25,8 @@ export async function lookForOudatedNegMarginEbyListings(
     );
     return recoveryProducts;
   } else {
-    const {pendingShops, shops} = await getOutdatedNegMarginEbyListingsPerShop(
-      proxyType
-    );
+    const { pendingShops, shops } =
+      await getOutdatedNegMarginEbyListingsPerShop(proxyType);
     const stats = pendingShops.reduce((acc, { pending, shop }) => {
       acc[shop.d] = { shopDomain: shop.d, pending, batch: 0 };
       return acc;
@@ -42,11 +41,11 @@ export async function lookForOudatedNegMarginEbyListings(
         const products = await lockProductsForCrawlEbyListings(
           shop.d,
           limit,
-          action,
-          taskId
+          taskId,
+          action
         );
 
-        const productsWithShop = getProductsWithShop(products, shop, shops)
+        const productsWithShop = getProductsWithShop(products, shop, shops);
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
       })
