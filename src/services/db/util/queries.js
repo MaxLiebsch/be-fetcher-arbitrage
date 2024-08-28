@@ -84,6 +84,27 @@ export const totalNegativEbay = {
   ],
 };
 
+export const progressField = {
+  $or: [
+    {
+      progress: { $exists: false },
+    },
+    { progress: { $elemMatch: { pending: { $gt: 0 } } } },
+  ],
+};
+
+export const startedAtField = (lowerThenStartedAt) => {
+  return {
+    $or: [
+      { startedAt: { $exists: false } },
+      { startedAt: "" },
+      {
+        startedAt: { $lt: lowerThenStartedAt },
+      },
+    ],
+  };
+};
+
 /*               Aggregations                                   */
 
 export const ebayMarginCalculationAggregationStep = [
@@ -174,6 +195,7 @@ export const lockProductsForCrawlEanQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["ean_taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsForCrawlEanQuery;
 
     if (limit) {
@@ -203,24 +225,9 @@ export const countTotalProductsForCrawlEanQuery = {};
 export const crawlEanTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "CRAWL_EAN" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        { progress: { $elemMatch: { pending: { $gt: 0 } } } },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -238,6 +245,7 @@ export const lockProductsForLookupInfoQuery = (
   if (action === "recover") {
     query["info_taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsLookupInfoQuery(hasEan);
 
     if (limit) {
@@ -268,12 +276,15 @@ export const countPendingProductsLookupInfoQuery = (hasEan) => {
     query.$and.push({
       $or: [
         {
+          // @ts-ignore
           $or: eanExistsQuery,
         },
+        // @ts-ignore
         { asin: { $exists: true, $ne: "" } },
       ],
     });
   } else {
+    // @ts-ignore
     query.$and.push({ asin: { $exists: true, $ne: "" } });
   }
 
@@ -297,32 +308,12 @@ export const countTotalProductsForLookupInfoQuery = (hasEan) => {
   }
   return query;
 };
-export const lookupInfoTaskQueryFn = (
-  lowerThenStartedAt,
-  danglingMatchThreshold
-) => {
+export const lookupInfoTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "LOOKUP_INFO" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -335,6 +326,7 @@ export const lockProductsForMatchQuery = (limit, taskId, action, hasEan) => {
   if (action === "recover") {
     query["taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsForMatchQuery(hasEan);
     if (limit) {
       options["limit"] = limit;
@@ -365,6 +357,7 @@ export const countPendingProductsForMatchQuery = (hasEan) => {
     ],
   };
   if (hasEan) {
+    // @ts-ignore
     query["$and"].push({ $or: eanExistsQuery });
   }
   return query;
@@ -383,15 +376,7 @@ export const matchTaskQueryFn = (
 ) => {
   return [
     { type: "MATCH_PRODUCTS" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
     {
       $or: [
@@ -419,6 +404,7 @@ export const lockProductsForQueryEansOnEbyQuery = (taskId, limit, action) => {
   if (action === "recover") {
     query["eby_taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsQueryEansOnEbyQuery;
     if (limit) {
       options["limit"] = limit;
@@ -450,32 +436,12 @@ export const recoveryQueryEansOnEby = (taskId) => {
 export const countTotalProductsForQueryEansOnEbyQuery = {
   $or: eanExistsQuery,
 };
-export const queryEansOnEbyTaskQueryFn = (
-  lowerThenStartedAt,
-  danglingMatchThreshold
-) => {
+export const queryEansOnEbyTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "QUERY_EANS_EBY" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -499,6 +465,7 @@ export const lockProductsForLookupCategoryQuery = (taskId, limit, action) => {
   }
   return { query, options };
 };
+
 export const setProductsLockedForLookupCategoryQuery = (taskId) => {
   return {
     $set: {
@@ -527,32 +494,12 @@ export const recoveryLookupCategoryQuery = (taskId) => {
 export const countTotalProductsForLookupCategoryQuery = {
   esin: { $exists: true, $ne: "" },
 };
-export const lookupCategoryTaskQueryFn = (
-  lowerThenStartedAt,
-  danglingMatchThreshold
-) => {
+export const lookupCategoryTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "LOOKUP_CATEGORY" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -619,32 +566,12 @@ export const countCompletedProductsForCrawlAznListingsQuery = () => {
 export const countTotalProductsCrawlAznListingsQuery = {
   $and: [{ asin: { $exists: true, $ne: "" } }, ...totalNegativAmazon.$and],
 };
-export const crawlAznListingsTaskQueryFn = (
-  lowerThenStartedAt,
-  danglingLookupThreshold
-) => {
+export const crawlAznListingsTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "CRAWL_AZN_LISTINGS" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -656,6 +583,7 @@ export const lockProductsForCrawlEbyListingsQuery = (limit, taskId, action) => {
   if (action === "recover") {
     query["eby_taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsForCrawlEbyListingsQuery();
   }
 
@@ -767,9 +695,11 @@ export const countPendingProductsForCrawlEbyListingsAggregation = ({
     },
   ];
   if (returnTotal) {
+    // @ts-ignore
     agg.push({ $count: "total" });
   }
   if (limit) {
+    // @ts-ignore
     agg.push({ $limit: limit });
   }
   return agg;
@@ -817,32 +747,12 @@ export const countTotalProductsCrawlEbyListingsAggregation = [
   },
   { $count: "total" },
 ];
-export const crawlEbyListingsTaskQueryFn = (
-  lowerThenStartedAt,
-  danglingLookupThreshold
-) => {
+export const crawlEbyListingsTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "CRAWL_EBY_LISTINGS" },
-    {
-      $or: [
-        { startedAt: { $exists: false } },
-        { startedAt: "" },
-        {
-          startedAt: { $lt: lowerThenStartedAt },
-        },
-      ],
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -943,9 +853,11 @@ export const countPendingProductsForDealsOnEbyAgg = ({
     },
   ];
   if (returnTotal) {
+    // @ts-ignore
     agg.push({ $count: "total" });
   }
   if (limit) {
+    // @ts-ignore
     agg.push({ $limit: limit });
   }
   return agg;
@@ -1001,20 +913,9 @@ export const countTotalProductsDealsOnEbyAgg = [
 export const dealsOnEbyTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_EBY" },
-    {
-      startedAt: { $lt: lowerThenStartedAt },
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -1053,6 +954,7 @@ export const lockProductsForDealsOnAznQuery = (limit, taskId, action) => {
   if (action === "recover") {
     query["azn_taskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = pendingDealsOnAznQuery;
   }
 
@@ -1091,20 +993,9 @@ export const countTotalProductsDealsOnAznQuery = {
 export const dealsOnAznTaskQueryFn = (lowerThenStartedAt) => {
   return [
     { type: "DEALS_ON_AZN" },
-    {
-      startedAt: { $lt: lowerThenStartedAt },
-    },
+    { ...startedAtField(lowerThenStartedAt) },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -1121,6 +1012,7 @@ export const lockProductsForUpdateProductinfoQuery = (
   if (action === "recover") {
     query["availTaskId"] = setTaskId(taskId);
   } else {
+    // @ts-ignore
     query = countPendingProductsUpdateProductinfoAgg;
     if (limit) {
       options["limit"] = limit;
@@ -1231,16 +1123,7 @@ export const updateProductinfoTaskQueryFn = (start, danglingMatchThreshold) => {
       $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
     },
     { recurrent: { $eq: true } },
-    {
-      $or: [
-        {
-          progress: { $exists: false },
-        },
-        {
-          progress: { $elemMatch: { pending: { $gt: 0 } } },
-        },
-      ],
-    },
+    { ...progressField },
   ];
 };
 
@@ -1261,15 +1144,11 @@ export const findTasksQuery = () => {
   const danglingMatchThreshold =
     process.env.TEST === "endtoend" ? 1 : DANGLING_MATCH_THRESHOLD;
 
-  const lowerThenStartedAt =
-    process.env.TEST === "endtoend"
-      ? oneMinuteAgo.toISOString()
-      : fiveMinutesAgo.toISOString();
+  const lowerThenStartedAt = oneMinuteAgo.toISOString();
 
   const weekday = today.getDay();
 
   const start = startOfDay(today).toISOString();
-
   let update = {};
 
   update = {
@@ -1294,16 +1173,10 @@ export const findTasksQuery = () => {
     lowerThenStartedAt,
     danglingMatchThreshold
   );
-  const crawlAznListingsTaskQuery = crawlAznListingsTaskQueryFn(
-    // (4)
-    lowerThenStartedAt,
-    danglingLookupThreshold
-  );
-  const crawlEbyListingsTaskQuery = crawlEbyListingsTaskQueryFn(
-    // (4.1)
-    lowerThenStartedAt,
-    danglingLookupThreshold
-  );
+  const crawlAznListingsTaskQuery =
+    crawlAznListingsTaskQueryFn(lowerThenStartedAt); // (4)
+  const crawlEbyListingsTaskQuery =
+    crawlEbyListingsTaskQueryFn(lowerThenStartedAt); // (4.1)
   const queryEansOnEbyTaskQuery = queryEansOnEbyTaskQueryFn(lowerThenStartedAt); // (3.3)
   const lookupCategoryTaskQuery = lookupCategoryTaskQueryFn(lowerThenStartedAt); // (3.4)
 
