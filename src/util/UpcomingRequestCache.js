@@ -3,7 +3,7 @@ import { TTL_UPCOMING_REQUEST } from "../constants.js";
 
 class UpcomingRequestCache {
   constructor() {
-    const options = { max: 70, ttl: TTL_UPCOMING_REQUEST, ttlAutopurge: true };
+    const options = { max: 100, ttl: TTL_UPCOMING_REQUEST, ttlAutopurge: true };
     this.cache = new LRUCache(options);
   }
 
@@ -11,9 +11,13 @@ class UpcomingRequestCache {
     return this.cache.has(key);
   }
 
-  set(key, value) {
+  set(key, value, cnt = 1) {
     let values = this.cache.get(key) || [];
-    values.push(value);
+    if (cnt > 1) {
+      values = values.concat(new Array(cnt).fill(value));
+    } else {
+      values.push(value);
+    }
     this.cache.set(key, values);
   }
 

@@ -14,13 +14,19 @@ const dealsOnAzn = async (task) => {
   const { productLimit } = task;
   const { _id, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {
-    const { products: productsWithShop } = await lookForOutdatedDealsOnAzn
-    (
-      _id,
-      proxyType,
-      action,
-      productLimit
-    );
+    const { products: productsWithShop, shops } =
+      await lookForOutdatedDealsOnAzn(_id, proxyType, action, productLimit);
+
+    if (action === "recover") {
+      console.log(
+        "Recovery action",
+        "Products:",
+        productsWithShop.length,
+        "Shops:",
+        shops && shops.length && shops.reduce((acc, { d }) => acc + " " + d, "")
+      );
+    }
+
     const azn = await getShop("amazon.de");
 
     const infos = {

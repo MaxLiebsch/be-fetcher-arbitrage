@@ -1,12 +1,10 @@
 import http from "http";
 import url from "url";
 import net from "net";
-import { LRUCache } from "lru-cache";
 import "dotenv/config";
 import { config } from "dotenv";
 
 import { allowed } from "@dipmaxtech/clr-pkg";
-import { TTL_UPCOMING_REQUEST } from "./constants.js";
 import UpcomingRequestCache from "./util/UpcomingRequestCache.js";
 
 config({
@@ -23,8 +21,8 @@ const hosts = {
   mix: process.env.PROXY_GATEWAY_URL || "",
 };
 
-const upcomingRequest = new UpcomingRequestCache()
- 
+const upcomingRequest = new UpcomingRequestCache();
+
 function handleErrors(res, statusCode, message) {
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
@@ -36,6 +34,7 @@ function handleSuccess(res, statusCode, message) {
 
 // Create your custom server and define the logic
 const server = http.createServer((req, res) => {
+  if (!req.url) return;
   const parsedUrl = url.parse(req.url, true);
   if (req.method === "GET" && parsedUrl.pathname === "/change-proxy") {
     const query = parsedUrl.query;
@@ -54,13 +53,13 @@ const server = http.createServer((req, res) => {
     if (!query) {
       handleErrors(res, 400, "Bad Request");
     }
-    const { proxy, host } = query;
+    const { proxy, host, cnt } = query;
     switch (true) {
       case proxy === "de":
-        upcomingRequest.set(host,hosts.de)
+        upcomingRequest.set(host, hosts.de, Number(cnt));
         break;
       case proxy === "mix":
-        upcomingRequest.set(host,hosts.mix)
+        upcomingRequest.set(host, hosts.mix);
         break;
     }
     handleSuccess(res, 200, `Request proxy changed to ${query.proxy}`);
@@ -89,9 +88,10 @@ server.on("connect", (req, clientSocket, head) => {
   }
   const targetHostPort = `${hostname}:${port}`;
   const requestHost = upcomingRequest.get(hostname) || host;
-
+  console.log(hostname, "requestHost:", requestHost);
 
   const proxyUrlStr = `http://${username}:${password}@${requestHost}`;
+
   const forwardProxyUrl = new URL(proxyUrlStr);
 
   const proxyAuth = Buffer.from(

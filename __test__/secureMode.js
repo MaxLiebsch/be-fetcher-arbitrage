@@ -19,15 +19,21 @@ const secureMode = async () => {
 
   const shop = await getShop("saturn.de");
   const { exceptions } = shop;
-  const lnk = "https://www.browserleaks.com/ip";
+  const lnk = "https://www.saturn.de";
   const page = await getPage({
     browser,
     shop,
     requestCount: 1,
     disAllowedResourceTypes: [],
     exceptions,
-    proxyType: 'de'
+    proxyType: "de",
   });
+
+  const originalGoto = page.goto;
+  page.goto = async function (url, options) {
+    await changeRequestProxy("de", lnk, 2); 
+    return originalGoto.apply(this, [url, options]);
+  };
   // const page = await browser.newPage();
   const result = await page.goto(lnk);
   const status = result?.status();

@@ -1,6 +1,13 @@
-import { proxyAuth } from "../constants.js";
+import { sleep } from "@dipmaxtech/clr-pkg";
 
-export async function changeRequestProxy(proxyType, link) {
+export async function changeRequestProxy(proxyType, link, cnt = 1) {
   const host = new URL(link).hostname;
-  await fetch(`http://${proxyAuth.host}/notify?proxy=${proxyType}&host=${host}`);
+  const response = await fetch(
+    `http://127.0.0.1:8080/notify?proxy=${proxyType}&host=${host}&cnt=${cnt}`
+  );
+  if (response.status === 200) {
+    return response;
+  } else {
+    throw new Error(`Failed to notify proxy. Status code: ${response.status}`);
+  }
 }
