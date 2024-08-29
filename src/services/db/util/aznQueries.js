@@ -43,8 +43,10 @@ export const resetAznProductQuery = (props = { info_prop: "" }) => {
       dealAznTaskId: "",
     },
   };
+
   keepaProperties.forEach((prop) => {
-    query.$unset[prop.name] = "";
+    query.$unset[prop.name ? prop.name : prop.key.replace("products[0].", "")] =
+      "";
   });
 
   if (!query["$set"] && info_prop) {
