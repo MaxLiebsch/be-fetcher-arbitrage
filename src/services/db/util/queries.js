@@ -844,7 +844,7 @@ export const countPendingProductsForDealsOnEbyAgg = ({
           {
             $or: [
               { dealEbyUpdatedAt: { $exists: false } },
-              { dealEbyUpdatedAt: { $lt: subDateDaysISO(7) } },
+              { dealEbyUpdatedAt: { $lt: subDateDaysISO(1) } },
             ],
           },
           ...totalPositivEbay.$and,
