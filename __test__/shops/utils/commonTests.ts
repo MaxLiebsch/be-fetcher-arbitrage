@@ -79,15 +79,15 @@ export const myBeforeAll = async (
 
   shops = await getShops([{ d: shopDomain }]);
   if (browser && shops && shops[shopDomain]) {
-    page = await getPage(
+    page = await getPage({
       browser,
-      shops[shopDomain],
-      5,
-      shops[shopDomain].resourceTypes["crawl"],
-      shops[shopDomain].exceptions,
-      shops[shopDomain].rules,
-      task.timezones
-    );
+      shop: shops[shopDomain],
+      requestCount: 5,
+      disAllowedResourceTypes: shops[shopDomain].resourceTypes["crawl"],
+      exceptions: shops[shopDomain].exceptions,
+      rules: shops[shopDomain].rules,
+      timezones: task.timezones,
+    });
     await page.goto(shops[shopDomain].entryPoints[0].url, {
       timeout: 120000,
     });
@@ -202,7 +202,9 @@ export const countProductPages = async () => {
       shops[shopDomain].paginationEl[0],
       count
     );
-    expect(pageNumberCount.pages.length).toBeGreaterThan(testParameters[shopDomain].pages);
+    expect(pageNumberCount.pages.length).toBeGreaterThan(
+      testParameters[shopDomain].pages
+    );
   }
 };
 export const findPaginationAndNextPage = async () => {
@@ -314,7 +316,8 @@ export const extractProductsFromSecondPage = async () => {
       shop: shops[shopDomain],
     });
     expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
-    if (products.length > 0) console.log('extractProductsFromSecondPage: ', products[0]);
+    if (products.length > 0)
+      console.log("extractProductsFromSecondPage: ", products[0]);
   }
 };
 
@@ -345,7 +348,13 @@ export const extractProductsFromSecondPageQueueless = async () => {
     );
     if (result === "crawled") {
       expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
-      if (products.length > 0) console.log('Total products: ', products.length,"extractProductsFromSecondPageQueueless: ", products[0]);
+      if (products.length > 0)
+        console.log(
+          "Total products: ",
+          products.length,
+          "extractProductsFromSecondPageQueueless: ",
+          products[0]
+        );
     }
   }
 };

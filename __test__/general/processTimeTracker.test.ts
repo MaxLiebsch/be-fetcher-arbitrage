@@ -71,7 +71,7 @@ describe("Process Time Tracker", () => {
 
     setTimeout(() => {
       console.log("Mark active... afer 1 minute 25th 00:03");
-      timeTracker.markActive("QUERY_EAN_EBY");
+      timeTracker.markActive("QUERY_EANS_EBY");
     }, 1000 * 60 * 1);
     clock.tick(1000 * 60 * 1);
 

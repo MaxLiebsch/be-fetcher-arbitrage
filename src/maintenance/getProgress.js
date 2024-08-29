@@ -7,6 +7,7 @@ import {
   countTotalProductsCrawlEbyListings,
   getCrawlEbyListingsProgressAggregation,
 } from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
 import { getOutdatedDealsOnAznShops } from "../services/db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
 import { lookForOutdatedDealsOnAzn } from "../services/db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
 import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
@@ -16,7 +17,13 @@ import {
   getMatchProgress,
 } from "../services/db/util/match/getMatchProgress.js";
 import { lockProductsForMatch } from "../services/db/util/match/lockProductsForMatch.js";
-import { lockProductsForMatchQuery } from "../services/db/util/queries.js";
+import {
+  findTasksQuery,
+  lockProductsForCrawlEbyListingsAggregation,
+  lockProductsForMatchQuery,
+  recoveryDealsOnAznQuery,
+} from "../services/db/util/queries.js";
+import { getQueryEansOnEbyProgress } from "../services/db/util/queryEansOnEby/getQueryEansOnEbyProgress.js";
 import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import {
   countPendingProductsUpdateProductinfo,
@@ -25,13 +32,16 @@ import {
 } from "../services/db/util/updateProductinfo/getUpdateProductInfoProgress.js";
 import {
   updateProgressDealsOnAznTasks,
+  updateProgressDealsOnEbyTasks,
   updateProgressDealTasks,
   updateProgressInCrawlEanTask,
   updateProgressNegDealTasks,
 } from "../util/updateProgressInTasks.js";
 
 const main = async () => {
-  // const { pendingShops: a } = await getOutdatedDealsOnAznShops("mix");
+  // const { pendingShops: a } = await lockProductsForCrawlEbyListingsAggregation()
+  // const { pendingShops: a }  = await getUnmatchedQueryEansOnEbyShops()
+  const { pendingShops: a } = await getOutdatedDealsOnAznShops("mix");
   // const { products, shops } = await lookForOutdatedDealsOnAzn(
   //   "test",
   //   "mix",
@@ -47,36 +57,13 @@ const main = async () => {
   // const a = await getUnmatchedQueryEansOnEbyShops();
   // console.log('a:', a)
   // const a = await getOutdatedDealsOnAznShops('mix')
-  // const a = await updateProgressDealsOnAznTasks("mix");
-  // console.log(
-  //   "a:",
-  //   a.reduce((acc, val) => acc + `${val.shop.d}:${val.pending}\n`, "")
-  // );
-  const usePremiumProxyTasks = [
-    "CRAWL_SHOP",
-    "CRAWL_EAN",
-    "DEALS_ON_EBY",
-    "DEALS_ON_AZN",
-    "CRAWL_EBY_LISTINGS",
-    "CRAWL_AZN_LISTINGS",
-  ];
-  const neverUsePremiumProxyDomains = ["amazon.de", "ebay.de"];
-  const eligableForPremium = (link, taskType) => {
-    const url = new URL(link);
-    return (
-      usePremiumProxyTasks.includes(taskType) &&
-      !neverUsePremiumProxyDomains.some((domain) =>
-        url.hostname.includes(domain)
-      )
-    );
-  };
-
-  console.log(eligableForPremium("https://www.sellercentral.amazon.de/preisvergleich/OffersOfProduct/201481785_-dura-beam-classic-downy-airbed-cot-64756-intex-pools.html", "DEALS_ON_AZN"));
-  // const result = await getRecoveryDealsOnAzn('66c76dee5c74f136b98af654', 'mix', 1000).then((r) => console.log('r:', r));
   // console.log('result:', result)
   // const b = await getOutdatedNegMarginEbyListingsPerShop('mix')
   // console.log('b:', b)
   // await updateProgressInCrawlEanTask('mix');
+
+  // const b  = findTasksQuery()
+  // console.log('b:', JSON.stringify(b,null,2))
 };
 
 main().then((r) => process.exit(0));

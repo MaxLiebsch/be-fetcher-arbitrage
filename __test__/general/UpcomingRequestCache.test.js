@@ -6,7 +6,7 @@ function main (){
 cache.set('idealo.de', 'host1');
 cache.set('idealo.de', 'host1');
 cache.set('reichelt.de', 'host2');
-console.log(cache.getAllValues()); // []
+console.log(cache.getAllEntries()); // []
 
 console.log(cache.get('idealo.de')); // 'value1'
 console.log(cache.get('idealo.de')); // 'value2'
