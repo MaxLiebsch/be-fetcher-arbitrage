@@ -9,10 +9,10 @@ import {
 import dealsOnEby from "../../src/services/deals/daily/dealsOnEby.js";
 import { ObjectId } from "mongodb";
 
-const shopDomain = ["alternate.de", "idealo.de"];
+const shopDomain = ["alternate.de", "idealo.de", 'alza.de'];
 
 describe("pos eby listings", () => {
-  let productLimit = 10;
+  let productLimit = 30;
   beforeAll(async () => {
     const listings = shopDomain.map((shopDomain) => {
       return read(
@@ -44,6 +44,7 @@ describe("pos eby listings", () => {
     const infos = await dealsOnEby({
       shopDomain,
       productLimit,
+      type: "DEALS_ON_EBY",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "",
       proxyType: "mix",

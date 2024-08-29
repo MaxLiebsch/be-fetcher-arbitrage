@@ -11,6 +11,8 @@ config({
   path: [`.env.${process.env.NODE_ENV}`],
 });
 
+const activeConnections = new Map();
+
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
@@ -30,6 +32,19 @@ function handleErrors(res, statusCode, message) {
 function handleSuccess(res, statusCode, message) {
   res.writeHead(statusCode, { "Content-Type": "application/json" });
   return res.end(JSON.stringify({ status: "ok", message }));
+}
+
+function terminateConnection(url) {
+  const connection = activeConnections.get(url);
+  if (connection) {
+    try {
+      connection.clientSocket.destroy();
+      connection.proxySocket.destroy();
+      activeConnections.delete(url);
+    } catch (error) {
+      console.error(`Failed to terminate connection for ${url}:`, error);
+    }
+  }
 }
 
 // Create your custom server and define the logic
@@ -53,16 +68,31 @@ const server = http.createServer((req, res) => {
     if (!query) {
       handleErrors(res, 400, "Bad Request");
     }
-    const { proxy, host, cnt } = query;
+    const { proxy, host, cnt, terminate } = query;
     switch (true) {
       case proxy === "de":
+        if (terminate) {
+          terminateConnection(host);
+        }
         upcomingRequest.set(host, hosts.de, Number(cnt));
         break;
       case proxy === "mix":
-        upcomingRequest.set(host, hosts.mix);
+        if (terminate) {
+          terminateConnection(host);
+        }
+        upcomingRequest.set(host, hosts.mix, Number(cnt));
         break;
     }
     handleSuccess(res, 200, `Request proxy changed to ${query.proxy}`);
+  } else if (req.method === "GET" && parsedUrl.pathname === "/terminate") {
+    const query = parsedUrl.query;
+    if (!query) {
+      handleErrors(res, 400, "Bad Request");
+    }
+    const { host } = query;
+    console.log(`Terminating connection to ${url} due to status ${status}`);
+    terminateConnection(host);
+    handleSuccess(res, 200, `Request proxy terminated`);
   } else {
     // Handle other requests with a 404 Not Found response
     res.writeHead(404, { "Content-Type": "text/plain" });
@@ -110,12 +140,13 @@ server.on("connect", (req, clientSocket, head) => {
   establishedConnection(
     clientSocket,
     forwardProxyUrl,
-    targetHostPort,
     proxyConnectRequest,
-    head
+    head,
+    hostname
   );
 
   clientSocket.on("error", (err) => {
+    terminateConnection(hostname);
     if (err.code === "EPIPE") {
       console.error("EPIPE error: attempted to write to a closed socket");
       clientSocket.end();
@@ -142,9 +173,9 @@ server.on("error", (err) => {
 const establishedConnection = (
   clientSocket,
   forwardProxyUrl,
-  targetHostPort,
   proxyConnectRequest,
-  head
+  head,
+  hostname
 ) => {
   const proxySocket = net.connect(
     forwardProxyUrl.port,
@@ -170,6 +201,7 @@ const establishedConnection = (
         proxySocket.write(head);
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
+        activeConnections.set(hostname, { clientSocket, proxySocket });
       } else {
         const responseMessage = "Internal Server Error.";
         const responseHeaders = [
@@ -195,6 +227,7 @@ const establishedConnection = (
       "\r\n",
     ].join("\r\n");
     clientSocket.end(`${responseHeaders}${responseMessage}`);
+    terminateConnection(hostname);
   });
 };
 
