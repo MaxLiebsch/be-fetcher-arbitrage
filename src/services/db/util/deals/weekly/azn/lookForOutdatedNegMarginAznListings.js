@@ -41,8 +41,8 @@ export async function lookForOutdatedNegMarginAznListings(
         const products = await lockProductsForCrawlAznListings(
           shop.d,
           limit,
-          action,
-          taskId
+          taskId,
+          action
         );
 
         const productsWithShop = getProductsWithShop(products, shop, shops);
