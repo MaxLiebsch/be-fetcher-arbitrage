@@ -2,6 +2,7 @@ import {
   QueryQueue,
   queryEansOnEbyQueue,
   queryURLBuilder,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -26,6 +27,7 @@ import {
 } from "../util/queryEansOnEbyHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -113,9 +115,9 @@ export default async function queryEansOnEby(task) {
     }
 
     for (let index = 0; index < products.length; index++) {
-      const { shop, product } = products[index];
+      const { shop, product, s_hash, lnk: productLink } = products[index];
       const srcShopDomain = shop.d;
-      const ean = getEanFromProduct(product)
+      const ean = getEanFromProduct(product);
 
       const foundProducts = [];
 
@@ -132,13 +134,21 @@ export default async function queryEansOnEby(task) {
         );
         await isProcessComplete();
       };
-      const handleNotFound = async () => {
-        await handleQueryEansOnEbyNotFound(
-          srcShopDomain,
-          infos,
-          product,
-          queue
-        );
+      const handleNotFound = async (cause) => {
+        if (cause === "timeout") {
+          await updateArbispotterProductQuery(srcShopDomain, productLink, {
+            $unset: {
+              eby_taskId: "",
+            },
+          });
+        } else {
+          await handleQueryEansOnEbyNotFound(
+            srcShopDomain,
+            infos,
+            product,
+            queue
+          );
+        }
         await isProcessComplete();
       };
       const query = {
@@ -153,12 +163,15 @@ export default async function queryEansOnEby(task) {
 
       queue.pushTask(queryEansOnEbyQueue, {
         retries: 0,
+        requestId: uuid(),
+        s_hash,
         shop: toolInfo,
         targetShop: {
           prefix: "",
           d: srcShopDomain,
           name: srcShopDomain,
         },
+
         addProduct,
         isFinished,
         onNotFound: handleNotFound,

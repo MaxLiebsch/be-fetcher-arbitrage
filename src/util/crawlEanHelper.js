@@ -107,17 +107,7 @@ export async function handleCrawlEanProductInfo(
     });
   }
 }
-export async function handleCrawlEanNotFound(
-  collection,
-  infos,
-  queue,
-  cause,
-  productLink
-) {
-  infos.notFound++;
-  infos.shops[collection]++;
-  infos.total++;
-  queue.total++;
+export async function handleCrawlEanNotFound(collection, cause, productLink) {
   if (cause === "timeout") {
     await updateArbispotterProductQuery(collection, productLink, {
       $set: {

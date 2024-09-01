@@ -4,10 +4,9 @@ import {
   crawlSubpage,
   globalEventEmitter,
   roundToTwoDecimals,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
-import {
-  createArbispotterCollection,
-} from "./db/mongo.js";
+import { createArbispotterCollection } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
 import { MissingShopError } from "../errors.js";
 import { getShops } from "./db/util/shops.js";
@@ -153,6 +152,7 @@ export default async function crawl(task) {
     if (recurrent) {
       categories.map((category) => {
         queue.pushTask(crawlSubpage, {
+          requestId: uuid(),
           shop,
           addProduct,
           categoriesHeuristic: infos.categoriesHeuristic,
@@ -170,6 +170,7 @@ export default async function crawl(task) {
       });
     } else {
       queue.pushTask(crawlShop, {
+        requestId: uuid(),
         shop,
         addProduct,
         categoriesHeuristic: infos.categoriesHeuristic,

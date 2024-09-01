@@ -1,6 +1,6 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.109",
+  "version": "0.0.110",
   "description": "",
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "dev:crawlEan:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawlEan.js\"",
     "dev:lookupCategory:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/lookupCategory.js\"",
     "dev:queryEans:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/queryEansOnEby.js\"",
-    "dev:crawl:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawl.js\"",
+    "dev:crawl:test": "cross-env NODE_ENV=development PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/crawl.js\"",
     "dev:wholesale:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"yarn start:test:wholesale\"",
     "dev:singlematch:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematch.js\"",
     "dev:singlematchae:test": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/singlematchae.js\"",
@@ -40,7 +40,7 @@
     "mio": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true yarn proxy",
     "miogb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently \"yarn proxy\"",
     "test:endtoend": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/endtoend.js\"",
-    "test:securemode": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/secureMode.js\"",
+    "test:securemode": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/secureMode.js\"",
     "test:page": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"node  ./src/proxy.js\" \"node ./__test__/pageMode.js\"",
     "test:production:securemode": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true node ./__test__/secureMode.js",
     "test:mongoquery": "cross-env NODE_ENV=production TEST=endtoend PROXY_TYPE=request DEBUG=true nodemon ./__test__/mongo/testQueries.js",
@@ -69,6 +69,7 @@
     "jest-cli": "^29.7.0",
     "lru-cache": "^11.0.0",
     "mongodb": "^6.5.0",
+    "node-ipc": "^12.0.0",
     "nodemailer": "^6.9.13",
     "parse-price": "^1.1.8",
     "pino": "^8.20.0",

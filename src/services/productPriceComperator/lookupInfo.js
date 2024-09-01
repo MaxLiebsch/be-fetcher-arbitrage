@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   QueryQueue,
   querySellerInfosQueue,
+  uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
@@ -113,7 +114,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
       if (!product) continue;
       const queue = queueIterator.next().value;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
-      const { lnk: productLink, asin, _id } = product;
+      const { lnk: productLink, asin, _id, s_hash} = product;
       const ean = getEanFromProduct(product);
 
       const addProduct = async (product) => {};
@@ -130,7 +131,7 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
         );
         await isProcessComplete(queue);
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         completedProducts.push(product._id);
         await handleLookupInfoNotFound(salesDbName, productLink);
         infos.notFound++;
@@ -141,6 +142,8 @@ export const lookupInfo = async (sellerCentral, origin, task) =>
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: sellerCentral,
+        requestId: uuid(),
+        s_hash,
         targetShop: {
           prefix: "",
           d: shopDomain,

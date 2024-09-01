@@ -1,6 +1,6 @@
 import { getShop } from "../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
-import { queryProductPageQueue, QueryQueue } from "@dipmaxtech/clr-pkg";
+import { queryProductPageQueue, QueryQueue, uuid } from "@dipmaxtech/clr-pkg";
 import {
   defaultEbyDealTask,
   defaultQuery,
@@ -11,7 +11,10 @@ import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
 } from "../../../util/scrapeEbyListingsHelper.js";
-import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
+import {
+  deleteArbispotterProduct,
+  updateArbispotterProductQuery,
+} from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { lookForOudatedNegMarginEbyListings } from "../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings.js";
@@ -121,9 +124,10 @@ export async function scrapeEbyListings(
   processProps = defaultEbyDealTask
 ) {
   return new Promise((res, rej) => {
+    const { taskIdProp } = processProps;
     const { d } = target;
     const { d: shopDomain } = source;
-    const { lnk: productLink } = product;
+    const { lnk: productLink, s_hash } = product;
     const addProduct = async (product) => {};
     const addProductInfo = async ({ productInfo, url }) => {
       await handleEbyListingProductInfo(
@@ -136,11 +140,19 @@ export async function scrapeEbyListings(
       );
       res("done");
     };
-    const handleNotFound = async () => {
+    const handleNotFound = async (cause) => {
       infos.notFound++;
       infos.total++;
       queue.total++;
-      await handleEbyListingNotFound(shopDomain, productLink);
+      if (cause === "timeout") {
+        await updateArbispotterProductQuery(shopDomain, productLink, {
+          $unset: {
+            [taskIdProp]: "",
+          },
+        });
+      } else {
+        await handleEbyListingNotFound(shopDomain, productLink);
+      }
       res("done");
     };
 
@@ -148,6 +160,8 @@ export async function scrapeEbyListings(
       retries: 0,
       shop: target,
       addProduct,
+      s_hash,
+      requestId: uuid(),
       onNotFound: handleNotFound,
       addProductInfo,
       queue,

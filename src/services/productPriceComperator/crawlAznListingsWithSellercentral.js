@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   QueryQueue,
   querySellerInfosQueue,
+  uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import { getMaxLoadQueue } from "./lookupInfo.js";
@@ -12,6 +13,7 @@ import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../util/scrapeAznListingsHelper.js";
+import request from "request";
 
 export const crawlAznListingsWithSellercentral = (sellerCentral, origin, task) =>
   new Promise(async (res, rej) => {
@@ -89,7 +91,7 @@ export const crawlAznListingsWithSellercentral = (sellerCentral, origin, task) =
       const product = task.aznListings.pop();
       if (!product) continue;
       const queue = queueIterator.next().value;
-      const { link: productLink, asin } = product;
+      const { link: productLink, asin, s_hash } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -102,7 +104,7 @@ export const crawlAznListingsWithSellercentral = (sellerCentral, origin, task) =
         );
         await isProcessComplete(queue);
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -113,6 +115,8 @@ export const crawlAznListingsWithSellercentral = (sellerCentral, origin, task) =
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: sellerCentral,
+        requestId: uuid(),
+        s_hash,
         addProduct,
         lookupRetryLimit: 0,
         targetShop: {

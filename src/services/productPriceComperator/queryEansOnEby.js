@@ -3,6 +3,7 @@ import {
   queryEansOnEbyQueue,
   QueryQueue,
   queryURLBuilder,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -82,7 +83,7 @@ export const queryEansOnEby = async (ebay, task) =>
       task.progress.queryEansOnEby.pop();
       if (!product) continue;
 
-      const { ean } = product;
+      const { ean, s_hash } = product;
       const foundProducts = [];
 
       const addProduct = async (product) => {
@@ -100,7 +101,7 @@ export const queryEansOnEby = async (ebay, task) =>
         );
         await isProcessComplete();
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         completedProducts.push(product._id);
         await handleQueryEansOnEbyNotFound(salesDbName, infos, product, queue);
         await isProcessComplete();
@@ -117,6 +118,8 @@ export const queryEansOnEby = async (ebay, task) =>
       const queryLink = queryURLBuilder(ebay.queryUrlSchema, query).url;
       queue.pushTask(queryEansOnEbyQueue, {
         retries: 0,
+        requestId: uuid(),
+        s_hash,
         shop: ebay,
         targetShop: {
           prefix: "",

@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   queryProductPageQueue,
   QueryQueue,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -66,7 +67,7 @@ export const lookupCategory = async (ebay, origin, task) =>
       task.progress.lookupCategory.pop();
       if (!product) continue;
 
-      const { lnk: productLink, esin } = product;
+      const { lnk: productLink, esin, s_hash } = product;
 
       const queryUrl = "https://www.ebay.de/itm/" + esin;
 
@@ -99,6 +100,8 @@ export const lookupCategory = async (ebay, origin, task) =>
         retries: 0,
         shop: ebay,
         addProduct,
+        requestId: uuid(),
+        s_hash,
         targetShop: {
           name: shopDomain,
           d: shopDomain,

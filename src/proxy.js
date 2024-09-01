@@ -1,169 +1,125 @@
-import http from "http";
+import http, { request } from "http";
 import url from "url";
 import net from "net";
 import "dotenv/config";
 import { config } from "dotenv";
-
-import { allowed } from "@dipmaxtech/clr-pkg";
-import UpcomingRequestCache from "./util/UpcomingRequestCache.js";
+import { allowed, uuid } from "@dipmaxtech/clr-pkg";
+import { getProxyForwardUrl } from "./util/proxy/getProxyForwardUrl.js";
+import { generateProxyConnectRequest } from "./util/proxy/generateProxyConnectRequest.js";
+import { handleForbidden } from "./util/proxy/handleForbidden.js";
+import { handleClientsocketError } from "./util/proxy/handleClientsocketError.js";
+import { handleServerError } from "./util/proxy/handleServerError.js";
+import UpcomingRequestCachev2 from "./util/UpcomingRequestCachev2.js";
+import {
+  handleCompleted,
+  handleNotify,
+  handleProxyChange,
+  handleRegister,
+  handleTerminate,
+} from "./util/proxy/proxyServices.js";
 
 config({
   path: [`.env.${process.env.NODE_ENV}`],
 });
 
-const activeConnections = new Map();
+const status = [
+  "connection established",
+  "ok",
+  "200",
+  "200 connection established",
+];
+const proxyConnectedStr =
+  "HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n";
 
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 const PORT = 8080;
 
-const hosts = {
+const proxies = {
   de: process.env.PROXY_GATEWAY_URL_DE || "",
   mix: process.env.PROXY_GATEWAY_URL || "",
 };
+const upReqv2 = new UpcomingRequestCachev2();
 
-const upcomingRequest = new UpcomingRequestCache();
-
-function handleErrors(res, statusCode, message) {
-  res.writeHead(statusCode, { "Content-Type": "text/plain" });
-  return res.end(message);
-}
-function handleSuccess(res, statusCode, message) {
-  res.writeHead(statusCode, { "Content-Type": "application/json" });
-  return res.end(JSON.stringify({ status: "ok", message }));
-}
-
-function terminateConnection(url) {
-  const connection = activeConnections.get(url);
-  if (connection) {
-    try {
-      connection.clientSocket.destroy();
-      connection.proxySocket.destroy();
-      activeConnections.delete(url);
-    } catch (error) {
-      console.error(`Failed to terminate connection for ${url}:`, error);
-    }
-  }
-}
-
-// Create your custom server and define the logic
 const server = http.createServer((req, res) => {
   if (!req.url) return;
   const parsedUrl = url.parse(req.url, true);
-  if (req.method === "GET" && parsedUrl.pathname === "/change-proxy") {
-    const query = parsedUrl.query;
-
-    if (!query.proxy) {
-      handleErrors(res, 400, "Bad Request");
-    }
-    if (query.proxy === "de") {
-      host = process.env.PROXY_GATEWAY_URL_DE;
-    } else if (query.proxy === "mix") {
-      host = process.env.PROXY_GATEWAY_URL;
-    }
-    handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
-  } else if (req.method === "GET" && parsedUrl.pathname === "/notify") {
-    const query = parsedUrl.query;
-    if (!query) {
-      handleErrors(res, 400, "Bad Request");
-    }
-    const { proxy, host, cnt, terminate } = query;
-    switch (true) {
-      case proxy === "de":
-        if (terminate) {
-          terminateConnection(host);
-        }
-        upcomingRequest.set(host, hosts.de, Number(cnt));
+  const { pathname, query } = parsedUrl;
+  const { method } = req;
+  if (method === "GET") {
+    switch (pathname) {
+      case "/change-proxy":
+        host = handleProxyChange(query, res);
         break;
-      case proxy === "mix":
-        if (terminate) {
-          terminateConnection(host);
-        }
-        upcomingRequest.set(host, hosts.mix, Number(cnt));
+      case "/notify":
+        handleNotify(upReqv2, query, res, proxies);
+        break;
+      case "/terminate":
+        handleTerminate(upReqv2, query, res);
+        break;
+      case "/register":
+        handleRegister(upReqv2, query, res);
+        break;
+      case "/completed":
+        handleCompleted(upReqv2, query, res);
+        break;
+      default:
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("Not Found");
         break;
     }
-    handleSuccess(res, 200, `Request proxy changed to ${query.proxy}`);
-  } else if (req.method === "GET" && parsedUrl.pathname === "/terminate") {
-    const query = parsedUrl.query;
-    if (!query) {
-      handleErrors(res, 400, "Bad Request");
-    }
-    const { host } = query;
-    console.log(`Terminating connection to ${url} due to status ${status}`);
-    terminateConnection(host);
-    handleSuccess(res, 200, `Request proxy terminated`);
-  } else {
-    // Handle other requests with a 404 Not Found response
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Not Found");
   }
 });
 
 server.on("connect", (req, clientSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
-
   if (!allowed.some((domain) => hostname.includes(domain))) {
-    upcomingRequest.kill(hostname);
-    const responseMessage = "This domain is blocked.";
-    const responseHeaders = [
-      "HTTP/1.1 403 Forbidden",
-      "Content-Type: text/plain",
-      `Content-Length: ${Buffer.byteLength(responseMessage)}`,
-      "Connection: close",
-      "\r\n",
-    ].join("\r\n");
-    clientSocket.end(`${responseHeaders}${responseMessage}`);
+    upReqv2.kill(hostname);
+    handleForbidden(clientSocket);
     return;
   }
+  const socketId = uuid();
+  //@ts-ignore
+  clientSocket.id = socketId;
+
   const targetHostPort = `${hostname}:${port}`;
-  const requestHost = upcomingRequest.get(hostname) || host;
-  console.log(hostname, "requestHost:", requestHost);
 
-  const proxyUrlStr = `http://${username}:${password}@${requestHost}`;
+  let requestId = upReqv2.getRequestId(hostname);
+  upReqv2.setSockets(requestId, hostname, [clientSocket]);
+  const requestHost = upReqv2.getProxyUrl(requestId) || host;
+  console.log('Host: ',hostname, " Id: ", requestId,'Proxy: ', requestHost);
 
-  const forwardProxyUrl = new URL(proxyUrlStr);
-
-  const proxyAuth = Buffer.from(
-    `${forwardProxyUrl.username}:${forwardProxyUrl.password}`
-  ).toString("base64");
-
-  const proxyConnectRequest = [
-    `CONNECT ${targetHostPort} HTTP/1.1`,
-    `Host: ${targetHostPort}`,
-    `Proxy-Authorization: Basic ${proxyAuth}`,
-    "Connection: keep-alive",
-    "",
-    "",
-  ].join("\r\n");
+  const { forwardProxyUrl, proxyAuth } = getProxyForwardUrl(
+    username,
+    password,
+    requestHost
+  );
+  const proxyConnectRequest = generateProxyConnectRequest(
+    targetHostPort,
+    proxyAuth
+  );
 
   establishedConnection(
     clientSocket,
     forwardProxyUrl,
     proxyConnectRequest,
     head,
-    hostname
+    hostname,
+    requestId
   );
 
+  clientSocket.on("close", () => {
+    upReqv2.removeSocket(requestId, hostname, socketId);
+  });
+
   clientSocket.on("error", (err) => {
-    terminateConnection(hostname);
-    if (err.code === "EPIPE") {
-      console.error("EPIPE error: attempted to write to a closed socket");
-      clientSocket.end();
-    } else if (err.code === "ECONNABORTED") {
-      console.error("ECONNABORTED error: connection aborted");
-      clientSocket.end();
-    } else if (err.code === "ECONNRESET") {
-      console.error("ECONNRESET error: connection reset by peer");
-      clientSocket.end();
-    } else {
-      console.error("Socket error:", err);
-      clientSocket.end();
-    }
+    upReqv2.removeSocket(requestId, hostname, socketId);
+    handleClientsocketError(clientSocket, err);
   });
 });
 
-console.log("Listening on port 8080");
+console.log("Listening on port " + PORT);
 server.listen(PORT);
 
 server.on("error", (err) => {
@@ -175,59 +131,42 @@ const establishedConnection = (
   forwardProxyUrl,
   proxyConnectRequest,
   head,
-  hostname
+  hostname,
+  requestId
 ) => {
   const proxySocket = net.connect(
     forwardProxyUrl.port,
     forwardProxyUrl.hostname
   );
+  const proxySocketId = uuid();
+  //@ts-ignore
+  proxySocket.id = proxySocketId;
 
   proxySocket.once("connect", () => {
-    // Send the CONNECT request with Basic Auth to the forward proxy
     proxySocket.write(proxyConnectRequest);
 
-    // Wait for the proxy's response
     proxySocket.once("data", (chunk) => {
-      const chunkStr = chunk.toString();
-      // Assuming the proxy responds with a 200 connection established
-      if (
-        chunkStr.toLowerCase().includes("connection established") ||
-        chunkStr.toLowerCase().includes("ok") ||
-        chunkStr.toLowerCase().includes("200")
-      ) {
-        clientSocket.write(
-          "HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n"
-        );
+      const chunkStr = chunk.toString().toLowerCase();
+      if (status.some((s) => chunkStr.includes(s))) {
+        clientSocket.write(proxyConnectedStr);
         proxySocket.write(head);
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
-        activeConnections.set(hostname, { clientSocket, proxySocket });
+        upReqv2.setSockets(requestId, hostname, [proxySocket]);
       } else {
-        const responseMessage = "Internal Server Error.";
-        const responseHeaders = [
-          "HTTP/1.1 500 Internal Server Error",
-          "Content-Type: text/plain",
-          `Content-Length: ${Buffer.byteLength(responseMessage)}`,
-          "Connection: close",
-          "\r\n",
-        ].join("\r\n");
-        clientSocket.end(`${responseHeaders}${responseMessage}`);
+        upReqv2.removeSocket(requestId, hostname, clientSocket.id);
+        handleServerError(clientSocket);
       }
     });
   });
 
+  proxySocket.on("close", () => {
+    upReqv2.removeSocket(requestId, hostname, proxySocketId);
+  });
+
   proxySocket.on("error", (err) => {
-    console.log("err:", err);
-    const responseMessage = "Internal Proxy Server Error.";
-    const responseHeaders = [
-      "HTTP/1.1 500 Internal Server Error",
-      "Content-Type: text/plain",
-      `Content-Length: ${Buffer.byteLength(responseMessage)}`,
-      "Connection: close",
-      "\r\n",
-    ].join("\r\n");
-    clientSocket.end(`${responseHeaders}${responseMessage}`);
-    terminateConnection(hostname);
+    handleServerError(clientSocket);
+    upReqv2.removeSocket(requestId, hostname, proxySocketId);
   });
 };
 

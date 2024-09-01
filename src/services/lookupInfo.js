@@ -2,6 +2,7 @@ import {
   QueryQueue,
   globalEventEmitter,
   querySellerInfosQueue,
+  uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -137,7 +138,7 @@ export default async function lookupInfo(task) {
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
-      const { asin, lnk: productLink } = product;
+      const { asin, lnk: productLink, s_hash } = product;
       const ean = getEanFromProduct(product);
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -153,7 +154,7 @@ export default async function lookupInfo(task) {
         queue.total++;
         await isProcessComplete(queue);
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         await handleLookupInfoNotFound(shopDomain, productLink);
         infos.shops[shopDomain]++;
@@ -171,6 +172,8 @@ export default async function lookupInfo(task) {
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
+        s_hash,
+        requestId: uuid(),
         targetShop: {
           prefix: "",
           d: shopDomain,

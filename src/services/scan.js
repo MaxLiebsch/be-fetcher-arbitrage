@@ -2,6 +2,7 @@ import {
   ScanQueue,
   scanShop,
   StatService,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { upsertSiteMap } from "./db/mongo.js";
 import { handleResult } from "../handleResult.js";
@@ -81,6 +82,7 @@ export default async function scan(task) {
 
     queue.pushTask(scanShop, {
       parentPath: "sitemap",
+      requestId: uuid(),
       shop: shops[shopDomain],
       infos,
       categoriesHeuristic: infos.categoriesHeuristic,

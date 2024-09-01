@@ -2,6 +2,7 @@ import {
   QueryQueue,
   queryProductPageQueue,
   sleep,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -28,6 +29,7 @@ import {
 } from "../util/crawlEanHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { removeSearchParams } from "../util/removeSearch.js";
+import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
@@ -59,10 +61,7 @@ export default async function crawlEan(task) {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit =
-    getProductLimit(products.length, productLimit);
-    console.log('products.length:', products.length)
-    console.log('_productLimit:', _productLimit)
+    const _productLimit = getProductLimit(products.length, productLimit);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -82,7 +81,7 @@ export default async function crawlEan(task) {
 
     const isComplete = async () => {
       if (infos.total === _productLimit && !queue.idle()) {
-        await sleep(30000);
+        await sleep(60000);
         await checkProgress({
           queue,
           infos,
@@ -123,7 +122,7 @@ export default async function crawlEan(task) {
 
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
-      let { lnk: productLink } = product;
+      let { lnk: productLink, s_hash } = product;
       productLink = removeSearchParams(productLink);
 
       const shopDomain = shop.d;
@@ -140,18 +139,20 @@ export default async function crawlEan(task) {
         await isComplete();
       };
       const handleNotFound = async (cause) => {
-        await handleCrawlEanNotFound(
-          shopDomain,
-          infos,
-          queue,
-          cause,
-          productLink
-        );
+        infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
+
+        await handleCrawlEanNotFound(shopDomain, cause, productLink);
+
         await isComplete();
       };
 
       queue.pushTask(queryProductPageQueue, {
         retries: 0,
+        s_hash,
+        requestId: uuid(),
         shop,
         addProduct,
         retriesOnFail: MAX_RETRIES_SCRAPE_EAN,

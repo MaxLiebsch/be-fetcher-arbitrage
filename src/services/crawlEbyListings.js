@@ -1,4 +1,4 @@
-import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue, uuid } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -108,7 +108,7 @@ async function crawlEbyListings(task) {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      const { lnk: productLink, esin } = product;
+      const { lnk: productLink, esin, s_hash } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -122,7 +122,7 @@ async function crawlEbyListings(task) {
         await isComplete();
       };
 
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -135,7 +135,9 @@ async function crawlEbyListings(task) {
       queue.pushTask(queryProductPageQueue, {
         retries: 0,
         shop,
+        s_hash,
         addProduct,
+        requestId: uuid(),
         onNotFound: handleNotFound,
         addProductInfo,
         queue,

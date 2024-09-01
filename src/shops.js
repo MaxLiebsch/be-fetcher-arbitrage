@@ -11,6 +11,7 @@ export const shops = {
         wait: false,
       },
     ],
+    allowedHosts: ["cdn.idealo.com"],
     active: true,
     categories: {
       exclude: ["flug", "flüge", "hotel"],
@@ -96,7 +97,7 @@ export const shops = {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "image",
-        path: "image[0]"
+        path: "image[0]",
       },
       {
         sel: "script[type='application/ld+json']",
@@ -121,7 +122,7 @@ export const shops = {
         type: "parse_json_element",
         content: "sku",
         path: "sku",
-      }
+      },
     ],
     productList: [
       {
@@ -772,7 +773,7 @@ export const shops = {
       pause: true,
       min: 700,
       max: 800,
-    }, 
+    },
     product: [
       {
         sel: "script[type='application/ld+json']",
@@ -902,6 +903,7 @@ export const shops = {
   "alza.de": {
     action: [],
     active: true,
+    allowedHosts: ["cdn.alza.cz", "1603811301.rsc.cdn77.org"],
     categories: {
       visible: false,
       exclude: ["wie-baue"],
@@ -951,7 +953,7 @@ export const shops = {
       min: 700,
       max: 800,
     },
-    product: [ 
+    product: [
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
@@ -1340,6 +1342,12 @@ export const shops = {
   "dm.de": {
     action: [],
     active: true,
+    allowedHosts: [
+      "product-search.services.dmtech.com",
+      "assets.dm.de",
+      "products.dm.de",
+      "content.services.dmtech.com",
+    ],
     categories: {
       exclude: ["marken"],
       sel: "nav[id=categoryNavigationContainer] a",
@@ -1512,6 +1520,7 @@ export const shops = {
   "fressnapf.de": {
     action: [],
     active: true,
+    allowedHosts: ["fressnapf.app.baqend.com"],
     categories: {
       exclude: ["service", "magazin"],
       sel: "div[id=__navigation] ul.nav-level-1 a",
@@ -1670,6 +1679,7 @@ export const shops = {
   "mueller.de": {
     action: [],
     active: true,
+    allowedHosts: ["static.mueller.de"],
     categories: {
       exclude: [
         "marken",
@@ -2675,6 +2685,7 @@ export const shops = {
         category: "default",
       },
     ],
+    allowedHosts: ["d29zc3pk4tzg0k.cloudfront.net"],
     mimic: "div[id=a-page]",
     crawlActions: [],
     actions: [],

@@ -1,4 +1,4 @@
-import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue, uuid } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
@@ -109,7 +109,7 @@ export default async function crawlAznListings(task) {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      const { asin, lnk: productLink } = product;
+      const { asin, lnk: productLink , s_hash} = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -122,7 +122,7 @@ export default async function crawlAznListings(task) {
         );
         await isCompleted();
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -134,6 +134,8 @@ export default async function crawlAznListings(task) {
         "https://www.amazon.de/dp/product/" + asin + "?language=de_DE";
 
       queue.pushTask(queryProductPageQueue, {
+        requestId: uuid(),
+        s_hash,
         retries: 0,
         shop: amazonShop,
         addProduct,

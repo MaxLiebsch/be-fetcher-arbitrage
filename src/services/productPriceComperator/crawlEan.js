@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   queryProductPageQueue,
   QueryQueue,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { updateTask } from "../../services/db/util/tasks.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -75,9 +76,9 @@ export const crawlEans = async (shop, task) =>
       task.progress.crawlEan.pop();
       const product = task.crawlEan.pop();
       if (!product) continue;
-      let { lnk: productLink } = product;
+      let { lnk: productLink, s_hash } = product;
       productLink = removeSearchParams(productLink);
-      
+
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         completedProducts.push(product._id);
@@ -93,10 +94,13 @@ export const crawlEans = async (shop, task) =>
       };
       const handleNotFound = async (cause) => {
         completedProducts.push(product._id);
+        infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         await handleCrawlEanNotFound(
           salesDbName,
           productLink,
-          shopDomain,
           cause
         );
         await isProcessComplete();
@@ -106,6 +110,8 @@ export const crawlEans = async (shop, task) =>
         retries: 0,
         shop,
         addProduct,
+        requestId: uuid(),
+        s_hash,
         targetShop: {
           name: shopDomain,
           prefix: "",

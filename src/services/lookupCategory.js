@@ -1,4 +1,4 @@
-import { QueryQueue, queryProductPageQueue } from "@dipmaxtech/clr-pkg";
+import { QueryQueue, queryProductPageQueue, uuid } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
@@ -89,7 +89,7 @@ async function lookupCategory(task) {
 
     for (let index = 0; index < products.length; index++) {
       let { shop: srcShop, product } = products[index];
-      const { lnk: productLink, esin } = product;
+      const { lnk: productLink, esin, s_hash } = product;
 
       const queryUrl = "https://www.ebay.de/itm/" + esin;
 
@@ -121,6 +121,8 @@ async function lookupCategory(task) {
       queue.pushTask(queryProductPageQueue, {
         retries: 0,
         shop: toolInfo,
+        s_hash,
+        requestId: uuid(),
         addProduct,
         targetShop: {
           name: shopDomain,

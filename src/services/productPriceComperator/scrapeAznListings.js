@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   queryProductPageQueue,
   QueryQueue,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { defaultQuery, proxyAuth } from "../../constants.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -60,7 +61,7 @@ export const scrapeAznListings = (amazon, origin, task) =>
       task.progress.aznListings.pop();
       const product = task.aznListings.pop();
       if (!product) continue;
-      const { lnk: productLink, asin } = product;
+      const { lnk: productLink, asin, s_hash } = product;
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
         await handleAznListingProductInfo(
@@ -73,7 +74,7 @@ export const scrapeAznListings = (amazon, origin, task) =>
         );
         await isProcessComplete();
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -87,6 +88,8 @@ export const scrapeAznListings = (amazon, origin, task) =>
       queue.pushTask(queryProductPageQueue, {
         retries: 0,
         shop: amazon,
+        requestId: uuid(),
+        s_hash,
         addProduct,
         onNotFound: handleNotFound,
         addProductInfo,

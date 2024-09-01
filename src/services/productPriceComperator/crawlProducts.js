@@ -5,6 +5,7 @@ import {
   globalEventEmitter,
   roundToTwoDecimals,
   sleep,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../../services/productPriceComparator.js";
 import {
@@ -212,6 +213,7 @@ export const crawlProducts = async (shop, task) =>
       };
       queue.pushTask(crawlSubpage, {
         shop,
+        requestId: uuid(),
         addProduct: handleCrawledProduct,
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,

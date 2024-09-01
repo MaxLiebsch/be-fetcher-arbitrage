@@ -2,6 +2,7 @@ import {
   globalEventEmitter,
   queryProductPageQueue,
   QueryQueue,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { defaultQuery, proxyAuth } from "../../constants.js";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -10,6 +11,7 @@ import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
 } from "../../util/scrapeEbyListingsHelper.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 
 export const crawlEbyListings = (ebay, task) =>
   new Promise(async (res, rej) => {
@@ -61,7 +63,7 @@ export const crawlEbyListings = (ebay, task) =>
       const product = task.ebyListings.pop();
       task.progress.ebyListings.pop();
       if (!product) continue;
-      const { link: productLink, esin } = product;
+      const { link: productLink, esin, s_hash } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -71,11 +73,11 @@ export const crawlEbyListings = (ebay, task) =>
           { productInfo, url },
           product,
           queue,
-          {timestamp: 'dealEbyUpdatedAt', taskIdProp: "dealEbyTaskId"}
+          { timestamp: "dealEbyUpdatedAt", taskIdProp: "dealEbyTaskId" }
         );
         await isProcessComplete();
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         console.log("not found at all");
         infos.notFound++;
         infos.total++;
@@ -90,6 +92,8 @@ export const crawlEbyListings = (ebay, task) =>
         retries: 0,
         shop: ebay,
         addProduct,
+        requestId: uuid(),
+        s_hash,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,

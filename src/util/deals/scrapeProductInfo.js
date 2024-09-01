@@ -1,11 +1,11 @@
-import { queryProductPageQueue } from "@dipmaxtech/clr-pkg";
+import { queryProductPageQueue, uuid } from "@dipmaxtech/clr-pkg";
 import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
 import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants.js";
 import { removeSearchParams } from "../removeSearch.js";
 
 export async function scrapeProductInfo(queue, source, product) {
   return new Promise((res, rej) => {
-    let { lnk: productLink } = product;
+    let { lnk: productLink, s_hash } = product;
     productLink = removeSearchParams(productLink);
     const { d: shopDomain } = source;
     const addProduct = async (product) => {};
@@ -21,6 +21,8 @@ export async function scrapeProductInfo(queue, source, product) {
     queue.pushTask(queryProductPageQueue, {
       retries: 0,
       shop: source,
+      requestId: uuid(),
+      s_hash,
       addProduct,
       targetShop: {
         name: shopDomain,

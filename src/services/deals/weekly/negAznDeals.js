@@ -1,13 +1,16 @@
 import { getShop } from "../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
-import { queryProductPageQueue, QueryQueue } from "@dipmaxtech/clr-pkg";
+import { queryProductPageQueue, QueryQueue, uuid } from "@dipmaxtech/clr-pkg";
 import {
   defaultAznDealTask,
   defaultQuery,
   proxyAuth,
 } from "../../../constants.js";
 import { differenceInHours } from "date-fns";
-import { deleteArbispotterProduct } from "../../db/util/crudArbispotterProduct.js";
+import {
+  deleteArbispotterProduct,
+  updateArbispotterProductQuery,
+} from "../../db/util/crudArbispotterProduct.js";
 import { getProductLimit } from "../../../util/getProductLimit.js";
 import {
   handleAznListingNotFound,
@@ -122,9 +125,10 @@ export async function scrapeAznListings(
   processProps = defaultAznDealTask
 ) {
   return new Promise((res, rej) => {
+    const { taskIdProp } = processProps;
     const { d } = target;
     const { d: shopDomain } = source;
-    const { lnk: productLink } = product;
+    const { lnk: productLink, s_hash } = product;
     const addProduct = async (product) => {};
     const addProductInfo = async ({ productInfo, url }) => {
       await handleAznListingProductInfo(
@@ -137,17 +141,27 @@ export async function scrapeAznListings(
       );
       res("done");
     };
-    const handleNotFound = async () => {
+    const handleNotFound = async (cause) => {
       infos.notFound++;
       infos.total++;
       queue.total++;
-      await handleAznListingNotFound(shopDomain, productLink);
+      if (cause === "timeout") {
+        await updateArbispotterProductQuery(shopDomain, productLink, {
+          $unset: {
+            [taskIdProp]: "",
+          },
+        });
+      } else {
+        await handleAznListingNotFound(shopDomain, productLink);
+      }
       res("done");
     };
 
     queue.pushTask(queryProductPageQueue, {
       retries: 0,
       shop: target,
+      s_hash,
+      requestId: uuid(),
       addProduct,
       onNotFound: handleNotFound,
       addProductInfo,

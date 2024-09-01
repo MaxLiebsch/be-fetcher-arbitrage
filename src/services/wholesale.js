@@ -4,6 +4,7 @@ import {
   querySellerInfosQueue,
   yieldQueues,
   globalEventEmitter,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult.js";
@@ -231,7 +232,7 @@ export default async function wholesale(task) {
         }
       };
 
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -263,6 +264,8 @@ export default async function wholesale(task) {
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
+        requestId: uuid(),
+        s_hash: productId.toString(),
         addProduct,
         targetShop: {
           prefix: "",

@@ -2,6 +2,7 @@ import {
   QueryQueue,
   globalEventEmitter,
   querySellerInfosQueue,
+  uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
@@ -166,7 +167,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value;
       const product = products[index];
-      const { lnk: productLink, asin } = product;
+      const { lnk: productLink, asin, s_hash } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {
@@ -181,7 +182,7 @@ export default async function crawlAznListingsWithSellercentral(task) {
         );
         await isCompleted(queue);
       };
-      const handleNotFound = async () => {
+      const handleNotFound = async (cause) => {
         infos.notFound++;
         infos.total++;
         queue.total++;
@@ -197,6 +198,8 @@ export default async function crawlAznListingsWithSellercentral(task) {
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
+        requestId: uuid(),
+        s_hash,
         addProduct,
         lookupRetryLimit: 0,
         targetShop: {
