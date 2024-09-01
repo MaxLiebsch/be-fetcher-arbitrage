@@ -38,6 +38,7 @@ describe("query eans on eby", () => {
       concurrency: 4,
       type: "QUERY_EANS_ON_EBY",
       shopDomain,
+      id: "queryEansOnEby",
       proxyType: 'mix',
       productLimit,
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),

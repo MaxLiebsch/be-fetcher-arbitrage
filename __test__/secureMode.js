@@ -1,8 +1,13 @@
 import { proxyAuth } from "../src/constants.js";
-
-import { getPage, mainBrowser } from "@dipmaxtech/clr-pkg";
+import {
+  notifyProxyChange,
+  getPage,
+  mainBrowser,
+  registerRequest,
+  uuid,
+  terminateConnection,
+} from "@dipmaxtech/clr-pkg";
 import { getShop } from "../src/services/db/util/shops.js";
-import { changeRequestProxy } from "../src/util/changeRequestProxy.js";
 
 // const proxyAuth = {
 //   host: "rp.proxyscrape.com:6060",
@@ -12,26 +17,51 @@ import { changeRequestProxy } from "../src/util/changeRequestProxy.js";
 
 const secureMode = async () => {
   const browser = await mainBrowser(
-    { id: "test" },
+    //@ts-ignore
+    { id: "test", type: "CRAWL_EAN", productLimit: 1, statistics: {} },
     proxyAuth,
     "127.0.6533.119"
   );
 
-  const shop = await getShop("saturn.de");
+  const shop = await getShop("alza.de");
   const { exceptions } = shop;
-  const lnk = "https://www.saturn.de";
+  // const lnk = "https://www.browserleaks.com/ip";
+  const lnk =
+    "https://www.alza.de/amazon-echo-show-8-2nd-gen-charcoal-d6994664.htm";
+  const requestId = uuid();
+  const proxyType = "de";
   const page = await getPage({
     browser,
     shop,
     requestCount: 1,
     disAllowedResourceTypes: [],
     exceptions,
-    proxyType: "de",
+    proxyType,
+    requestId,
+    allowedHosts: shop.allowedHosts,
   });
 
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
-    await changeRequestProxy("de", lnk, 2); 
+    console.log("Before: ", url, new Date().toISOString());
+    if (proxyType === "de") {
+      await notifyProxyChange(
+        "de",
+        url,
+        requestId,
+        Date.now(),
+        shop.allowedHosts,
+        true,
+        2
+      );
+    } else {
+      await registerRequest(
+        url,
+        requestId,
+        shop.allowedHosts || [],
+        Date.now()
+      );
+    }
     return originalGoto.apply(this, [url, options]);
   };
   // const page = await browser.newPage();
@@ -41,6 +71,7 @@ const secureMode = async () => {
     const response = await page.reload();
     const newStatus = response?.status();
   }
+  // await browser.close()
 };
 
 secureMode().then(() => console.log("Secure mode test passed"));
