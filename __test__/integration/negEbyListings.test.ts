@@ -64,6 +64,7 @@ describe("crawl eby listings", () => {
     const infos = await negEbyDeals({
       proxyType,
       productLimit,
+      type: "CRAWL_EBY_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "",
       concurrency: 4,

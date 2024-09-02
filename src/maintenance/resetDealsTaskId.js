@@ -10,7 +10,22 @@ const resetDealTaskId = async () => {
     const shop = activeShops[index];
     await spotter
       .collection(shop.d)
-      .updateMany({}, { $unset: { dealAznTaskId: "", dealEbyTaskId: "" } });
+      .updateMany(
+        {},
+        {
+          $unset: {
+            dealAznTaskId: "",
+            dealEbyTaskId: "",
+            eby_taskId: "",
+            aznUpdatedAt: "",
+            azn_taskId: "",
+            ebyUpdatedAt: "",
+            dealAznUpdatedAt: "",
+            dealEbyUpdatedAt: "",
+            availUpdatedAt: "",
+          },
+        }
+      );
   }
 };
 

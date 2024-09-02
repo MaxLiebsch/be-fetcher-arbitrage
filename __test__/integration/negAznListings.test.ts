@@ -61,6 +61,7 @@ describe("crawl azn listings", () => {
     const infos = await negAznDeals({
       proxyType: "mix", 
       productLimit,
+      type: "CRAWL_AZN_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "",
       concurrency: 4,

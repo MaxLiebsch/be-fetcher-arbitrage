@@ -44,6 +44,7 @@ describe("pos azn listign", () => {
     const infos = await dealOnAzn({
       shopDomain,
       productLimit,
+      type: "DEALS_ON_AZN",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "",
       proxyType: "mix",

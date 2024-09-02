@@ -3,8 +3,8 @@ function handleErrors(res, statusCode, message) {
   return res.end(message);
 }
 function handleSuccess(res, statusCode, message) {
-  res.writeHead(statusCode, { "Content-Type": "application/json" });
-  return res.end(JSON.stringify({ status: "ok", message }));
+  res.writeHead(statusCode, { "Content-Type": "text/plain" });
+  return res.end(message);
 }
 function handleBadRequest(res, message) {
   handleErrors(res, 400, message);
@@ -23,19 +23,18 @@ export function handleNotify(upReqv2, query, res, proxies) {
     return handleBadRequest(res, "Bad Request");
   }
   const { de, mix } = proxies;
-  const { proxy, host, cnt, hosts, requestId, time } = query;
+  const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
-  const parsedCnt = Number(cnt);
-  const parsedHosts = JSON.parse(decodeURIComponent(hosts))
+  const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   switch (true) {
     case proxy === "de":
-      upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime, parsedCnt);
+      upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
       break;
     default:
-      upReqv2.setProxy(requestId, host, parsedHosts,mix, parsedTime, parsedCnt);
+      upReqv2.setProxy(requestId, host, parsedHosts, mix, parsedTime);
       break;
   }
-  handleSuccess(res, 200, `Request proxy changed to ${proxy}`);
+  handleSuccess(res, 200, `Proxy changed to ${proxy} for ${requestId}`);
 }
 
 export function handleTerminate(upReqv2, query, res) {
@@ -53,10 +52,15 @@ export function handleRegister(upReqv2, query, res) {
   if (!requestId) {
     return handleBadRequest(res, "Bad Request");
   }
-  const parsedHosts = JSON.parse(decodeURIComponent(hosts))
+  const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   const parsedTime = Number(time);
+
+  if (upReqv2.has(requestId)) {
+    return handleSuccess(res, 200, `${requestId} Request already registered`);
+  }
+
   upReqv2.register(requestId, host, parsedHosts, parsedTime);
-  handleSuccess(res, 200, `Request registered`);
+  handleSuccess(res, 200, `Request registered ` + requestId);
 }
 
 export function handleCompleted(upReqv2, query, res) {

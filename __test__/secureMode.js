@@ -51,7 +51,6 @@ const secureMode = async () => {
         requestId,
         Date.now(),
         shop.allowedHosts,
-        true,
         2
       );
     } else {

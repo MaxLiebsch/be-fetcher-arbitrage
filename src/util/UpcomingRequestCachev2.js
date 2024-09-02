@@ -1,9 +1,9 @@
 import { LRUCache } from "lru-cache";
 import { TTL_UPCOMING_REQUEST } from "../constants.js";
 
-const upcomingRequest = [
-  [{ requestId: { proxies: [], hosts: { host1: { sockets: [] } } } }],
-];
+// const upcomingRequest = [
+//   [{ requestId: { proxy: null, hosts: { host1: { sockets: [] } } } }],
+// ];
 
 class UpcomingRequestCachev2 {
   constructor() {
@@ -48,23 +48,24 @@ class UpcomingRequestCachev2 {
       const hosts = Object.keys(request.hosts);
       if (hosts.length > 0) {
         hosts.forEach((host) => {
-          request.hosts[host].sockets.forEach((socket) => {
-            try {
-              socket.destroy();
-              console.log("Socket destroyed:", socket.id , "for", requestId);
-            } catch (error) {
-              console.error(
-                `Failed to terminate connection for ${host}:`,
-                error
-              );
-            }
-            // delete request.hosts[host]; we don't need to delete the host
-          });
-          request.hosts[host].sockets = [];
+          if (request.hosts[host].sockets.length > 0) {
+            request.hosts[host].sockets.forEach((socket) => {
+              try {
+                socket.destroy();
+                console.log("Socket destroyed:", socket.id, "for", requestId);
+              } catch (error) {
+                console.error(
+                  `Failed to terminate connection for ${host}:`,
+                  error
+                );
+              }
+              // delete request.hosts[host]; we don't need to delete the host
+            });
+            request.hosts[host].sockets = [];
+          }else{
+            console.log("No sockets to destroy for", requestId);
+          }
         });
-      }
-      if(request.proxies.length > 0) {
-        request.proxies = [];
       }
       this.cache.set(requestId, request);
     }
@@ -74,7 +75,7 @@ class UpcomingRequestCachev2 {
     let request = this.cache.get(requestId);
     if (!request) {
       const request = {
-        proxies: [],
+        proxy: null,
         hosts: { [host]: { sockets: [] } },
         time,
       };
@@ -138,34 +139,17 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  setProxy(requestId, host, hosts, proxy, time, cnt = 1) { 
-    let request = this.cache.get(requestId) || { proxies: [], hosts: {} };
+  setProxy(requestId, host, hosts, proxy, time) {
+    let request = this.cache.get(requestId) || { proxy: null, hosts: {} };
     request["time"] = time;
-    request.proxies = request.proxies.concat(new Array(cnt).fill(proxy));
-    if (!request.hosts[host]) {
-      request.hosts[host] = { sockets: [] };
-    }
-    if (hosts.length > 0) {
-      hosts.forEach((host) => {
-        if (!request.hosts[host]) {
-          request.hosts[host] = { sockets: [] };
-        }
-      });
-    }
+    request.proxy = proxy;
     this.cache.set(requestId, request);
   }
 
   getProxyUrl(requestId) {
-    let request = this.cache.get(requestId); // { proxies: [], hosts: { host1: {sockets: []} } }
-    if (request && request.proxies.length > 0) {
-      const { proxies } = request;
-      const value = proxies[0]; // Remove and get the first element
-      // if (proxies.length === 0) {
-      //   this.cache.delete(requestId); // Remove the key if no values left
-      // } else {
-      //   this.cache.set(requestId, request); // Update the cache with the remaining values
-      // }
-      return value;
+    let request = this.cache.get(requestId); // { proxy: null, hosts: { host1: {sockets: []} } }
+    if (request && request.proxy) {
+      return request.proxy;
     }
     return null;
   }
