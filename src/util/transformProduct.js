@@ -1,6 +1,6 @@
 import { getManufacturer, prefixLink } from "@dipmaxtech/clr-pkg";
 import { createHash } from "./hash.js";
-
+import { parseAsinFromUrl } from "../../src/util/parseAsin.js";
 
 //Shopdomain must be a real domain, since it is used to prefix the link
 export const transformProduct = (crawlDataProduct, shopDomain) => {
@@ -41,14 +41,68 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
     ean,
     prime,
     esin,
+    a_fat,
+    e_fat,
     asin,
     a_qty,
     e_qty,
     qty_batchId,
     qty_prop,
-    updatedAt, 
+    updatedAt,
     image,
+    deletedAt,
+    a_props,
+    a_lnk,
+    ctgry,
+    pblsh,
+    brand,
+    shop,
   } = product;
+
+  if(shop){
+    delete product.shop
+  }
+
+  if (brand) {
+    delete product.brand;
+  }
+
+  if(typeof pblsh === "boolean"){
+    delete product.pblsh
+  }
+
+  if (typeof ctgry === "string") {
+    product.ctrgry = [ctgry];
+  }
+
+  if (!asin && a_lnk) {
+    const asin = parseAsinFromUrl(a_lnk);
+    if (asin) {
+      product.asin = asin;
+    }
+  }
+
+  if (deletedAt) {
+    delete product.deletedAt;
+  }
+
+  for (const key in product) {
+    if (product[key] === null) {
+      delete product[key];
+    }
+  }
+
+  if (a_props) {
+    delete product.a_props;
+  }
+
+  if (typeof a_fat === "boolean") {
+    delete product.a_fat;
+  }
+
+  if (typeof e_fat === 'boolean') {
+    delete product.e_fat;
+  }
 
   if (migrationCompleted) {
     delete product.migrationCompleted;
@@ -79,7 +133,7 @@ export const transformProduct = (crawlDataProduct, shopDomain) => {
 
   if (!ean_prop) {
     delete product.ean_prop;
-  }else{
+  } else {
     if (!eanUpdatedAt) {
       product.eanUpdatedAt = updatedAt;
     }

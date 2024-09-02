@@ -142,7 +142,12 @@ class UpcomingRequestCachev2 {
     if (request) {
       request["time"] = time;
       request.proxy = proxy;
+      console.log('Selected proxy: ', request.proxy)
       this.cache.set(requestId, request);
+    }else{
+      console.log('Request not found: ', requestId);
+      this.register(requestId, host, hosts, time);
+      this.setProxy(requestId, host, hosts, proxy, time);
     }
   }
 
