@@ -37,13 +37,14 @@ export function handleNotify(upReqv2, query, res, proxies) {
   handleSuccess(res, 200, `Proxy changed to ${proxy} for ${requestId}`);
 }
 
-export function handleTerminate(upReqv2, query, res) {
-  const { requestId } = query;
+
+export function handleTerminationPrevConnections(upReqv2, query, res) {
+  const { requestId, host, hosts, prevProxyType } = query;
   if (!requestId) {
     return handleBadRequest(res, "Bad Request");
   }
-  console.log(`Terminating connections for ${requestId}`);
-  upReqv2.terminateConnections(requestId);
+  const parsedHosts = JSON.parse(decodeURIComponent(hosts));
+  upReqv2.terminatePrevConnections(requestId, host, parsedHosts, prevProxyType);
   handleSuccess(res, 200, `Request ${requestId} proxy terminated`);
 }
 

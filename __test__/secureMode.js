@@ -6,6 +6,7 @@ import {
   registerRequest,
   uuid,
   terminateConnection,
+  registerRequestv3,
 } from "@dipmaxtech/clr-pkg";
 import { getShop } from "../src/services/db/util/shops.js";
 
@@ -23,11 +24,11 @@ const secureMode = async () => {
     "127.0.6533.119"
   );
 
-  const shop = await getShop("alza.de");
+  const shop = await getShop("dm.de");
   const { exceptions } = shop;
   // const lnk = "https://www.browserleaks.com/ip";
   const lnk =
-    "https://www.alza.de/amazon-echo-show-8-2nd-gen-charcoal-d6994664.htm";
+    "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
   const requestId = uuid();
   const proxyType = "de";
   const page = await getPage({
@@ -36,29 +37,19 @@ const secureMode = async () => {
     requestCount: 1,
     disAllowedResourceTypes: [],
     exceptions,
-    proxyType,
-    requestId,
-    allowedHosts: shop.allowedHosts,
   });
 
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
     console.log("Before: ", url, new Date().toISOString());
+    await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
     if (proxyType === "de") {
       await notifyProxyChange(
         "de",
         url,
         requestId,
         Date.now(),
-        shop.allowedHosts,
-        2
-      );
-    } else {
-      await registerRequest(
-        url,
-        requestId,
-        shop.allowedHosts || [],
-        Date.now()
+        shop.allowedHosts
       );
     }
     return originalGoto.apply(this, [url, options]);

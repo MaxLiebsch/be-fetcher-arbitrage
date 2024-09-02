@@ -9,10 +9,10 @@ import {
 import dealOnAzn from "../../src/services/deals/daily/dealsOnAzn.js";
 import { ObjectId } from "mongodb";
 
-const shopDomain = ["cyberport.de"];
+const shopDomain = ["cyberport.de", 'reichelt.de', 'alza.de'];
 
 describe("pos azn listign", () => {
-  let productLimit = 10;
+  let productLimit = 30;
   beforeAll(async () => {
     const listings = shopDomain.map((shopDomain) => {
       return read(

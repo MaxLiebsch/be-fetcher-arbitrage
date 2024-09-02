@@ -1,4 +1,4 @@
-import http, { request } from "http";
+import http from "http";
 import url from "url";
 import net from "net";
 import "dotenv/config";
@@ -15,7 +15,7 @@ import {
   handleNotify,
   handleProxyChange,
   handleRegister,
-  handleTerminate,
+  handleTerminationPrevConnections,
 } from "./util/proxy/proxyServices.js";
 
 config({
@@ -37,9 +37,13 @@ let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 const PORT = 8080;
 
 const proxies = {
-  de: process.env.PROXY_GATEWAY_URL_DE || "",
-  mix: process.env.PROXY_GATEWAY_URL || "",
+  de: process.env.PROXY_GATEWAY_URL_DE,
+  mix: process.env.PROXY_GATEWAY_URL,
 };
+const getType = (proxy) => {
+  return Object.keys(proxies).find((key) => proxies[key] === proxy);
+};
+
 const upReqv2 = new UpcomingRequestCachev2();
 
 const server = http.createServer((req, res) => {
@@ -55,8 +59,8 @@ const server = http.createServer((req, res) => {
       case "/notify":
         handleNotify(upReqv2, query, res, proxies);
         break;
-      case "/terminate":
-        handleTerminate(upReqv2, query, res);
+      case "/terminate-prev-connections":
+        handleTerminationPrevConnections(upReqv2, query, res);
         break;
       case "/register":
         handleRegister(upReqv2, query, res);
@@ -64,6 +68,7 @@ const server = http.createServer((req, res) => {
       case "/completed":
         handleCompleted(upReqv2, query, res);
         break;
+
       default:
         res.writeHead(404, { "Content-Type": "text/plain" });
         res.end("Not Found");
@@ -84,12 +89,11 @@ server.on("connect", (req, clientSocket, head) => {
   clientSocket.id = socketId;
 
   const targetHostPort = `${hostname}:${port}`;
-
   let requestId = upReqv2.getRequestId(hostname);
-  upReqv2.setSockets(requestId, hostname, [clientSocket]);
   const requestHost = upReqv2.getProxyUrl(requestId) || host;
-  console.log('Host: ',hostname, " Id: ", requestId,'Proxy: ', requestHost);
-
+  const proxyType = getType(requestHost);
+  upReqv2.setSocket(requestId, hostname, proxyType, clientSocket);
+  console.log("Host: ", hostname, " Id: ", requestId, "Proxy: ", requestHost);
   const { forwardProxyUrl, proxyAuth } = getProxyForwardUrl(
     username,
     password,
@@ -106,15 +110,16 @@ server.on("connect", (req, clientSocket, head) => {
     proxyConnectRequest,
     head,
     hostname,
-    requestId
+    requestId,
+    requestHost
   );
 
   clientSocket.on("close", () => {
-    upReqv2.removeSocket(requestId, hostname, socketId);
+    upReqv2.removeSocket(socketId);
   });
 
   clientSocket.on("error", (err) => {
-    upReqv2.removeSocket(requestId, hostname, socketId);
+    upReqv2.removeSocket(socketId);
     handleClientsocketError(clientSocket, err);
   });
 });
@@ -132,7 +137,8 @@ const establishedConnection = (
   proxyConnectRequest,
   head,
   hostname,
-  requestId
+  requestId,
+  requestHost
 ) => {
   const proxySocket = net.connect(
     forwardProxyUrl.port,
@@ -152,21 +158,26 @@ const establishedConnection = (
         proxySocket.write(head);
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
-        upReqv2.setSockets(requestId, hostname, [proxySocket]);
+        upReqv2.setSocket(
+          requestId,
+          hostname,
+          getType(requestHost),
+          proxySocket
+        );
       } else {
-        upReqv2.removeSocket(requestId, hostname, clientSocket.id);
+        upReqv2.removeSocket(clientSocket.id);
         handleServerError(clientSocket);
       }
     });
   });
 
   proxySocket.on("close", () => {
-    upReqv2.removeSocket(requestId, hostname, proxySocketId);
+    upReqv2.removeSocket(proxySocketId);
   });
 
   proxySocket.on("error", (err) => {
     handleServerError(clientSocket);
-    upReqv2.removeSocket(requestId, hostname, proxySocketId);
+    upReqv2.removeSocket(proxySocketId);
   });
 };
 

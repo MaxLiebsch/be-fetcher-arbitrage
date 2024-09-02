@@ -6,3 +6,4 @@ node_modules
 task.js
 *.json
 .docs
+.http-mitm-proxy/*

@@ -8,7 +8,7 @@ module.exports = {
       args: "proxy",
       interpreter: "none",
       env: {
-        NODE_ENV: "prodution",
+        NODE_ENV: "development",
         PROXY_TYPE: "mix",
         DEBUG: false,
       },
@@ -17,7 +17,7 @@ module.exports = {
       name: `scheduler_${version}`,
       script: "yarn",
       args: "scheduler:standalone",
-      interpreter: "none",
+      interpreter: "development",
       env: {
         NODE_ENV: "prodution",
         DEBUG: false,
