@@ -1,3 +1,18 @@
+import "dotenv/config";
+import { config } from "dotenv";
+
+config({
+  path: [`.env.${process.env.NODE_ENV}`],
+});
+
+let mix_host = process.env.PROXY_GATEWAY_URL; // Default proxy request
+let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
+
+const proxies = {
+  de: de_host,
+  mix: mix_host,
+};
+
 function handleErrors(res, statusCode, message) {
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
@@ -12,25 +27,23 @@ function handleBadRequest(res, message) {
 
 export function handleProxyChange(query, res) {
   if (query.proxy === "de") {
-    return process.env.PROXY_GATEWAY_URL_DE;
+    return de_host;
   }
   handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
-  return process.env.PROXY_GATEWAY_URL;
+  return mix_host;
 }
 
-export function handleNotify(upReqv2, query, res, proxies) {
+export function handleNotify(upReqv2, query, res) {
   if (!query) {
     return handleBadRequest(res, "Bad Request");
   }
   const { de, mix } = proxies;
-  console.log(":Proxies in handle Notify ", proxies);
-  console.log("DE_PROXY:", process.env.PROXY_GATEWAY_URL_DE);
+  console.log("Proxies: ", proxies);
   const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   switch (true) {
     case proxy === "de":
-      console.log("DE Proxy Selected", de);
       upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
       break;
     default:

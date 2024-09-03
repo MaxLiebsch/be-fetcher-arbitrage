@@ -68,8 +68,8 @@ class UpcomingRequestCachev2 {
       if (sockets) {
         sockets.forEach((socket) => {
           try {
-            socket.destroy();
-            console.log("RequestId: " ,requestId," Socket destroyed:", socket.id);
+            socket.end();
+            console.log("RequestId: " ,requestId," Socket ended:", socket.id);
           } catch (error) {
             console.error(`Failed to terminate connection for ${host}:`, error);
           }
@@ -108,12 +108,12 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  killSocket(socketId) {
+  endSocket(socketId) {
     for (let [key, sockets] of this.sockets) {
       const index = sockets.findIndex((socket) => socket.id === socketId);
       if (index !== -1) {
         try {
-          sockets[index].destroy();
+          sockets[index].end();
           sockets.splice(index, 1);
           this.sockets.set(key, sockets);
         } catch (error) {
@@ -138,13 +138,10 @@ class UpcomingRequestCachev2 {
   }
 
   setProxy(requestId, host, hosts, proxy, time) {
-    console.log('Time:', time);
-    console.log('Proxy before assignment:', proxy);
     let request = this.cache.get(requestId);
     if (request) {
       request["time"] = time;
       request.proxy = proxy;
-      console.log('Selected proxy: ', request.proxy)
       this.cache.set(requestId, request);
     }else{
       console.log('Request not found: ', requestId);

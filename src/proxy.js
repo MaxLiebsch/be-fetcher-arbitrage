@@ -38,11 +38,9 @@ let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
 const PORT = 8080;
 
 const proxies = {
-  de: '89.58.0.149:8082',
+  de: de_host,
   mix: host,
 };
-
-console.log('Initial Proxies:', proxies, de_host)
 
 const getType = (proxy) => {
   return Object.keys(proxies).find((key) => proxies[key] === proxy);
@@ -61,7 +59,7 @@ const server = http.createServer((req, res) => {
         host = handleProxyChange(query, res);
         break;
       case "/notify": 
-        handleNotify(upReqv2, query, res, proxies);
+        handleNotify(upReqv2, query, res);
         break;
       case "/terminate-prev-connections":
         handleTerminationPrevConnections(upReqv2, query, res);
