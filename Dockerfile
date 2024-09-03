@@ -1,7 +1,7 @@
-FROM node:20 as build
+FROM node:20 AS build
 
 ARG environment=development
-ENV PATH $PATH:/app/node_modules/.bin
+ENV PATH=$PATH:/app/node_modules/.bin
 ENV ENVIRONMENT=$environment
 ENV NODE_ENV=${ENVIRONMENT}
 ARG CHROME_VERSION=122.0.6261.94
@@ -21,7 +21,7 @@ rm /root/.ssh/id_clr_pkg
 WORKDIR /clr-pkg
 RUN yarn && yarn build
 
-FROM node:20 as puppeteer-base
+FROM node:20 AS puppeteer-base
 
 # Puppeteer dependencies
 RUN wget --no-verbose -O /usr/bin/dumb-init.deb https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_amd64.deb \
@@ -51,10 +51,11 @@ LC_ALL=de_DE.UTF-8
 
 
 # Production stage
-FROM puppeteer-base as prod
+FROM puppeteer-base AS prod
 
-ENV NODE_ENV=${ENVIRONMENT}
-ENV PATH $PATH:/usr/local/share/.config/yarn/global/node_modules/.bin:/app/node_modules/.bin
+ARG environment=development
+ENV NODE_ENV=$environment
+ENV PATH=$PATH:/usr/local/share/.config/yarn/global/node_modules/.bin:/app/node_modules/.bin
 
 # Install PM2 globally
 RUN yarn global add pm2
