@@ -23,11 +23,14 @@ export function handleNotify(upReqv2, query, res, proxies) {
     return handleBadRequest(res, "Bad Request");
   }
   const { de, mix } = proxies;
+  console.log(":Proxies in handle Notify ", proxies);
+  console.log("DE_PROXY:", process.env.PROXY_GATEWAY_URL_DE);
   const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   switch (true) {
     case proxy === "de":
+      console.log("DE Proxy Selected", de);
       upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
       break;
     default:
@@ -36,7 +39,6 @@ export function handleNotify(upReqv2, query, res, proxies) {
   }
   handleSuccess(res, 200, `Proxy changed to ${proxy} for ${requestId}`);
 }
-
 
 export function handleTerminationPrevConnections(upReqv2, query, res) {
   const { requestId, host, hosts, prevProxyType } = query;

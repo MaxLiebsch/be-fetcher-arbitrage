@@ -138,6 +138,8 @@ class UpcomingRequestCachev2 {
   }
 
   setProxy(requestId, host, hosts, proxy, time) {
+    console.log('Time:', time);
+    console.log('Proxy before assignment:', proxy);
     let request = this.cache.get(requestId);
     if (request) {
       request["time"] = time;

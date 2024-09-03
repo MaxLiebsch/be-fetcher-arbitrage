@@ -38,9 +38,12 @@ let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
 const PORT = 8080;
 
 const proxies = {
-  de: de_host,
+  de: '89.58.0.149:8082',
   mix: host,
 };
+
+console.log('Initial Proxies:', proxies, de_host)
+
 const getType = (proxy) => {
   return Object.keys(proxies).find((key) => proxies[key] === proxy);
 };
