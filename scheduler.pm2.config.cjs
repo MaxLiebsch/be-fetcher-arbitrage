@@ -1,6 +1,5 @@
-
 const version = process.env.APP_VERSION || require("./package.json").version;
-
+const environment = "production";
 module.exports = {
   apps: [
     {
@@ -8,9 +7,9 @@ module.exports = {
       script: "yarn",
       args: "--cwd '/app' proxy",
       interpreter: "/bin/bash",
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
       env: {
-        NODE_ENV: "production",
+        NODE_ENV: environment,
         PROXY_TYPE: "mix",
         DEBUG: false,
       },
@@ -20,9 +19,11 @@ module.exports = {
       script: "yarn",
       args: "--cwd '/app' scheduler:standalone",
       interpreter: "/bin/bash",
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
       env: {
-        NODE_ENV: "production",
+        DEV_TOOLS: false,
+        HEADLESS: true,
+        NODE_ENV: environment,
         DEBUG: false,
       },
     },

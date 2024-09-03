@@ -3,9 +3,9 @@ import { getAllShopsAsArray } from "../services/db/util/shops.js";
 import { UTCDate } from "@date-fns/utc";
 import { findCrawlDataProducts } from "../services/db/util/crudCrawlDataProduct.js";
 import { add } from "date-fns";
-import { transformProduct } from "../../src/util/transformProduct.js";
 import { parseAsinFromUrl } from "../../src/util/parseAsin.js";
 import { createHash, verifyHash } from "../util/hash.js";
+import { transformProduct } from "@dipmaxtech/clr-pkg";
 
 const migrationPackage = async () => {
   const crawlData = await getCrawlDataDb();
@@ -217,7 +217,7 @@ const migrationPackage = async () => {
               spotterBulkWrites.push(spotterBulk);
               crawlDataBulkWrites.push(crawlDataBulk);
             } else {
-              let transformed = transformProduct(p);
+              let transformed = transformProduct(p, shop.d);
               delete transformed._id;
               let spotterBulk = {
                 insertOne: {

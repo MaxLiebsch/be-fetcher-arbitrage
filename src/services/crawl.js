@@ -4,6 +4,7 @@ import {
   crawlSubpage,
   globalEventEmitter,
   roundToTwoDecimals,
+  transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { createArbispotterCollection } from "./db/mongo.js";
@@ -20,7 +21,6 @@ import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
 } from "../util/updateProgressInTasks.js";
-import { transformProduct } from "../util/transformProduct.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 
 export default async function crawl(task) {
@@ -114,7 +114,7 @@ export default async function crawl(task) {
         done = true;
         return;
       }
-      const transformedProduct = transformProduct(product);
+      const transformedProduct = transformProduct(product, shopDomain);
       const { lnk, nm, prc, qty } = transformedProduct;
       if (nm && prc && lnk) {
         if (!uniqueLinks.includes(lnk)) {

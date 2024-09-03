@@ -1,6 +1,7 @@
 import { describe, expect, test } from "@jest/globals";
-//@ts-ignore
-import { transformProduct } from "../../src/util/transformProduct.js";
+
+import { transformProduct } from "@dipmaxtech/clr-pkg";
+
 describe("Transform Product", () => {
   const oldProduct = {
     _id: {
@@ -14,7 +15,7 @@ describe("Transform Product", () => {
     name: "Apple HomePod mini weiß",
     vendor: "",
     mnfctr: "",
-    hasMnfctr:true,
+    hasMnfctr: true,
     price: 105,
     promoPrice: 95,
     prime: false,
@@ -658,10 +659,10 @@ describe("Transform Product", () => {
     qty_batchId: "",
     qty_prop: "complete",
   };
-  
+
   test(`TransformProduct`, () => {
-    const p  = transformProduct(oldProduct);
-    console.log('p:', p)
+    const p = transformProduct(oldProduct, "cyberport.de");
+    console.log("p:", p);
     const {
       nm,
       lnk,
@@ -680,22 +681,22 @@ describe("Transform Product", () => {
       dscrptnSegments,
       eanList,
       candidates,
-    } = p; 
-    console.log('mnfctr', mnfctr)
-    expect(nm).toBe(oldProduct.name.replace(mnfctr, "").trim())
-    expect(lnk).toBe(oldProduct.link)
-    expect(info_locked).toBeUndefined()
-    expect(cat_locked).toBeUndefined()
-    expect(locked).toBeUndefined()
-    expect(prc).toBe(oldProduct.promoPrice)
-    expect(ctgry).toBe(oldProduct.category)
-    expect(query).toBeUndefined()
-    expect(nmSubSegments).toBeUndefined()
-    expect(dscrptnSegments).toBeUndefined()
-    expect(eanList[0]).toBe(oldProduct.ean)
-    expect(candidates).toBeUndefined()
-    expect(nameSub).toBeUndefined()
-    expect(description).toBeUndefined()
-    expect(vendor).toBeUndefined()
+    } = p;
+    console.log("mnfctr", mnfctr);
+    expect(nm).toBe(oldProduct.name.replace(mnfctr, "").trim());
+    expect(lnk).toBe(oldProduct.link);
+    expect(info_locked).toBeUndefined();
+    expect(cat_locked).toBeUndefined();
+    expect(locked).toBeUndefined();
+    expect(prc).toBe(oldProduct.promoPrice);
+    expect(ctgry).toBe(oldProduct.category);
+    expect(query).toBeUndefined();
+    expect(nmSubSegments).toBeUndefined();
+    expect(dscrptnSegments).toBeUndefined();
+    expect(eanList[0]).toBe(oldProduct.ean);
+    expect(candidates).toBeUndefined();
+    expect(nameSub).toBeUndefined();
+    expect(description).toBeUndefined();
+    expect(vendor).toBeUndefined();
   });
 });

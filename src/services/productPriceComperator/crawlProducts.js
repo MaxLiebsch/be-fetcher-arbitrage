@@ -5,6 +5,7 @@ import {
   globalEventEmitter,
   roundToTwoDecimals,
   sleep,
+  transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../../services/productPriceComparator.js";
@@ -14,7 +15,6 @@ import {
   RECHECK_EAN_EBY_AZN_INTERVAL,
 } from "../../constants.js";
 import { parseISO } from "date-fns";
-import { transformProduct } from "../../util/transformProduct.js";
 import {
   findProductByLink,
   updateArbispotterProductSet,
@@ -94,7 +94,7 @@ export const crawlProducts = async (shop, task) =>
           await queue.disconnect(true);
           res(infos);
         } else {
-          const transformedProduct = transformProduct(product);
+          const transformedProduct = transformProduct(product, shop.d);
           const { lnk, nm, prc: buyPrice, qty: buyQty } = transformedProduct;
           if (nm && buyPrice && lnk) {
             if (!uniqueLinks.includes(lnk)) {

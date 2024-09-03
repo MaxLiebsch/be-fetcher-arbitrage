@@ -34,11 +34,12 @@ const proxyConnectedStr =
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL; // Default proxy request
+let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
 const PORT = 8080;
 
 const proxies = {
-  de: process.env.PROXY_GATEWAY_URL_DE,
-  mix: process.env.PROXY_GATEWAY_URL,
+  de: de_host,
+  mix: host,
 };
 const getType = (proxy) => {
   return Object.keys(proxies).find((key) => proxies[key] === proxy);
@@ -56,7 +57,7 @@ const server = http.createServer((req, res) => {
       case "/change-proxy":
         host = handleProxyChange(query, res);
         break;
-      case "/notify":
+      case "/notify": 
         handleNotify(upReqv2, query, res, proxies);
         break;
       case "/terminate-prev-connections":

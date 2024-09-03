@@ -23,7 +23,9 @@ const dealsOnAzn = async (task) => {
         "Products:",
         productsWithShop.length,
         "Shops:",
-        shops && shops.length && shops.reduce((acc, { d }) => acc + " " + d, "")
+        shops &&
+          shops.length &&
+          shops.reduce((acc, { shop }) => acc + " " + shop.d, "")
       );
     }
 
