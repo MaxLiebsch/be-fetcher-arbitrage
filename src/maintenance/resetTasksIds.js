@@ -144,6 +144,10 @@ const resetTaskIds = async () => {
             p.qty_batchId &&
             !isAiTaskRunning(tasks, p.qty_batchId, "qty_batchId")
           ) {
+            if (p.nm_prop === "is_progress") {
+              update["$unset"] = { ...update["$unset"], nm_prop: "" };
+            }
+            
             update["$unset"] = { ...update["$unset"], qty_batchId: "" };
           }
 
@@ -157,7 +161,7 @@ const resetTaskIds = async () => {
             spotterBulkWrites.push(spotterBulk);
           }
         });
-        if(spotterBulkWrites.length > 0) {
+        if (spotterBulkWrites.length > 0) {
           const result = await spotter
             .collection(shop.d)
             .bulkWrite(spotterBulkWrites);

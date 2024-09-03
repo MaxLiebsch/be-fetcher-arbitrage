@@ -7,10 +7,11 @@ config({
 
 let mix_host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
+console.log('de_host:', de_host)
 
 const proxies = {
-  de: de_host,
-  mix: mix_host,
+  de: "89.58.0.149:8082",
+  mix: "89.58.0.149:8081",
 };
 
 function handleErrors(res, statusCode, message) {
