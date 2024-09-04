@@ -89,8 +89,11 @@ export async function handleLookupInfoProductInfo(
 }
 
 export async function handleLookupInfoNotFound(collection, productLink) {
-  const query = resetAznProductQuery({
-    info_prop: "missing",
-  });
-  await updateArbispotterProductQuery(collection, productLink, query);
+  await updateArbispotterProductQuery(
+    collection,
+    productLink,
+    resetAznProductQuery({
+      info_prop: "missing",
+    })
+  );
 }

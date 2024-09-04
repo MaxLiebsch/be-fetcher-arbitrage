@@ -29,7 +29,6 @@ import {
 } from "../util/crawlEanHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { removeSearchParams } from "../util/removeSearch.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {

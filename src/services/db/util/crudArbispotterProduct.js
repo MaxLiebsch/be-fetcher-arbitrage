@@ -1,5 +1,6 @@
 import { UTCDate } from "@date-fns/utc";
 import { getArbispotterDb } from "../mongo.js";
+import { MongoError } from "mongodb";
 
 export const countProducts = async (domain, query = {}) => {
   const collectionName = domain;
@@ -78,28 +79,50 @@ export const insertArbispotterProduct = async (domain, product) => {
 };
 
 export const updateArbispotterProductQuery = async (domain, link, query) => {
+  const maxRetries = 3;
+  let attempt = 0;
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  if (query?.$set) {
-    query.$set["updatedAt"] = new UTCDate().toISOString();
-  } else {
-    query["$set"] = { updatedAt: new UTCDate().toISOString() };
+
+  while (attempt < maxRetries) {
+    try {
+      if (query?.$set) {
+        query.$set["updatedAt"] = new UTCDate().toISOString();
+      } else {
+        query["$set"] = { updatedAt: new UTCDate().toISOString() };
+      }
+
+      await collection.updateOne({ lnk: link }, query);
+      return; // Exit the function if the update is successful
+    } catch (e) {
+      attempt++;
+      if (e instanceof MongoError && e.code === 11000) {
+        console.error(
+          "Duplicate key error:",
+          e.message,
+          link,
+          JSON.stringify(query)
+        );
+        break; // Exit the function
+      } else if (attempt >= maxRetries) {
+        console.error(
+          "Error updating product:",
+          e?.message,
+          link,
+          JSON.stringify(query)
+        );
+        return; // Exit the function
+      }
+    }
   }
+};
 
-  return collection.updateOne({ lnk: link }, query);
-}
-
-export const findArbispotterProductsNoLimit = async (
-  domain,
-  query,
-) => {
+export const findArbispotterProductsNoLimit = async (domain, query) => {
   const collectionName = domain;
   const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
-  return collection
-    .find({ ...query })
-    .toArray();
+  return collection.find({ ...query }).toArray();
 };
 
 export const updateArbispotterProductSet = async (domain, link, update) => {

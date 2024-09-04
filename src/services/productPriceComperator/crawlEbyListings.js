@@ -11,7 +11,6 @@ import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
 } from "../../util/scrapeEbyListingsHelper.js";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 
 export const crawlEbyListings = (ebay, task) =>
   new Promise(async (res, rej) => {
