@@ -68,14 +68,20 @@ export const upsertArbispotterProduct = async (domain, product) => {
 };
 
 export const insertArbispotterProduct = async (domain, product) => {
-  const collectionName = domain;
-  const db = await getArbispotterDb();
-  const collection = db.collection(collectionName);
+  try {
+    const collectionName = domain;
+    const db = await getArbispotterDb();
+    const collection = db.collection(collectionName);
 
-  product["createdAt"] = new UTCDate().toISOString();
-  product["updatedAt"] = new UTCDate().toISOString();
+    product["createdAt"] = new UTCDate().toISOString();
+    product["updatedAt"] = new UTCDate().toISOString();
 
-  return collection.insertOne(product);
+    await collection.insertOne(product);
+    return
+  } catch (error) {
+    console.error("Error creating product:", error?.message, product.lnk);
+    return
+  }
 };
 
 export const updateArbispotterProductQuery = async (domain, link, query) => {

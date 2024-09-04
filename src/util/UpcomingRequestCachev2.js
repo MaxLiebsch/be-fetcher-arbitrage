@@ -1,5 +1,7 @@
 import { LRUCache } from "lru-cache";
 import { TTL_UPCOMING_REQUEST } from "../constants.js";
+import { is } from "date-fns/locale";
+import { isSocketHealthy } from "./proxy/isSocketHealthy.js";
 
 // const upcomingRequest = [
 //   [{ requestId: { proxy: null, hosts: { host1: { sockets: [] } } } }],
@@ -65,11 +67,10 @@ class UpcomingRequestCachev2 {
     hosts.forEach((host) => {
       const key = this.getHostProxy(host, prevProxyType);
       const sockets = this.sockets.get(key);
-      if (sockets) {
+      if (sockets) { 
         sockets.forEach((socket) => {
           try {
             socket.end();
-            console.log("RequestId: " ,requestId," Socket ended:", socket.id);
           } catch (error) {
             console.error(`Failed to terminate connection for ${host}:`, error);
           }
@@ -123,10 +124,27 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  setSocket(requestId, host, proxyType, newSocket) {
+  connectionHealth(requestId, host, proxyType) {
+    const key = this.getHostProxy(host, proxyType);
+    const sockets = this.sockets.get(key);
+    if (sockets) {
+      const checkHealth = sockets.some((socket) => {
+        return !isSocketHealthy(socket);
+      });
+      if (checkHealth) {
+        return "sockets-not-healthy";
+      }
+      return "sockets-healthy";
+    } else {
+      return "no-sockets-found";
+    }
+  }
+
+  setSocket(requestId, host, proxyType, newSocket, type) {
     newSocket.requestIds = [requestId];
     newSocket.proxyType = proxyType;
     newSocket.host = host;
+    newSocket.type = type;
     const key = this.getHostProxy(host, proxyType);
     let sockets = this.sockets.get(key);
     if (!sockets) {
@@ -143,8 +161,7 @@ class UpcomingRequestCachev2 {
       request["time"] = time;
       request.proxy = proxy;
       this.cache.set(requestId, request);
-    }else{
-      console.log('Request not found: ', requestId);
+    } else {
       this.register(requestId, host, hosts, time);
       this.setProxy(requestId, host, hosts, proxy, time);
     }
@@ -164,7 +181,7 @@ class UpcomingRequestCachev2 {
 
   getAllSocketValues() {
     return Array.from(this.sockets.entries()).flatMap((sockets) => sockets);
-  } 
+  }
 
   getAllValues() {
     return Array.from(this.cache.entries()).flatMap(([key, values]) => values);

@@ -7,7 +7,6 @@ config({
 
 let mix_host = process.env.PROXY_GATEWAY_URL; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
-console.log('de_host:', de_host)
 
 const proxies = {
   de: "89.58.0.149:8082",
@@ -39,7 +38,6 @@ export function handleNotify(upReqv2, query, res) {
     return handleBadRequest(res, "Bad Request");
   }
   const { de, mix } = proxies;
-  console.log("Proxies: ", proxies);
   const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
@@ -62,6 +60,16 @@ export function handleTerminationPrevConnections(upReqv2, query, res) {
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   upReqv2.terminatePrevConnections(requestId, host, parsedHosts, prevProxyType);
   handleSuccess(res, 200, `Request ${requestId} proxy terminated`);
+}
+
+export function connectionHealth(upReqv2, query, res) {
+  const { host, hosts, requestId } = query;
+  if (!host) {
+    return handleBadRequest(res, "Bad Request");
+  }
+  const parsedHosts = JSON.parse(decodeURIComponent(hosts));
+  const health = upReqv2.connectionHealth(requestId, host, parsedHosts);
+  return handleSuccess(res, 200, health);
 }
 
 export function handleRegister(upReqv2, query, res) {

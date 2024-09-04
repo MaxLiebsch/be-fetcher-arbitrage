@@ -11,6 +11,7 @@ import { handleClientsocketError } from "./util/proxy/handleClientsocketError.js
 import { handleServerError } from "./util/proxy/handleServerError.js";
 import UpcomingRequestCachev2 from "./util/UpcomingRequestCachev2.js";
 import {
+  connectionHealth,
   handleCompleted,
   handleNotify,
   handleProxyChange,
@@ -58,8 +59,11 @@ const server = http.createServer((req, res) => {
       case "/change-proxy":
         host = handleProxyChange(query, res);
         break;
-      case "/notify": 
+      case "/notify":
         handleNotify(upReqv2, query, res);
+        break;
+      case "/connection-health":
+        connectionHealth(upReqv2, query, res);
         break;
       case "/terminate-prev-connections":
         handleTerminationPrevConnections(upReqv2, query, res);
@@ -94,8 +98,7 @@ server.on("connect", (req, clientSocket, head) => {
   let requestId = upReqv2.getRequestId(hostname);
   const requestHost = upReqv2.getProxyUrl(requestId) || host;
   const proxyType = getType(requestHost);
-  upReqv2.setSocket(requestId, hostname, proxyType, clientSocket);
-  console.log("Host: ", hostname, " Id: ", requestId, "Proxy: ", requestHost);
+  upReqv2.setSocket(requestId, hostname, proxyType, clientSocket, "client");
   const { forwardProxyUrl, proxyAuth } = getProxyForwardUrl(
     username,
     password,
@@ -160,11 +163,20 @@ const establishedConnection = (
         proxySocket.write(head);
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
+        console.log(
+          "Connected: RequestId:",
+          requestId,
+          " Host:",
+          hostname,
+          " Proxy:",
+          requestHost
+        );
         upReqv2.setSocket(
           requestId,
           hostname,
           getType(requestHost),
-          proxySocket
+          proxySocket,
+          "proxy"
         );
       } else {
         upReqv2.removeSocket(clientSocket.id);
