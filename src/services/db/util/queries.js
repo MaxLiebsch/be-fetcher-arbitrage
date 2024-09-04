@@ -167,10 +167,14 @@ const eanExistsQuery = [
   { ean: { $exists: true, $ne: "" } },
   { eanList: { $size: 1 } },
 ];
-const eanNotExistsQuery = [
-  { $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }] },
-  { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
-];
+const eanNotExistsQuery = {
+  $and: [
+    {
+      $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
+    },
+    { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
+  ],
+};
 
 /*               Queries Crawl (1)                            */
 
@@ -212,7 +216,7 @@ export const setProductsLockedForCrawlEanQuery = (taskId) => {
 export const countPendingProductsForCrawlEanQuery = {
   $and: [
     { ean_taskId: { $exists: false } },
-    { $or: eanNotExistsQuery },
+    { ...eanNotExistsQuery },
     {
       $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: "" } }],
     },
