@@ -2950,6 +2950,12 @@ export const shops = {
         type: "src",
         content: "image",
       },
+      { 
+        sel: 'span',
+        parent: "div.vim.d-statusmessage",
+        content: 'instock', 
+        type: 'text'
+      },
       {
         parent: "div.seo-breadcrumbs-container",
         sel: "li",

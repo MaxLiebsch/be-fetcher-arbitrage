@@ -31,8 +31,25 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         console.log("productInfo:", productInfo);
         const map = new Map(productInfo.map((x) => [x.key, x.value]));
-        if (map.get("e_prc")) {
-          console.log("e_prc", safeParsePrice(map.get("e_prc")));
+        const instock = map.get("instock");
+        const expiredIndicatorStrs = [
+          "beendet",
+          "nicht mehr verfügbar",
+          "Dieses Angebot wurde vom Verkäufer",
+          "This listing was ended by the seller",
+          "no longer available",
+        ];
+        if (
+          instock &&
+          expiredIndicatorStrs.some((str) =>
+            instock.toLowerCase().includes(str.toLowerCase())
+          )
+        ) {
+          console.log("expired:", true);
+        } else {
+          if (map.get("e_prc")) {
+            console.log("e_prc", safeParsePrice(map.get("e_prc")));
+          }
         }
         // expect(map.get("ean")).toBe("0195949048258");
         // expect(map.get("price")).toBe("EUR1.249,00");

@@ -64,9 +64,7 @@ export async function monitorAndProcessTasks() {
         if (
           priority === "high" ||
           task.type === "CRAWL_SHOP" ||
-          task.type === "DAILY_SALES" ||
-          task.type === "DEALS_ON_EBY" ||
-          task.type === "DEALS_ON_AZN"
+          task.type === "DAILY_SALES"
         ) {
           await sendMail({
             priority,

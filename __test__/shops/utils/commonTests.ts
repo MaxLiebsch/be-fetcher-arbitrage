@@ -1,6 +1,5 @@
 import { expect } from "@jest/globals";
 import {
-  ProductInfo,
   ShopObject,
   browseProductPagesQueue,
   browseProductpages,
