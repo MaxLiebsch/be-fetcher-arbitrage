@@ -42,7 +42,7 @@ export const aznUnsetProperties = {
 export const resetAznProductQuery = (props = { info_prop: "" }) => {
   const { info_prop } = props;
   const query = {
-    $unset: aznUnsetProperties,
+    $unset: { ...aznUnsetProperties },
   };
 
   keepaProperties.forEach((prop) => {
@@ -50,11 +50,10 @@ export const resetAznProductQuery = (props = { info_prop: "" }) => {
       "";
   });
 
-  if (!query["$set"] && info_prop) {
-    query["$set"] = {};
-  }
-
-  if (info_prop) {
+  if (info_prop) { 
+    if (!query["$set"]) {
+      query["$set"] = {};
+    }
     query["$set"]["info_prop"] = info_prop;
     query["$set"]["infoUpdatedAt"] = new UTCDate().toISOString();
   } else {
