@@ -1,13 +1,9 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 import {
-
   mimicTest,
-
   myAfterAll,
-
   myBeforeAll,
   queryEansOnEby,
-
 } from "../utils/commonTests.js";
 
 import { ProductRecord } from "@dipmaxtech/clr-pkg/lib/types/product.js";
@@ -20,7 +16,7 @@ const shopDomain = "ebay.de";
 //TODO : make sure mimic does not create fake block
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '126.0.6478.126');
+    await myBeforeAll(shopDomain, false, "126.0.6478.126");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -37,9 +33,17 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     };
     const isFinished = async () => {
       console.log("Is done!");
-      console.log(products.length)
+      console.log(products.length);
+      console.log(
+        products.reduce((acc, product) => {
+          if (product.price && product.link) {
+            acc.push({ price: product.price, link: product.link });
+          }
+          return acc;
+        }, [])
+      );
       const result = calculateMinMaxMedian(products);
-      console.log('result:', result)
+      console.log("result:", result);
     };
     await queryEansOnEby(
       addProduct,

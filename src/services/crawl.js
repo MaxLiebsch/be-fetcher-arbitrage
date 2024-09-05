@@ -129,7 +129,7 @@ export default async function crawl(task) {
             shopDomain,
             transformedProduct
           );
-          if (result.acknowledged) {
+          if (result?.acknowledged) {
             if (result.upsertedId) infos.new++;
             else infos.old++;
           } else {

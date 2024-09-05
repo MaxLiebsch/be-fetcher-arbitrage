@@ -99,8 +99,7 @@ export const updateArbispotterProductQuery = async (domain, link, query) => {
         query["$set"] = { updatedAt: new UTCDate().toISOString() };
       }
 
-      await collection.updateOne({ lnk: link }, query);
-      return; // Exit the function if the update is successful
+      return await collection.updateOne({ lnk: link }, query); // Exit the function if the update is successful
     } catch (e) {
       attempt++;
       if (e instanceof MongoError && e.code === 11000) {
