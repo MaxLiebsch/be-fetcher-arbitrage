@@ -1,7 +1,11 @@
-import { safeParsePrice, detectCurrency} from "@dipmaxtech/clr-pkg";
+import { safeParsePrice, detectCurrency } from "@dipmaxtech/clr-pkg";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 describe("Price Picker", () => {
   const examples = [
+    { str: 1.019, expect: 1019, currency: null },
+    { str: 10.027, expect: 10027, currency: null },
+    { str: '1.027.65', expect: 1027.65, currency: null },
+    { str: '10.027.65', expect: 10027.65, currency: null },
     { str: "zł12.99", expect: 12.99, currency: "PLN" },
     { str: "12,99zł", expect: 12.99, currency: "PLN" },
     { str: "12,99 zł", expect: 12.99, currency: "PLN" },

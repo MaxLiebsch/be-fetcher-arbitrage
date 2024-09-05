@@ -146,8 +146,7 @@ const resetTaskIds = async () => {
           ) {
             if (p.nm_prop === "is_progress") {
               update["$unset"] = { ...update["$unset"], nm_prop: "" };
-            }
-            
+            } 
             update["$unset"] = { ...update["$unset"], qty_batchId: "" };
           }
 
