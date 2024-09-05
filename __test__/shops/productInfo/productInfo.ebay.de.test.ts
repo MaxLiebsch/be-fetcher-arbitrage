@@ -1,6 +1,4 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import testParameters from "../utils/testParamter.js";
 import {
   extractProductInfos,
   mimicTest,
@@ -8,6 +6,8 @@ import {
   myBeforeAll,
 } from "../utils/commonTests.js";
 import { safeParsePrice } from "@dipmaxtech/clr-pkg";
+//@ts-ignore
+import { expiredIndicatorStrs } from "../../../src/util/scrapeEbyListingsHelper.js";
 
 const shopDomain = "ebay.de";
 
@@ -32,13 +32,6 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         console.log("productInfo:", productInfo);
         const map = new Map(productInfo.map((x) => [x.key, x.value]));
         const instock = map.get("instock");
-        const expiredIndicatorStrs = [
-          "beendet",
-          "nicht mehr verfügbar",
-          "Dieses Angebot wurde vom Verkäufer",
-          "This listing was ended by the seller",
-          "no longer available",
-        ];
         if (
           instock &&
           expiredIndicatorStrs.some((str) =>

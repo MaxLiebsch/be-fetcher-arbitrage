@@ -10,10 +10,12 @@ import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
 import { UTCDate } from "@date-fns/utc";
 import { defaultEbyDealTask } from "../constants.js";
 
-const expiredIndicatorStrs = [
+export const expiredIndicatorStrs = [
   "beendet",
   "nicht mehr verfügbar",
   "Dieses Angebot wurde vom Verkäufer",
+  "nicht vorrätig",
+  'out of stock',
   "This listing was ended by the seller",
   "no longer available",
 ];

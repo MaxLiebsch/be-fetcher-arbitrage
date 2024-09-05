@@ -5,7 +5,7 @@ const testParameters = {
     productPageUrl: "https://www.amazon.de/dp/product/B0BZ9NMMW4?language=de_DE"
   },
   "ebay.de": {
-    productPageUrl: "https://www.ebay.de/itm/204780496488",
+    productPageUrl: "https://www.ebay.de/itm/256420198915",
   },
   "bergfreunde.de": {
     productPageUrl:

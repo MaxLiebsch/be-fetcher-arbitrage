@@ -2956,6 +2956,12 @@ export const shops = {
         content: 'instock', 
         type: 'text'
       },
+      { 
+        sel: 'span',
+        parent: "div.vim.x-alert",
+        content: 'instock', 
+        type: 'text'
+      },
       {
         parent: "div.seo-breadcrumbs-container",
         sel: "li",

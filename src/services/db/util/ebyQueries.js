@@ -9,6 +9,7 @@ export const resetEbyProductQuery = (
       //standard properties
       e_pblsh: "",
       e_nm: "",
+      e_pRange: "",
       e_lnk: "",
       e_img: "",
       esin: "",

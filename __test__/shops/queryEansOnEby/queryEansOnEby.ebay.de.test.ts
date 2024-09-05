@@ -12,6 +12,8 @@ import {
 
 import { ProductRecord } from "@dipmaxtech/clr-pkg/lib/types/product.js";
 import { Product } from "@dipmaxtech/clr-pkg/lib/types/query.js";
+//@ts-ignore
+import { calculateMinMaxMedian } from "../../../src/util/calculateMinMaxMedian.js";
 
 const shopDomain = "ebay.de";
 //TODO: test notfound, multiple asins
@@ -30,18 +32,20 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     const addProduct = async (product: ProductRecord) => {
       products.push(<Product>product);
     };
-    const handleNotFound = async (cause) => {
+    const handleNotFound = async (cause: string) => {
       console.log("Not found!");
     };
     const isFinished = async () => {
       console.log("Is done!");
-      console.log(products);
+      console.log(products.length)
+      const result = calculateMinMaxMedian(products);
+      console.log('result:', result)
     };
     await queryEansOnEby(
       addProduct,
       handleNotFound,
       isFinished,
-      "5025232921331"
+      "4011689688157"
     );
   }, 200000);
 

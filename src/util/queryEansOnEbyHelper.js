@@ -5,7 +5,7 @@ import {
 import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
-import { getEanFromProduct } from "./getEanFromProduct.js";
+import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection,
@@ -16,18 +16,24 @@ export async function handleQueryEansOnEbyIsFinished(
   task = null
 ) {
   const { e_qty: sellQty, lnk: productLink } = product;
-  const ean = getEanFromProduct(product);
-
   infos.shops[collection]++;
   infos.total++;
   queue.total++;
   let update = {};
-  const foundProduct = foundProducts.find((p) => p.link && p.price);
+  const priceRange = calculateMinMaxMedian(foundProducts);
+  const foundProduct = foundProducts.find(
+    (p) =>
+      p.link &&
+      p.price &&
+      p.price >= priceRange.min &&
+      p.price <= priceRange.max
+  );
   if (foundProduct) {
     const { image, price, name, link } = foundProduct;
     const shortLink = foundProduct.link.split("?")[0];
     const esin = new URL(link).pathname.split("/")[2];
 
+    update["e_pRange"] = priceRange;
     update["e_img"] = image;
     update["e_lnk"] = shortLink;
     update["e_hash"] = createHash(shortLink);
