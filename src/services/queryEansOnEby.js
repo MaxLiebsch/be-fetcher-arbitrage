@@ -43,7 +43,7 @@ export default async function queryEansOnEby(task) {
       missingProperties: {},
     };
 
-    const { products, shops } = await lookForUnmatchedQueryEansOnEby(
+    const { products: productsWithShop, shops } = await lookForUnmatchedQueryEansOnEby(
       _id,
       action,
       productLimit
@@ -57,13 +57,13 @@ export default async function queryEansOnEby(task) {
       };
     });
 
-    if (!products.length)
+    if (!productsWithShop.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimit(productsWithShop.length, productLimit);
     task.actualProductLimit = _productLimit;
 
-    infos.locked = products.length;
+    infos.locked = productsWithShop.length;
 
     //Update task progress
     await updateProgressInQueryEansOnEbyTask();
@@ -114,8 +114,10 @@ export default async function queryEansOnEby(task) {
       }
     }
 
-    for (let index = 0; index < products.length; index++) {
-      const { shop, product, s_hash, lnk: productLink } = products[index];
+    for (let index = 0; index < productsWithShop.length; index++) {
+      const { shop, product } = productsWithShop[index];
+      const { s_hash, lnk: productLink } = product;
+
       const srcShopDomain = shop.d;
       const ean = getEanFromProduct(product);
 
@@ -171,7 +173,6 @@ export default async function queryEansOnEby(task) {
           d: srcShopDomain,
           name: srcShopDomain,
         },
-
         addProduct,
         isFinished,
         onNotFound: handleNotFound,
