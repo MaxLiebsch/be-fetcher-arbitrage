@@ -6,6 +6,7 @@ import { updateArbispotterProductQuery } from "../services/db/util/crudArbispott
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
 import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
+import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection,
@@ -62,14 +63,11 @@ export async function handleQueryEansOnEbyIsFinished(
     });
     if (task) task.progress.lookupCategory.push(product._id);
   } else {
-    await updateArbispotterProductQuery(collection, productLink, {
-      $set: {
-        eby_prop: "missing",
-      },
-      $unset: {
-        eby_taskId: "",
-      },
-    });
+    await updateArbispotterProductQuery(
+      collection,
+      productLink,
+      resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
+    );
   }
 }
 
@@ -85,12 +83,9 @@ export async function handleQueryEansOnEbyNotFound(
   infos.total++;
   queue.total++;
 
-  await updateArbispotterProductQuery(collection, productLink, {
-    $set: {
-      eby_prop: "missing",
-    },
-    $unset: {
-      eby_taskId: "",
-    },
-  });
+  await updateArbispotterProductQuery(
+    collection,
+    productLink,
+    resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
+  );
 }

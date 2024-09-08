@@ -62,7 +62,7 @@ const dealsOnEby = async (task) => {
       productsWithShop.map(async (productWithShop) => {
         const { shop: source, product } = productWithShop;
         const { d: shopDomain } = source;
-        const { lnk: productLink, esin, e_mrgn, e_mrgn_pct } = product;
+        const { lnk: productLink, esin } = product;
 
         const diffHours = differenceInHours(
           new Date(),
