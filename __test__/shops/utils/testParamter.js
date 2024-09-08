@@ -87,7 +87,7 @@ const testParameters = {
   },
   "alza.de": {
     productPageUrl:
-      "https://www.alza.de/amazon-echo-show-8-2nd-gen-charcoal-d6994664.htm",
+      "https://www.alza.de/27-eizo-color-edge-cg2700s-d7504011.htm",
     productsPerPage: 24,
     productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 48,

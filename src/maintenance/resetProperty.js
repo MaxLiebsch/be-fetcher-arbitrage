@@ -10,10 +10,10 @@ const resetProperty = async () => {
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
     const result = await spotter.collection(shop.d).updateMany(
-      { nm_prop: "in_progress", nm_batchId: { $exists: false } },
+      { qty_prop: "in_progress", qty_batchId: { $exists: false } },
       {
         $unset: {
-          nm_prop: "",
+          qty_prop: "",
         },
       }
     );

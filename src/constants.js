@@ -22,6 +22,7 @@ export const RECHECK_EAN_INTERVAL = 14; // 14 days
 export const MAX_RETRIES_SCRAPE_EAN = 5;
 export const MAX_RETIRES_SCRAPE_SHOP = 5;
 export const TTL_UPCOMING_REQUEST = 1000 * 60 * 45;
+export const DEFAULT_LIMIT = 500;
 
 export const proxyAuth = {
   host: "127.0.0.1:8080",

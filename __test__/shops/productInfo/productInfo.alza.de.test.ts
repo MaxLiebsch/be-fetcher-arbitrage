@@ -7,12 +7,13 @@ import {
   myAfterAll,
   myBeforeAll,
 } from "../utils/commonTests.js";
+import { safeParsePrice } from "@dipmaxtech/clr-pkg";
 
 const shopDomain = "alza.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '127.0.6533.119');
+    await myBeforeAll(shopDomain, false, "127.0.6533.119");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -28,7 +29,10 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
-        console.log('productInfo:', productInfo)
+        console.log("productInfo:", productInfo);
+        const prc = productInfo.find((info) => info.key === "price").value
+        const price = safeParsePrice(prc);
+        console.log('price:', price)
         const ean = productInfo.find((info) => info.key === "ean");
         const sku = productInfo.find((info) => info.key === "sku");
         const mku = productInfo.find((info) => info.key === "mku");

@@ -11,6 +11,7 @@ export const resetEbyProductQuery = (
       e_nm: "",
       e_pRange: "",
       e_lnk: "",
+      e_cur: "",
       e_img: "",
       esin: "",
       e_prc: "",

@@ -12,6 +12,20 @@ const taskIdScraperMap = {
   azn_taskId: ["CRAWL_AZN_LISTINGS"],
   cat_taskId: ["LOOKUP_CATEGORY"],
 };
+
+const problems = {
+  CRAWL_EAN: 0,
+  LOOKUP_INFO: 0,
+  DEALS_ON_AZN: 0,
+  DEALS_ON_EBY: 0,
+  CRAWL_EBY_LISTINGS: 0,
+  CRAWL_AZN_LISTINGS: 0,
+  LOOKUP_CATEGORY: 0,
+  QUERY_EANS_EBY: 0,
+  MATCH_TITLES: 0,
+  DETECT_QUANTITY: 0,
+};
+
 const taskIds = [
   "ean_taskId",
   "info_taskId",
@@ -55,35 +69,39 @@ export const isAiTaskRunning = (tasks, batchId, batchIdKey) => {
   return false;
 };
 
+export const buildQuery = (taskIds) => {
+  return {
+    $or: taskIds.map((taskId) => ({
+      [taskId]: { $exists: true, $ne: "" },
+    })),
+  };
+};
+
 const resetTaskIds = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
   const tasks = await getTasks();
   const activeShops = shops.filter((shop) => shop.active);
   activeShops.push({ d: "sales" });
-  let count = 0;
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
 
+    const total = await spotter
+      .collection(shop.d)
+      .countDocuments(buildQuery(taskIds));
     console.log("Processing shop:", shop.d);
+    let count = 0;
     let cnt = 0;
     const batchSize = 3000;
-    let hasMoreProducts = true;
-    while (hasMoreProducts) {
+    while (count < total) {
       const spotterBulkWrites = [];
       const products = await findArbispotterProducts(
         shop.d,
-        {
-          $or: taskIds.map((taskId) => ({
-            [taskId]: { $exists: true, $ne: "" },
-          })),
-        },
-        batchSize,
-        cnt
+        buildQuery(taskIds),
+        batchSize
       );
       if (products.length) {
         products.map((p) => {
-          count++;
           let update = {};
           if (
             p.ean_taskId &&
@@ -95,6 +113,7 @@ const resetTaskIds = async () => {
             p.info_taskId &&
             !isTaskRunning(tasks, p.info_taskId, "info_taskId")
           ) {
+            problems.LOOKUP_INFO++;
             update["$unset"] = { ...update["$unset"], info_taskId: "" };
           }
 
@@ -102,6 +121,7 @@ const resetTaskIds = async () => {
             p.dealAznTaskId &&
             !isTaskRunning(tasks, p.dealAznTaskId, "dealAznTaskId")
           ) {
+            problems.DEALS_ON_AZN++;
             update["$unset"] = { ...update["$unset"], dealAznTaskId: "" };
           }
 
@@ -109,6 +129,7 @@ const resetTaskIds = async () => {
             p.dealEbyTaskId &&
             !isTaskRunning(tasks, p.dealEbyTaskId, "dealEbyTaskId")
           ) {
+            problems.DEALS_ON_EBY++;
             update["$unset"] = { ...update["$unset"], dealEbyTaskId: "" };
           }
 
@@ -116,6 +137,8 @@ const resetTaskIds = async () => {
             p.eby_taskId &&
             !isTaskRunning(tasks, p.eby_taskId, "eby_taskId")
           ) {
+            problems.CRAWL_EBY_LISTINGS++;
+            problems.QUERY_EANS_EBY++;
             update["$unset"] = { ...update["$unset"], eby_taskId: "" };
           }
 
@@ -123,6 +146,7 @@ const resetTaskIds = async () => {
             p.azn_taskId &&
             !isTaskRunning(tasks, p.azn_taskId, "azn_taskId")
           ) {
+            problems.CRAWL_AZN_LISTINGS++;
             update["$unset"] = { ...update["$unset"], azn_taskId: "" };
           }
 
@@ -130,6 +154,7 @@ const resetTaskIds = async () => {
             p.cat_taskId &&
             !isTaskRunning(tasks, p.cat_taskId, "cat_taskId")
           ) {
+            problems.LOOKUP_CATEGORY++;
             update["$unset"] = { ...update["$unset"], cat_taskId: "" };
           }
 
@@ -137,6 +162,10 @@ const resetTaskIds = async () => {
             p.nm_batchId &&
             !isAiTaskRunning(tasks, p.nm_batchId, "nm_batchId")
           ) {
+            problems.MATCH_TITLES++;
+            if (p.nm_prop === "is_progress") {
+              update["$unset"] = { ...update["$unset"], nm_prop: "" };
+            }
             update["$unset"] = { ...update["$unset"], nm_batchId: "" };
           }
 
@@ -144,9 +173,10 @@ const resetTaskIds = async () => {
             p.qty_batchId &&
             !isAiTaskRunning(tasks, p.qty_batchId, "qty_batchId")
           ) {
-            if (p.nm_prop === "is_progress") {
-              update["$unset"] = { ...update["$unset"], nm_prop: "" };
-            } 
+            problems.DETECT_QUANTITY++;
+            if (p.qty_prop === "is_progress") {
+              update["$unset"] = { ...update["$unset"], qty_prop: "" };
+            }
             update["$unset"] = { ...update["$unset"], qty_batchId: "" };
           }
 
@@ -166,24 +196,18 @@ const resetTaskIds = async () => {
             .bulkWrite(spotterBulkWrites);
           console.log(shop.d, cnt, " Result:", result);
         }
+        count += products.length;
       } else {
         console.log(`Done ${shop.d}`);
       }
 
-      console.log(
-        "Processing batch:",
-        cnt,
-        "count:",
-        count,
-        "hasMoreProducts: ",
-        products.length === batchSize
-      );
-      hasMoreProducts = products.length === batchSize;
+      console.log("Processing batch:", cnt, "count", count, " from ", total);
       cnt++;
     }
   }
 };
 
 resetTaskIds().then((r) => {
+  console.log("Problems:", JSON.stringify(problems, null, 2));
   process.exit(0);
 });

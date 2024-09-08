@@ -51,7 +51,7 @@ export const createArbispotterCollection = async (name) => {
   await collection.createIndex({ a_mrgn: -1, a_mrgn_pct: -1 });
   await collection.createIndex({ a_w_mrgn: -1, a_w_mrgn_pct: -1 });
   await collection.createIndex({ a_p_mrgn: -1, a_p_mrgn_pct: -1 });
-  await collection.createIndex({ a_w_p_mrgn: -1, a_w_p_mrgn_pct: -1 });
+  await collection.createIndex({ a_p_w_mrgn: -1, a_p_w_mrgn_pct: -1 });
   await collection.createIndex({ e_mrgn: -1, e_mrgn_pct: -1 });
   await collection.createIndex({ a_pblsh: 1 });
   await collection.createIndex({ e_pblsh: 1 });
