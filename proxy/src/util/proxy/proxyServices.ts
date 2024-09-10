@@ -1,31 +1,48 @@
+import { ServerResponse } from "http";
 import "dotenv/config";
 import { config } from "dotenv";
+import UpcomingRequestCachev2 from "../UpcomingRequestCachev2";
+import { Proxies, ProxyServiceSearchQuery } from "../../types/proxy";
+import { ProxyType } from "@dipmaxtech/clr-pkg";
+import path from "path";
 
 config({
-  path: [`.env.${process.env.NODE_ENV}`],
+  path: [path.resolve(__dirname, `../../../.env.${process.env.NODE_ENV}`)],
 });
 
-let mix_host = process.env.PROXY_GATEWAY_URL; // Default proxy request
-let de_host = process.env.PROXY_GATEWAY_URL_DE; // Default de proxy request
+let mix_host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
+let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
 
-const proxies = {
-  de: "89.58.0.149:8082",
-  mix: "89.58.0.149:8081",
+const proxies: Proxies = {
+  de: de_host,
+  mix: mix_host,
 };
 
-function handleErrors(res, statusCode, message) {
+function handleErrors(
+  res: ServerResponse,
+  statusCode: number,
+  message: string
+) {
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
 }
-function handleSuccess(res, statusCode, message) {
+function handleSuccess(
+  res: ServerResponse,
+  statusCode: number,
+  message: string
+) {
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
 }
-function handleBadRequest(res, message) {
+function handleBadRequest(res: ServerResponse, message: string) {
   handleErrors(res, 400, message);
 }
 
-export function handleProxyChange(query, res) {
+export function handleProxyChange(
+  query: { proxy: ProxyType },
+  res: ServerResponse
+) {
+  console.log('query:', query, de_host, mix_host);
   if (query.proxy === "de") {
     return de_host;
   }
@@ -33,7 +50,11 @@ export function handleProxyChange(query, res) {
   return mix_host;
 }
 
-export function handleNotify(upReqv2, query, res) {
+export function handleNotify(
+  upReqv2: UpcomingRequestCachev2,
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
   if (!query) {
     return handleBadRequest(res, "Bad Request");
   }
@@ -52,7 +73,11 @@ export function handleNotify(upReqv2, query, res) {
   handleSuccess(res, 200, `Proxy changed to ${proxy} for ${requestId}`);
 }
 
-export function handleTerminationPrevConnections(upReqv2, query, res) {
+export function handleTerminationPrevConnections(
+  upReqv2: UpcomingRequestCachev2,
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
   const { requestId, host, hosts, prevProxyType } = query;
   if (!requestId) {
     return handleBadRequest(res, "Bad Request");
@@ -62,7 +87,11 @@ export function handleTerminationPrevConnections(upReqv2, query, res) {
   handleSuccess(res, 200, `Request ${requestId} proxy terminated`);
 }
 
-export function connectionHealth(upReqv2, query, res) {
+export function connectionHealth(
+  upReqv2: UpcomingRequestCachev2,
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
   const { host, hosts, requestId } = query;
   if (!host) {
     return handleBadRequest(res, "Bad Request");
@@ -72,7 +101,11 @@ export function connectionHealth(upReqv2, query, res) {
   return handleSuccess(res, 200, health);
 }
 
-export function handleRegister(upReqv2, query, res) {
+export function handleRegister(
+  upReqv2: UpcomingRequestCachev2,
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
   const { requestId, time, host, hosts } = query;
   if (!requestId) {
     return handleBadRequest(res, "Bad Request");
@@ -88,7 +121,11 @@ export function handleRegister(upReqv2, query, res) {
   handleSuccess(res, 200, `Request registered ` + requestId);
 }
 
-export function handleCompleted(upReqv2, query, res) {
+export function handleCompleted(
+  upReqv2: UpcomingRequestCachev2,
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
   const { requestId } = query;
   if (!requestId) {
     return handleBadRequest(res, "Bad Request");

@@ -5,7 +5,6 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { updateTask } from "../../services/db/util/tasks.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
@@ -17,6 +16,7 @@ import {
   handleCrawlEanProductInfo,
 } from "../../util/crawlEanHelper.js";
 import { removeSearchParams } from "../../util/removeSearch.js";
+import { salesDbName } from "../db/mongo.js";
 
 export const crawlEans = async (shop, task) =>
   new Promise(async (res, rej) => {

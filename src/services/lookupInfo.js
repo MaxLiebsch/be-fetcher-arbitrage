@@ -12,9 +12,7 @@ import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
 import { getShop } from "./db/util/shops.js";
-import {
-  updateProgressInLookupInfoTask,
-} from "../util/updateProgressInTasks.js";
+import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import {
   handleLookupInfoNotFound,
@@ -22,12 +20,11 @@ import {
 } from "../util/lookupInfoHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
-
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, type, browserConcurrency, concurrency } =
       task;
-
+      
     let infos = {
       total: 1,
       old: 0,

@@ -2,7 +2,10 @@ import {
   CrawlerQueue,
   crawlShop,
   crawlSubpage,
+  CrawlTask,
+  DbProductRecord,
   globalEventEmitter,
+  ProductRecord,
   roundToTwoDecimals,
   transformProduct,
   uuid,
@@ -23,7 +26,7 @@ import {
 } from "../util/updateProgressInTasks.js";
 import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
 
-export default async function crawl(task) {
+async function crawl(task: CrawlTask) {
   return new Promise(async (res, reject) => {
     const { shopDomain, productLimit, limit, recurrent, categories } = task;
 
@@ -31,7 +34,7 @@ export default async function crawl(task) {
     let done = false;
     const shop = shops[shopDomain];
     const { entryPoints } = shop;
-    const uniqueLinks = [];
+    const uniqueLinks: string[] = [];
 
     let infos = {
       new: 0,
@@ -57,10 +60,10 @@ export default async function crawl(task) {
         "+50": 0,
       },
       missingProperties: {
-        name: 0,
-        price: 0,
-        link: 0,
-        image: 0,
+        nm: 0,
+        prc: 0,
+        lnk: 0,
+        img: 0,
       },
     };
 
@@ -108,7 +111,7 @@ export default async function crawl(task) {
         }),
       DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
     );
-    const addProduct = async (product) => {
+    const addProduct = async (product: ProductRecord) => {
       if (done) return;
       if (infos.total === productLimit && !queue.idle()) {
         done = true;
@@ -137,7 +140,9 @@ export default async function crawl(task) {
           }
         }
       } else {
-        const properties = ["nm", "prc", "lnk", "img"];
+        const properties: Array<
+          keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
+        > = ["nm", "prc", "lnk", "img"];
         properties.forEach((prop) => {
           if (!transformedProduct[prop]) {
             infos.missingProperties[prop]++;
@@ -188,3 +193,5 @@ export default async function crawl(task) {
     }
   });
 }
+
+export default crawl;

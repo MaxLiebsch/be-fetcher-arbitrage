@@ -1,41 +1,27 @@
 import { LRUCache } from "lru-cache";
-import { TTL_UPCOMING_REQUEST } from "../constants.js";
-import { is } from "date-fns/locale";
-import { isSocketHealthy } from "./proxy/isSocketHealthy.js";
-
-// const upcomingRequest = [
-//   [{ requestId: { proxy: null, hosts: { host1: { sockets: [] } } } }],
-// ];
-
-/*
-     sockets: [
-        {
-          ...socket,
-          id: socketId,
-          proxyType: proxyType,
-          host: host,
-          requestIds: [requestId], 
-       }
-     ]
-
-*/
+import { isSocketHealthy } from "./proxy/isSocketHealthy";
+import { TypedSocket, UpcomingRequest } from "../types/proxy";
+import { ProxyType } from "@dipmaxtech/clr-pkg";
+import { TTL_UPCOMING_REQUEST } from "../constants";
 
 class UpcomingRequestCachev2 {
+  cache;
+  sockets;
   constructor() {
     const options = {
       max: 3200,
       ttl: TTL_UPCOMING_REQUEST,
       ttlAutopurge: true,
     };
-    this.cache = new LRUCache(options);
-    this.sockets = new Map(); // Sockets 'host1-de => [socket1, socket2]'
+    this.cache = new LRUCache<string, UpcomingRequest>(options);
+    this.sockets = new Map<string, TypedSocket[]>(); // Sockets 'host1-de => [socket1, socket2]'
   }
 
-  has(requestId) {
+  has(requestId: string) {
     return this.cache.has(requestId);
   }
 
-  getRequestId(host) {
+  getRequestId(host: string) {
     let closestTimeDiff = Infinity;
     let closestRequestId = null;
     const now = Date.now();
@@ -58,16 +44,21 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  getHostProxy(host, proxyType) {
+  getHostProxy(host: string, proxyType: ProxyType) {
     return `${host}-${proxyType}`;
   }
 
-  terminatePrevConnections(requestId, host, hosts, prevProxyType) {
+  terminatePrevConnections(
+    requestId: string,
+    host: string,
+    hosts: string[],
+    prevProxyType: ProxyType
+  ) {
     hosts.push(host);
     hosts.forEach((host) => {
       const key = this.getHostProxy(host, prevProxyType);
       const sockets = this.sockets.get(key);
-      if (sockets) { 
+      if (sockets) {
         sockets.forEach((socket) => {
           try {
             socket.end();
@@ -80,10 +71,10 @@ class UpcomingRequestCachev2 {
     });
   }
 
-  register(requestId, host, hosts, time) {
+  register(requestId: string, host: string, hosts: string[], time: number) {
     let request = this.cache.get(requestId);
     if (!request) {
-      const request = {
+      const request: UpcomingRequest = {
         proxy: null,
         hosts: { [host]: { sockets: [] } },
         time,
@@ -99,7 +90,7 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  removeSocket(socketId) {
+  removeSocket(socketId: string) {
     for (let [key, sockets] of this.sockets) {
       const index = sockets.findIndex((socket) => socket.id === socketId);
       if (index !== -1) {
@@ -109,7 +100,7 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  endSocket(socketId) {
+  endSocket(socketId: string) {
     for (let [key, sockets] of this.sockets) {
       const index = sockets.findIndex((socket) => socket.id === socketId);
       if (index !== -1) {
@@ -124,7 +115,7 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  connectionHealth(requestId, host, proxyType) {
+  connectionHealth(requestId: string, host: string, proxyType: ProxyType) {
     const key = this.getHostProxy(host, proxyType);
     const sockets = this.sockets.get(key);
     if (sockets) {
@@ -140,8 +131,16 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  setSocket(requestId, host, proxyType, newSocket, type) {
-    newSocket.requestIds = [requestId];
+  setSocket(
+    requestId: string | null,
+    host: string,
+    proxyType: ProxyType,
+    newSocket: TypedSocket,
+    type: string
+  ) {
+    if (requestId) {
+      newSocket.requestIds = [requestId];
+    }
     newSocket.proxyType = proxyType;
     newSocket.host = host;
     newSocket.type = type;
@@ -155,7 +154,13 @@ class UpcomingRequestCachev2 {
     this.sockets.set(key, sockets);
   }
 
-  setProxy(requestId, host, hosts, proxy, time) {
+  setProxy(
+    requestId: string,
+    host: string,
+    hosts: string[],
+    proxy: string,
+    time: number
+  ) {
     let request = this.cache.get(requestId);
     if (request) {
       request["time"] = time;
@@ -167,7 +172,8 @@ class UpcomingRequestCachev2 {
     }
   }
 
-  getProxyUrl(requestId) {
+  getProxyUrl(requestId: string | null) {
+    if (!requestId) return null;
     let request = this.cache.get(requestId);
     if (request && request.proxy) {
       return request.proxy;
@@ -175,7 +181,7 @@ class UpcomingRequestCachev2 {
     return null;
   }
 
-  kill(requestId) {
+  kill(requestId: string) {
     this.cache.delete(requestId);
   }
 

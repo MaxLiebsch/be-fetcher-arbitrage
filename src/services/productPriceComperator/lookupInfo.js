@@ -6,7 +6,6 @@ import {
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
 
 import { updateTask } from "../../services/db/util/tasks.js";
 import {
@@ -14,6 +13,7 @@ import {
   handleLookupInfoProductInfo,
 } from "../../util/lookupInfoHelper.js";
 import { getEanFromProduct } from "../../util/getEanFromProduct.js";
+import { salesDbName } from "../db/mongo.js";
 
 export const getMaxLoadQueue = (queues) => {
   const queueLoad = queues.map((queue) => queue.workload());

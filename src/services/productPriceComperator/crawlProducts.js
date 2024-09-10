@@ -8,7 +8,6 @@ import {
   transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { salesDbName } from "../../services/productPriceComparator.js";
 import {
   MAX_RETIRES_SCRAPE_SHOP,
   proxyAuth,
@@ -21,6 +20,7 @@ import {
   upsertArbispotterProduct,
 } from "../../services/db/util/crudArbispotterProduct.js";
 import { UTCDate } from "@date-fns/utc";
+import { salesDbName } from "../db/mongo.js";
 
 export const crawlProducts = async (shop, task) =>
   new Promise(async (res, rej) => {

@@ -1,5 +1,5 @@
 import { findShops } from "./db/util/shops.js";
-import { createArbispotterCollection } from "./db/mongo.js";
+import { createArbispotterCollection, salesDbName } from "./db/mongo.js";
 import { crawlProducts } from "./productPriceComperator/crawlProducts.js";
 import { crawlEans } from "./productPriceComperator/crawlEan.js";
 import { lookupInfo } from "./productPriceComperator/lookupInfo.js";
@@ -19,7 +19,6 @@ import { LoggerService } from "@dipmaxtech/clr-pkg";
 import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings.js";
 import { getElapsedTime } from "../util/dates.js";
 
-export const salesDbName = "sales";
 const logService = LoggerService.getSingleton();
 
 export const productPriceComperator = async (task) => {

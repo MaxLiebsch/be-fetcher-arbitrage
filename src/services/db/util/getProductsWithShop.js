@@ -1,4 +1,4 @@
-import { salesDbName } from "../../../../src/services/productPriceComparator.js";
+import { salesDbName } from "../mongo.js";
 
 export function getProductsWithShop(products, shop, shops) {
   const { d: shopDomain } = shop;

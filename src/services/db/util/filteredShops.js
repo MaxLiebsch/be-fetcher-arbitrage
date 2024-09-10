@@ -1,4 +1,4 @@
-import { salesDbName } from "../../productPriceComparator.js";
+import { salesDbName } from "../mongo.js";
 import { serviceShopFilters } from "./filter.js";
 import { getAllShopsAsArray } from "./shops.js";
 

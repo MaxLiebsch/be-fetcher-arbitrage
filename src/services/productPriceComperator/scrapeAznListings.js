@@ -5,12 +5,12 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { defaultQuery, proxyAuth } from "../../constants.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
 import { updateTask } from "../../services/db/util/tasks.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../util/scrapeAznListingsHelper.js";
+import { salesDbName } from "../db/mongo.js";
 
 export const scrapeAznListings = (amazon, origin, task) =>
   new Promise(async (res, rej) => {

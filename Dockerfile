@@ -6,7 +6,6 @@ ENV ENVIRONMENT=$environment
 ENV NODE_ENV=${ENVIRONMENT}
 ARG CHROME_VERSION=122.0.6261.94
 
-
 RUN --mount=type=secret,id=ssh_key \
 mkdir -p /root/.ssh && \
 cp /run/secrets/ssh_key /root/.ssh/id_clr_pkg && \
@@ -16,10 +15,33 @@ echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config && \
 eval "$(ssh-agent -s)" && \
 ssh-add /root/.ssh/id_clr_pkg && \
 git clone git@github.com:MaxLiebsch/clr-pkg.git && \
-rm /root/.ssh/id_clr_pkg    
+rm /root/.ssh/id_clr_pkg
+
+
+# Install global dependencies
+RUN yarn global add gulp-cli
 
 WORKDIR /clr-pkg
-RUN yarn && yarn build
+
+# Install dependencies and build the package
+RUN yarn install && yarn build && yarn link
+
+WORKDIR /app
+
+COPY . .
+
+COPY [".env.production", "/app"]
+COPY [".env.development", "/app"]
+COPY ["proxy/.env.production", "/app/proxy/"]
+COPY ["proxy/.env.development", "/app/proxy/"]
+COPY [".env", "/app"]
+
+
+WORKDIR /app/proxy
+RUN yarn link "@dipmaxtech/clr-pkg" && yarn install
+
+WORKDIR /app
+RUN yarn link "@dipmaxtech/clr-pkg" && yarn install && yarn compile
 
 FROM node:20 AS puppeteer-base
 
@@ -53,33 +75,53 @@ LC_ALL=de_DE.UTF-8
 # Production stage
 FROM puppeteer-base AS prod
 
-ARG environment=development
+ARG environment=production
 ENV NODE_ENV=$environment
 ENV PATH=$PATH:/usr/local/share/.config/yarn/global/node_modules/.bin:/app/node_modules/.bin
+
+# RUN ls -ah /root
 
 # Install PM2 globally
 RUN yarn global add pm2
 
-COPY --from=build /clr-pkg/node_modules /clr-pkg/node_modules
-COPY --from=build /clr-pkg/lib /clr-pkg/lib
+
+# Install only production dependencies
 COPY --from=build /clr-pkg/package.json /clr-pkg/package.json
+# Copy the built files from the build stage
+COPY --from=build /clr-pkg/lib /clr-pkg/lib
+COPY --from=build /clr-pkg/node_modules /clr-pkg/node_modules
 
-WORKDIR /clr-pkg
-RUN yarn link
+RUN yarn --cwd /clr-pkg link
 
-COPY . /app
+# App directory
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/.env /app/.env
+COPY --from=build /app/.env.production /app/.env.production
+COPY --from=build /app/.env.development /app/.env.development 
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/scheduler.pm2.config.cjs /app/
+COPY --from=build /root/.cache /root/.cache
+
+# Proxy directory
+COPY --from=build /app/proxy/package.json /app/proxy/package.json
+COPY --from=build /app/proxy/node_modules /app/proxy/node_modules
+COPY --from=build /app/proxy/.env.production /app/proxy/.env.production
+COPY --from=build /app/proxy/.env.development /app/proxy/.env.development
+COPY --from=build /app/proxy/dist /app/proxy/dist
+RUN yarn --cwd /app/proxy link "@dipmaxtech/clr-pkg"
+
+
+# Set the working directory to /app
 WORKDIR /app
+RUN yarn link "@dipmaxtech/clr-pkg"
 
 RUN mkdir -p /app/data/shop/debug/
-
-# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-RUN yarn link "@dipmaxtech/clr-pkg"
-RUN yarn --cwd /clr-pkg install
-RUN yarn
 
 RUN chmod +x /usr/bin/dumb-init
 
 COPY start.sh /app/start.sh
+
 RUN chmod +x /app/start.sh
 
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/app/start.sh"] 

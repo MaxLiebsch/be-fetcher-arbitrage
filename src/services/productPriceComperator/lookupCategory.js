@@ -9,12 +9,12 @@ import {
   defaultQuery,
   proxyAuth,
 } from "../../constants.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
 import { updateTask } from "../../services/db/util/tasks.js";
 import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../../util/lookupCategoryHelper.js";
+import { salesDbName } from "../db/mongo.js";
 
 export const lookupCategory = async (ebay, origin, task) =>
   new Promise(async (res, rej) => {

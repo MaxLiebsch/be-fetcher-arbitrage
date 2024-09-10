@@ -10,12 +10,12 @@ import {
   defaultQuery,
   proxyAuth,
 } from "../../constants.js";
-import { salesDbName } from "../../services/productPriceComparator.js";
 import { updateTask } from "../../services/db/util/tasks.js";
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../../util/queryEansOnEbyHelper.js";
+import { salesDbName } from "../db/mongo.js";
 
 export const queryEansOnEby = async (ebay, task) =>
   new Promise(async (res, rej) => {

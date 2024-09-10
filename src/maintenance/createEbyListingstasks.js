@@ -1,4 +1,4 @@
-import { createCrawlEbyListingsTask } from "../../__test__/endToEnd.js";
+import { createCrawlEbyListingsTask } from "../../__test__/endToEnd.test.js";
 import { getActiveShops } from "../services/db/util/shops.js";
 import { addTask } from "../services/db/util/tasks.js";
 
