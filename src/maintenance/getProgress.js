@@ -1,36 +1,36 @@
-import { getCrawlAznListingsProgress } from "../services/db/util/crawlAznListings/getCrawlAznListingsProgress.js";
-import { getCrawlEanProgress } from "../services/db/util/crawlEan/getCrawlEanProgress.js";
-import { getMissingEanShops } from "../services/db/util/crawlEan/getMissingEanShops.js";
+import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getCrawlEanProgress } from "../db/util/crawlEan/getCrawlEanProgress.js";
+import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops.js";
 import {
   countCompletedProductsForCrawlEbyListings,
   countPendingProductsForCrawlEbyListingsAggregationFn,
   countTotalProductsCrawlEbyListings,
   getCrawlEbyListingsProgressAggregation,
-} from "../services/db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getDealsOnAznProgress } from "../services/db/util/deals/daily/azn/getDealsOnAznProgress.js";
-import { getOutdatedDealsOnAznShops } from "../services/db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
-import { lookForOutdatedDealsOnAzn } from "../services/db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
-import { getMissingEbyCategoryShops } from "../services/db/util/lookupCategory/getMissingEbyCategoryShops.js";
-import { getUnmatchedEanShops } from "../services/db/util/lookupInfo/getUnmatchedEanShops.js";
+} from "../db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getDealsOnAznProgress } from "../db/util/deals/daily/azn/getDealsOnAznProgress.js";
+import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
+import { lookForOutdatedDealsOnAzn } from "../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
+import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops.js";
+import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops.js";
 import {
   countPendingProductsForMatch,
   getMatchProgress,
-} from "../services/db/util/match/getMatchProgress.js";
-import { lockProductsForMatch } from "../services/db/util/match/lockProductsForMatch.js";
+} from "../db/util/match/getMatchProgress.js";
+import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch.js";
 import {
   findTasksQuery,
   lockProductsForCrawlEbyListingsAggregation,
   lockProductsForMatchQuery,
   recoveryDealsOnAznQuery,
-} from "../services/db/util/queries.js";
-import { getQueryEansOnEbyProgress } from "../services/db/util/queryEansOnEby/getQueryEansOnEbyProgress.js";
-import { getUnmatchedQueryEansOnEbyShops } from "../services/db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
+} from "../db/util/queries.js";
+import { getQueryEansOnEbyProgress } from "../db/util/queryEansOnEby/getQueryEansOnEbyProgress.js";
+import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import {
   countPendingProductsUpdateProductinfo,
   countTotalProductsForUpdateProductinfo,
   getUpdateProductinfoProgress,
-} from "../services/db/util/updateProductinfo/getUpdateProductInfoProgress.js";
+} from "../db/util/updateProductinfo/getUpdateProductInfoProgress.js";
 import {
   updateProgressDealsOnAznTasks,
   updateProgressDealsOnEbyTasks,

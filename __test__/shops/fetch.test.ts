@@ -2,7 +2,7 @@ import { getProductInfoWithFetch, ShopObject } from "@dipmaxtech/clr-pkg";
 import {
   getAllShops,
   //@ts-ignore
-} from "../../src/services/db/util/shops.js";
+} from "../../src/db/util/shops.js";
 //@ts-ignore
 import { proxyAuth } from "../../src/constants.js";
 

@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { productPriceComperator } from "../src/services/productPriceComparator.js";
-import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
+import { deleteAllArbispotterProducts } from "../src/db/util/crudArbispotterProduct.js";
 const shopDomain = 'voelkner.de'
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),

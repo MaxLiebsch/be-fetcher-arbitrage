@@ -1,5 +1,5 @@
-import { hostname } from "../services/db/mongo.js";
-import { findTasks, getNewTask } from "../services/db/util/tasks.js";
+import { hostname } from "../db/mongo.js";
+import { findTasks, getNewTask } from "../db/util/tasks.js";
 
 export async function checkForNewTask() {
   const remainingTask = await findTasks({

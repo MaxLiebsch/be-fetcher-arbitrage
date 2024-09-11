@@ -4,8 +4,8 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
-import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
 import { UTCDate } from "@date-fns/utc";
 import { defaultAznDealTask } from "../constants.js";
 

@@ -1,5 +1,5 @@
 import { isAiTaskRunning, isTaskRunning } from "../src/maintenance/resetTasksIds.js";
-import { getTasks } from "../src/services/db/util/tasks.js";
+import { getTasks } from "../src/db/util/tasks.js";
 
 async function main() {
   const tasks = await getTasks();

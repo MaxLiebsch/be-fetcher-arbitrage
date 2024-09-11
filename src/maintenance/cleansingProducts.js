@@ -2,9 +2,9 @@ import {
   countProducts,
   findProducts,
   updateArbispotterProduct,
-} from "../src/services/db/util/crudArbispotterProduct.js";
+} from "../src/db/util/crudArbispotterProduct.js";
 import { calculateOnlyArbitrage, safeParsePrice } from "@dipmaxtech/clr-pkg";
-import { getActiveShops } from "../src/services/db/util/shops.js";
+import { getActiveShops } from "../src/db/util/shops.js";
 const chunksize = 9;
 
 const cleansingProducts = async () => {

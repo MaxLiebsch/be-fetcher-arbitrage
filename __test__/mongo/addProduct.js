@@ -1,6 +1,4 @@
-import { createOrUpdateArbispotterProduct } from "../../src/services/db/util/createOrUpdateArbispotterProduct.js";
-import { createOrUpdateCrawlDataProduct } from "../../src/services/db/util/createOrUpdateCrawlDataProduct.js";
-import { findCrawledProductByLink } from "../../src/services/db/util/crudCrawlDataProduct.js";
+import { createOrUpdateCrawlDataProduct } from "../../src/db/util/createOrUpdateCrawlDataProduct.js";
 
 const main = async () => {
   return await createOrUpdateCrawlDataProduct(

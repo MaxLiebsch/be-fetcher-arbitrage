@@ -1,4 +1,4 @@
-import { findCrawledProductByLink } from "../../src/services/db/util/crudCrawlDataProduct.js";
+import { findCrawledProductByLink } from "../../src/db/util/crudCrawlDataProduct.js";
 
 const main = async () => {
   findCrawledProductByLink(

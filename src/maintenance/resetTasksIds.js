@@ -1,7 +1,7 @@
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getTasks } from "../services/db/util/tasks.js";
-import { getArbispotterDb } from "../services/db/mongo.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getTasks } from "../db/util/tasks.js";
+import { getArbispotterDb } from "../db/mongo.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 
 const taskIdScraperMap = {
   ean_taskId: ["CRAWL_EAN"],

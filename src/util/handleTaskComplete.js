@@ -1,8 +1,8 @@
 import { UTCDate } from "@date-fns/utc";
 import { COOLDOWN } from "../constants.js";
-import { hostname } from "../services/db/mongo.js";
-import { updateShopStats } from "../services/db/util/shops.js";
-import { updateTask } from "../services/db/util/tasks.js";
+import { hostname } from "../db/mongo.js";
+import { updateShopStats } from "../db/util/shops.js";
+import { updateTask } from "../db/util/tasks.js";
 
 export const handleTaskCompleted = async (id, infos, additionalUpdate = {}) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;

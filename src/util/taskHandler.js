@@ -5,9 +5,9 @@ import {
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
-import { hostname } from "../services/db/mongo.js";
-import { updateShopStats } from "../services/db/util/shops.js";
-import { updateTask } from "../services/db/util/tasks.js";
+import { hostname } from "../db/mongo.js";
+import { updateShopStats } from "../db/util/shops.js";
+import { updateTask } from "../db/util/tasks.js";
 import calculatePageLimit from "./calculatePageLimit.js";
 import { getTaskSymbol } from "./getTaskSymbol.js";
 import { handleTaskCompleted } from "./handleTaskComplete.js";

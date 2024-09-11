@@ -9,8 +9,8 @@ import {
 import {
   moveArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../services/db/util/crudArbispotterProduct.js";
-import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
+} from "../db/util/crudArbispotterProduct.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 import { UTCDate } from "@date-fns/utc";
 import { getEanFromProduct } from "./getEanFromProduct.js";
 

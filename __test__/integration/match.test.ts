@@ -4,7 +4,7 @@ import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
   //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
+} from "../../src/db/util/crudArbispotterProduct.js";
 //@ts-ignore
 import match from "../../src/services/match.js";
 import { ObjectId } from "mongodb";

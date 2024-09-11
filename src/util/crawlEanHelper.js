@@ -9,7 +9,7 @@ import {
   insertArbispotterProduct,
   moveArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../services/db/util/crudArbispotterProduct.js";
+} from "../db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
 

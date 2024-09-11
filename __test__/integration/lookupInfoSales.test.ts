@@ -6,7 +6,7 @@ import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
   //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
+} from "../../src/db/util/crudArbispotterProduct.js";
 //@ts-ignore
 import lookupInfo from "../../src/services/lookupInfo.js";
 import { ObjectId } from "mongodb";

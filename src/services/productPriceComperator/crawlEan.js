@@ -4,7 +4,7 @@ import {
   QueryQueue,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { updateTask } from "../../services/db/util/tasks.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,

@@ -1,7 +1,7 @@
 import { calculateAznArbitrage } from "@dipmaxtech/clr-pkg";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 //@ts-ignore
-import { getArbispotterDb } from "../../src/services/db/mongo.js";
+import { getArbispotterDb } from "../../src/db/mongo.js";
 
 describe("calculate arbitrage", () => {
   let product: null | any = null;

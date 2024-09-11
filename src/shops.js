@@ -1,4 +1,4 @@
-import { insertShop } from "./services/db/util/shops.js";
+import { insertShop } from "./db/util/shops.js";
 
 export const shops = {
   "idealo.de": {

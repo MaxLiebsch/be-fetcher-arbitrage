@@ -3,7 +3,7 @@ import { describe, expect, test, beforeAll, afterAll } from "@jest/globals";
 //@ts-ignore
 import sinon from "sinon";
 //@ts-ignore
-import clientPool from "../../src/services/db/mongoPool.js";
+import clientPool from "../../src/db/mongoPool.js";
 
 let clock: sinon.SinonFakeTimers;
 let timeTracker: ProcessTimeTracker;

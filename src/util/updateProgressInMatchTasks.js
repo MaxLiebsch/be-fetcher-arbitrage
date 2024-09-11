@@ -1,5 +1,5 @@
-import { getMatchProgress } from "../services/db/util/match/getMatchProgress.js";
-import { updateTaskWithQuery } from "../services/db/util/tasks.js";
+import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
+import { updateTaskWithQuery } from "../db/util/tasks.js";
 
 export const updateProgressInMatchTasks = async (infos) =>
   Promise.all(

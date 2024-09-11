@@ -7,7 +7,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
 
-import { updateTask } from "../../services/db/util/tasks.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,

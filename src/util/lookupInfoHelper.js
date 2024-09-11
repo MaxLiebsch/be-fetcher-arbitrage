@@ -2,9 +2,9 @@ import {
   generateUpdate,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
-import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
-import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
-import { upsertAsin } from "../services/db/util/asinTable.js";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { upsertAsin } from "../db/util/asinTable.js";
 import { UTCDate } from "@date-fns/utc";
 
 export async function handleLookupInfoProductInfo(

@@ -1,4 +1,4 @@
-import { updateTask } from "../../services/db/util/tasks.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   CrawlerQueue,
   crawlSubpage,
@@ -18,7 +18,7 @@ import {
   findProductByLink,
   updateArbispotterProductSet,
   upsertArbispotterProduct,
-} from "../../services/db/util/crudArbispotterProduct.js";
+} from "../../db/util/crudArbispotterProduct.js";
 import { UTCDate } from "@date-fns/utc";
 import { salesDbName } from "../db/mongo.js";
 

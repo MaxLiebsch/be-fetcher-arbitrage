@@ -1,4 +1,4 @@
-import { updateTask } from "../services/db/util/tasks.js";
+import { updateTask } from "../db/util/tasks.js";
 import { sendMail } from "../email.js";
 import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
 import { LoggerService, ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
@@ -7,9 +7,9 @@ import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
 
 import { executeTask } from "./executeTask.js";
 import { checkForNewTask } from "./checkForNewTask.js";
-import { hostname } from "../services/db/mongo.js";
+import { hostname } from "../db/mongo.js";
 import { handleTask } from "./taskHandler.js";
-import clientPool from "../services/db/mongoPool.js";
+import clientPool from "../db/mongoPool.js";
 import { UTCDate } from "@date-fns/utc";
 import {
   updateProgressDealTasks,

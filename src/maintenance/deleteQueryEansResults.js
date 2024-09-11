@@ -1,7 +1,7 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 
 const query = { eby_prop: "missing", e_prc: { $exists: true } };
 

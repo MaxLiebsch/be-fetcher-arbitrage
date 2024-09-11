@@ -4,7 +4,7 @@ import {
   findMappedCategory,
 } from "@dipmaxtech/clr-pkg";
 //@ts-ignore
-import { getArbispotterDb } from "../../src/services/db/mongo.js";
+import { getArbispotterDb } from "../../src/db/mongo.js";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 
 

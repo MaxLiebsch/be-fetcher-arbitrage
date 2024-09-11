@@ -1,4 +1,4 @@
-import { updateShopStats } from "../services/db/util/shops.js";
+import { updateShopStats } from "../db/util/shops.js";
 
 const main = async () => {
   const shop = "idealo.de";

@@ -24,7 +24,7 @@ import { Browser } from "puppeteer";
 import testParameters from "./testParamter.js";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
 //@ts-ignore
-import { getShops } from "../../../src/services/db/util/shops.js";
+import { getShops } from "../../../src/db/util/shops.js";
 //@ts-ignore
 import { proxyAuth } from "../../../src/constants.js";
 import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";

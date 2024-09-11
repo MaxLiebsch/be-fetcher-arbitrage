@@ -1,11 +1,11 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 import { countTotal } from "./countProducts.js";
 import { recalculateAznMargin } from "../util/recalculateAznMargin.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
-import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
-import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 import { reduceSalesRankArray } from "@dipmaxtech/clr-pkg";
 
 function isArrayOfNumberPairs(arr) {

@@ -4,16 +4,16 @@ import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
   //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
+} from "../../src/db/util/crudArbispotterProduct.js";
 //@ts-ignore
 import negAznDeals from "../../src/services/deals/weekly/negAznDeals.js";
 import { ObjectId } from "mongodb";
 //@ts-ignore
-import { getAllShopsAsArray } from "../../src/services/db/util/shops.js";
+import { getAllShopsAsArray } from "../../src/db/util/shops.js";
 //@ts-ignore
-import { getArbispotterDb } from "../../src/services/db/mongo.js";
+import { getArbispotterDb } from "../../src/db/mongo.js";
 //@ts-ignore
-import { shopProxyTypeFilter } from "../../src/services/db/util/filter.js";
+import { shopProxyTypeFilter } from "../../src/db/util/filter.js";
 import { sub } from "date-fns";
 const proxyType = "mix";
 

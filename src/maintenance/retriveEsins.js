@@ -1,5 +1,5 @@
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getActiveShops } from "../services/db/util/shops.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getActiveShops } from "../db/util/shops.js";
 
 const checkProps = async () => {
   const activeShops = await getActiveShops();

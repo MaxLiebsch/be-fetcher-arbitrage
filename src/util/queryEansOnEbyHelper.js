@@ -2,11 +2,11 @@ import {
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
-import { updateArbispotterProductQuery } from "../services/db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
 import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
-import { resetEbyProductQuery } from "../services/db/util/ebyQueries.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection,

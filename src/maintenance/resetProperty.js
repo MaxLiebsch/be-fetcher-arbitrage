@@ -1,5 +1,5 @@
-import { getArbispotterDb } from "../services/db/mongo.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb } from "../db/mongo.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 
 const resetProperty = async () => {
   const spotter = await getArbispotterDb();

@@ -1,6 +1,6 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
-import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
+import { deleteAllArbispotterProducts } from "../src/db/util/crudArbispotterProduct.js";
 
 const shopDomain = "reichelt.de";
 

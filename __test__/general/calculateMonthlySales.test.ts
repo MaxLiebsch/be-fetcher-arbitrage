@@ -2,7 +2,7 @@ import { describe, expect, test, beforeAll } from "@jest/globals";
 import {
   findArbispotterProduct,
   //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
+} from "../../src/db/util/crudArbispotterProduct.js";
 import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 
 describe("Calculate Monthly sales", () => {

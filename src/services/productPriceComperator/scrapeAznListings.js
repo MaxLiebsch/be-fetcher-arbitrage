@@ -5,7 +5,7 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { defaultQuery, proxyAuth } from "../../constants.js";
-import { updateTask } from "../../services/db/util/tasks.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
