@@ -2,6 +2,7 @@ import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
 import { getTasks } from "../db/util/tasks.js";
 import { getArbispotterDb } from "../db/mongo.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 
 const taskIdScraperMap = {
   ean_taskId: ["CRAWL_EAN"],
@@ -82,7 +83,7 @@ const resetTaskIds = async () => {
   const shops = await getAllShopsAsArray();
   const tasks = await getTasks();
   const activeShops = shops.filter((shop) => shop.active);
-  activeShops.push({ d: "sales" });
+  activeShops.push({ d: "sales", _id: new ObjectId() });
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
 

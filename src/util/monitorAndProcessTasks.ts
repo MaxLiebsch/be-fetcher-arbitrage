@@ -1,20 +1,22 @@
-import { updateTask } from "../db/util/tasks.js";
-import { sendMail } from "../email.js";
-import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
+import { updateTask } from "../db/util/tasks";
+import { sendMail } from "../email";
+import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status";
 import { LoggerService, ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
-import { MissingProductsError } from "../errors.js";
-import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
+import { MissingProductsError } from "../errors";
+import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants";
 
-import { executeTask } from "./executeTask.js";
-import { checkForNewTask } from "./checkForNewTask.js";
-import { hostname } from "../db/mongo.js";
-import { handleTask } from "./taskHandler.js";
-import clientPool from "../db/mongoPool.js";
+import { executeTask } from "./executeTask";
+import { checkForNewTask } from "./checkForNewTask";
+import { hostname } from "../db/mongo";
+import { handleTask } from "./taskHandler";
+import clientPool from "../db/mongoPool";
 import { UTCDate } from "@date-fns/utc";
 import {
   updateProgressDealTasks,
   updateProgressNegDealTasks,
-} from "./updateProgressInTasks.js";
+} from "./updateProgressInTasks";
+import { TASK_TYPES } from "./taskTypes";
+import { Task } from "../types/tasks/Tasks";
 
 const { errorLogger } = LoggerService.getSingleton();
 
@@ -32,7 +34,7 @@ export async function monitorAndProcessTasks() {
     const { type, id, _id } = task;
 
     const isMatchLookup =
-      type === "MATCH_PRODUCTS" || type === "CRAWL_AZN_LISTINGS";
+      type === TASK_TYPES.MATCH_PRODUCTS || type === TASK_TYPES.NEG_AZN_DEALS;
     clearInterval(intervalId); // Stop checking while executing the task
     taskId = id;
 
@@ -63,8 +65,8 @@ export async function monitorAndProcessTasks() {
         );
         if (
           priority === "high" ||
-          task.type === "CRAWL_SHOP" ||
-          task.type === "DAILY_SALES"
+          task.type === TASK_TYPES.CRAWL_SHOP ||
+          task.type === TASK_TYPES.DAILY_SALES
         ) {
           await sendMail({
             priority,
@@ -85,7 +87,8 @@ export async function monitorAndProcessTasks() {
       const cooldown = new UTCDate(Date.now() + COOLDOWN).toISOString(); // 30 min from now
 
       if (error instanceof MissingProductsError) {
-        const update = {
+        const update: Pick<Task, "executing" | "completedAt"> &
+          Partial<Pick<Task, "cooldown">> = {
           executing: false,
           completedAt: new UTCDate().toISOString(),
         };
@@ -96,11 +99,11 @@ export async function monitorAndProcessTasks() {
           $set: update,
           $pull: { lastCrawler: hostname },
         });
-      } else {
-        const update = {
+      } else if (error instanceof Error) {
+        const update: Pick<Task, "executing" | "completed"> &
+          Partial<Pick<Task, "cooldown">> = {
           completed: true,
           executing: false,
-          errored: true,
         };
         if (isMatchLookup) {
           update.cooldown = cooldown;
@@ -109,13 +112,13 @@ export async function monitorAndProcessTasks() {
           $set: update,
           $pull: { lastCrawler: hostname },
         });
+        const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${type}\n${id}\n\n`;
+        await sendMail({
+          priority: "high",
+          subject: `🚱 ${hostname}: Error: ${error?.name}`,
+          html: htmlBody,
+        });
       }
-      const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${type}\n${id}\n\n`;
-      await sendMail({
-        priority: "high",
-        subject: `🚱 ${hostname}: Error: ${error?.name}`,
-        html: htmlBody,
-      });
 
       monitorAndProcessTasks().then(); // Resume processing error
     }

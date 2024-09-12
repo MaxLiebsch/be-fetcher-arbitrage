@@ -7,11 +7,11 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult.js";
-import { MissingProductsError } from "../errors.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
 import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { lookForUnmatchedEans } from "./db/util/lookupInfo/lookForUnmatchedEans.js";
-import { getShop } from "./db/util/shops.js";
+import { lookForUnmatchedEans } from "../db/util/lookupInfo/lookForUnmatchedEans.js";
+import { getShop } from "../db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import { getMaxLoadQueue } from "../services/productPriceComperator/lookupInfo.js";
 import {
@@ -20,13 +20,14 @@ import {
 } from "../util/lookupInfoHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { TaskCompletedStatus } from "../status.js";
 export default async function lookupInfo(task) {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, type, browserConcurrency, concurrency } =
       task;
-      
+
     let infos = {
-      total: 1,
+      total: 0,
       old: 0,
       new: 0,
       failedSave: 0,
@@ -57,6 +58,12 @@ export default async function lookupInfo(task) {
 
     const toolInfo = await getShop("sellercentral.amazon.de");
 
+    if (!toolInfo) {
+      return reject(
+        new MissingShopError(`No shop found for sellercentral.amazon.de`, task)
+      );
+    }
+
     infos.locked = products.length;
 
     //Update task progress
@@ -68,16 +75,18 @@ export default async function lookupInfo(task) {
     const queuesWithId = {};
     const eventEmitter = globalEventEmitter;
 
-    const isCompleted = async () => {
-      await checkProgress({
-        queue: queryQueues,
+    const isCompleted = async (queue) => {
+      const check = await checkProgress({
+        task,
+        queue,
         infos,
         startTime,
         productLimit: _productLimit,
-      }).catch(async (r) => {
-        await updateProgressInLookupInfoTask();
-        handleResult(r, resolve, reject);
       });
+      if (check instanceof TaskCompletedStatus) {
+        await updateProgressInLookupInfoTask();
+        handleResult(check, resolve, reject);
+      }
     };
 
     await Promise.all(
@@ -122,12 +131,6 @@ export default async function lookupInfo(task) {
       )
     );
 
-    async function isProcessComplete(queue) {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await isCompleted();
-      }
-    }
-
     const queueIterator = yieldQueues(queryQueues);
 
     for (let index = 0; index < products.length; index++) {
@@ -149,7 +152,7 @@ export default async function lookupInfo(task) {
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
-        await isProcessComplete(queue);
+        await isCompleted(queue);
       };
       const handleNotFound = async (cause) => {
         infos.notFound++;
@@ -157,6 +160,7 @@ export default async function lookupInfo(task) {
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
+        await isCompleted(queue);
       };
 
       const query = {

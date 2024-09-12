@@ -14,7 +14,7 @@ import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../../util/lookupCategoryHelper.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const lookupCategory = async (ebay, origin, task) =>
   new Promise(async (res, rej) => {
@@ -22,7 +22,7 @@ export const lookupCategory = async (ebay, origin, task) =>
     const { concurrency, productLimit } = browserConfig.lookupCategory;
     let infos = {
       new: 0,
-      total: 1,
+      total: 0,
       old: 0,
       notFound: 0,
       locked: 0,

@@ -129,7 +129,7 @@ export default async function wholesale(task) {
       const isDone = queues.every((q) => q.workload() === 0);
       await updateWholesaleProgress(taskId);
       if (isDone) {
-        await checkProgress({
+        await checkProgress({ task,
           queue: queues,
           infos,
           startTime,
@@ -220,7 +220,7 @@ export default async function wholesale(task) {
           }
         }
         if (infos.total === _productLimit) {
-          await checkProgress({
+          await checkProgress({ task,
             queue: queues,
             infos,
             startTime,
@@ -249,7 +249,7 @@ export default async function wholesale(task) {
           infos.failedSave++;
         }
         if (infos.total === _productLimit) {
-          await checkProgress({
+          await checkProgress({ task,
             queue: queues,
             infos,
             startTime,

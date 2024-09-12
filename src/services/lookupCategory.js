@@ -10,13 +10,14 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
-import { lookForMissingEbyCategory } from "./db/util/lookupCategory/lookForMissingEbyCategory.js";
-import { getShop } from "./db/util/shops.js";
+import { lookForMissingEbyCategory } from "../db/util/lookupCategory/lookForMissingEbyCategory.js";
+import { getShop } from "../db/util/shops.js";
 import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../util/lookupCategoryHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
+import { TaskCompletedStatus } from "../status.js";
 
 async function lookupCategory(task) {
   return new Promise(async (resolve, reject) => {
@@ -24,7 +25,7 @@ async function lookupCategory(task) {
 
     let infos = {
       new: 0,
-      total: 1,
+      total: 0,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -60,32 +61,28 @@ async function lookupCategory(task) {
       proxyAuth,
       task
     );
-    queue.total = 1;
+    queue.total = 0;
     await queue.connect();
 
     const isCompleted = async () => {
-      await checkProgress({
+      const check = await checkProgress({
+        task,
         queue,
         infos,
         startTime,
         productLimit: _productLimit,
-      }).catch(async (r) => {
-        clearInterval(interval);
-        await updateProgressInLookupCategoryTask(); // update lookup category task
-        handleResult(r, resolve, reject);
       });
+      if(check instanceof TaskCompletedStatus){
+        clearInterval(interval);
+        handleResult(check, resolve, reject);
+        await updateProgressInLookupCategoryTask(); // update lookup category task
+      }
     };
 
     const interval = setInterval(
       async () => await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
-
-    const isProcessComplete = async () => {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await isCompleted();
-      }
-    };
 
     for (let index = 0; index < products.length; index++) {
       let { shop: srcShop, product } = products[index];
@@ -105,7 +102,7 @@ async function lookupCategory(task) {
           infos,
           product
         );
-        await isProcessComplete();
+        await isCompleted();
       };
       const handleNotFound = async (cause) => {
         await handleLookupCategoryNotFound(
@@ -115,7 +112,7 @@ async function lookupCategory(task) {
           productLink,
           cause
         );
-        await isProcessComplete();
+        await isCompleted();
       };
 
       queue.pushTask(queryProductPageQueue, {

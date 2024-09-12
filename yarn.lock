@@ -2286,10 +2286,22 @@
   dependencies:
     undici-types "~5.26.4"
 
+"@types/nodemailer@^6.4.15":
+  version "6.4.15"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.15.tgz#494be695e11c438f7f5df738fb4ab740312a6ed2"
+  integrity sha512-0EBJxawVNjPkng1zm2vopRctuWVCxk34JcIlRuXSf54habUWdz1FB7wHDqOqvDa8Mtpt0Q3LTXQkAs2LNyK5jQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/stack-utils@^2.0.0":
   version "2.0.3"
   resolved "https://registry.npmjs.org/@types/stack-utils/-/stack-utils-2.0.3.tgz"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
+
+"@types/underscore@^1.11.15":
+  version "1.11.15"
+  resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.11.15.tgz#29c776daecf6f1935da9adda17509686bf979947"
+  integrity sha512-HP38xE+GuWGlbSRq9WrZkousaQ7dragtZCruBVMi0oX1migFZavZ3OROKHSkNp/9ouq82zrWtZpg18jFnVN96g==
 
 "@types/webidl-conversions@*":
   version "7.0.3"
@@ -2670,7 +2682,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     "@date-fns/utc" "^1.2.0"
     axios "^1.7.2"
-    be-fetcher-arbitrage "file:../../AppData/Local/Yarn/Cache/v6/npm-be-fetcher-arbitrage-0.0.114-4290afc4-def6-4a1e-aa1b-12d4064ec817-1725971894521/node_modules/be-fetcher-arbitrage"
+    be-fetcher-arbitrage "file:../../AppData/Local/Yarn/Cache/v6/npm-be-fetcher-arbitrage-0.0.114-9cac9685-7a16-4a9b-80bf-9dd5f6117f5b-1726151048785/node_modules/be-fetcher-arbitrage"
     concurrently "^8.2.2"
     convert-units "^2.3.4"
     cross-env "^7.0.3"

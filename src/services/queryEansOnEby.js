@@ -1,3 +1,4 @@
+
 import {
   QueryQueue,
   queryEansOnEbyQueue,
@@ -7,7 +8,7 @@ import {
 import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
-import { MissingProductsError } from "../errors.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -19,15 +20,16 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
-import { lookForUnmatchedQueryEansOnEby } from "./db/util/queryEansOnEby/lookForUnmatchedEansOnEby.js";
-import { getShop } from "./db/util/shops.js";
+import { lookForUnmatchedQueryEansOnEby } from "../db/util/queryEansOnEby/lookForUnmatchedEansOnEby.js";
+import { getShop } from "../db/util/shops.js";
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../util/queryEansOnEbyHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { TaskCompletedStatus } from "../status.js";
 
 export default async function queryEansOnEby(task) {
   return new Promise(async (resolve, reject) => {
@@ -43,11 +45,8 @@ export default async function queryEansOnEby(task) {
       missingProperties: {},
     };
 
-    const { products: productsWithShop, shops } = await lookForUnmatchedQueryEansOnEby(
-      _id,
-      action,
-      productLimit
-    );
+    const { products: productsWithShop, shops } =
+      await lookForUnmatchedQueryEansOnEby(_id, action, productLimit);
 
     shops.forEach(async (info) => {
       infos.shops[info.shop.d] = 0;
@@ -60,7 +59,10 @@ export default async function queryEansOnEby(task) {
     if (!productsWithShop.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(productsWithShop.length, productLimit);
+    const _productLimit = getProductLimit(
+      productsWithShop.length,
+      productLimit
+    );
     task.actualProductLimit = _productLimit;
 
     infos.locked = productsWithShop.length;
@@ -82,37 +84,29 @@ export default async function queryEansOnEby(task) {
 
     const toolInfo = await getShop("ebay.de");
 
-    const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-          await updateProgressInLookupCategoryTask(); // update lookup category task
-          handleResult(r, resolve, reject);
-        }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
+    if (!toolInfo) {
+      return reject(new MissingShopError(`No shop found for ebay.de`, task));
+    }
 
     async function isProcessComplete() {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-          await updateProgressInLookupCategoryTask(); // update lookup category task
-          handleResult(r, resolve, reject);
-        });
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
+        await updateProgressInLookupCategoryTask(); // update lookup category task
+        handleResult(check, resolve, reject);
       }
     }
+    const interval = setInterval(
+      async () => await isProcessComplete(),
+      DEFAULT_CHECK_PROGRESS_INTERVAL
+    );
 
     for (let index = 0; index < productsWithShop.length; index++) {
       const { shop, product } = productsWithShop[index];

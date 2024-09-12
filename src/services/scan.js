@@ -23,7 +23,7 @@ export default async function scan(task) {
     let infos = {
       new: 0,
       old: 0,
-      total: 1,
+      total: 0,
       categoriesHeuristic: {
         subCategories: {
           0: 0,
@@ -63,16 +63,24 @@ export default async function scan(task) {
 
     const startTime = Date.now();
 
+    const isCompleted = ()=> {
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+     if(check instanceof TaskCompletedStatus){ 
+        await upsertSiteMap(shopDomain, statService.getStatsFile());
+        clearInterval(interval);
+        handleResult(check, res, reject);
+     }
+    }
+
     const interval = setInterval(
       async () =>
-        await checkProgress({ queue, infos, startTime, productLimit }).catch(
-          async (r) => {
-            await upsertSiteMap(shopDomain, statService.getStatsFile());
-            clearInterval(interval);
-          
-            handleResult(r, res, reject);
-          }
-        ),
+        await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 

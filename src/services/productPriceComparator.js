@@ -1,12 +1,12 @@
-import { findShops } from "./db/util/shops.js";
-import { createArbispotterCollection, salesDbName } from "./db/mongo.js";
+import { findShops } from "../db/util/shops.js";
+import { createArbispotterCollection, salesDbName } from "../db/mongo.js";
 import { crawlProducts } from "./productPriceComperator/crawlProducts.js";
 import { crawlEans } from "./productPriceComperator/crawlEan.js";
 import { lookupInfo } from "./productPriceComperator/lookupInfo.js";
 import { queryEansOnEby } from "./productPriceComperator/queryEansOnEby.js";
 import { lookupCategory } from "./productPriceComperator/lookupCategory.js";
 import { crawlEbyListings } from "./productPriceComperator/crawlEbyListings.js";
-import { findArbispotterProductsNoLimit } from "./db/util/crudArbispotterProduct.js";
+import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
 import { TaskCompletedStatus } from "../status.js";
 import {
   COMPLETE_FAILURE_THRESHOLD,
@@ -14,10 +14,11 @@ import {
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
-import { updateTask } from "./db/util/tasks.js";
+import { updateTask } from "../db/util/tasks.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings.js";
 import { getElapsedTime } from "../util/dates.js";
+import { MissingShopError } from "../errors.js";
 
 const logService = LoggerService.getSingleton();
 
@@ -32,19 +33,39 @@ export const productPriceComperator = async (task) => {
       "sellercentral.amazon.de",
       "ebay.de",
     ]);
+
+    if (!shops) {
+      return rej(new MissingShopError(`No shop found for ${shopDomain}`, task));
+    }
     const sellerCentral = shops["sellercentral.amazon.de"];
     const ebay = shops["ebay.de"];
     const origin = shops[shopDomain];
     const amazon = shops["amazon.de"];
 
     const infos = {
-      crawlProducts: {},
-      crawlEan: {},
-      lookupInfo: {},
-      lookupCategory: {},
-      queryEansOnEby: {},
-      aznListings: {},
-      ebyListings: {},
+      total: 0,
+      locked: 0,
+      crawlProducts: {
+        elapsedTime: "",
+      },
+      crawlEan: {
+        elapsedTime: "",
+      },
+      lookupInfo: {
+        elapsedTime: "",
+      },
+      lookupCategory: {
+        elapsedTime: "",
+      },
+      queryEansOnEby: {
+        elapsedTime: "",
+      },
+      aznListings: {
+        elapsedTime: "",
+      },
+      ebyListings: {
+        elapsedTime: "",
+      },
     };
     await createArbispotterCollection("sales");
 
@@ -104,8 +125,8 @@ export const productPriceComperator = async (task) => {
         } else if (infos.total === 1 && retry === MAX_TASK_RETRIES) {
           return res(
             new TaskCompletedStatus("DAILY_DEALS FAILED", task, {
-              infos,
-              statistics: {},
+              taskStats: infos,
+              queueStats: {},
             })
           );
         }
@@ -299,7 +320,6 @@ export const productPriceComperator = async (task) => {
     infos.ebyListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
-    task.statistics = task.browserConfig;
     const { elapsedTime, elapsedTimeStr } = getElapsedTime(processStartTime);
 
     logService.logger.info({
@@ -307,13 +327,13 @@ export const productPriceComperator = async (task) => {
       taskid: task.id ?? "",
       type: task.type,
       infos,
-      statistics: task.statistics,
+      statistics: task.browserConfig,
       elapsedTime: elapsedTimeStr,
     });
     res(
       new TaskCompletedStatus("DAILY_DEALS COMPLETED", task, {
         infos,
-        statistics: task.statistics,
+        queueStats: task.browserConfig,
       })
     );
   });

@@ -10,13 +10,13 @@ import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
 } from "../../util/scrapeEbyListingsHelper.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const crawlEbyListings = (ebay, task) =>
   new Promise(async (res, rej) => {
     let infos = {
       new: 0,
-      total: 1,
+      total: 0,
       old: 0,
       notFound: 0,
       locked: 0,

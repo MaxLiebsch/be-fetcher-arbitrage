@@ -20,7 +20,7 @@ import {
   upsertArbispotterProduct,
 } from "../../db/util/crudArbispotterProduct.js";
 import { UTCDate } from "@date-fns/utc";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const crawlProducts = async (shop, task) =>
   new Promise(async (res, rej) => {
@@ -30,7 +30,7 @@ export const crawlProducts = async (shop, task) =>
     let infos = {
       new: 0,
       old: 0,
-      total: 1,
+      total: 0,
       failedSave: 0,
       categoriesHeuristic: {
         subCategories: {

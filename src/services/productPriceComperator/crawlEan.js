@@ -16,14 +16,14 @@ import {
   handleCrawlEanProductInfo,
 } from "../../util/crawlEanHelper.js";
 import { removeSearchParams } from "../../util/removeSearch.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const crawlEans = async (shop, task) =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.crawlEan;
     let infos = {
-      total: 1,
+      total: 0,
       notFound: 0,
       locked: 0,
       shops: {},

@@ -1,14 +1,9 @@
 import {
-  createArbispotterCollection,
-  createCrawlDataCollection,
-  getArbispotterDb,
   getCrawlDataDb,
 } from "../db/mongo.js";
 import {
   findArbispotterProducts,
 } from "../db/util/crudArbispotterProduct.js";
-import { createOrUpdateCrawlDataProduct } from "../db/util/createOrUpdateCrawlDataProduct.js";
-import { findCrawlDataProducts } from "../db/util/crudCrawlDataProduct.js";
 import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbispotterProduct.js";
 
 const cleanSlate = async () => {

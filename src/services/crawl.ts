@@ -10,36 +10,52 @@ import {
   transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { createArbispotterCollection } from "./db/mongo.js";
-import { handleResult } from "../handleResult.js";
-import { MissingShopError } from "../errors.js";
-import { getShops } from "./db/util/shops.js";
+import { createArbispotterCollection } from "../db/mongo";
+import { MissingShopError, TaskErrors } from "../errors";
+import { getShop } from "../db/util/shops";
 import {
   CONCURRENCY,
   DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
+} from "../constants";
+import { checkProgress } from "../util/checkProgress";
 import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
-} from "../util/updateProgressInTasks.js";
-import { createOrUpdateArbispotterProduct } from "./db/util/createOrUpdateArbispotterProduct.js";
+} from "../util/updateProgressInTasks";
+import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbispotterProduct";
+import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats";
+import { ScrapeShopTask } from "../types/tasks/Tasks";
+import { TaskCompletedStatus } from "../status";
 
-async function crawl(task: CrawlTask) {
-  return new Promise(async (res, reject) => {
-    const { shopDomain, productLimit, limit, recurrent, categories } = task;
+async function crawl(
+  task: ScrapeShopTask
+): Promise<TaskCompletedStatus | TaskErrors> {
+  return new Promise(async (resolve, reject) => {
+    const {
+      shopDomain,
+      productLimit,
+      limit,
+      recurrent,
+      categories,
+      concurrency,
+    } = task;
 
-    const shops = await getShops([{ d: shopDomain }]);
+    const shop = await getShop(shopDomain);
+    if (shop === null) {
+      return reject(new MissingShopError(`Shop ${shopDomain} not found`, task));
+    }
+
     let done = false;
-    const shop = shops[shopDomain];
-    const { entryPoints } = shop;
+    const { entryPoints, proxyType, hasEan } = shop;
     const uniqueLinks: string[] = [];
 
-    let infos = {
+    let infos: ScrapeShopStats = {
       new: 0,
       old: 0,
       total: 0,
+      elapsedTime: "",
+      locked: productLimit,
       failedSave: 0,
       categoriesHeuristic: {
         subCategories: {
@@ -65,30 +81,34 @@ async function crawl(task: CrawlTask) {
         lnk: 0,
         img: 0,
       },
+      notFound: 0
     };
 
-    if (shops === null) reject(new MissingShopError("", task));
     task.actualProductLimit = productLimit;
     const queue = new CrawlerQueue(
-      task?.concurrency ? task.concurrency : CONCURRENCY,
+      concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
     const emitter = globalEventEmitter;
 
-    emitter.on(`${queue.queueId}-finished`, async () => {
-      await checkProgress({
+    const isCompleted = async () => {
+      const check = await checkProgress({
+        task,
         queue,
         infos,
         startTime,
         productLimit,
-      }).catch(async (r) => {
-        clearInterval(interval);
-        await updateProgressInCrawlEanTask(shop.proxyType);
-        await updateMatchProgress(shopDomain, shop.hasEan);
-        handleResult(r, res, reject);
       });
-    });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await updateProgressInCrawlEanTask(proxyType);
+        await updateMatchProgress(shopDomain, hasEan);
+        resolve(check);
+      }
+    };
+
+    emitter.on(`${queue.queueId}-finished`, async () => await isCompleted());
 
     await queue.connect();
 
@@ -97,18 +117,7 @@ async function crawl(task: CrawlTask) {
     const startTime = Date.now();
 
     const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateProgressInCrawlEanTask(shop.proxyType);
-          await updateMatchProgress(shopDomain, shop.hasEan);
-          handleResult(r, res, reject);
-        }),
+      async () => await isCompleted(),
       DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
     );
     const addProduct = async (product: ProductRecord) => {

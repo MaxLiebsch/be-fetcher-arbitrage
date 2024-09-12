@@ -1,3 +1,4 @@
+
 import {
   QueryQueue,
   queryTargetShops,
@@ -9,7 +10,7 @@ import {
 import { shuffle } from "underscore";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import { getShop, getShops } from "./db/util/shops.js";
+import { getShop, getShops } from "../db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
@@ -23,11 +24,12 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
-import { lockProductsForMatch } from "./db/util/match/lockProductsForMatch.js";
+import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
-import { updateArbispotterProductQuery } from "./db/util/crudArbispotterProduct.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { TaskCompletedStatus } from "../status.js";
 
 export default async function match(task) {
   return new Promise(async (resolve, reject) => {
@@ -100,39 +102,26 @@ export default async function match(task) {
 
     const procProductsPromiseArr = [];
 
-    const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateMatchProgress(shopDomain, hasEan); // update match progress
-          await updateProgressInLookupInfoTask(); // update lookup info task progress
-          await updateProgressInLookupCategoryTask();
-          handleResult(r, resolve, reject);
-        }),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
-
     async function isProcessComplete() {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateMatchProgress(shopDomain, hasEan); // update match progress
-          await updateProgressInLookupInfoTask(); // update lookup info task progress
-          await updateProgressInLookupCategoryTask();
-          handleResult(r, resolve, reject);
-        });
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await updateMatchProgress(shopDomain, hasEan); // update match progress
+        await updateProgressInLookupInfoTask(); // update lookup info task progress
+        await updateProgressInLookupCategoryTask();
+        handleResult(check, resolve, reject);
       }
     }
+    const interval = setInterval(
+      async () => await isProcessComplete(),
+      DEFAULT_CHECK_PROGRESS_INTERVAL
+    );
 
     const shuffled = shuffle(lockedProducts);
 

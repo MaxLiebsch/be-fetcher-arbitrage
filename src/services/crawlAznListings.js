@@ -21,6 +21,7 @@ import {
   handleAznListingProductInfo,
 } from "../util/scrapeAznListingsHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
+import { TaskCompletedStatus } from "../status.js";
 
 export default async function crawlAznListings(task) {
   return new Promise(async (resolve, reject) => {
@@ -28,7 +29,7 @@ export default async function crawlAznListings(task) {
 
     let infos = {
       new: 0,
-      total: 1,
+      total: 0,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -72,44 +73,33 @@ export default async function crawlAznListings(task) {
       proxyAuth,
       task
     );
-    queue.total = 1;
+    queue.total = 0;
     await queue.connect();
 
     const isCompleted = async () => {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateCrawlAznListingsProgress(shopDomain);
-          await updateProgressInLookupInfoTask(); // update lookup info task progress
-          handleResult(r, resolve, reject);
-        });
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await updateCrawlAznListingsProgress(shopDomain);
+        await updateProgressInLookupInfoTask(); // update lookup info task progress
+        handleResult(check, resolve, reject);
       }
     };
 
     const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await updateCrawlAznListingsProgress(shopDomain);
-          await updateProgressInLookupInfoTask(); // update lookup info task progress
-          handleResult(r, resolve, reject);
-        }),
+      async () => await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      const { asin, lnk: productLink , s_hash} = product;
+      const { asin, lnk: productLink, s_hash } = product;
 
       const addProduct = async (product) => {};
       const addProductInfo = async ({ productInfo, url }) => {

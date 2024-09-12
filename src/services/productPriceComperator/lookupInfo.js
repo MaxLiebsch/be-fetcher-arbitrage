@@ -13,7 +13,7 @@ import {
   handleLookupInfoProductInfo,
 } from "../../util/lookupInfoHelper.js";
 import { getEanFromProduct } from "../../util/getEanFromProduct.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const getMaxLoadQueue = (queues) => {
   const queueLoad = queues.map((queue) => queue.workload());

@@ -10,7 +10,7 @@ import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
 } from "../../util/scrapeAznListingsHelper.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const scrapeAznListings = (amazon, origin, task) =>
   new Promise(async (res, rej) => {

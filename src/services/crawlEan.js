@@ -29,13 +29,14 @@ import {
 } from "../util/crawlEanHelper.js";
 import { getProductLimit } from "../util/getProductLimit.js";
 import { removeSearchParams } from "../util/removeSearch.js";
+import { TaskCompletedStatus } from "../status.js";
 
 export default async function crawlEan(task) {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, proxyType, type } = task;
 
     let infos = {
-      total: 1,
+      total: 0,
       notFound: 0,
       locked: 0,
       shops: {},
@@ -75,47 +76,31 @@ export default async function crawlEan(task) {
       proxyAuth,
       task
     );
-    queue.total = 1;
+    queue.total = 0;
     await queue.connect();
 
     const isComplete = async () => {
-      if (infos.total === _productLimit && !queue.idle()) {
-        await sleep(60000);
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await Promise.all([
-            updateProgressInCrawlEanTask(proxyType), // update crawl ean task
-            updateProgressInMatchTasks(shops), // update matching tasks
-            updateProgressInLookupInfoTask(), // update lookup info task
-            updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-          ]);
-          handleResult(r, resolve, reject);
-        });
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await Promise.all([
+          updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+          updateProgressInMatchTasks(shops), // update matching tasks
+          updateProgressInLookupInfoTask(), // update lookup info task
+          updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
+        ]);
+        handleResult(check, resolve, reject);
       }
     };
 
     const interval = setInterval(
-      async () =>
-        await checkProgress({
-          queue,
-          infos,
-          startTime,
-          productLimit: _productLimit,
-        }).catch(async (r) => {
-          clearInterval(interval);
-          await Promise.all([
-            updateProgressInCrawlEanTask(proxyType), // update crawl ean task
-            updateProgressInMatchTasks(shops), // update matching tasks
-            updateProgressInLookupInfoTask(), // update lookup info task
-            updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-          ]);
-          handleResult(r, resolve, reject);
-        }),
+      async () => await isComplete(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
 

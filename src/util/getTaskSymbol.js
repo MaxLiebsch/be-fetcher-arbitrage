@@ -1,30 +1,32 @@
+import { TASK_TYPES } from "./taskTypes";
+
 export const getTaskSymbol = (type) => {
   switch (type) {
-    case "DAILY_SALES":
+    case TASK_TYPES.DAILY_SALES:
       return "🚀";
-    case "CRAWL_SHOP":
+    case TASK_TYPES.CRAWL_SHOP:
       return "🕷️";
-    case "WHOLESALE_SEARCH":
+    case TASK_TYPES.WHOLESALE_SEARCH:
       return "🔍";
-    case "SCAN_SHOP":
+    case TASK_TYPES.SCAN_SHOP:
       return "🔎";
-    case "MATCH_PRODUCTS":
+    case TASK_TYPES.MATCH_PRODUCTS:
       return "🧩";
-    case "CRAWL_AZN_LISTINGS":
+    case TASK_TYPES.NEG_AZN_DEALS:
       return "🔍";
-    case "CRAWL_EBY_LISTINGS":
+    case TASK_TYPES.NEG_EBY_DEALS:
       return "🔍";
-    case "QUERY_EANS_EBY":
+    case TASK_TYPES.QUERY_EANS_EBY:
       return "🔍";
-    case "LOOKUP_CATEGORY":
+    case TASK_TYPES.LOOKUP_CATEGORY:
       return "🔍";
-    case "LOOKUP_INFO":
+    case TASK_TYPES.LOOKUP_INFO:
       return "🔍";
-    case "CRAWL_EAN":
+    case TASK_TYPES.CRAWL_EAN:
       return "🆕";
-    case "DEALS_ON_EBY":
+    case TASK_TYPES.DEALS_ON_EBY:
       return "🔍";
-    case "DEALS_ON_AZN":
+    case TASK_TYPES.DEALS_ON_AZN:
       return "🔍";
     default:
       return "🤷‍♂️";

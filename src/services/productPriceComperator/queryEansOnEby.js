@@ -15,7 +15,7 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../../util/queryEansOnEbyHelper.js";
-import { salesDbName } from "../db/mongo.js";
+import { salesDbName } from "../../db/mongo.js";
 
 export const queryEansOnEby = async (ebay, task) =>
   new Promise(async (res, rej) => {
