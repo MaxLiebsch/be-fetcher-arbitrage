@@ -25,7 +25,7 @@ export const lockProductsForMatch = async (
   const documents = await db
     .collection(collectionName)
     .find(query, options)
-    .toArray();
+    .toArray() as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover") {

@@ -1,5 +1,5 @@
 import { Task } from "./Tasks";
-import { ObjectId } from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
 
 export interface Limit {
   subCategories: number;
@@ -16,6 +16,13 @@ export interface Category {
 export interface DailySalesTask extends Task {
   categories: Category[];
   executing: boolean;
+  acutalProductLimit: number;
+  crawlEan: DbProductRecord[];
+  lookupInfo: DbProductRecord[];
+  queryEansOnEby: DbProductRecord[];
+  lookupCategory: DbProductRecord[];
+  ebyListings: DbProductRecord[];
+  aznListings: DbProductRecord[];
   progress: DailySalesProgress;
   browserConfig: BrowserConfig;
 }

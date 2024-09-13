@@ -1,4 +1,4 @@
-import { CrawlerQueue, QueryQueue, sleep } from "@dipmaxtech/clr-pkg";
+import { CrawlerQueue, QueryQueue, ScanQueue, sleep } from "@dipmaxtech/clr-pkg";
 import { TaskCompletedStatus } from "../status.js";
 import { MATCH_TIME_LIMIT } from "../constants.js";
 import { getElapsedTime } from "./dates.js";
@@ -9,7 +9,7 @@ import { combineQueueStats } from "./combineQueueStats.js";
 import { TaskResultEvent } from "../types/tasks/TaskResult.js";
 
 interface CheckProgressArgs {
-  queue: QueryQueue[] | QueryQueue | CrawlerQueue;
+  queue: QueryQueue[] | QueryQueue | CrawlerQueue | ScanQueue;
   infos: TaskStats;
   task: Tasks;
   startTime: number;
@@ -31,7 +31,7 @@ const handleArrayOfQueues = async (
 };
 
 const handleSingleQueue = async (
-  queue: QueryQueue | CrawlerQueue,
+  queue: QueryQueue | CrawlerQueue | ScanQueue,
   taskStats: TaskStats,
   status: string
 ) => {

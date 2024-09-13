@@ -1,9 +1,4 @@
-import { 
-  ProxyType,
-  QueueStats,
-  TaskTypes,
-  WithId,
-} from "@dipmaxtech/clr-pkg";
+import { ProxyType, QueueStats, TaskTypes, WithId } from "@dipmaxtech/clr-pkg";
 import { DailySalesTask } from "./DailySalesTask";
 
 export interface Category {
@@ -17,8 +12,7 @@ export interface Limit {
   pages: number;
 }
 
-export type Action = 'recover' | 'none'
-
+export type Action = "recover" | "none";
 
 export interface Task extends WithId<Document> {
   type: TaskTypes;
@@ -65,19 +59,33 @@ export interface StartShop {
   name: string;
 }
 
-export interface MatchProductsTasks extends Task {
+export interface MatchProductsTask extends Task {
   extendedLookUp: boolean;
   startShops: StartShop[];
+  concurrency: number; 
 }
 
 export interface MultipleShopTask extends Task {
   progress: Progress[];
 }
-export interface LookupInfoTask extends MultipleShopTask {}
 
-export interface LookupCategoryTask extends MultipleShopTask {}
+export interface ScrapeEansTask extends MultipleShopTask {
+  proxyType: ProxyType;
+  concurrency: number;
+}
+export interface LookupInfoTask extends MultipleShopTask {
+  browserConcurrency: number;
+  concurrency: number;
+}
 
-export interface QueryEansOnEbyTask extends MultipleShopTask {}
+export interface LookupCategoryTask extends MultipleShopTask {
+  proxyType: ProxyType;
+  concurrency: number;
+}
+
+export interface QueryEansOnEbyTask extends MultipleShopTask {
+  concurrency: number;
+}
 
 export interface DealOnAznTask extends MultipleShopTask {
   proxyType: ProxyType;
@@ -101,13 +109,21 @@ export interface NegEbyDealTask extends MultipleShopTask {
 
 export interface WholeSaleTask extends MultipleShopTask {
   browserConcurrency: number;
+  userId: string
+  concurrency: number;
+}
+
+export interface ScanTask extends Task{
+   concurrency: number;
 }
 
 export type Tasks =
   | ScrapeShopTask
   | ScrapeEansTask
-  | MatchProductsTasks
+  | MatchProductsTask
   | LookupInfoTask
+  | ScanTask
+  | WholeSaleTask
   | DailySalesTask
   | LookupCategoryTask
   | QueryEansOnEbyTask

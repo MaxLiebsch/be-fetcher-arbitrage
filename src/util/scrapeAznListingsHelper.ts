@@ -12,12 +12,13 @@ import { resetAznProductQuery } from "../db/util/aznQueries";
 import { UTCDate } from "@date-fns/utc";
 import { defaultAznDealTask } from "../constants";
 import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn";
+import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats";
 
 export async function handleAznListingProductInfo(
   collection: string,
   product: DbProductRecord,
   { productInfo, url }: AddProductInfoProps,
-  infos: NegDealsOnAznStats,
+  infos: NegDealsOnAznStats | DealsOnAznStats,
   queue: QueryQueue,
   processProps = defaultAznDealTask
 ) {

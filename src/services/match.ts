@@ -1,0 +1,224 @@
+import {
+  QueryQueue,
+  queryTargetShops,
+  standardTargetRetailerList,
+  reduceString,
+  matchTargetShopProdsWithRawProd,
+  replaceAllHiddenCharacters,
+  DbProductRecord,
+} from "@dipmaxtech/clr-pkg";
+import { shuffle } from "underscore";
+import { handleResult } from "../handleResult";
+import { MissingProductsError, MissingShopError } from "../errors";
+import { getShop, getShops } from "../db/util/shops";
+import {
+  CONCURRENCY,
+  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
+  proxyAuth,
+} from "../constants";
+import { checkProgress } from "../util/checkProgress";
+import { parseAsinFromUrl } from "../util/parseAsin";
+import {
+  updateMatchProgress,
+  updateProgressInLookupCategoryTask,
+  updateProgressInLookupInfoTask,
+} from "../util/updateProgressInTasks";
+import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch";
+import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
+import { parseEsinFromUrl } from "../util/parseEsin.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { TaskCompletedStatus } from "../status.js";
+import { MatchProductsTask } from "../types/tasks/Tasks";
+import { MatchProductsStats } from "../types/taskStats/MatchProductsStats";
+import { TaskReturnType } from "../types/TaskReturnType";
+
+export default async function match(task: MatchProductsTask):TaskReturnType {
+  return new Promise(async (resolve, reject) => {
+    const { shopDomain, concurrency, productLimit, startShops, _id, action } =
+      task;
+
+    const srcShop = await getShop(shopDomain);
+
+    if (!srcShop) return reject(new MissingShopError("", task));
+
+    const { hasEan, ean } = srcShop;
+
+    const lockedProducts = await lockProductsForMatch(
+      _id,
+      shopDomain,
+      action || "none",
+      Boolean(hasEan || ean),
+      productLimit
+    );
+
+    let infos: MatchProductsStats = {
+      total: 0,
+      notFound: 0,
+      locked: 0,
+      elapsedTime: "",
+    };
+
+    if (!lockedProducts.length)
+      return reject(
+        new MissingProductsError(`No products for ${shopDomain}`, task)
+      );
+
+    const _productLimit =
+      lockedProducts.length < productLimit
+        ? lockedProducts.length
+        : productLimit;
+    task.actualProductLimit = _productLimit;
+
+    infos.locked = lockedProducts.length;
+
+    //Update task progress
+    await updateMatchProgress(shopDomain, hasEan);
+
+    const startTime = Date.now();
+
+    let targetShops = standardTargetRetailerList;
+
+    if (startShops && startShops.length) {
+      targetShops = [...targetShops, ...startShops];
+    }
+
+    const shops = await getShops(targetShops);
+
+    if (shops === null) return reject(new MissingShopError("", task));
+
+    const queue = new QueryQueue(
+      concurrency ? concurrency : CONCURRENCY,
+      proxyAuth,
+      task
+    );
+    await queue.connect();
+
+    const procProductsPromiseArr = [];
+
+    async function isProcessComplete() {
+      const check = await checkProgress({
+        task,
+        queue,
+        infos,
+        startTime,
+        productLimit: _productLimit,
+      });
+      if (check instanceof TaskCompletedStatus) {
+        clearInterval(interval);
+        await updateMatchProgress(shopDomain, hasEan); // update match progress
+        await updateProgressInLookupInfoTask(); // update lookup info task progress
+        await updateProgressInLookupCategoryTask();
+        handleResult(check, resolve, reject);
+      }
+    }
+    const interval = setInterval(
+      async () => await isProcessComplete(),
+      DEFAULT_CHECK_PROGRESS_INTERVAL
+    );
+
+    const shuffled = shuffle(lockedProducts);
+
+    const sliced = shuffled;
+
+    const handleOutput = async (
+      procProd: DbProductRecord,
+      product: DbProductRecord
+    ) => {
+      const { e_qty, a_qty, lnk: productLink } = product;
+      const { e_lnk, a_lnk, a_nm, e_nm, e_prc, a_prc } = procProd;
+      let productUpdate: Partial<DbProductRecord> = {};
+
+      await handleRelocateLinks(procProd, infos);
+
+      const esin = parseEsinFromUrl(e_lnk);
+      if (esin) {
+        productUpdate["e_nm"] = replaceAllHiddenCharacters(e_nm!);
+        productUpdate["e_qty"] = e_qty || 1;
+        productUpdate["e_uprc"] = e_prc;
+        productUpdate["e_lnk"] = e_lnk!.split("?")[0];
+        productUpdate["esin"] = esin;
+        productUpdate["eby_prop"] = "complete";
+      }
+
+      const asin = parseAsinFromUrl(a_lnk);
+      if (asin) {
+        productUpdate["a_nm"] = replaceAllHiddenCharacters(a_nm!);
+        productUpdate["a_qty"] = a_qty || 1;
+        productUpdate["a_uprc"] = a_prc;
+        productUpdate["asin"] = asin;
+        productUpdate["bsr"] = [];
+      }
+      productUpdate["matched"] = true;
+
+      await updateArbispotterProductQuery(shopDomain, productLink, {
+        $set: productUpdate,
+        $unset: {
+          taskId: "",
+        },
+      });
+    };
+
+    for (let index = 0; index < sliced.length; index++) {
+      const product = sliced[index];
+
+      const { nm, mnfctr } = product;
+      const ean = getEanFromProduct(product);
+
+      const reducedName = mnfctr + " " + reduceString(nm, 55);
+
+      const query = {
+        ...defaultQuery,
+        product: {
+          key: reducedName,
+          value: ean || reducedName,
+        },
+        category: "default",
+      };
+
+      const prodInfo = {
+        procProd: product,
+        rawProd: product,
+        dscrptnSegments: [],
+        nmSubSegments: [],
+      };
+
+      const _shops = await queryTargetShops(
+        startShops ? startShops : targetShops,
+        queue,
+        shops,
+        query,
+        task,
+        prodInfo,
+        srcShop
+      );
+
+      procProductsPromiseArr.push(
+        Promise.all(_shops).then(async (targetShopProducts) => {
+          infos.total++;
+          queue.total++;
+          console.log(
+            "total products:",
+            infos.total,
+            "total queue:",
+            _productLimit
+          );
+          if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
+            const procProd = targetShopProducts[0]?.procProd;
+            await handleOutput(procProd as DbProductRecord, product);
+          } else {
+            const { procProd, candidates } = matchTargetShopProdsWithRawProd(
+              targetShopProducts,
+              prodInfo
+            );
+            await handleOutput(procProd, product);
+          }
+          await isProcessComplete();
+          return;
+        })
+      );
+    }
+    await Promise.all(procProductsPromiseArr);
+  });
+}

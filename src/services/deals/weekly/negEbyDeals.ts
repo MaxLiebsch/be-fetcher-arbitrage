@@ -32,11 +32,12 @@ import { NegEbyDealTask } from "../../../types/tasks/Tasks";
 import { TaskStats } from "../../../types/taskStats/TasksStats";
 import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
 import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby";
-import { MissingShopError, TaskErrors } from "../../../errors";
+import { MissingShopError } from "../../../errors";
+import { TaskReturnType } from "../../../types/TaskReturnType";
 
 const negEbyDeals = async (
   task: NegEbyDealTask
-): Promise<TaskCompletedStatus | TaskErrors> => {
+): TaskReturnType => {
   const { productLimit } = task;
   const { _id, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {

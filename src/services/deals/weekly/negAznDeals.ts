@@ -34,8 +34,9 @@ import { NegAznDealTask } from "../../../types/tasks/Tasks";
 import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn";
 import { MissingShopError, TaskErrors } from "../../../errors";
 import { TaskStats } from "../../../types/taskStats/TasksStats";
+import { TaskReturnType } from "../../../types/TaskReturnType";
 
-const negAznDeals = async (task: NegAznDealTask) => {
+const negAznDeals = async (task: NegAznDealTask):TaskReturnType => {
   const { productLimit } = task;
   const { _id, action, concurrency, proxyType } = task;
   return new Promise<TaskCompletedStatus | TaskErrors>(async (res, rej) => {

@@ -12,11 +12,11 @@ import { lookForOutdatedDealsOnEby } from "../../../db/util/deals/daily/eby/look
 import { DealOnEbyTask } from "../../../types/tasks/Tasks";
 import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
 import { MissingShopError } from "../../../errors";
-import { TaskErrors } from "../../../types/tasks/TaskErrors";
+import { TaskReturnType } from "../../../types/TaskReturnType";
 
 const dealsOnEby = async (
   task: DealOnEbyTask
-): Promise<TaskCompletedStatus | TaskErrors> => {
+): TaskReturnType => {
   const { productLimit } = task;
   const { _id, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {

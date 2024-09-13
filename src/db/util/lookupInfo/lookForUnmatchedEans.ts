@@ -7,7 +7,7 @@ import { getRecoveryLookupInfoProducts } from "./getRecoveryLookupInfoProducts";
 import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../types/tasks/Tasks";
-import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops";
 
 export async function lookForUnmatchedEans(
   taskId: ObjectId,

@@ -11,11 +11,10 @@ import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTas
 import { lookForOutdatedDealsOnAzn } from "../../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn";
 import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats";
 import { DealOnAznTask } from "../../../types/tasks/Tasks";
-import { MissingShopError, TaskErrors } from "../../../errors";
+import { MissingShopError } from "../../../errors";
+import { TaskReturnType } from "../../../types/TaskReturnType";
 
-const dealsOnAzn = async (
-  task: DealOnAznTask
-): Promise<TaskCompletedStatus | TaskErrors> => {
+const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {
@@ -61,6 +60,8 @@ const dealsOnAzn = async (
       missingProperties: {
         bsr: 0,
         mappedCat: 0,
+        aznCostNeg: 0,
+        infos: 0,
         calculationFailed: 0,
         name: 0,
         price: 0,

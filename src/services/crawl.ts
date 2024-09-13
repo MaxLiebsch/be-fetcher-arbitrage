@@ -2,7 +2,6 @@ import {
   CrawlerQueue,
   crawlShop,
   crawlSubpage,
-  CrawlTask,
   DbProductRecord,
   globalEventEmitter,
   ProductRecord,
@@ -11,7 +10,7 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { createArbispotterCollection } from "../db/mongo";
-import { MissingShopError, TaskErrors } from "../errors";
+import { MissingShopError} from "../errors";
 import { getShop } from "../db/util/shops";
 import {
   CONCURRENCY,
@@ -27,10 +26,11 @@ import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbis
 import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats";
 import { ScrapeShopTask } from "../types/tasks/Tasks";
 import { TaskCompletedStatus } from "../status";
+import { TaskReturnType } from "../types/TaskReturnType";
 
 async function crawl(
   task: ScrapeShopTask
-): Promise<TaskCompletedStatus | TaskErrors> {
+): TaskReturnType {
   return new Promise(async (resolve, reject) => {
     const {
       shopDomain,

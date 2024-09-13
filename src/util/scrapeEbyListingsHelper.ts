@@ -9,10 +9,10 @@ import {
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries"
 import { UTCDate } from "@date-fns/utc";
-import { defaultEbyDealTask } from "../constants.js";
-import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
+import { defaultEbyDealTask } from "../constants"
+import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats"
 
 export const expiredIndicatorStrs = [
   "beendet",

@@ -1,3 +1,4 @@
+import { TaskErrors } from "./errors";
 import {
   ProductLimitReachedStatus,
   TaskCompletedStatus,
@@ -9,20 +10,13 @@ export type ResultType =
   | typeof ProductLimitReachedStatus
   | typeof TimeLimitReachedStatus;
 
-const isExpectedStatus = (result: ResultType): result is ResultType => {
-  return (
-    result instanceof TaskCompletedStatus ||
-    result instanceof ProductLimitReachedStatus ||
-    result instanceof TimeLimitReachedStatus
-  );
-};
 
 export const handleResult = (
-  result: any,
-  res: (value: ResultType) => void,
+  result: TaskCompletedStatus | TaskErrors,
+  res: (value: TaskCompletedStatus) => void,
   rej: (reason?: any) => void
 ) => {
-  if (isExpectedStatus(result)) {
+  if (result instanceof TaskCompletedStatus) {
     res(result);
   } else {
     rej(result);
