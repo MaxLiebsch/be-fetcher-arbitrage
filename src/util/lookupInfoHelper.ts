@@ -2,6 +2,7 @@ import {
   AddProductInfoProps,
   DbProductRecord,
   generateUpdate,
+  ObjectId,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { resetAznProductQuery } from "../db/util/aznQueries";
@@ -23,7 +24,7 @@ export async function handleLookupInfoProductInfo(
     qty: buyQty,
     ean,
     a_vrfd,
-    lnk: productLink,
+    _id: productId,
   } = product;
   if (productInfo) {
     try {
@@ -50,7 +51,7 @@ export async function handleLookupInfoProductInfo(
         };
       }
 
-      await updateArbispotterProductQuery(collection, productLink, {
+      await updateArbispotterProductQuery(collection, productId, {
         $set: {
           ...update,
           ...(a_nm && typeof a_nm === "string"
@@ -72,7 +73,7 @@ export async function handleLookupInfoProductInfo(
         }
         await updateArbispotterProductQuery(
           collection,
-          productLink,
+          productId,
           resetAznProductQuery({
             info_prop: "missing",
           })
@@ -83,7 +84,7 @@ export async function handleLookupInfoProductInfo(
     infos.missingProperties.infos++;
     await updateArbispotterProductQuery(
       collection,
-      productLink,
+      productId,
       resetAznProductQuery({
         info_prop: "missing",
       })
@@ -91,10 +92,13 @@ export async function handleLookupInfoProductInfo(
   }
 }
 
-export async function handleLookupInfoNotFound(collection: string, productLink: string) {
+export async function handleLookupInfoNotFound(
+  collection: string,
+  productId: ObjectId
+) {
   await updateArbispotterProductQuery(
     collection,
-    productLink,
+    productId,
     resetAznProductQuery({
       info_prop: "missing",
     })

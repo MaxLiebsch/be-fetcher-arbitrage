@@ -5,6 +5,7 @@ import {
   detectCurrency,
   findMappedCategory,
   NotFoundCause,
+  ObjectId,
   parseEbyCategories,
   QueryQueue,
   roundToTwoDecimals,
@@ -29,7 +30,7 @@ export async function handleLookupCategoryProductInfo(
 ) {
   infos.total++;
   queue.total++;
-  const { lnk: productLink } = product;
+  const { _id: productId } = product;
 
   const exisitingEan = getEanFromProduct(product);
 
@@ -44,13 +45,13 @@ export async function handleLookupCategoryProductInfo(
       if (!ean) {
         await updateArbispotterProductQuery(
           collection,
-          productLink,
+          productId,
           resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
         );
       } else if (ean !== exisitingEan) {
         await updateArbispotterProductQuery(
           collection,
-          productLink,
+          productId,
           resetEbyProductQuery({
             cat_prop: "ean_missmatch",
             eby_prop: "",
@@ -75,7 +76,7 @@ export async function handleLookupCategoryProductInfo(
   } else {
     await updateArbispotterProductQuery(
       collection,
-      productLink,
+      productId,
       resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
     );
   }
@@ -85,7 +86,7 @@ export async function handleLookupCategoryNotFound(
   collection: string,
   infos: LookupCategoryStats,
   queue: QueryQueue,
-  productLink: string,
+  id: ObjectId,
   cause: NotFoundCause
 ) {
   infos.notFound++;
@@ -93,7 +94,7 @@ export async function handleLookupCategoryNotFound(
   infos.total++;
   queue.total++;
   if (cause === "timeout") {
-    await updateArbispotterProductQuery(collection, productLink, {
+    await updateArbispotterProductQuery(collection, id, {
       $set: {
         cat_prop: "timeout",
       },
@@ -102,7 +103,7 @@ export async function handleLookupCategoryNotFound(
       },
     });
   } else {
-    await moveArbispotterProduct(collection, "grave", productLink);
+    await moveArbispotterProduct(collection, "grave", id);
   }
 }
 
@@ -118,7 +119,7 @@ export const handleCategoryAndUpdate = async (
     e_qty: sellQty,
     qty: buyQty,
     e_vrfd,
-    lnk: productLink,
+    _id: productId,
   } = product;
 
   if (categories) {
@@ -160,21 +161,21 @@ export const handleCategoryAndUpdate = async (
         e_pblsh: true,
         esin,
       };
-      await updateArbispotterProductQuery(shopDomain, productLink, {
+      await updateArbispotterProductQuery(shopDomain, productId, {
         $set: productUpdate,
         $unset: { cat_taskId: "" },
       });
     } else {
       await updateArbispotterProductQuery(
         shopDomain,
-        productLink,
+        productId,
         resetEbyProductQuery({ cat_prop: "category_not_found", eby_prop: "" })
       );
     }
   } else {
     await updateArbispotterProductQuery(
       shopDomain,
-      productLink,
+      productId,
       resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
     );
   }

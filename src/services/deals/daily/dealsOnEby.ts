@@ -14,14 +14,12 @@ import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
 import { MissingShopError } from "../../../errors";
 import { TaskReturnType } from "../../../types/TaskReturnType";
 
-const dealsOnEby = async (
-  task: DealOnEbyTask
-): TaskReturnType => {
+const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id, action, proxyType, concurrency } = task;
+  const { _id: taskId, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop } = await lookForOutdatedDealsOnEby(
-      _id,
+      taskId,
       proxyType,
       action || "none",
       productLimit
@@ -74,7 +72,7 @@ const dealsOnEby = async (
         const { shop, product } = productWithShop;
         const source: Shop = shop as Shop;
         const { d: shopDomain } = source;
-        const { lnk: productLink, esin } = product;
+        const { esin, _id: productId } = product;
 
         const diffHours = differenceInHours(
           new Date(),
@@ -103,7 +101,7 @@ const dealsOnEby = async (
             );
           } else {
             infos.total++;
-            await deleteArbispotterProduct(shopDomain, productLink);
+            await deleteArbispotterProduct(shopDomain, productId);
             //DELETE PRODUCT
           }
         } else {

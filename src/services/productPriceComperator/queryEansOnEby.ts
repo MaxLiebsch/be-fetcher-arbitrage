@@ -32,7 +32,7 @@ export const queryEansOnEby = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id } = task;
+    const { browserConfig, _id: taskId } = task;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
     task.actualProductLimit = task.queryEansOnEby.length;
@@ -44,7 +44,7 @@ export const queryEansOnEby = async (
       `${queue.queueId}-finished`,
       async function queryEansOnEbyCallback() {
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -52,7 +52,7 @@ export const queryEansOnEby = async (
 
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
-      await updateTask(_id, {
+      await updateTask(taskId, {
         $pull: {
           "progress.queryEansOnEby": { _id: { $in: completedProducts } },
         },
@@ -83,7 +83,7 @@ export const queryEansOnEby = async (
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -94,7 +94,7 @@ export const queryEansOnEby = async (
       task.progress.queryEansOnEby.pop();
       if (!product) continue;
 
-      const { ean, s_hash } = product;
+      const { ean, s_hash, _id: productId } = product;
       const foundProducts: Product[] = [];
 
       const addProduct = async (
@@ -103,7 +103,7 @@ export const queryEansOnEby = async (
         foundProducts.push(product as Product);
       };
       const isFinished = async () => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         await handleQueryEansOnEbyIsFinished(
           salesDbName,
           queue,
@@ -115,7 +115,7 @@ export const queryEansOnEby = async (
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         await handleQueryEansOnEbyNotFound(salesDbName, infos, product, queue);
         await isProcessComplete();
       };

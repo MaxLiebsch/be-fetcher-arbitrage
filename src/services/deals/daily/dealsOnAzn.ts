@@ -11,16 +11,16 @@ import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTas
 import { lookForOutdatedDealsOnAzn } from "../../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn";
 import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats";
 import { DealOnAznTask } from "../../../types/tasks/Tasks";
-import { MissingShopError } from "../../../errors";
 import { TaskReturnType } from "../../../types/TaskReturnType";
+import { MissingShopError } from "../../../errors";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id, action, proxyType, concurrency } = task;
+  const { _id: taskId, action, proxyType, concurrency } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await lookForOutdatedDealsOnAzn(
-        _id,
+        taskId,
         proxyType,
         action || "none",
         productLimit
@@ -91,7 +91,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
           const { shop, product } = productWithShop;
           const source: Shop = shop as Shop;
           const { d: shopDomain } = source;
-          const { lnk: productLink, asin } = product;
+          const { _id: productId, asin } = product;
 
           const diffHours = differenceInHours(
             new Date(),
@@ -121,7 +121,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               );
             } else {
               infos.total++;
-              await deleteArbispotterProduct(shopDomain, productLink);
+              await deleteArbispotterProduct(shopDomain, productId);
               //DELETE PRODUCT
             }
           } else {

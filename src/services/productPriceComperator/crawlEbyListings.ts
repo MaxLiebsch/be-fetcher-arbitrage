@@ -47,7 +47,7 @@ export const crawlEbyListings = (
       },
       elapsedTime: "",
     };
-    const { browserConfig, _id, shopDomain } = task;
+    const { browserConfig, _id: taskId } = task;
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
     task.actualProductLimit = task.ebyListings.length;
@@ -58,7 +58,7 @@ export const crawlEbyListings = (
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function crawlEbyListingEventCallback() {
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -69,7 +69,7 @@ export const crawlEbyListings = (
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         console.log("product limit reached");
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -79,7 +79,7 @@ export const crawlEbyListings = (
       const product = task.ebyListings.pop();
       task.progress.ebyListings.pop();
       if (!product) continue;
-      const { lnk: productLink, esin, s_hash } = product;
+      const { _id: productId, esin, s_hash } = product;
 
       const addProduct = async (
         product: Partial<Record<Content, string | number | boolean | string[]>>
@@ -103,7 +103,7 @@ export const crawlEbyListings = (
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await handleEbyListingNotFound(salesDbName, productLink);
+        await handleEbyListingNotFound(salesDbName, productId);
         await isProcessComplete();
       };
 

@@ -37,8 +37,8 @@ export const productPriceComperator = async (
   task: DailySalesTask
 ): TaskReturnType => {
   const processStartTime = Date.now();
-  const { productLimit } = task;
-  const { shopDomain } = task;
+  const { productLimit, shopDomain } = task;
+
   return new Promise(async (res, rej) => {
     const shops = await findShops([
       shopDomain,

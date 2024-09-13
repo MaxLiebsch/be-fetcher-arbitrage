@@ -19,7 +19,7 @@ import {
 import { parseISO } from "date-fns";
 import {
   findProductByLink,
-  updateArbispotterProductSet,
+  updateArbispotterProductQuery,
   upsertArbispotterProduct,
 } from "../../db/util/crudArbispotterProduct";
 import { UTCDate } from "@date-fns/utc";
@@ -33,7 +33,8 @@ export const crawlProducts = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { categories, browserConfig, _id, productLimit } = task;
+    const { categories, browserConfig, _id: taskId, productLimit } = task;
+    const { d: shopDomain, hasEan, ean } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];
     let infos: ScrapeShopStats = {
@@ -79,7 +80,7 @@ export const crawlProducts = async (
       `${queue.queueId}-finished`,
       async function crawlProductsCallback() {
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -102,11 +103,11 @@ export const crawlProducts = async (
       const handleCrawledProduct = async (product: ProductRecord) => {
         if (infos.total === productLimit && !queue.idle()) {
           console.log("product limit reached");
-          await updateTask(_id, { $set: { progress: task.progress } });
+          await updateTask(taskId, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res({ infos, queueStats: queue.queueStats });
         } else {
-          const transformedProduct = transformProduct(product, shop.d);
+          const transformedProduct = transformProduct(product, shopDomain);
           const { lnk, nm, prc: buyPrice, qty: buyQty } = transformedProduct;
           if (nm && buyPrice && lnk) {
             if (!uniqueLinks.includes(lnk)) {
@@ -121,27 +122,30 @@ export const crawlProducts = async (
                 new UTCDate().toISOString();
               const existingProduct = await findProductByLink(salesDbName, lnk);
               if (existingProduct) {
-                await updateArbispotterProductSet(salesDbName, lnk, {
-                  availUpdatedAt: transformedProduct["availUpdatedAt"],
+                const {
+                  _id: productId,
+                  ean_prop, //scrape ean
+                  info_prop, // scrape info
+                  eby_prop, // query ean on eby
+                  cat_prop, // lookup category
+                } = existingProduct;
+                await updateArbispotterProductQuery(salesDbName, productId, {
+                  $set: {
+                    availUpdatedAt: transformedProduct["availUpdatedAt"],
+                  },
                 });
                 const xDaysAgo = new UTCDate();
                 xDaysAgo.setDate(
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
                 );
                 infos.old++;
-                const {
-                  ean_prop, //scrape ean
-                  info_prop, // scrape info
-                  eby_prop, // query ean on eby
-                  cat_prop, // lookup category
-                } = existingProduct;
 
                 // hasEan is a flag to check if the product has an ean in the listing
                 // ean is the ean that was scraped from the product link
 
-                if (!shop.hasEan && shop.ean) {
-                  task.progress.lookupInfo.push(existingProduct._id);
-                  task.progress.queryEansOnEby.push(existingProduct._id);
+                if (!hasEan && ean) {
+                  task.progress.lookupInfo.push(productId);
+                  task.progress.queryEansOnEby.push(productId);
                   return;
                 }
                 //ean_prop can have the following values: missing, found
@@ -152,7 +156,7 @@ export const crawlProducts = async (
                     ean_prop !== "timeout" &&
                     ean_prop !== "found")
                 ) {
-                  task.progress.crawlEan.push(existingProduct._id);
+                  task.progress.crawlEan.push(productId);
                   return;
                 }
 
@@ -164,7 +168,7 @@ export const crawlProducts = async (
                     (!info_prop ||
                       (info_prop !== "missing" && info_prop !== "complete")))
                 ) {
-                  task.progress.lookupInfo.push(existingProduct._id);
+                  task.progress.lookupInfo.push(productId);
                 }
 
                 if (
@@ -173,7 +177,7 @@ export const crawlProducts = async (
                     (!eby_prop ||
                       (eby_prop !== "missing" && eby_prop !== "complete")))
                 ) {
-                  task.progress.queryEansOnEby.push(existingProduct._id);
+                  task.progress.queryEansOnEby.push(productId);
                 }
 
                 if (
@@ -186,15 +190,15 @@ export const crawlProducts = async (
                       cat_prop !== "categories_missing" &&
                       cat_prop !== "category_not_found"))
                 ) {
-                  task.progress.lookupCategory.push(existingProduct._id);
+                  task.progress.lookupCategory.push(productId);
                 }
 
                 if (cat_prop === "complete" && eby_prop === "complete") {
-                  task.progress.ebyListings.push(existingProduct._id);
+                  task.progress.ebyListings.push(productId);
                 }
 
                 if (info_prop === "complete") {
-                  task.progress.aznListings.push(existingProduct._id);
+                  task.progress.aznListings.push(productId);
                 }
               } else {
                 const result = await upsertArbispotterProduct(

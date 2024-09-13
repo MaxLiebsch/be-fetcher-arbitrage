@@ -1,8 +1,6 @@
 import {
   findArbispotterProducts,
-  updateArbispotterProductSet,
 } from "../db/util/crudArbispotterProduct.js";
-import { updateCrawlDataProduct } from "../db/util/crudCrawlDataProduct.js";
 import { getActiveShops } from "../db/util/shops.js";
 
 const updateAznUpdatedAt = async () => {

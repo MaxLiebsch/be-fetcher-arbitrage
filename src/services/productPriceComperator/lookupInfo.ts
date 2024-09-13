@@ -32,7 +32,7 @@ export const lookupInfo = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id, shopDomain } = task;
+    const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit, browserConcurrency } =
       browserConfig.lookupInfo;
 
@@ -84,7 +84,9 @@ export const lookupInfo = async (
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
                   interval && clearInterval(interval);
-                  await updateTask(_id, { $set: { progress: task.progress } });
+                  await updateTask(taskId, {
+                    $set: { progress: task.progress },
+                  });
                   const queueStats = combineQueueStats(
                     queryQueues.map((q) => q.queueStats)
                   );
@@ -101,7 +103,7 @@ export const lookupInfo = async (
     async function isProcessComplete(queue: QueryQueue) {
       if (infos.total === productLimit) {
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await Promise.all(queryQueues.map((queue) => queue.disconnect(true)));
         res({ infos, queueStats: queue.queueStats });
       }
@@ -111,7 +113,7 @@ export const lookupInfo = async (
 
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
-      await updateTask(_id, {
+      await updateTask(taskId, {
         $pull: {
           "progress.lookupInfo": { _id: { $in: completedProducts } },
         },
@@ -124,7 +126,7 @@ export const lookupInfo = async (
       if (!product) continue;
       const queue = queueIterator.next().value;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
-      const { lnk: productLink, asin, _id, s_hash } = product;
+      const { lnk: productLink, asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
 
       const addProduct = async (product: ProductRecord) => {};
@@ -132,7 +134,7 @@ export const lookupInfo = async (
         productInfo,
         url,
       }: AddProductInfoProps) => {
-        completedProducts.push(_id);
+        completedProducts.push(productId);
         infos.total++;
         queue.total++;
         await handleLookupInfoProductInfo(
@@ -145,8 +147,8 @@ export const lookupInfo = async (
         await isProcessComplete(queue);
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        completedProducts.push(product._id);
-        await handleLookupInfoNotFound(salesDbName, productLink);
+        completedProducts.push(productId);
+        await handleLookupInfoNotFound(salesDbName, productId);
         infos.notFound++;
         infos.total++;
         queue.total++;

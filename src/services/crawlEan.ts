@@ -38,9 +38,9 @@ import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats";
 import { ScrapeEansTask } from "../types/tasks/Tasks";
 import { TaskReturnType } from "../types/TaskReturnType";
 
-export default async function crawlEan(task: ScrapeEansTask): TaskReturnType{
+export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, proxyType, type } = task;
+    const { productLimit, _id: taskId, action, proxyType, type } = task;
 
     let infos: ScrapeEanStats = {
       total: 0,
@@ -52,7 +52,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType{
     };
 
     const { products, shops } = await lookForMissingEans(
-      _id,
+      taskId,
       proxyType,
       action || "none",
       productLimit
@@ -114,7 +114,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType{
 
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
-      let { lnk: productLink, s_hash } = product;
+      let { lnk: productLink, _id: productId, s_hash } = product;
       productLink = removeSearchParams(productLink);
 
       const shopDomain = shop.d;
@@ -139,7 +139,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType{
         infos.total++;
         queue.total++;
 
-        await handleCrawlEanNotFound(shopDomain, cause, productLink);
+        await handleCrawlEanNotFound(shopDomain, cause, productId);
 
         await isComplete();
       };

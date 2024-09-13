@@ -4,15 +4,16 @@ import {
   DbProductRecord,
   detectCurrency,
   findMappedCategory,
+  ObjectId,
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { resetEbyProductQuery } from "../db/util/ebyQueries"
+import { resetEbyProductQuery } from "../db/util/ebyQueries";
 import { UTCDate } from "@date-fns/utc";
-import { defaultEbyDealTask } from "../constants"
-import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats"
+import { defaultEbyDealTask } from "../constants";
+import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats";
 
 export const expiredIndicatorStrs = [
   "beendet",
@@ -37,7 +38,7 @@ export async function handleEbyListingProductInfo(
     prc: buyPrice,
     ebyCategories,
     e_qty: sellQty,
-    lnk: productLink,
+    _id: productId,
   } = product;
   const { timestamp, taskIdProp } = processProps;
   infos.total++;
@@ -57,7 +58,7 @@ export async function handleEbyListingProductInfo(
     ) {
       await updateArbispotterProductQuery(
         collection,
-        productLink,
+        productId,
         resetEbyProductQuery()
       );
     } else {
@@ -102,12 +103,12 @@ export async function handleEbyListingProductInfo(
               $unset: { [taskIdProp]: "" },
             };
 
-            await updateArbispotterProductQuery(collection, productLink, query);
+            await updateArbispotterProductQuery(collection, productId, query);
           } else {
             infos.missingProperties.calculationFailed++;
             await updateArbispotterProductQuery(
               collection,
-              productLink,
+              productId,
               resetEbyProductQuery()
             );
           }
@@ -115,7 +116,7 @@ export async function handleEbyListingProductInfo(
           infos.missingProperties.mappedCat++;
           await updateArbispotterProductQuery(
             collection,
-            productLink,
+            productId,
             resetEbyProductQuery()
           );
         }
@@ -123,28 +124,20 @@ export async function handleEbyListingProductInfo(
         infos.missingProperties.price++;
         await updateArbispotterProductQuery(
           collection,
-          productLink,
+          productId,
           resetEbyProductQuery()
         );
       }
     }
   } else {
-    await updateArbispotterProductQuery(
-      collection,
-      productLink,
-      resetEbyProductQuery()
-    );
+    await updateArbispotterProductQuery(collection, productId, resetEbyProductQuery());
     infos.notFound++;
   }
 }
 
 export async function handleEbyListingNotFound(
   collection: string,
-  productLink: string
+  id: ObjectId
 ) {
-  await updateArbispotterProductQuery(
-    collection,
-    productLink,
-    resetEbyProductQuery()
-  );
+  await updateArbispotterProductQuery(collection, id, resetEbyProductQuery());
 }

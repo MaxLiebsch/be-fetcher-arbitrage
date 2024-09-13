@@ -32,7 +32,7 @@ export const crawlEans = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id, shopDomain } = task;
+    const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.crawlEan;
     let infos: ScrapeEanStats = {
       total: 0,
@@ -55,14 +55,14 @@ export const crawlEans = async (
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function crawlEanCallback() {
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
     );
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
-      await updateTask(_id, {
+      await updateTask(taskId, {
         $pull: {
           "progress.crawlEan": { _id: { $in: completedProducts } },
         },
@@ -77,7 +77,7 @@ export const crawlEans = async (
       if (infos.total === productLimit && !queue.idle()) {
         console.log("product limit reached");
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -89,7 +89,7 @@ export const crawlEans = async (
       task.progress.crawlEan.pop();
       const product = task.crawlEan.pop();
       if (!product) continue;
-      let { lnk: productLink, s_hash } = product;
+      let { lnk: productLink, s_hash, _id: productId } = product;
       productLink = removeSearchParams(productLink);
 
       const addProduct = async (product: ProductRecord) => {};
@@ -97,7 +97,7 @@ export const crawlEans = async (
         productInfo,
         url,
       }: AddProductInfoProps) => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         await handleCrawlEanProductInfo(
           salesDbName,
           { productInfo, url },
@@ -109,12 +109,12 @@ export const crawlEans = async (
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
-        await handleCrawlEanNotFound(salesDbName, cause, productLink);
+        await handleCrawlEanNotFound(salesDbName, cause, productId);
         await isProcessComplete();
       };
 

@@ -36,7 +36,9 @@ import { QueryEansOnEbyTask } from "../types/tasks/Tasks";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats";
 import { TaskReturnType } from "../types/TaskReturnType";
 
-export default async function queryEansOnEby(task: QueryEansOnEbyTask):TaskReturnType {
+export default async function queryEansOnEby(
+  task: QueryEansOnEbyTask
+): TaskReturnType {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id, action, type } = task;
 
@@ -114,7 +116,7 @@ export default async function queryEansOnEby(task: QueryEansOnEbyTask):TaskRetur
 
     for (let index = 0; index < productsWithShop.length; index++) {
       const { shop, product } = productsWithShop[index];
-      const { s_hash, lnk: productLink } = product;
+      const { s_hash, _id: productId } = product;
 
       const srcShopDomain = shop.d;
       const ean = getEanFromProduct(product);
@@ -138,7 +140,7 @@ export default async function queryEansOnEby(task: QueryEansOnEbyTask):TaskRetur
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         if (cause === "timeout") {
-          await updateArbispotterProductQuery(srcShopDomain, productLink, {
+          await updateArbispotterProductQuery(srcShopDomain, productId, {
             $unset: {
               eby_taskId: "",
             },

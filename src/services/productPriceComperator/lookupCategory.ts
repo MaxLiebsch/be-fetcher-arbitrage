@@ -30,7 +30,7 @@ export const lookupCategory = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id, shopDomain } = task;
+    const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.lookupCategory;
     let infos: LookupCategoryStats = {
       total: 0,
@@ -49,7 +49,7 @@ export const lookupCategory = async (
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function lookupCategoryCallback() {
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -57,7 +57,7 @@ export const lookupCategory = async (
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         interval && clearInterval(interval);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -65,7 +65,7 @@ export const lookupCategory = async (
 
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
-      await updateTask(_id, {
+      await updateTask(taskId, {
         $pull: {
           "progress.lookupCategory": { _id: { $in: completedProducts } },
         },
@@ -78,7 +78,7 @@ export const lookupCategory = async (
       task.progress.lookupCategory.pop();
       if (!product) continue;
 
-      const { lnk: productLink, esin, s_hash } = product;
+      const { _id: productId,  esin, s_hash } = product;
 
       const queryUrl = "https://www.ebay.de/itm/" + esin;
 
@@ -89,7 +89,7 @@ export const lookupCategory = async (
         productInfo,
         url,
       }: AddProductInfoProps) => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         await handleLookupCategoryProductInfo(
           salesDbName,
           Boolean(origin.hasEan || origin.ean),
@@ -101,12 +101,12 @@ export const lookupCategory = async (
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        completedProducts.push(product._id);
+        completedProducts.push(productId);
         await handleLookupCategoryNotFound(
           salesDbName,
           infos,
           queue,
-          productLink,
+          productId,
           cause
         );
         await isProcessComplete();

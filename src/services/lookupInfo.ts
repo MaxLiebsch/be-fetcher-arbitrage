@@ -28,10 +28,16 @@ import { getMaxLoadQueue } from "../util/getMaxLoadQueue";
 import { LookupInfoTask } from "../types/tasks/Tasks";
 import { TaskReturnType } from "../types/TaskReturnType";
 
-export default async function lookupInfo(task: LookupInfoTask):TaskReturnType {
+export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, type, browserConcurrency, concurrency } =
-      task;
+    const {
+      productLimit,
+      _id: taskId,
+      action,
+      type,
+      browserConcurrency,
+      concurrency,
+    } = task;
 
     let infos: LookupInfoStats = {
       total: 0,
@@ -47,7 +53,7 @@ export default async function lookupInfo(task: LookupInfoTask):TaskReturnType {
     };
 
     const { products, shops } = await lookForUnmatchedEans(
-      _id,
+      taskId,
       action || "none",
       productLimit
     );
@@ -144,7 +150,7 @@ export default async function lookupInfo(task: LookupInfoTask):TaskReturnType {
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
-      const { asin, lnk: productLink, s_hash } = product;
+      const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async ({
@@ -165,7 +171,7 @@ export default async function lookupInfo(task: LookupInfoTask):TaskReturnType {
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         infos.notFound++;
-        await handleLookupInfoNotFound(shopDomain, productLink);
+        await handleLookupInfoNotFound(shopDomain, productId);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;

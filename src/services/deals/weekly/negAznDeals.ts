@@ -36,12 +36,12 @@ import { MissingShopError, TaskErrors } from "../../../errors";
 import { TaskStats } from "../../../types/taskStats/TasksStats";
 import { TaskReturnType } from "../../../types/TaskReturnType";
 
-const negAznDeals = async (task: NegAznDealTask):TaskReturnType => {
+const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id, action, concurrency, proxyType } = task;
+  const { _id: taskId, action, concurrency, proxyType } = task;
   return new Promise<TaskCompletedStatus | TaskErrors>(async (res, rej) => {
     const { products, shops } = await lookForOutdatedNegMarginAznListings(
-      _id,
+      taskId,
       proxyType,
       action || "none",
       productLimit
@@ -84,7 +84,7 @@ const negAznDeals = async (task: NegAznDealTask):TaskReturnType => {
         const { product, shop } = productShop;
         const source = shop as Shop;
         const { d: shopDomain } = source;
-        const { asin, lnk: productLink } = product;
+        const { asin, _id: productId } = product;
         const diffHours = differenceInHours(
           new Date(),
           new Date(product.availUpdatedAt || product.updatedAt)
@@ -112,7 +112,7 @@ const negAznDeals = async (task: NegAznDealTask):TaskReturnType => {
             );
           } else {
             infos.total++;
-            await deleteArbispotterProduct(shopDomain, productLink);
+            await deleteArbispotterProduct(shopDomain, productId);
           }
         } else {
           await scrapeAznListings(queue, azn, source, aznLink, product, infos);
@@ -144,7 +144,7 @@ export async function scrapeAznListings(
     const { taskIdProp } = processProps;
     const { d } = target;
     const { d: shopDomain } = source;
-    const { lnk: productLink, s_hash } = product;
+    const { _id, s_hash } = product;
     const addProduct = async (product: ProductRecord) => {};
     const addProductInfo = async ({
       productInfo,
@@ -165,13 +165,13 @@ export async function scrapeAznListings(
       infos.total++;
       queue.total++;
       if (cause === "timeout") {
-        await updateArbispotterProductQuery(shopDomain, productLink, {
+        await updateArbispotterProductQuery(shopDomain, _id, {
           $unset: {
             [taskIdProp]: "",
           },
         });
       } else {
-        await handleAznListingNotFound(shopDomain, productLink);
+        await handleAznListingNotFound(shopDomain, _id);
       }
       res("done");
     };

@@ -34,10 +34,16 @@ import { MatchProductsTask } from "../types/tasks/Tasks";
 import { MatchProductsStats } from "../types/taskStats/MatchProductsStats";
 import { TaskReturnType } from "../types/TaskReturnType";
 
-export default async function match(task: MatchProductsTask):TaskReturnType {
+export default async function match(task: MatchProductsTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { shopDomain, concurrency, productLimit, startShops, _id, action } =
-      task;
+    const {
+      shopDomain,
+      concurrency,
+      productLimit,
+      startShops,
+      _id: taskId,
+      action,
+    } = task;
 
     const srcShop = await getShop(shopDomain);
 
@@ -46,7 +52,7 @@ export default async function match(task: MatchProductsTask):TaskReturnType {
     const { hasEan, ean } = srcShop;
 
     const lockedProducts = await lockProductsForMatch(
-      _id,
+      taskId,
       shopDomain,
       action || "none",
       Boolean(hasEan || ean),
@@ -126,7 +132,7 @@ export default async function match(task: MatchProductsTask):TaskReturnType {
       procProd: DbProductRecord,
       product: DbProductRecord
     ) => {
-      const { e_qty, a_qty, lnk: productLink } = product;
+      const { e_qty, a_qty, _id: productId } = product;
       const { e_lnk, a_lnk, a_nm, e_nm, e_prc, a_prc } = procProd;
       let productUpdate: Partial<DbProductRecord> = {};
 
@@ -152,7 +158,7 @@ export default async function match(task: MatchProductsTask):TaskReturnType {
       }
       productUpdate["matched"] = true;
 
-      await updateArbispotterProductQuery(shopDomain, productLink, {
+      await updateArbispotterProductQuery(shopDomain, productId, {
         $set: productUpdate,
         $unset: {
           taskId: "",

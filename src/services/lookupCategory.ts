@@ -29,9 +29,9 @@ import { LookupCategoryTask } from "../types/tasks/Tasks";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats";
 import { TaskReturnType } from "../types/TaskReturnType";
 
-async function lookupCategory(task: LookupCategoryTask):TaskReturnType {
+async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action,  type } = task;
+    const { productLimit, _id: taskId, action, type } = task;
 
     let infos: LookupCategoryStats = {
       total: 0,
@@ -42,7 +42,7 @@ async function lookupCategory(task: LookupCategoryTask):TaskReturnType {
     };
 
     const { products: products, shops } = await lookForMissingEbyCategory(
-      _id,
+      taskId,
       action || "none",
       productLimit
     );
@@ -99,7 +99,7 @@ async function lookupCategory(task: LookupCategoryTask):TaskReturnType {
 
     for (let index = 0; index < products.length; index++) {
       let { shop: srcShop, product } = products[index];
-      const { lnk: productLink, esin, s_hash } = product;
+      const { _id: productId, esin, s_hash } = product;
 
       const queryUrl = "https://www.ebay.de/itm/" + esin;
 
@@ -125,7 +125,7 @@ async function lookupCategory(task: LookupCategoryTask):TaskReturnType {
           shopDomain,
           infos,
           queue,
-          productLink,
+          productId,
           cause
         );
         await isCompleted();

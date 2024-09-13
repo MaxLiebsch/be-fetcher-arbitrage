@@ -4,6 +4,7 @@ import {
   deliveryTime,
   detectCurrency,
   NotFoundCause,
+  ObjectId,
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
@@ -28,7 +29,7 @@ export async function handleCrawlEanProductInfo(
   taskStats: ScrapeEanStats,
   task: ScrapeEansTask | DailySalesTask | null = null
 ) {
-  const { lnk: productLink, qty: buyQty } = product;
+  const { _id: productId, lnk: productLink, qty: buyQty } = product;
   taskStats.shops![collectionName]++;
   taskStats.total++;
   queue.total++;
@@ -60,8 +61,8 @@ export async function handleCrawlEanProductInfo(
         ...(mku && { mku }),
       };
       if (task && "queryEansOnEby" in task.progress) {
-        task.progress.queryEansOnEby.push(product._id);
-        task.progress.lookupInfo.push(product._id);
+        task.progress.queryEansOnEby.push(productId);
+        task.progress.lookupInfo.push(productId);
       }
       if (inStock) {
         const stockStr = deliveryTime(inStock);
@@ -71,14 +72,14 @@ export async function handleCrawlEanProductInfo(
       }
 
       if (url === productLink) {
-        await updateArbispotterProductQuery(collectionName, productLink, {
+        await updateArbispotterProductQuery(collectionName, productId, {
           $set: productUpdate,
           $unset: { ean_taskId: "" },
         });
       } else {
         const result = await deleteArbispotterProduct(
           collectionName,
-          productLink
+          productId
         );
         if (result.deletedCount === 1) {
           const s_hash = createHash(url);
@@ -97,13 +98,13 @@ export async function handleCrawlEanProductInfo(
         eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: ean ? "invalid" : "missing",
       };
-      await updateArbispotterProductQuery(collectionName, productLink, {
+      await updateArbispotterProductQuery(collectionName, productId, {
         $set: productUpdate,
         $unset: { ean_taskId: "" },
       });
     }
   } else {
-    await updateArbispotterProductQuery(collectionName, productLink, {
+    await updateArbispotterProductQuery(collectionName, productId, {
       $set: {
         ean_prop: "invalid",
         eanUpdatedAt: new UTCDate().toISOString(),
@@ -117,10 +118,10 @@ export async function handleCrawlEanProductInfo(
 export async function handleCrawlEanNotFound(
   collection: string,
   cause: NotFoundCause,
-  productLink: string,
+  id: ObjectId
 ) {
   if (cause === "timeout") {
-    await updateArbispotterProductQuery(collection, productLink, {
+    await updateArbispotterProductQuery(collection, id, {
       $set: {
         ean_prop: "timeout",
         eanUpdatedAt: new UTCDate().toISOString(),
@@ -130,6 +131,6 @@ export async function handleCrawlEanNotFound(
       },
     });
   } else {
-    await moveArbispotterProduct(collection, "grave", productLink);
+    await moveArbispotterProduct(collection, "grave", id);
   }
 }

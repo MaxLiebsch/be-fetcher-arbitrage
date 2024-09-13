@@ -25,7 +25,7 @@ export const scrapeAznListings = (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id } = task;
+    const { browserConfig, _id: taskId } = task;
     const { concurrency, productLimit } = browserConfig.crawlAznListings;
 
     let infos: DealsOnAznStats = {
@@ -68,7 +68,7 @@ export const scrapeAznListings = (
     const isProcessComplete = async () => {
       if (infos.total >= productLimit && !queue.idle()) {
         console.log("infos:", infos.total, "limit: ", productLimit);
-        await updateTask(_id, { $set: { progress: task.progress } });
+        await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -78,7 +78,7 @@ export const scrapeAznListings = (
       task.progress.aznListings.pop();
       const product = task.aznListings.pop();
       if (!product) continue;
-      const { lnk: productLink, asin, s_hash } = product;
+      const { _id: productId, asin, s_hash } = product;
       const addProduct = async (
         product: Partial<Record<Content, string | number | boolean | string[]>>
       ) => {};
@@ -100,7 +100,7 @@ export const scrapeAznListings = (
         infos.notFound++;
         infos.total++;
         queue.total++;
-        await handleAznListingNotFound(salesDbName, productLink);
+        await handleAznListingNotFound(salesDbName, productId);
         await isProcessComplete();
       };
 

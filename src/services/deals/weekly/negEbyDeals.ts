@@ -35,14 +35,12 @@ import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby";
 import { MissingShopError } from "../../../errors";
 import { TaskReturnType } from "../../../types/TaskReturnType";
 
-const negEbyDeals = async (
-  task: NegEbyDealTask
-): TaskReturnType => {
+const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id, action, concurrency, proxyType } = task;
+  const { _id: taskId, action, concurrency, proxyType } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await lookForOudatedNegMarginEbyListings(
-      _id,
+      taskId,
       proxyType,
       action || "none",
       productLimit
@@ -81,7 +79,7 @@ const negEbyDeals = async (
         const { product, shop } = productShop;
         const source: Shop = shop as Shop;
         const { d: shopDomain } = source;
-        const { lnk: productLink, esin } = product;
+        const { _id: productId, esin } = product;
 
         const diffHours = differenceInHours(
           new Date(),
@@ -108,7 +106,7 @@ const negEbyDeals = async (
             );
           } else {
             infos.total++;
-            await deleteArbispotterProduct(shopDomain, productLink);
+            await deleteArbispotterProduct(shopDomain, productId);
             //DELETE PRODUCT
           }
         } else {
@@ -141,7 +139,7 @@ export async function scrapeEbyListings(
     const { taskIdProp } = processProps;
     const { d } = target;
     const { d: shopDomain } = source;
-    const { lnk: productLink, s_hash } = product;
+    const { _id: productId, s_hash } = product;
     const addProduct = async (product: ProductRecord) => {};
     const addProductInfo = async ({
       productInfo,
@@ -162,13 +160,13 @@ export async function scrapeEbyListings(
       infos.total++;
       queue.total++;
       if (cause === "timeout") {
-        await updateArbispotterProductQuery(shopDomain, productLink, {
+        await updateArbispotterProductQuery(shopDomain, productId, {
           $unset: {
             [taskIdProp]: "",
           },
         });
       } else {
-        await handleEbyListingNotFound(shopDomain, productLink);
+        await handleEbyListingNotFound(shopDomain, productId);
       }
       res("done");
     };

@@ -14,7 +14,7 @@ export async function handleDealsProductInfo(
   { productInfo, url }: AddProductInfoProps,
   product: DbProductRecord
 ) {
-  const { lnk: productLink, qty: buyQty } = product;
+  const { _id, qty: buyQty } = product;
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -38,7 +38,7 @@ export async function handleDealsProductInfo(
       ...(mku && { mku }),
     };
 
-    await updateArbispotterProductQuery(collectionName, productLink, {
+    await updateArbispotterProductQuery(collectionName, _id, {
       $set: productUpdate,
     });
     return productUpdate;

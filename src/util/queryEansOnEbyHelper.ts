@@ -25,11 +25,11 @@ export async function handleQueryEansOnEbyIsFinished(
 ) {
   const {
     e_qty: sellQty,
-    lnk: productLink,
     ebyCategories,
     e_costs,
     prc: buyPrice,
     qty: buyQty,
+    _id: productId,
   } = product;
   infos.shops[collection]++;
   infos.total++;
@@ -89,7 +89,7 @@ export async function handleQueryEansOnEbyIsFinished(
       }
     }
 
-    await updateArbispotterProductQuery(collection, productLink, {
+    await updateArbispotterProductQuery(collection, productId, {
       $set: {
         ...update,
         qEbyUpdatedAt: new UTCDate().toISOString(),
@@ -99,11 +99,11 @@ export async function handleQueryEansOnEbyIsFinished(
         eby_taskId: "",
       },
     });
-    if (task) task.progress.lookupCategory.push(product._id);
+    if (task) task.progress.lookupCategory.push(productId);
   } else {
     await updateArbispotterProductQuery(
       collection,
-      productLink,
+      productId,
       resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
     );
   }
@@ -115,7 +115,7 @@ export async function handleQueryEansOnEbyNotFound(
   product: DbProductRecord,
   queue: QueryQueue
 ) {
-  const { lnk: productLink } = product;
+  const { _id: productId } = product;
   infos.notFound++;
   infos.shops[collection]++;
   infos.total++;
@@ -123,7 +123,7 @@ export async function handleQueryEansOnEbyNotFound(
 
   await updateArbispotterProductQuery(
     collection,
-    productLink,
+    productId,
     resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
   );
 }

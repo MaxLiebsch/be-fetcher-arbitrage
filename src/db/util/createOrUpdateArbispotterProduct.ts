@@ -1,7 +1,7 @@
 import { MongoServerError } from "mongodb";
 import {
   findProductByLink,
-  updateArbispotterProductQuery,
+  updateArbispotterProductLinkQuery,
   upsertArbispotterProduct,
 } from "./crudArbispotterProduct.js";
 import { DbProductRecord } from "@dipmaxtech/clr-pkg";
@@ -43,7 +43,7 @@ export const createOrUpdateArbispotterProduct = async (domain: string, procProd:
   const product = await findProductByLink(domain, lnk);
   try {
     if (product) {
-      return await updateArbispotterProductQuery(domain, lnk, {
+      return await updateArbispotterProductLinkQuery(domain, lnk, {
         $set: procProd,
       });
     } else {

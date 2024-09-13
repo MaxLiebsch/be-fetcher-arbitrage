@@ -3,6 +3,7 @@ import {
   calculateAznArbitrage,
   DbProductRecord,
   detectCurrency,
+  ObjectId,
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
@@ -28,7 +29,7 @@ export async function handleAznListingProductInfo(
     qty: buyQty,
     prc: buyPrice,
     tax,
-    lnk: productLink,
+    _id: productId,
   } = product;
   const { timestamp, taskIdProp } = processProps;
   infos.total++;
@@ -66,7 +67,7 @@ export async function handleAznListingProductInfo(
         Object.entries(arbitrage).forEach(([key, val]) => {
           productUpdate[key] = val;
         });
-        await updateArbispotterProductQuery(collection, productLink, {
+        await updateArbispotterProductQuery(collection, productId, {
           $set: productUpdate,
           $unset: {
             [taskIdProp]: "",
@@ -76,7 +77,7 @@ export async function handleAznListingProductInfo(
         infos.missingProperties.aznCostNeg++;
         await updateArbispotterProductQuery(
           collection,
-          productLink,
+          productId,
           resetAznProductQuery()
         );
       }
@@ -84,26 +85,18 @@ export async function handleAznListingProductInfo(
       infos.missingProperties.price++;
       await updateArbispotterProductQuery(
         collection,
-        productLink,
+        productId,
         resetAznProductQuery()
       );
     }
   } else {
     infos.missingProperties.infos++;
-    await updateArbispotterProductQuery(
-      collection,
-      productLink,
-      resetAznProductQuery()
-    );
+    await updateArbispotterProductQuery(collection, productId, resetAznProductQuery());
   }
 }
 export async function handleAznListingNotFound(
   collection: string,
-  productLink: string
+  id: ObjectId
 ) {
-  await updateArbispotterProductQuery(
-    collection,
-    productLink,
-    resetAznProductQuery()
-  );
+  await updateArbispotterProductQuery(collection, id, resetAznProductQuery());
 }
