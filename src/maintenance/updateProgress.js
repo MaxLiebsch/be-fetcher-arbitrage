@@ -1,8 +1,8 @@
 
-import { getAllShopsAsArray } from "../../src/services/db/util/shops.js";
-import { updateTaskWithQuery } from "../../src/services/db/util/tasks.js";
-import { getCrawlAznListingsProgress } from "../services/db/util/crawlAznListings/getCrawlAznListingsProgress.js";
-import { getMatchProgress } from "../services/db/util/match/getMatchProgress.js";
+import { getAllShopsAsArray } from "../../src/db/util/shops.js";
+import { updateTaskWithQuery } from "../../src/db/util/tasks.js";
+import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
 
 const main = async () => {
   const shops = await getAllShopsAsArray();

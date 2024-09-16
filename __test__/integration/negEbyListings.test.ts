@@ -3,18 +3,14 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import negEbyDeals from "../../src/services/deals/weekly/negEbyDeals.js";
-import { ObjectId } from "mongodb";
-//@ts-ignore
-import { getAllShopsAsArray } from "../../src/services/db/util/shops.js";
-//@ts-ignore
-import { getArbispotterDb } from "../../src/services/db/mongo.js";
-//@ts-ignore
-import { shopProxyTypeFilter } from "../../src/services/db/util/filter.js";
+} from "../../src/db/util/crudArbispotterProduct";
+import negEbyDeals from "../../src/services/deals/weekly/negEbyDeals";
+import { getAllShopsAsArray } from "../../src/db/util/shops";
+import { getArbispotterDb } from "../../src/db/mongo";
+import { shopProxyTypeFilter } from "../../src/db/util/filter";
 import { sub } from "date-fns";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
 
 const shopDomain = "alternate.de";
 const proxyType = "mix";
@@ -43,7 +39,7 @@ describe("crawl eby listings", () => {
     );
 
     const shops = await getAllShopsAsArray();
-    const filteredShops = shops.filter((shop) =>
+    const filteredShops = shops!.filter((shop) =>
       shopProxyTypeFilter(shop, proxyType)
     );
     const spotter = await getArbispotterDb();
@@ -61,12 +57,15 @@ describe("crawl eby listings", () => {
   }, 100000);
 
   test("crawl eby listings", async () => {
+    const logger = new LocalLogger().createLogger("CRAWL_EBY_LISTINGS");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await negEbyDeals({
       proxyType,
       productLimit,
       type: "CRAWL_EBY_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
       concurrency: 4,
     });
     console.log("infos:", infos);

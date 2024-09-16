@@ -4,11 +4,11 @@ import {
   queryTargetShops,
   segmentString,
   reduceString,
-  targetRetailerList,
   QueryQueue,
   safeParsePrice,
+  standardTargetRetailerList,
 } from "@dipmaxtech/clr-pkg";
-import { getShops } from "../src/service/db/util/shops.js";
+import { getShops } from "../src/db/util/shops.js";
 
 import { CONCURRENCY, proxyAuth } from "../src/constants.js";
 
@@ -90,7 +90,7 @@ const task = {
   },
 };
 const main = async () => {
-  let targetShops = targetRetailerList;
+  let targetShops = standardTargetRetailerList;
   const startShops = [
     {
       d: "idealo.de",
@@ -159,7 +159,8 @@ const main = async () => {
     shops,
     query,
     task,
-    prodInfo
+    prodInfo,
+    shops['reichelt.de']
   );
 
   procProductsPromiseArr.push(Promise.all(_shops));

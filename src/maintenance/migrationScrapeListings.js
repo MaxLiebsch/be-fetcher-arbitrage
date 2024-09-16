@@ -1,12 +1,12 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { findCrawlDataProducts } from "../services/db/util/crudCrawlDataProduct.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { findCrawlDataProducts } from "../db/util/crudCrawlDataProduct.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 
 const migrationScrapeListings = async () => {
   const spotter = await getArbispotterDb();
   const crawlData = await getCrawlDataDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops.filter(
+  const activeShops = shops!.filter(
     (shop) => shop.active
   );
 

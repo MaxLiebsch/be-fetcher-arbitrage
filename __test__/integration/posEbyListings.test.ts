@@ -3,13 +3,15 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import dealsOnEby from "../../src/services/deals/daily/dealsOnEby.js";
-import { ObjectId } from "mongodb";
+} from "../../src/db/util/crudArbispotterProduct";
+import dealsOnEby from "../../src/services/deals/daily/dealsOnEby";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
+import { getAllShopsAsArray } from "../../src/db/util/shops";
+import { getArbispotterDb } from "../../src/db/mongo";
+import { sub } from "date-fns";
 
-const shopDomain = ["alternate.de", "idealo.de", 'alza.de'];
+const shopDomain = ["alternate.de", "idealo.de", "alza.de"];
 
 describe("pos eby listings", () => {
   let productLimit = 30;
@@ -37,16 +39,32 @@ describe("pos eby listings", () => {
         );
       })
     );
+    const shops = await getAllShopsAsArray();
+    const spotter = await getArbispotterDb();
+    await Promise.all(
+      shops!.map(async (shop) => {
+        return spotter.collection(shop.d).updateMany(
+          {},
+          {
+            $set: {
+              availUpdatedAt: sub(new Date(), { days: 2 }).toISOString(),
+            },
+            $unset: { dealEbyTaskId: "", dealEbyUpdatedAt: "" },
+          }
+        );
+      })
+    );
   }, 100000);
 
   test("pos eby listings", async () => {
-    console.log('test')
+    const logger = new LocalLogger().createLogger("DEALS_ON_EBY");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await dealsOnEby({
-      shopDomain,
       productLimit,
       type: "DEALS_ON_EBY",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
       proxyType: "mix",
       concurrency: 4,
     });

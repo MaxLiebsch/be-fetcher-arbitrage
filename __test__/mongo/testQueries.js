@@ -1,4 +1,4 @@
-import { getArbispotterDb } from "../../src/services/db/mongo.js";
+import { getArbispotterDb } from "../../src/db/mongo.js";
 
 const testQueries = async () => {
   const domain = "idealo.de";

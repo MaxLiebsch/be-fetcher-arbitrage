@@ -3,11 +3,11 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import lookupCategory from "../../src/services/lookupCategory.js";
-import { ObjectId } from "mongodb";
+} from "../../src/db/util/crudArbispotterProduct";
+import lookupCategory from "../../src/services/lookupCategory";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
+import { resetProperty } from "../../src/maintenance/resetProperty";
 
 const shopDomain = "gamestop.de";
 
@@ -33,16 +33,24 @@ describe("lookup category", () => {
         return { ...l, _id: new ObjectId(l._id.$oid) };
       })
     );
+    await resetProperty({
+      $unset: {
+        cat_prop: "",
+        cat_taskId: "",
+      },
+    });
   }, 100000);
 
   test("lookup category", async () => {
+    const logger = new LocalLogger().createLogger("LOOKUP_CATEGORY");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await lookupCategory({
       concurrency: 4,
       type: "LOOKUP_CATEGORY",
-      shopDomain,
       productLimit,
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
     });
     console.log("infos:", infos);
   }, 1000000);

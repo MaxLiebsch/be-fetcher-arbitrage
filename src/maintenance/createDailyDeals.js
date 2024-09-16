@@ -1,4 +1,4 @@
-import { addTask } from "../services/db/util/tasks.js";
+import { addTask } from "../db/util/tasks.js";
 import { createDailySalesTask } from "../task.js";
 
 const categories = {

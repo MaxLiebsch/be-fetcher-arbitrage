@@ -1,4 +1,4 @@
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
 
 import {
   detectQuantity,
@@ -9,7 +9,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 
 import pkg from "fs-jetpack";
-import { getActiveShops } from "../services/db/util/shops.js";
+import { getActiveShops } from "../db/util/shops.js";
 const { writeAsync, read, cwd } = pkg;
 import { join } from "path";
 

@@ -1,6 +1,6 @@
-import { createCrawlEbyListingsTask } from "../../__test__/endToEnd.js";
-import { getActiveShops } from "../services/db/util/shops.js";
-import { addTask } from "../services/db/util/tasks.js";
+import { createCrawlEbyListingsTask } from "../../__test__/endToEnd.test.js";
+import { getActiveShops } from "../db/util/shops.js";
+import { addTask } from "../db/util/tasks.js";
 
 const createEbyListingTask = async () => {
   const activeShops = await getActiveShops();

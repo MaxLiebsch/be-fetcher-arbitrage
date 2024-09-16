@@ -1,5 +1,5 @@
-import { getCrawlDataDb } from "../services/db/mongo.js";
-import { getShop } from "../services/db/util/shops.js";
+import { getCrawlDataDb } from "../db/mongo.js";
+import { getShop } from "../db/util/shops.js";
 import { subDateDaysISO } from "../util/dates.js";
 
 const main = async () => {

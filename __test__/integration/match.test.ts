@@ -3,11 +3,10 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/services/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import match from "../../src/services/match.js";
-import { ObjectId } from "mongodb";
+} from "../../src/db/util/crudArbispotterProduct";
+import match from "../../src/services/match";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
 
 const shopDomain = "cyberport.de";
 
@@ -33,6 +32,9 @@ describe("match", () => {
   }, 100000);
 
   test("match", async () => {
+    const logger = new LocalLogger().createLogger("MATCH_PRODUCTS");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await match({
       concurrency: 4,
       type: "MATCH_PRODUCTS",
@@ -47,7 +49,7 @@ describe("match", () => {
         },
       ],
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
     });
     console.log("infos:", infos);
   }, 1000000);

@@ -8,7 +8,7 @@ import {
   terminateConnection,
   registerRequestv3,
 } from "@dipmaxtech/clr-pkg";
-import { getShop } from "../src/services/db/util/shops.js";
+import { getShop } from "../src/db/util/shops.js";
 
 // const proxyAuth = {
 //   host: "rp.proxyscrape.com:6060",

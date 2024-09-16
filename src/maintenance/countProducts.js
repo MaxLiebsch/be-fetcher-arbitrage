@@ -1,5 +1,5 @@
-import { getActiveShops } from "../services/db/util/shops.js";
-import { getArbispotterDb } from "../services/db/mongo.js";
+import { getActiveShops } from "../db/util/shops.js";
+import { getArbispotterDb } from "../db/mongo.js";
 
 /**
  * Counts the total number of products across all active shops.

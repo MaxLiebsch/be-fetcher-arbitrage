@@ -1,6 +1,3 @@
-import { getCrawlAznListingsProgress } from "../../../src/services/db/util/getCrawlAznListingsProgress.js";
-import { getCrawlEanProgress } from "../../../src/services/db/util/getCrawlEanProgress.js";
-import { getLookupInfoProgress } from "../../../src/services/db/util/getLookupInfoProgress.js";
 import { updateCrawlAznListingsProgress, updateProgressInCrawlEanTask, updateProgressInLookupInfoTask } from "../../../src/util/updateProgressInTasks.js";
 
 

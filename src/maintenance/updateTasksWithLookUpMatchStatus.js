@@ -1,6 +1,6 @@
-import { getAmazonLookupProgress } from "../../src/service/db/util/getLookupProgress.js";
-import { getMatchingProgress } from "../../src/service/db/util/getMatchingProgress.js";
-import { updateTaskWithQuery } from "../../src/service/db/util/tasks.js";
+import { updateTaskWithQuery } from "../../src/db/util/tasks.js";
+import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
 
 const updateTasksWithLookUpMatchStatus = async () => {
   const shopDomains = [
@@ -13,8 +13,8 @@ const updateTasksWithLookUpMatchStatus = async () => {
   ];
   await Promise.all(
     shopDomains.map(async (shopDomain) => {
-      const progress = await getMatchingProgress(shopDomain);
-      const lookupProgress = await getAmazonLookupProgress(shopDomain);
+      const progress = await getMatchProgress(shopDomain);
+      const lookupProgress = await getCrawlAznListingsProgress(shopDomain);
       await updateTaskWithQuery(
         { type: "CRAWL_AZN_LISTINGS", id: `crawl_azn_listings_${shopDomain}` },
         { progress: lookupProgress}

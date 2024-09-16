@@ -3,13 +3,13 @@ import {
   addTask,
   deleteTasks,
   findTasks,
-} from "../src/services/db/util/tasks.js";
-import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
+} from "../src/db/util/tasks.js";
+import { deleteAllArbispotterProducts } from "../src/db/util/crudArbispotterProduct.js";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
 import os from "os";
 import { monitorAndProcessTasks } from "../src/util/monitorAndProcessTasks.js";
-import { deleteLogs } from "../src/services/db/util/logs.js";
-import { getAllShops, updateShopStats } from "../src/services/db/util/shops.js";
+import { deleteLogs } from "../src/db/util/logs.js";
+import { getAllShops, updateShopStats } from "../src/db/util/shops.js";
 import { shuffle } from "underscore";
 import { createDailySalesTask } from "../src/task.js";
 import { sendMail } from "../src/email.js";

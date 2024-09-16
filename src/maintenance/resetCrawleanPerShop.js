@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
-import { getCrawlDataDb } from "../services/db/mongo.js";
-import { getShop } from "../services/db/util/shops.js";
+import { getCrawlDataDb } from "../db/mongo.js";
+import { getShop } from "../db/util/shops.js";
 
 const _ids = [
   "6680a418d63905fe5276bb6c",

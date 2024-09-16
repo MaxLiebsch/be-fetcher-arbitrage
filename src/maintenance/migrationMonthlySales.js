@@ -1,6 +1,6 @@
-import { getArbispotterDb } from "../services/db/mongo.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb } from "../db/mongo.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 import { countTotal } from "./countProducts.js";
 

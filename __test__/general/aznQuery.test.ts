@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 //@ts-ignore
-import { resetAznProductQuery } from "../../src/services/db/util/aznQueries.js";
+import { resetAznProductQuery } from "../../src/db/util/aznQueries.js";
 import { UTCDate } from "@date-fns/utc";
 
 describe("aznQuery", () => {

@@ -1,5 +1,5 @@
-import { updateShopWithQuery } from "../services/db/util/shops.js";
-import { findTasks } from "../services/db/util/tasks.js";
+import { updateShopWithQuery } from "../db/util/shops.js";
+import { findTasks } from "../db/util/tasks.js";
 import {
   createCrawlAznListingsTask,
   createCrawlEbyListingsTask,

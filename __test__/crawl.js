@@ -1,6 +1,5 @@
 import { sub } from "date-fns";
 import crawl from "../src/services/crawl.js";
-import { deleteAllArbispotterProducts } from "../src/services/db/util/crudArbispotterProduct.js";
 
 const shopDomain = "reichelt.de";
 
@@ -52,8 +51,7 @@ const task = {
   weekday: today.getDay(),
 };
 
-const main = async () => {
-  await deleteAllArbispotterProducts(shopDomain);
+const main = async () => { 
   const r = await crawl(task);
   console.log(JSON.stringify(r, null, 2));
 };

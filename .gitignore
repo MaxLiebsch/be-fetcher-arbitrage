@@ -7,3 +7,5 @@ task.js
 *.json
 .docs
 .http-mitm-proxy/*
+var/*
+dist

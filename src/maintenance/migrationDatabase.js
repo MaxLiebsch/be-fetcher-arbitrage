@@ -1,7 +1,7 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 import { UTCDate } from "@date-fns/utc";
-import { findCrawlDataProducts } from "../services/db/util/crudCrawlDataProduct.js";
+import { findCrawlDataProducts } from "../db/util/crudCrawlDataProduct.js";
 import { add } from "date-fns";
 import { parseAsinFromUrl } from "../../src/util/parseAsin.js";
 import { createHash, verifyHash } from "../util/hash.js";

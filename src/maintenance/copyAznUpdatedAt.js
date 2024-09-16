@@ -1,11 +1,8 @@
 import {
   findArbispotterProducts,
-  updateArbispotterProductQuery,
-} from "../services/db/util/crudArbispotterProduct.js";
-import {
-  updateCrawlDataProduct,
-} from "../services/db/util/crudCrawlDataProduct.js";
-import { getActiveShops } from "../services/db/util/shops.js";
+  updateArbispotterProductLinkQuery,
+} from "../db/util/crudArbispotterProduct.js";
+import { getActiveShops } from "../db/util/shops.js";
 
 const updateAznUpdatedAt = async () => {
   const activeShops = await getActiveShops();
@@ -30,10 +27,9 @@ const updateAznUpdatedAt = async () => {
             const dataUpdate = {};
             dataUpdate["aznUpdatedAt"] = p.aznUpdatedAt;
             return Promise.all([
-              updateArbispotterProductQuery(shop.d, p.lnk, {
+              updateArbispotterProductLinkQuery(shop.d, p.s_hash, {
                 $unset: { aznUpdatedAt: "" },
               }),
-              updateCrawlDataProduct(shop.d, p.lnk, dataUpdate),
             ]);
           })
         );

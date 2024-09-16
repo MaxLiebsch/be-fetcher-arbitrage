@@ -1,6 +1,7 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 import {
   calculateAznArbitrage,
   calculateEbyArbitrage,
@@ -89,6 +90,7 @@ const migrationLivePackage = async () => {
           if (
             eSellQty &&
             eSellPrice &&
+            ebyCategories &&
             ebyCategories?.length > 0 &&
             eSellQty > 0
           ) {

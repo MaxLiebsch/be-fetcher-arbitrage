@@ -1,11 +1,11 @@
-import { getArbispotterDb } from "../src/services/db/mongo.js";
+import { getArbispotterDb } from "../src/db/mongo.js";
 import {
   aggregation,
   countPendingProductsUpdateProductinfoQuery,
   countTotalProductsForUpdateProductinfoQuery,
   lockProductsForUpdateProductinfoQuery,
-} from "../src/services/db/util/queries.js";
-import { getOutdatedUpdateProductinfoShops } from "../src/services/db/util/updateProductinfo/getOutdatedUpdateProductinfoShops.js";
+} from "../src/db/util/queries.js";
+import { getOutdatedUpdateProductinfoShops } from "../src/db/util/updateProductinfo/getOutdatedUpdateProductinfoShops.js";
 
 // const test = lockProductsForUpdateProductinfoQuery();
 // console.log("test:", JSON.stringify(test, null, 2));

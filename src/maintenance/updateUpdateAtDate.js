@@ -1,8 +1,8 @@
 import {
   findCrawlDataProducts,
   updateCrawlDataProduct,
-} from "../services/db/util/crudCrawlDataProduct.js";
-import { getActiveShops } from "../services/db/util/shops.js";
+} from "../db/util/crudCrawlDataProduct.js";
+import { getActiveShops } from "../db/util/shops.js";
 import { subDateDaysISO } from "../util/dates.js";
 
 const updateAznUpdatedAt = async () => {

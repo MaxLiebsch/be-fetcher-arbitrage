@@ -1,5 +1,5 @@
-import { getArbispotterDb, getCrawlDataDb } from "../services/db/mongo.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 
 const resetDealTaskId = async () => {
   const spotter = await getArbispotterDb();

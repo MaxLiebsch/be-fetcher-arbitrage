@@ -5,10 +5,10 @@ import {
   segmentString,
   reduceString,
   safeParsePrice,
-  targetRetailerList,
   QueryQueue,
+  standardTargetRetailerList,
 } from "@dipmaxtech/clr-pkg";
-import { getShops } from "../src/service/db/util/shops.js";
+import { getShops } from "../src/db/util/shops.js";
 import { CONCURRENCY, proxyAuth } from "../src/constants.js";
 
 const rawProd = {
@@ -89,7 +89,7 @@ const task = {
   },
 };
 const main = async () => {
-  let targetShops = targetRetailerList;
+  let targetShops = standardTargetRetailerList;
   const startShops = undefined;
 
   if (startShops && startShops.length) {

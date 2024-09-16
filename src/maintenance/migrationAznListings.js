@@ -1,8 +1,8 @@
-import { getArbispotterDb } from "../services/db/mongo.js";
-import { findArbispotterProducts } from "../services/db/util/crudArbispotterProduct.js";
-import { getAllShopsAsArray } from "../services/db/util/shops.js";
+import { getArbispotterDb } from "../db/mongo.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { getAllShopsAsArray } from "../db/util/shops.js";
 import { countTotal } from "./countProducts.js";
-import { resetAznProductQuery } from "../services/db/util/aznQueries.js";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
 
 const migrationAznListings = async () => {
   const spotter = await getArbispotterDb();

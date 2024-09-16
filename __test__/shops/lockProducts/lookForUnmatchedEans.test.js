@@ -1,4 +1,4 @@
-import { lookForUnmatchedEans } from "../../../src/services/db/util/lookForUnmatchedEans.js";
+import { lookForUnmatchedEans } from "../../../src/db/util/lookForUnmatchedEans.js";
 
 const lookfor = async() => { 
 
