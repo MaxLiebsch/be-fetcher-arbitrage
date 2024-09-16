@@ -126,6 +126,7 @@ export const updateArbispotterProductQuery = async (
             `${domain}-${id.toString()}`,
             JSON.stringify(query)
           );
+          
         }
         return; // Exit the function
       }

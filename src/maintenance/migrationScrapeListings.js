@@ -6,7 +6,7 @@ const migrationScrapeListings = async () => {
   const spotter = await getArbispotterDb();
   const crawlData = await getCrawlDataDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops.filter(
+  const activeShops = shops!.filter(
     (shop) => shop.active
   );
 
