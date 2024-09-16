@@ -10,6 +10,7 @@ import {
   PendingShops,
   PendingShopsWithBatch,
 } from "../../../../../types/shops";
+import { log } from "../../../../../util/logger";
 
 export async function lookForOutdatedDealsOnAzn(
   taskId: ObjectId,
@@ -23,11 +24,10 @@ export async function lookForOutdatedDealsOnAzn(
       proxyType,
       productLimit
     );
-    console.log(
-      "Deals on Azn:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Deals On Azn: ${recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -67,12 +67,11 @@ export async function lookForOutdatedDealsOnAzn(
       },
       []
     );
-
-    console.log(
-      "Deals on Azn:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    
+    log(
+      `Deals On Azn: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
 
     await updateTaskWithQuery({ _id: taskId }, { progress });

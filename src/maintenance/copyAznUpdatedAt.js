@@ -27,7 +27,7 @@ const updateAznUpdatedAt = async () => {
             const dataUpdate = {};
             dataUpdate["aznUpdatedAt"] = p.aznUpdatedAt;
             return Promise.all([
-              updateArbispotterProductLinkQuery(shop.d, p.lnk, {
+              updateArbispotterProductLinkQuery(shop.d, p.s_hash, {
                 $unset: { aznUpdatedAt: "" },
               }),
             ]);

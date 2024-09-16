@@ -1,6 +1,6 @@
-import { insertShop } from "./db/util/shops.js";
+import { insertShop } from "./db/util/shops";
 
-export const shops = {
+export const shops: { [key: string]: any } = {
   "idealo.de": {
     actions: [
       {
@@ -2950,17 +2950,17 @@ export const shops = {
         type: "src",
         content: "image",
       },
-      { 
-        sel: 'span',
+      {
+        sel: "span",
         parent: "div.vim.d-statusmessage",
-        content: 'instock', 
-        type: 'text'
+        content: "instock",
+        type: "text",
       },
-      { 
-        sel: 'span',
+      {
+        sel: "span",
         parent: "div.vim.x-alert",
-        content: 'instock', 
-        type: 'text'
+        content: "instock",
+        type: "text",
       },
       {
         parent: "div.seo-breadcrumbs-container",
@@ -4310,7 +4310,7 @@ export const shops = {
   },
 };
 
-const updateShops = async (shops) => {
+const updateShops = async (shops: { [key: string]: any }) => {
   return Promise.all(
     Object.entries(shops).map(async ([key, val]) => {
       return await insertShop(val);

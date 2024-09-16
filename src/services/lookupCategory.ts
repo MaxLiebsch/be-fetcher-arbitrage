@@ -23,11 +23,13 @@ import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../util/lookupCategoryHelper";
-import { getProductLimit } from "../util/getProductLimit";
+import { getProductLimitMulti } from "../util/getProductLimit";
 import { TaskCompletedStatus } from "../status";
 import { LookupCategoryTask } from "../types/tasks/Tasks";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { log } from "../util/logger";
+import { countRemainingProducts } from "../util/countRemainingProducts";
 
 async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -47,6 +49,12 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
       productLimit
     );
 
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${products.length} products`);
+    } else {
+      log(`Starting ${type} with ${products.length} products`);
+    }
+
     shops.forEach(async (info) => {
       infos.shops[info.shop.d] = 0;
     });
@@ -54,7 +62,8 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimitMulti(products.length, productLimit);
+    log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -86,6 +95,8 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
         productLimit: _productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
+        const remaining = await countRemainingProducts(shops, taskId, type);
+        log(`Remaining products: ${remaining}`);
         clearInterval(interval);
         handleResult(check, resolve, reject);
         await updateProgressInLookupCategoryTask(); // update lookup category task

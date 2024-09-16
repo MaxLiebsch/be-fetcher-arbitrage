@@ -14,7 +14,7 @@ import { handleTaskCompleted } from "./handleTaskComplete";
 import { handleTaskFailed } from "./handleTaskFailed";
 import isTaskComplete from "./isTaskComplete";
 import { TASK_TYPES } from "./taskTypes";
-import { ScrapeShopTask, Tasks } from "../types/tasks/Tasks";
+import { MatchProductsTask, ScrapeShopTask } from "../types/tasks/Tasks";
 import { TaskCompletedStatus } from "../status";
 import {
   CrawlEansTaskProps,
@@ -201,7 +201,7 @@ async function handleMatchTask({
 }: MatchProductsTaskProps) {
   const { stats, name, message } = taskResult;
   const { taskStats } = stats;
-  const { retry, _id, id, shopDomain } = task;
+  const { retry, _id, id, shopDomain } = task as MatchProductsTask;
   const { taskCompleted, completionPercentage } = completionStatus;
 
   if (taskCompleted) {

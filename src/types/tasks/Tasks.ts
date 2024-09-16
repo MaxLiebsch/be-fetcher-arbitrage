@@ -1,4 +1,9 @@
-import { ProxyType, QueueStats, TaskTypes, WithId } from "@dipmaxtech/clr-pkg";
+import {
+  ObjectId,
+  ProxyType,
+  QueueStats,
+  TaskTypes,
+} from "@dipmaxtech/clr-pkg";
 import { DailySalesTask } from "./DailySalesTask";
 
 export interface Category {
@@ -14,10 +19,11 @@ export interface Limit {
 
 export type Action = "recover" | "none";
 
+type WithId<T> = T & { _id: ObjectId };
+
 export interface Task extends WithId<Document> {
   type: TaskTypes;
   id: string;
-  shopDomain: string;
   limit: Limit;
   action?: Action;
   recurrent: boolean;
@@ -38,12 +44,15 @@ export interface Task extends WithId<Document> {
   cooldown: string;
 }
 
-export interface ScrapeShopTask extends Task {
+export interface ShopSpecificTask extends Task, MultiShopMultiQueueTask {
+  shopDomain: string;
+}
+
+export interface ScrapeShopTask extends ShopSpecificTask {
   categories: Category[];
   weekday: number;
   visitedPages: any[];
   executing: boolean;
-  concurrency?: number;
 }
 
 export interface Progress {
@@ -59,23 +68,26 @@ export interface StartShop {
   name: string;
 }
 
-export interface MatchProductsTask extends Task {
+export interface MatchProductsTask extends ShopSpecificTask {
   extendedLookUp: boolean;
   startShops: StartShop[];
-  concurrency: number; 
+  concurrency: number;
 }
 
 export interface MultipleShopTask extends Task {
   progress: Progress[];
 }
 
+export interface MultiShopMultiQueueTask extends MultipleShopTask {
+  browserConcurrency: number;
+  concurrency: number;
+}
+
 export interface ScrapeEansTask extends MultipleShopTask {
   proxyType: ProxyType;
   concurrency: number;
 }
-export interface LookupInfoTask extends MultipleShopTask {
-  browserConcurrency: number;
-  concurrency: number;
+export interface LookupInfoTask extends MultiShopMultiQueueTask {
 }
 
 export interface LookupCategoryTask extends MultipleShopTask {
@@ -107,14 +119,12 @@ export interface NegEbyDealTask extends MultipleShopTask {
   concurrency: number;
 }
 
-export interface WholeSaleTask extends MultipleShopTask {
-  browserConcurrency: number;
-  userId: string
-  concurrency: number;
+export interface WholeSaleTask extends MultiShopMultiQueueTask {
+  userId: string;
 }
 
-export interface ScanTask extends Task{
-   concurrency: number;
+export interface ScanTask extends ShopSpecificTask {
+  concurrency: number;
 }
 
 export type Tasks =

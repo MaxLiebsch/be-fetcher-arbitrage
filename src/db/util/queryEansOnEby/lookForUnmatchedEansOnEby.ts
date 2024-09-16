@@ -1,12 +1,13 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../tasks.js";
-import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
-import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
-import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby.js";
-import { getProductsWithShop } from "../getProductsWithShop.js";
+import { updateTaskWithQuery } from "../tasks";
+import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby";
+import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops";
+import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby";
+import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks.js";
-import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { Action } from "../../../types/tasks/Tasks";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops";
+import { log } from "../../../util/logger";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId: ObjectId,
@@ -18,11 +19,10 @@ export async function lookForUnmatchedQueryEansOnEby(
       taskId,
       productLimit
     );
-    console.log(
-      "Query Eans On Eby:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Query Eans On Eby: ${recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -62,14 +62,12 @@ export async function lookForUnmatchedQueryEansOnEby(
       },
       []
     );
-
-    console.log(
-      "Query Eans On Eby:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    log(
+      `Query Eans On Eby: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
-
+    
     await updateTaskWithQuery({ _id: taskId }, { progress });
 
     return {

@@ -13,8 +13,9 @@ import { ScanTask } from "../types/tasks/Tasks";
 import { TaskCompletedStatus } from "../status";
 import { ScanShopStats } from "../types/taskStats/ScanShopStats";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { log } from "../util/logger";
 
-export default async function scan(task: ScanTask):TaskReturnType {
+export default async function scan(task: ScanTask): TaskReturnType {
   return new Promise(async (res, reject) => {
     const { shopDomain, productLimit } = task;
     const shops = await getShops([{ d: shopDomain }]);
@@ -52,6 +53,8 @@ export default async function scan(task: ScanTask):TaskReturnType {
       elapsedTime: "",
     };
 
+    log(`Starting scan with ${shopDomain}`);
+
     if (shops === null) return reject(new MissingShopError("", task));
 
     const queue = new ScanQueue(
@@ -74,6 +77,7 @@ export default async function scan(task: ScanTask):TaskReturnType {
         productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
+        log(`Scan completed for ${shopDomain}`);
         await upsertSiteMap(shopDomain, statService.getStatsFile());
         clearInterval(interval);
         handleResult(check, res, reject);

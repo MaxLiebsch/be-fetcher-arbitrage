@@ -7,6 +7,7 @@ import {
   queryProductPageQueue,
   sleep,
   uuid,
+  removeSearchParams,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
@@ -31,12 +32,14 @@ import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
 } from "../util/crawlEanHelper";
-import { getProductLimit } from "../util/getProductLimit";
-import { removeSearchParams } from "../util/removeSearch";
+import { getProductLimitMulti } from "../util/getProductLimit";
 import { TaskCompletedStatus } from "../status.js";
 import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats";
 import { ScrapeEansTask } from "../types/tasks/Tasks";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { log } from "../util/logger";
+import { countRemainingProducts } from "../util/countRemainingProducts";
+import { setTaskId } from "../db/util/queries";
 
 export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -58,6 +61,12 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       productLimit
     );
 
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${products.length} products`);
+    } else {
+      log(`Starting ${type} with ${products.length} products`);
+    }
+
     shops.forEach((info) => {
       infos.shops[info.shop.d] = 0;
       infos.missingProperties[info.shop.d] = {
@@ -69,7 +78,8 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimitMulti(products.length, productLimit);
+    log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
 
     infos.locked = products.length;
@@ -96,21 +106,17 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
         productLimit: _productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
-        clearInterval(interval);
         await Promise.all([
           updateProgressInCrawlEanTask(proxyType), // update crawl ean task
           updateProgressInMatchTasks(shops), // update matching tasks
           updateProgressInLookupInfoTask(), // update lookup info task
           updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
         ]);
+        const remaining = await countRemainingProducts(shops, taskId, type);
+        log(`Remaining products: ${remaining}, taskId ${setTaskId(taskId)}`);
         handleResult(check, resolve, reject);
       }
     };
-
-    const interval = setInterval(
-      async () => await isComplete(),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
 
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
@@ -134,12 +140,12 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
         await isComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
+        await handleCrawlEanNotFound(shopDomain, cause, productId);
+
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
-
-        await handleCrawlEanNotFound(shopDomain, cause, productId);
 
         await isComplete();
       };

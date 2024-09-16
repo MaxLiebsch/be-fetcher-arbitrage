@@ -1,10 +1,10 @@
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { getArbispotterDb } from "../../../../mongo.js";
+import { getArbispotterDb } from "../../../../mongo";
 import {
   lockProductsForDealsOnAznQuery,
   setProductsLockedForDealsOnAznQuery,
-} from "../../../queries.js";
-import { Action } from "../../../../../types/tasks/Tasks.js";
+} from "../../../queries";
+import { Action } from "../../../../../types/tasks/Tasks";
 
 export const lockProductsForDealsOnAzn = async (
   domain: string,
@@ -21,10 +21,10 @@ export const lockProductsForDealsOnAzn = async (
     action
   );
 
-  const documents = await db
+  const documents = (await db
     .collection(collectionName)
     .find(query, options)
-    .toArray() as DbProductRecord[]
+    .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover") {

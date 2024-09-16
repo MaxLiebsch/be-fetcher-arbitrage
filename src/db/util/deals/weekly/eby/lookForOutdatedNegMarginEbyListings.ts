@@ -9,8 +9,8 @@ import { Action } from "../../../../../types/tasks/Tasks";
 import {
   PendingShops,
   PendingShopsWithBatch,
-  PendingShopWithBatch,
 } from "../../../../../types/shops";
+import { log } from "../../../../../util/logger";
 
 export async function lookForOudatedNegMarginEbyListings(
   taskId: ObjectId,
@@ -24,11 +24,10 @@ export async function lookForOudatedNegMarginEbyListings(
       proxyType,
       productLimit
     );
-    console.log(
-      "Neg Eby Listings:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Neg Eby Listings: ${recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -72,11 +71,10 @@ export async function lookForOudatedNegMarginEbyListings(
       []
     );
 
-    console.log(
-      "Neg Eby Listings:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    log(
+      `Neg Eby Listings: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
 
     await updateTaskWithQuery({ _id: taskId }, { progress });

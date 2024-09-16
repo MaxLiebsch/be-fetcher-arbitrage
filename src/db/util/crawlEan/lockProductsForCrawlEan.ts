@@ -12,15 +12,19 @@ export const lockProductsForCrawlEan = async (
   action: Action,
   taskId: ObjectId
 ) => {
-  const collectionName = domain  ;
+  const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const { query, options } = lockProductsForCrawlEanQuery(taskId, limit, action);
+  const { query, options } = lockProductsForCrawlEanQuery(
+    taskId,
+    limit,
+    action
+  );
 
-  const documents = await db
+  const documents = (await db
     .collection(collectionName)
     .find(query, options)
-    .toArray() as DbProductRecord[];
+    .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover") {

@@ -24,7 +24,7 @@ import {
   deleteArbispotterProduct,
   updateArbispotterProductQuery,
 } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimit } from "../../../util/getProductLimit";
+import { getProductLimitMulti } from "../../../util/getProductLimit";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
 import { lookForOudatedNegMarginEbyListings } from "../../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings";
 import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks";
@@ -34,10 +34,12 @@ import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
 import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby";
 import { MissingShopError } from "../../../errors";
 import { TaskReturnType } from "../../../types/TaskReturnType";
+import { log } from "../../../util/logger";
+import { countRemainingProducts } from "../../../util/countRemainingProducts";
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, concurrency, proxyType } = task;
+  const { _id: taskId, action, concurrency, proxyType, type } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await lookForOudatedNegMarginEbyListings(
       taskId,
@@ -45,6 +47,13 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
       action || "none",
       productLimit
     );
+
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${products.length} products`);
+    } else {
+      log(`Starting ${type} with ${products.length} products`);
+    }
+
     const eby = await getShop("ebay.de");
 
     if (!eby) {
@@ -66,7 +75,8 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
       elapsedTime: "",
     };
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimitMulti(products.length, productLimit);
+    log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
     infos.locked = products.length;
     await updateProgressNegDealEbyTasks(proxyType);
@@ -106,6 +116,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
             );
           } else {
             infos.total++;
+            log(`Deleted: ${shopDomain}-${productId}`);
             await deleteArbispotterProduct(shopDomain, productId);
             //DELETE PRODUCT
           }
@@ -114,6 +125,8 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
         }
       })
     );
+    const remaining = await countRemainingProducts(shops, taskId, type);
+    log(`Remaining products: ${remaining}`);
     await queue.clearQueue("CRAWL_EBY_LISTINGS_COMPLETE", infos);
     return res(
       new TaskCompletedStatus("CRAWL_EBY_LISTINGS_COMPLETE", task, {
@@ -159,12 +172,17 @@ export async function scrapeEbyListings(
       infos.notFound++;
       infos.total++;
       queue.total++;
-      if (cause === "timeout") {
-        await updateArbispotterProductQuery(shopDomain, productId, {
-          $unset: {
-            [taskIdProp]: "",
-          },
-        });
+      if (cause === "exceedsLimit") {
+        const result = await updateArbispotterProductQuery(
+          shopDomain,
+          productId,
+          {
+            $unset: {
+              [taskIdProp]: "",
+            },
+          }
+        );
+        log(`Exceeds Limit: ${shopDomain}-${productId} - ${cause}`, result);
       } else {
         await handleEbyListingNotFound(shopDomain, productId);
       }

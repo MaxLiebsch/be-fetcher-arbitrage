@@ -1,8 +1,8 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../../../tasks.js";
+import { updateTaskWithQuery } from "../../../tasks";
 import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby";
 import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops";
-import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby.js";
+import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby";
 import { getProductsWithShop } from "../../../getProductsWithShop";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../../../types/tasks/Tasks";
@@ -10,6 +10,7 @@ import {
   PendingShops,
   PendingShopsWithBatch,
 } from "../../../../../types/shops";
+import { log } from "../../../../../util/logger";
 
 export async function lookForOutdatedDealsOnEby(
   taskId: ObjectId,
@@ -23,11 +24,10 @@ export async function lookForOutdatedDealsOnEby(
       proxyType,
       productLimit
     );
-    console.log(
-      "Deals On Eby:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Deals On Eby: ${recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -68,11 +68,10 @@ export async function lookForOutdatedDealsOnEby(
       []
     );
 
-    console.log(
-      "Deals On Eby:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    log(
+      `Deals On Eby: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
 
     await updateTaskWithQuery({ _id: taskId }, { progress });

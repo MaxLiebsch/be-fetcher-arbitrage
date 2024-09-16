@@ -10,6 +10,7 @@ import {
   PendingShops,
   PendingShopsWithBatch,
 } from "../../../../../types/shops.js";
+import { log } from "../../../../../util/logger.js";
 
 export async function lookForOutdatedNegMarginAznListings(
   taskId: ObjectId,
@@ -23,11 +24,10 @@ export async function lookForOutdatedNegMarginAznListings(
       proxyType,
       productLimit
     );
-    console.log(
-      "Outdated Negative Margin Azn:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Outdated Negative Margin Azn: ${recoveryProducts.shops
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -71,11 +71,10 @@ export async function lookForOutdatedNegMarginAznListings(
       []
     );
 
-    console.log(
-      "Outdated Negative Margin Azn:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    log(
+      `Outdated Negative Margin Azn: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
 
     await updateTaskWithQuery({ _id: taskId }, { progress });

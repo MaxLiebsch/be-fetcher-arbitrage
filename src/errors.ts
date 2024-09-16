@@ -12,8 +12,6 @@ export function ProductLimitReachedError(
   this.name = "PRODUCT_LIMIT_REACHED";
   this.taskType = taskType;
 }
-ProductLimitReachedError.prototype = Object.create(Error.prototype);
-ProductLimitReachedError.prototype.constructor = ProductLimitReachedError;
 
 export function TimeLimitReachedError(
   this: any,
@@ -26,8 +24,6 @@ export function TimeLimitReachedError(
   this.name = "TIME_LIMIT_REACHED";
   this.taskType = taskType;
 }
-TimeLimitReachedError.prototype = Object.create(Error.prototype);
-TimeLimitReachedError.prototype.constructor = TimeLimitReachedError;
 
 export function TaskCompletedError(
   this: any,
@@ -40,28 +36,28 @@ export function TaskCompletedError(
   this.name = "COMPLETED";
   this.taskType = taskType;
 }
-TaskCompletedError.prototype = Object.create(Error.prototype);
-TaskCompletedError.prototype.constructor = TaskCompletedError;
 
-export class MissingProductsError extends Error {
+export class MissingProductsError {
   taskType: Tasks;
+  name: string;
 
   constructor(message = "", task: Tasks) {
-    super(message);
     this.name = "MISSING_LOOKUP_PRODCUTS";
     this.taskType = task;
   }
 }
 
-export class MissingShopError extends Error {
+
+export class MissingShopError  {
   taskType: Tasks;
+  name: string;
 
   constructor(message = "", task: Tasks) {
-    super(message);
     this.name = "MISSING_SHOP";
     this.taskType = task;
   }
 }
+
 
 export function MissingTaskError(this: any, message = "", task: Tasks) {
   const error = Error.call(this, message);
@@ -70,8 +66,7 @@ export function MissingTaskError(this: any, message = "", task: Tasks) {
   this.name = "TASK_NOT_FOUND";
   this.taskType = task;
 }
-MissingShopError.prototype = Object.create(Error.prototype);
-MissingShopError.prototype.constructor = MissingShopError;
+
 
 export type TaskErrors =
   | typeof ProductLimitReachedError

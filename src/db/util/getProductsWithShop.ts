@@ -1,4 +1,8 @@
-import { DbProductRecord, Shop } from "@dipmaxtech/clr-pkg";
+import {
+  DbProductRecord,
+  getMainDomainFromUrl,
+  Shop,
+} from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../mongo.js";
 
 export function getProductsWithShop(
@@ -9,15 +13,19 @@ export function getProductsWithShop(
   const { d: shopDomain } = shop;
   return products
     .map((product) => {
-      const { shop: productShopDomain } = product;
       if (shopDomain === salesDbName) {
-        let _shop = shops.find((shop) => shop.d === productShopDomain);
+        const { shop, lnk } = product;
+        let productShopDomain = shop;
+        if (!productShopDomain) {
+          productShopDomain = getMainDomainFromUrl(lnk);
+        }
+        const _shop = shops.find((shop) => shop.d === productShopDomain);
         if (!_shop) {
           return null;
         }
-        _shop.d = salesDbName;
+        const foundShop = { ..._shop, d: salesDbName };
 
-        return { shop: _shop, product };
+        return { shop: foundShop, product };
       }
       return { shop, product };
     })

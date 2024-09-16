@@ -18,15 +18,16 @@ import {
 } from "../../constants";
 import { parseISO } from "date-fns";
 import {
-  findProductByLink,
+  findProductByHash,
+  insertArbispotterProduct,
   updateArbispotterProductQuery,
-  upsertArbispotterProduct,
 } from "../../db/util/crudArbispotterProduct";
 import { UTCDate } from "@date-fns/utc";
 import { salesDbName } from "../../db/mongo";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask";
 import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats";
 import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+import { log } from "../../util/logger.js";
 
 export const crawlProducts = async (
   shop: Shop,
@@ -72,7 +73,7 @@ export const crawlProducts = async (
     };
     task.actualProductLimit = productLimit;
     const queue = new CrawlerQueue(concurrency, proxyAuth, task);
-    queue.total = 1;
+    queue.total = 0;
 
     const eventEmitter = globalEventEmitter;
 
@@ -108,7 +109,13 @@ export const crawlProducts = async (
           res({ infos, queueStats: queue.queueStats });
         } else {
           const transformedProduct = transformProduct(product, shopDomain);
-          const { lnk, nm, prc: buyPrice, qty: buyQty } = transformedProduct;
+          const {
+            lnk,
+            s_hash: productHash,
+            nm,
+            prc: buyPrice,
+            qty: buyQty,
+          } = transformedProduct;
           if (nm && buyPrice && lnk) {
             if (!uniqueLinks.includes(lnk)) {
               uniqueLinks.push(lnk);
@@ -120,7 +127,10 @@ export const crawlProducts = async (
               );
               transformedProduct["availUpdatedAt"] =
                 new UTCDate().toISOString();
-              const existingProduct = await findProductByLink(salesDbName, lnk);
+              const existingProduct = await findProductByHash(
+                salesDbName,
+                productHash
+              );
               if (existingProduct) {
                 const {
                   _id: productId,
@@ -129,11 +139,19 @@ export const crawlProducts = async (
                   eby_prop, // query ean on eby
                   cat_prop, // lookup category
                 } = existingProduct;
-                await updateArbispotterProductQuery(salesDbName, productId, {
-                  $set: {
-                    availUpdatedAt: transformedProduct["availUpdatedAt"],
-                  },
-                });
+                const result = await updateArbispotterProductQuery(
+                  salesDbName,
+                  productId,
+                  {
+                    $set: {
+                      availUpdatedAt: transformedProduct["availUpdatedAt"],
+                    },
+                  }
+                );
+                log(
+                  `Updating availUpdatedAt: ${salesDbName}-${productId}`,
+                  result
+                );
                 const xDaysAgo = new UTCDate();
                 xDaysAgo.setDate(
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
@@ -201,16 +219,18 @@ export const crawlProducts = async (
                   task.progress.aznListings.push(productId);
                 }
               } else {
-                const result = await upsertArbispotterProduct(
+                const result = await insertArbispotterProduct(
                   salesDbName,
                   transformedProduct
                 );
+                log(
+                  `Product inserted: ${salesDbName}-${result.insertedId}`,
+                  result
+                );
                 if (result.acknowledged) {
-                  if (result.upsertedId) {
-                    task.progress.crawlEan.push(result.upsertedId);
+                  if (result.insertedId) {
+                    task.progress.crawlEan.push(result.insertedId);
                     infos.new++;
-                  } else {
-                    infos.old++;
                   }
                 } else {
                   infos.failedSave++;

@@ -10,7 +10,6 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult";
-import { MissingProductsError, MissingShopError } from "../errors";
 import { CONCURRENCY, proxyAuth } from "../constants";
 import { checkProgress } from "../util/checkProgress";
 import { lookForUnmatchedEans } from "../db/util/lookupInfo/lookForUnmatchedEans";
@@ -20,13 +19,18 @@ import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
 } from "../util/lookupInfoHelper";
-import { getProductLimit } from "../util/getProductLimit";
+import { getProductLimitMulti } from "../util/getProductLimit";
 import { getEanFromProduct } from "../util/getEanFromProduct";
 import { TaskCompletedStatus } from "../status";
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats";
 import { getMaxLoadQueue } from "../util/getMaxLoadQueue";
 import { LookupInfoTask } from "../types/tasks/Tasks";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { countRemainingProducts } from "../util/countRemainingProducts";
+import { setTaskId } from "../db/util/queries";
+import { MissingProductsError } from "../errors";
+import { MissingShopError } from "../errors";
+import { log } from "../util/logger";
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -57,6 +61,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       action || "none",
       productLimit
     );
+    log(`Found ${products.length} products`);
 
     shops.forEach(async (info) => {
       infos.shops[info.shop.d] = 0;
@@ -65,7 +70,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
     if (!products.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimitMulti(products.length, productLimit);
+    log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
 
     const toolInfo = await getShop("sellercentral.amazon.de");
@@ -87,6 +93,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
 
+    let done = false;
+
     const isCompleted = async () => {
       const check = await checkProgress({
         task,
@@ -96,6 +104,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         productLimit: _productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
+        const remaining = await countRemainingProducts(shops, taskId, type);
+        log(`Completed: Rest: ${remaining}, taskId ${setTaskId(taskId)}`);
         await updateProgressInLookupInfoTask();
         handleResult(check, resolve, reject);
       }
@@ -114,24 +124,29 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           eventEmitter.on(
             `${queue.queueId}-finished`,
             async function lookupInfoCallback({ queueId }) {
-              console.log("Emitter: Queue completed ", queueId);
               const maxQueue = getMaxLoadQueue(queryQueues);
               const tasks = maxQueue.pullTasksFromQueue();
               if (tasks) {
-                console.log(
-                  "adding",
-                  tasks.length,
-                  " tasks from ",
-                  maxQueue.queueId,
-                  "to ",
-                  queueId
+                log(
+                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
               } else {
-                console.log("no more tasks to distribute. Closing ", queueId);
+                log("No more tasks to distribute. Closing " + queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
+                  const remaining = await countRemainingProducts(
+                    shops,
+                    taskId,
+                    type
+                  );
+                  log(
+                    `Eventemitter: Remaining products: ${remaining}, taskId ${setTaskId(
+                      taskId
+                    )}`
+                  );
+                  log("All queues are done");
                   await isCompleted();
                 }
               }
@@ -184,7 +199,6 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           key: hasEan ? asin || ean : asin,
         },
       };
-
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,

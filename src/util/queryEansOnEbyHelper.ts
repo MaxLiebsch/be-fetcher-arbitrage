@@ -14,6 +14,7 @@ import { calculateMinMaxMedian } from "./calculateMinMaxMedian";
 import { resetEbyProductQuery } from "../db/util/ebyQueries";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats";
 import { DailySalesTask } from "../types/tasks/DailySalesTask";
+import { log } from "./logger";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection: string,
@@ -31,9 +32,6 @@ export async function handleQueryEansOnEbyIsFinished(
     qty: buyQty,
     _id: productId,
   } = product;
-  infos.shops[collection]++;
-  infos.total++;
-  queue.total++;
   let update: Partial<DbProductRecord> = {};
   const priceRange = calculateMinMaxMedian(foundProducts);
   const foundProduct = foundProducts.find(
@@ -51,6 +49,8 @@ export async function handleQueryEansOnEbyIsFinished(
     if (priceRange.min && priceRange.max) {
       update["e_pRange"] = priceRange;
     }
+
+    update["e_totalOfferCount"] = foundProducts.length;
     update["e_img"] = image;
     update["e_lnk"] = shortLink;
     update["e_hash"] = createHash(shortLink);
@@ -89,7 +89,7 @@ export async function handleQueryEansOnEbyIsFinished(
       }
     }
 
-    await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateArbispotterProductQuery(collection, productId, {
       $set: {
         ...update,
         qEbyUpdatedAt: new UTCDate().toISOString(),
@@ -99,14 +99,19 @@ export async function handleQueryEansOnEbyIsFinished(
         eby_taskId: "",
       },
     });
+    log(`Updated: ${collection}-${productId}`, result);
     if (task) task.progress.lookupCategory.push(productId);
   } else {
-    await updateArbispotterProductQuery(
+    const result = await updateArbispotterProductQuery(
       collection,
       productId,
       resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
     );
+    log(`No product found for ${collection}-${productId}`, result);
   }
+  infos.shops[collection]++;
+  infos.total++;
+  queue.total++;
 }
 
 export async function handleQueryEansOnEbyNotFound(
@@ -116,14 +121,15 @@ export async function handleQueryEansOnEbyNotFound(
   queue: QueryQueue
 ) {
   const { _id: productId } = product;
-  infos.notFound++;
-  infos.shops[collection]++;
-  infos.total++;
-  queue.total++;
 
-  await updateArbispotterProductQuery(
+  const result = await updateArbispotterProductQuery(
     collection,
     productId,
     resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
   );
+  log(`No product info: ${collection}-${productId}`, result);
+  infos.notFound++;
+  infos.shops[collection]++;
+  infos.total++;
+  queue.total++;
 }

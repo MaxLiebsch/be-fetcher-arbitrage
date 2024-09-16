@@ -4,7 +4,7 @@ import { DbProductRecord, QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
 import { proxyAuth } from "../../../constants";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimit } from "../../../util/getProductLimit";
+import { getProductLimitMulti } from "../../../util/getProductLimit";
 import { scrapeAznListings } from "../weekly/negAznDeals";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
 import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks";
@@ -13,10 +13,12 @@ import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats";
 import { DealOnAznTask } from "../../../types/tasks/Tasks";
 import { TaskReturnType } from "../../../types/TaskReturnType";
 import { MissingShopError } from "../../../errors";
+import { log } from "../../../util/logger";
+import { countRemainingProducts } from "../../../util/countRemainingProducts";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, proxyType, concurrency } = task;
+  const { _id: taskId, action, proxyType, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await lookForOutdatedDealsOnAzn(
@@ -27,15 +29,9 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
       );
 
     if (action === "recover") {
-      console.log(
-        "Recovery action",
-        "Products:",
-        productsWithShop.length,
-        "Shops:",
-        shops &&
-          shops.length &&
-          shops.reduce((acc, { shop }) => acc + " " + shop.d, "")
-      );
+      log(`Recovering ${type} and found ${productsWithShop.length} products`);
+    } else {
+      log(`Starting ${type} with ${productsWithShop.length} products`);
     }
 
     const azn = await getShop("amazon.de");
@@ -70,10 +66,11 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
       },
     };
 
-    const _productLimit = getProductLimit(
+    const _productLimit = getProductLimitMulti(
       productsWithShop.length,
       productLimit
     );
+    log("Product limit " + _productLimit);
     task.actualProductLimit = _productLimit;
     infos.locked = productsWithShop.length;
 
@@ -122,6 +119,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
             } else {
               infos.total++;
               await deleteArbispotterProduct(shopDomain, productId);
+              log(`Deleted: ${shopDomain}-${productId}`);
               //DELETE PRODUCT
             }
           } else {
@@ -141,6 +139,8 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
         }
       )
     );
+    const remaining = await countRemainingProducts(shops, taskId, type);
+    log(`Remaining products: ${remaining}`);
     await queue.clearQueue("DEALS_ON_AZN_COMPLETE", infos);
     res(
       new TaskCompletedStatus("DEALS_ON_AZN_COMPLETE", task, {

@@ -1,7 +1,7 @@
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
-import { getTasks } from "../db/util/tasks.js";
-import { getArbispotterDb } from "../db/mongo.js";
-import { getAllShopsAsArray } from "../db/util/shops.js";
+import { findArbispotterProducts } from "../db/util/crudArbispotterProduct";
+import { getTasks } from "../db/util/tasks";
+import { getArbispotterDb } from "../db/mongo";
+import { getAllShopsAsArray } from "../db/util/shops";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
 
 const taskIdScraperMap = {
@@ -39,10 +39,10 @@ const taskIds = [
   "qty_batchId",
 ];
 
-export const isTaskRunning = (tasks, taskId, taskIdKey) => {
+export const isTaskRunning = (tasks: any, taskId: any, taskIdKey: any) => {
   const clr = taskId.split(":")[0];
-  const taskTypes = taskIdScraperMap[taskIdKey];
-  const foundTasks = tasks.filter((t) => taskTypes.includes(t.type));
+  const taskTypes = (taskIdScraperMap as any)[taskIdKey];
+  const foundTasks = tasks.filter((t: any) => taskTypes.includes(t.type));
   for (let i = 0; i < foundTasks.length; i++) {
     const t = foundTasks[i];
     if (t.lastCrawler.includes(clr)) {
@@ -58,19 +58,19 @@ const batchIdAiTaskMap = {
 };
 const aiTaskIds = ["nm_batchId", "qty_batchId"];
 
-export const isAiTaskRunning = (tasks, batchId, batchIdKey) => {
-  const batchTypes = batchIdAiTaskMap[batchIdKey];
-  const foundTasks = tasks.filter((t) => batchTypes.includes(t.type));
+export const isAiTaskRunning = (tasks: any, batchId: any, batchIdKey: any) => {
+  const batchTypes = (batchIdAiTaskMap as any)[batchIdKey];
+  const foundTasks = tasks.filter((t: any) => batchTypes.includes(t.type));
   for (let i = 0; i < foundTasks.length; i++) {
     const t = foundTasks[i];
-    if (t.batches.some((b) => b.batchId === batchId)) {
+    if (t.batches.some((b: any) => b.batchId === batchId)) {
       return true;
     }
   }
   return false;
 };
 
-export const buildQuery = (taskIds) => {
+export const buildQuery = (taskIds: string[]) => {
   return {
     $or: taskIds.map((taskId) => ({
       [taskId]: { $exists: true, $ne: "" },
@@ -82,7 +82,13 @@ const resetTaskIds = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
   const tasks = await getTasks();
+  if (!shops) {
+    console.log("No tasks found");
+    return;
+  }
+
   const activeShops = shops.filter((shop) => shop.active);
+  //@ts-ignore
   activeShops.push({ d: "sales", _id: new ObjectId() });
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
@@ -95,7 +101,7 @@ const resetTaskIds = async () => {
     let cnt = 0;
     const batchSize = 3000;
     while (count < total) {
-      const spotterBulkWrites = [];
+      const spotterBulkWrites: any[] = [];
       const products = await findArbispotterProducts(
         shop.d,
         buildQuery(taskIds),
@@ -103,7 +109,7 @@ const resetTaskIds = async () => {
       );
       if (products.length) {
         products.map((p) => {
-          let update = {};
+          let update: any = {};
           if (
             p.ean_taskId &&
             !isTaskRunning(tasks, p.ean_taskId, "ean_taskId")

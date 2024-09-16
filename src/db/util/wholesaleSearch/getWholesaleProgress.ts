@@ -1,4 +1,4 @@
-import { getCrawlDataDb } from "../../mongo";
+import { getArbispotterDb } from "../../mongo";
 import {
   countCompletedProductsForWholesaleSearchQuery,
   countPendingProductsForWholesaleSearchQuery,
@@ -8,7 +8,7 @@ import { ObjectId } from "@dipmaxtech/clr-pkg";
 const collectionName = "wholesale";
 
 export const getCompletedProductsCount = async (taskId: ObjectId) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const wholesaleCollection = db.collection(collectionName);
   return wholesaleCollection.countDocuments(
     countCompletedProductsForWholesaleSearchQuery(taskId)
@@ -17,7 +17,7 @@ export const getCompletedProductsCount = async (taskId: ObjectId) => {
 export const countPendingProductsForWholesaleSearch = async (
   taskId: ObjectId
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const wholesaleCollection = db.collection(collectionName);
   return wholesaleCollection.countDocuments(
     countPendingProductsForWholesaleSearchQuery(taskId)
@@ -27,7 +27,7 @@ export const countPendingProductsForWholesaleSearch = async (
 export const countTotalProductsForWholesaleSearch = async (
   taskId: ObjectId
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const wholesaleCollection = db.collection(collectionName);
   return wholesaleCollection.countDocuments({ taskId: taskId.toString() });
 };

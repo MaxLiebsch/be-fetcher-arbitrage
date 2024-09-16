@@ -25,6 +25,7 @@ import { getMaxLoadQueue } from "../../util/getMaxLoadQueue";
 import { LookupInfoStats } from "../../types/taskStats/LookupInfoStats";
 import { DailySalesReturnType } from "../../types/DailySalesReturnType";
 import { combineQueueStats } from "../../util/combineQueueStats";
+import { log } from "../../util/logger";
 
 export const lookupInfo = async (
   sellerCentral: Shop,
@@ -83,6 +84,7 @@ export const lookupInfo = async (
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
+                  log("LookupInfo: All queues are done");
                   interval && clearInterval(interval);
                   await updateTask(taskId, {
                     $set: { progress: task.progress },
@@ -126,7 +128,7 @@ export const lookupInfo = async (
       if (!product) continue;
       const queue = queueIterator.next().value;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
-      const { lnk: productLink, asin, _id: productId, s_hash } = product;
+      const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
 
       const addProduct = async (product: ProductRecord) => {};

@@ -8,13 +8,14 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../../db/util/crudArbispotterProduct";
+import { log } from "../logger";
 
 export async function handleDealsProductInfo(
-  collectionName: string,
+  collection: string,
   { productInfo, url }: AddProductInfoProps,
   product: DbProductRecord
 ) {
-  const { _id, qty: buyQty } = product;
+  const { _id: productId, qty: buyQty } = product;
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
@@ -38,11 +39,13 @@ export async function handleDealsProductInfo(
       ...(mku && { mku }),
     };
 
-    await updateArbispotterProductQuery(collectionName, _id, {
+    const result = await updateArbispotterProductQuery(collection, productId, {
       $set: productUpdate,
     });
+    log(`Updated product info: ${collection}-${productId.toString()}`, result);
     return productUpdate;
   } else {
+    log(`No product info: ${collection}-${productId.toString()}`);
     return null;
   }
 }

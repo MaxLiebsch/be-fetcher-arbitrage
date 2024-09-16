@@ -30,7 +30,7 @@ export const scrapeAznListings = (
 
     let infos: DealsOnAznStats = {
       new: 0,
-      total: 1,
+      total: 0,
       old: 0,
       notFound: 0,
       locked: 0,
@@ -67,7 +67,6 @@ export const scrapeAznListings = (
     );
     const isProcessComplete = async () => {
       if (infos.total >= productLimit && !queue.idle()) {
-        console.log("infos:", infos.total, "limit: ", productLimit);
         await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });

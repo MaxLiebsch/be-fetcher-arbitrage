@@ -3,13 +3,15 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import dealOnAzn from "../../src/services/deals/daily/dealsOnAzn.js";
-import { ObjectId } from "mongodb";
+} from "../../src/db/util/crudArbispotterProduct";
+import dealOnAzn from "../../src/services/deals/daily/dealsOnAzn";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
+import { getAllShopsAsArray } from "../../src/db/util/shops";
+import { getArbispotterDb } from "../../src/db/mongo";
+import { sub } from "date-fns";
 
-const shopDomain = ["cyberport.de", 'reichelt.de', 'alza.de'];
+const shopDomain = ["cyberport.de", "reichelt.de", "alza.de"];
 
 describe("pos azn listign", () => {
   let productLimit = 30;
@@ -37,16 +39,32 @@ describe("pos azn listign", () => {
         );
       })
     );
+    const shops = await getAllShopsAsArray();
+    const spotter = await getArbispotterDb();
+    await Promise.all(
+      shops!.map(async (shop) => {
+        return spotter.collection(shop.d).updateMany(
+          {},
+          {
+            $set: {
+              availUpdatedAt: sub(new Date(), { days: 2 }).toISOString(),
+            },
+            $unset: { dealAznTaskId: "", dealAznUpdatedAt: "" },
+          }
+        );
+      })
+    );
   }, 100000);
 
   test("pos azn listign", async () => {
-    console.log('test')
+    const logger = new LocalLogger().createLogger("DEALS_ON_AZN");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await dealOnAzn({
-      shopDomain,
       productLimit,
       type: "DEALS_ON_AZN",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
       proxyType: "mix",
       concurrency: 4,
     });

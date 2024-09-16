@@ -4,7 +4,7 @@ import { QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
 import { proxyAuth } from "../../../constants";
 import { differenceInHours } from "date-fns";
 import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimit } from "../../../util/getProductLimit";
+import { getProductLimitMulti } from "../../../util/getProductLimit";
 import { scrapeEbyListings } from "../weekly/negEbyDeals";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
 import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks";
@@ -13,17 +13,26 @@ import { DealOnEbyTask } from "../../../types/tasks/Tasks";
 import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
 import { MissingShopError } from "../../../errors";
 import { TaskReturnType } from "../../../types/TaskReturnType";
+import { countRemainingProducts } from "../../../util/countRemainingProducts";
+import { log } from "../../../util/logger";
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, proxyType, concurrency } = task;
+  const { _id: taskId, action, proxyType, concurrency, type } = task;
   return new Promise(async (res, rej) => {
-    const { products: productsWithShop } = await lookForOutdatedDealsOnEby(
-      taskId,
-      proxyType,
-      action || "none",
-      productLimit
-    );
+    const { products: productsWithShop, shops } =
+      await lookForOutdatedDealsOnEby(
+        taskId,
+        proxyType,
+        action || "none",
+        productLimit
+      );
+
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${productsWithShop.length} products`);
+    } else {
+      log(`Starting ${type} with ${productsWithShop.length} products`);
+    }
 
     const eby = await getShop("ebay.de");
 
@@ -55,10 +64,11 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
       elapsedTime: "",
     };
 
-    const _productLimit = getProductLimit(
+    const _productLimit = getProductLimitMulti(
       productsWithShop.length,
       productLimit
     );
+    log("Product limit " + _productLimit);
     task.actualProductLimit = _productLimit;
     infos.locked = productsWithShop.length;
 
@@ -102,6 +112,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
           } else {
             infos.total++;
             await deleteArbispotterProduct(shopDomain, productId);
+            log(`Deleted: ${shopDomain}-${productId}`);
             //DELETE PRODUCT
           }
         } else {
@@ -112,6 +123,8 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
         }
       })
     );
+    const remaining = await countRemainingProducts(shops, taskId, type);
+    log(`Remaining products: ${remaining}`);
     await queue.clearQueue("DEALS_ON_EBY_COMPLETE", infos);
     return res(
       new TaskCompletedStatus("DEALS_ON_EBY_COMPLETE", task, {

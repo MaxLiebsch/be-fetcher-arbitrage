@@ -26,6 +26,7 @@ function handleErrors(
   res.writeHead(statusCode, { "Content-Type": "text/plain" });
   return res.end(message);
 }
+
 function handleSuccess(
   res: ServerResponse,
   statusCode: number,
@@ -42,11 +43,10 @@ export function handleProxyChange(
   query: { proxy: ProxyType },
   res: ServerResponse
 ) {
-  console.log('query:', query, de_host, mix_host);
+  handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
   if (query.proxy === "de") {
     return de_host;
   }
-  handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
   return mix_host;
 }
 

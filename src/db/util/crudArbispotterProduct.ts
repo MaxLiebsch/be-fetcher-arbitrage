@@ -1,7 +1,12 @@
 import { UTCDate } from "@date-fns/utc";
-import { getArbispotterDb } from "../mongo.js";
-import { MongoError, UpdateFilter } from "mongodb";
-import { DbProductRecord, Filter, ObjectId } from "@dipmaxtech/clr-pkg";
+import { getArbispotterDb } from "../mongo";
+import { Db, MongoError, UpdateFilter } from "mongodb";
+import {
+  DbProductRecord,
+  Filter,
+  InsertOneResult,
+  ObjectId,
+} from "@dipmaxtech/clr-pkg";
 
 const getCollection = async (collectionName: string) => {
   const db = await getArbispotterDb();
@@ -58,30 +63,11 @@ export const findProduct = async (domain: string, name: string) => {
   const collection = await getCollection(collectionName);
   return collection.findOne({ nm: name });
 };
-export const findProductByLink = async (domain: string, link: string) => {
+export const findProductByHash = async (domain: string, hash: string) => {
   const collectionName = domain;
   const collection = await getCollection(collectionName);
-  return collection.findOne({ lnk: link });
+  return collection.findOne({ s_hash: hash });
 };
-export const upsertArbispotterProduct = async (
-  domain: string,
-  product: DbProductRecord
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-
-  product["createdAt"] = new UTCDate().toISOString();
-  product["updatedAt"] = new UTCDate().toISOString();
-
-  return collection.updateOne(
-    { lnk: product.lnk },
-    { $set: { ...product } },
-    {
-      upsert: true,
-    }
-  );
-};
-
 export const insertArbispotterProduct = async (
   domain: string,
   product: DbProductRecord
@@ -94,13 +80,12 @@ export const insertArbispotterProduct = async (
     product["createdAt"] = new UTCDate().toISOString();
     product["updatedAt"] = new UTCDate().toISOString();
 
-    await collection.insertOne(product);
-    return;
+    return await collection.insertOne(product);
   } catch (error) {
     if (error instanceof MongoError) {
       console.error("Error creating product:", error?.message, product.lnk);
     }
-    return;
+    return { acknowledged: false } as InsertOneResult<Document>;
   }
 };
 
@@ -148,7 +133,7 @@ export const updateArbispotterProductQuery = async (
   }
 };
 
-export const updateArbispotterProductLinkQuery = async (
+export const updateArbispotterProductHashQuery = async (
   domain: string,
   link: string,
   query: Filter<DbProductRecord>
@@ -190,6 +175,14 @@ export const updateArbispotterProductLinkQuery = async (
       }
     }
   }
+};
+
+export const countArbispotterProducts = async (
+  shopDomain: string,
+  query: Filter<DbProductRecord>
+) => {
+  const collection = await getCollection(shopDomain);
+  return collection.countDocuments(query);
 };
 
 export const updateProductQuery = async (
@@ -258,7 +251,7 @@ export const updateArbispotterProductSet = async (
 export const findArbispotterProductsNoLimit = async (
   domain: string,
   query: Filter<DbProductRecord>
-) => {
+): Promise<DbProductRecord[]> => {
   const collectionName = domain;
   const collection = await getCollection(collectionName);
   return collection.find({ ...query }).toArray();

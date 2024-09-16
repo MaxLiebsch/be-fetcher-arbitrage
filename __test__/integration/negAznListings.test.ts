@@ -3,18 +3,13 @@ import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import negAznDeals from "../../src/services/deals/weekly/negAznDeals.js";
-import { ObjectId } from "mongodb";
-//@ts-ignore
-import { getAllShopsAsArray } from "../../src/db/util/shops.js";
-//@ts-ignore
-import { getArbispotterDb } from "../../src/db/mongo.js";
-//@ts-ignore
-import { shopProxyTypeFilter } from "../../src/db/util/filter.js";
+} from "../../src/db/util/crudArbispotterProduct";
+import negAznDeals from "../../src/services/deals/weekly/negAznDeals";
+import { getAllShopsAsArray } from "../../src/db/util/shops";
+import { getArbispotterDb } from "../../src/db/mongo";
 import { sub } from "date-fns";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
 const proxyType = "mix";
 
 const shopDomain = "gamestop.de";
@@ -23,7 +18,9 @@ describe("crawl azn listings", () => {
   let productLimit = 15;
   beforeAll(async () => {
     const aznListings = read(
-      path("__test__/static/collections/arbispotter.gamestop.de-azn-listings.json"),
+      path(
+        "__test__/static/collections/arbispotter.gamestop.de-azn-listings.json"
+      ),
       "json"
     );
 
@@ -33,22 +30,19 @@ describe("crawl azn listings", () => {
     console.log("aznListings", aznListings.length);
     await deleteAllArbispotterProducts(shopDomain);
     const shops = await getAllShopsAsArray();
-    const filteredShops = shops.filter((shop) =>
-      shopProxyTypeFilter(shop, proxyType)
-    );
     const spotter = await getArbispotterDb();
     await Promise.all(
-      filteredShops.map(async (shop) => {
+      shops!.map(async (shop) => {
         return spotter.collection(shop.d).updateMany(
           {},
           {
-            $set: { availUpdatedAt: sub(new Date(), { days: 2 }) },
-            $unset: { eby_taskId: "", ebyUpdatedAt: "" },
+            $set: { availUpdatedAt: sub(new Date(), { days: 2 }).toISOString() },
+            $unset: { azn_taskId: "", aznUpdatedAt: "" },
           }
         );
       })
     );
-    
+
     await insertArbispotterProducts(
       shopDomain,
       aznListings.map((l) => {
@@ -56,14 +50,17 @@ describe("crawl azn listings", () => {
       })
     );
   }, 100000);
-  
+
   test("crawl azn listings", async () => {
+    const logger = new LocalLogger().createLogger("CRAWL_AZN_LISTINGS");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await negAznDeals({
-      proxyType: "mix", 
+      proxyType: "mix",
       productLimit,
       type: "CRAWL_AZN_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
       concurrency: 4,
     });
     console.log("infos:", infos);

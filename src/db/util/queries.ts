@@ -3,7 +3,6 @@ import { hostname } from "../mongo.js";
 import { UTCDate } from "@date-fns/utc";
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { ObjectId } from "mongodb";
-import { Limit } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../types/tasks/Tasks.js";
 import { subDateDaysISO } from "../../util/dates.js";
 import {
@@ -818,7 +817,7 @@ export const countPendingProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   const query = {
-    taskId: taskId.toString(),
+    taskId: setTaskId(taskId),
     lookup_pending: true,
     locked: false,
   };
@@ -828,7 +827,7 @@ export const countCompletedProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   return {
-    taskId: taskId.toString(),
+    taskId: setTaskId(taskId),
     status: { $in: ["complete", "not found"] },
   };
 };

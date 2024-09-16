@@ -1,13 +1,14 @@
-import { describe, expect, test, beforeAll } from "@jest/globals";
+import { describe, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
 import {
   deleteAllArbispotterProducts,
   insertArbispotterProducts,
-  //@ts-ignore
-} from "../../src/db/util/crudArbispotterProduct.js";
-//@ts-ignore
-import queryEansOnEby from "../../src/services/queryEansOnEby.js";
-import { ObjectId } from "mongodb";
+} from "../../src/db/util/crudArbispotterProduct";
+import queryEansOnEby from "../../src/services/queryEansOnEby";
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { setTaskLogger } from "../../src/util/logger";
+import { TASK_TYPES } from "../../src/util/taskTypes";
+import { resetProperty } from "../../src/maintenance/resetProperty";
 
 const shopDomain = "gamestop.de";
 
@@ -31,18 +32,20 @@ describe("query eans on eby", () => {
         return { ...l, _id: new ObjectId(l._id.$oid) };
       })
     );
+    await resetProperty({ $unset: { eby_prop: "", eby_taskId: "" } });
   }, 100000);
 
   test("query eans on eby", async () => {
+    const logger = new LocalLogger().createLogger("QUERY_EANS_EBY");
+    setTaskLogger(logger);
+    //@ts-ignore
     const infos = await queryEansOnEby({
       concurrency: 4,
-      type: "QUERY_EANS_ON_EBY",
-      shopDomain,
+      type: TASK_TYPES.QUERY_EANS_EBY,
       id: "queryEansOnEby",
-      proxyType: 'mix',
       productLimit,
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
-      action: "",
+      action: "none",
     });
     console.log("infos:", infos);
   }, 1000000);

@@ -7,6 +7,7 @@ export const sitemapcollectionName = "sitemaps";
 export const tasksCollectionName = "tasks";
 export const logsCollectionName = "logs";
 export const shopCollectionName = "shops";
+export const wholesaleCollectionName = "wholesale";
 export const salesDbName = "sales";
 export const hostname = os.hostname();
 

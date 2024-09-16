@@ -7,6 +7,7 @@ import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../types/tasks/Tasks";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { log } from "../../../util/logger";
 
 export async function lookForMissingEans(
   taskId: ObjectId,
@@ -20,11 +21,10 @@ export async function lookForMissingEans(
       proxyType,
       productLimit
     );
-    console.log(
-      "Missing Eans:\n",
-      recoveryProducts.shops
-        .map((info) => `${info.shop.d}: p: ${info.pending}\n`)
-        .join("")
+    log(
+      `Missing Eans: ${recoveryProducts.shops
+        .map((info) => `${info.shop.d}: p: ${info.pending} `)
+        .join("")}`
     );
     return recoveryProducts;
   } else {
@@ -50,6 +50,7 @@ export async function lookForMissingEans(
           taskId
         );
 
+
         const productsWithShop = getProductsWithShop(products, shop, shops);
         stats[shop.d].batch = productsWithShop.length;
         return productsWithShop;
@@ -67,11 +68,10 @@ export async function lookForMissingEans(
       []
     );
 
-    console.log(
-      "Missing Eans:\n",
-      Object.values(stats)
-        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch}\n`)
-        .join("")
+    log(
+      `Missing Eans: ${Object.values(stats)
+        .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
+        .join("")}`
     );
 
     await updateTaskWithQuery({ _id: taskId }, { progress });

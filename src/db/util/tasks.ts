@@ -17,7 +17,7 @@ import { getOutdatedNegMarginEbyListingsPerShop } from "./deals/weekly/eby/getOu
 import { getOutdatedNegMarginAznListingsPerShop } from "./deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop";
 import { getOutdatedDealsOnEbyShops } from "./deals/daily/eby/getOutdatedDealsOnEbyShops";
 import { TASK_TYPES } from "../../util/taskTypes";
-import { Tasks } from "../../types/tasks/Tasks";
+import { MatchProductsTask, Tasks } from "../../types/tasks/Tasks";
 import { PendingShops } from "../../types/shops";
 import { COOLDOWN, COOLDOWN_LONG } from "../../constants";
 import { Filter, UpdateFilter } from "mongodb";
@@ -122,7 +122,7 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
       return await handleComulativTasks(task, pendingShops, cooldown);
     }
     if (task.type === TASK_TYPES.MATCH_PRODUCTS) {
-      const shopProductCollectionName = task.shopDomain;
+      const shopProductCollectionName = (task as MatchProductsTask).shopDomain;
       const pending = await countPendingProductsForMatch(
         shopProductCollectionName,
         false
@@ -162,7 +162,8 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
         return await handleSingleTask(task, pending, cooldown);
       }
       if (task.type === TASK_TYPES.MATCH_PRODUCTS) {
-        const shopProductCollectionName = task.shopDomain;
+        const shopProductCollectionName = (task as MatchProductsTask)
+          .shopDomain;
         const pending = await countPendingProductsForMatch(
           shopProductCollectionName,
           false

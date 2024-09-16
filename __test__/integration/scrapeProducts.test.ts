@@ -1,6 +1,9 @@
+import { describe, expect, test, beforeAll } from "@jest/globals";
+import { setTaskLogger } from "../../src/util/logger";
+import { LocalLogger } from "@dipmaxtech/clr-pkg";
+import scrapeShop from "../../src/services/scrapeShop";
 import { sub } from "date-fns";
-import crawl from "../src/services/crawl.js";
-import { deleteAllArbispotterProducts } from "../src/db/util/crudArbispotterProduct.js";
+import { ScrapeShopTask } from "../../src/types/tasks/Tasks";
 
 const shopDomain = "reichelt.de";
 
@@ -13,7 +16,8 @@ const task = {
   type: "CRAWL_SHOP",
   id: `crawl_shop_${shopDomain}_1_of_4`,
   shopDomain,
-  proxyType: 'de',
+  proxyType: "de",
+  visitedPages: [],
   limit: {
     mainCategory: 9,
     subCategory: 100,
@@ -52,9 +56,12 @@ const task = {
   weekday: today.getDay(),
 };
 
-const main = async () => {
-  await deleteAllArbispotterProducts(shopDomain);
-  const r = await crawl(task);
-  console.log(JSON.stringify(r, null, 2));
-};
-main();
+describe("crawlproducts", () => {
+  test("lookup info listings", async () => {
+    const logger = new LocalLogger().createLogger("CRAWL_SHOP");
+    setTaskLogger(logger);
+
+    const infos = await scrapeShop(task as unknown as ScrapeShopTask);
+    console.log(JSON.stringify(infos, null, 2));
+  }, 1000000);
+});

@@ -1,4 +1,9 @@
-import { CrawlerQueue, QueryQueue, ScanQueue, sleep } from "@dipmaxtech/clr-pkg";
+import {
+  CrawlerQueue,
+  QueryQueue,
+  ScanQueue,
+  sleep,
+} from "@dipmaxtech/clr-pkg";
 import { TaskCompletedStatus } from "../status.js";
 import { MATCH_TIME_LIMIT } from "../constants.js";
 import { getElapsedTime } from "./dates.js";
@@ -44,7 +49,7 @@ export const checkProgress = async ({
   startTime,
   task,
   productLimit,
-}: CheckProgressArgs): Promise<TaskCompletedStatus| undefined> => {
+}: CheckProgressArgs): Promise<TaskCompletedStatus | undefined> => {
   const { elapsedTime, elapsedTimeStr } = getElapsedTime(startTime);
   let status: TaskResultEvent = TASK_RESULT.TASK_COMPLETED;
 
@@ -56,7 +61,8 @@ export const checkProgress = async ({
 
   if (queue instanceof Array) {
     const isDone = queue.every((q) => q.workload() === 0);
-    if (total === productLimit) {
+    if (total >= productLimit) {
+      sleep(15000);
       status = TASK_RESULT.PRODUCT_LIMIT_REACHED;
       const combinedQueueStats = await handleArrayOfQueues(
         queue,
@@ -80,7 +86,7 @@ export const checkProgress = async ({
         queueStats: combinedQueueStats,
       });
     }
-    if (isDone) {
+    if (isDone && total >= productLimit) {
       status = TASK_RESULT.TASK_COMPLETED;
       await sleep(15000);
       const combinedQueueStats = await handleArrayOfQueues(
@@ -94,7 +100,8 @@ export const checkProgress = async ({
       });
     }
   } else {
-    if (total === productLimit) {
+    if (total >= productLimit) {
+      sleep(15000);
       status = TASK_RESULT.PRODUCT_LIMIT_REACHED;
       await handleSingleQueue(queue, taskStats, status);
 
@@ -112,7 +119,7 @@ export const checkProgress = async ({
         queueStats: queue.queueStats,
       });
     }
-    if (queue.workload() === 0) {
+    if (queue.workload() === 0 && total >= productLimit) {
       status = TASK_RESULT.TASK_COMPLETED;
       await handleSingleQueue(queue, taskStats, status);
 

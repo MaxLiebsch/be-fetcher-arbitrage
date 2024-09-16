@@ -22,7 +22,7 @@ import {
   deleteArbispotterProduct,
   updateArbispotterProductQuery,
 } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimit } from "../../../util/getProductLimit";
+import { getProductLimitMulti } from "../../../util/getProductLimit";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
@@ -35,10 +35,12 @@ import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn";
 import { MissingShopError, TaskErrors } from "../../../errors";
 import { TaskStats } from "../../../types/taskStats/TasksStats";
 import { TaskReturnType } from "../../../types/TaskReturnType";
+import { log } from "../../../util/logger";
+import { countRemainingProducts } from "../../../util/countRemainingProducts";
 
 const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, concurrency, proxyType } = task;
+  const { _id: taskId, action, concurrency, proxyType, type } = task;
   return new Promise<TaskCompletedStatus | TaskErrors>(async (res, rej) => {
     const { products, shops } = await lookForOutdatedNegMarginAznListings(
       taskId,
@@ -46,6 +48,13 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
       action || "none",
       productLimit
     );
+
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${products.length} products`);
+    } else {
+      log(`Starting ${type} with ${products.length} products`);
+    }
+
     const azn = await getShop("amazon.de");
 
     if (!azn) {
@@ -70,7 +79,8 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
       elapsedTime: "",
     };
 
-    const _productLimit = getProductLimit(products.length, productLimit);
+    const _productLimit = getProductLimitMulti(products.length, productLimit);
+    log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
     infos.locked = products.length;
 
@@ -112,6 +122,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
             );
           } else {
             infos.total++;
+            log(`Deleted: ${shopDomain}-${productId}`);
             await deleteArbispotterProduct(shopDomain, productId);
           }
         } else {
@@ -119,6 +130,8 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
         }
       })
     );
+    const remaining = await countRemainingProducts(shops, taskId, type);
+    log(`Remaining products: ${remaining}`);
     await queue.clearQueue("CRAWL_AZN_LISTINGS_COMPLETE", infos);
     res(
       new TaskCompletedStatus("CRAWL_AZN_LISTINGS_COMPLETE", task, {
@@ -133,8 +146,8 @@ export default negAznDeals;
 
 export async function scrapeAznListings(
   queue: QueryQueue,
-  target: ShopObject,
-  source: ShopObject,
+  target: Shop,
+  source: Shop,
   targetLink: string,
   product: DbProductRecord,
   infos: TaskStats,
@@ -164,12 +177,13 @@ export async function scrapeAznListings(
       infos.notFound++;
       infos.total++;
       queue.total++;
-      if (cause === "timeout") {
-        await updateArbispotterProductQuery(shopDomain, _id, {
+      if (cause === 'exceedsLimit') {
+        const result = await updateArbispotterProductQuery(shopDomain, _id, {
           $unset: {
             [taskIdProp]: "",
           },
         });
+        log(`ExceedsLimit: ${shopDomain}-${_id}`, result);
       } else {
         await handleAznListingNotFound(shopDomain, _id);
       }

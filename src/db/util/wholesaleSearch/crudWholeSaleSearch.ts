@@ -1,14 +1,18 @@
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { getCrawlDataDb, hostname } from "../../mongo.js";
+import {
+  getArbispotterDb,
+  hostname,
+  wholesaleCollectionName,
+} from "../../mongo.js";
 import { UTCDate } from "@date-fns/utc";
 import { Action } from "../../../types/tasks/Tasks.js";
-import { Options, Query } from "../queries.js";
+import { Options, Query, setTaskId } from "../queries.js";
 import { Filter, UpdateFilter } from "mongodb";
 
-const collectionName = "wholesale";
+const collectionName = wholesaleCollectionName;
 
 export const unlockProduts = async (products: DbProductRecord[]) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   await db.collection(collectionName).updateMany(
     {
       _id: {
@@ -32,12 +36,12 @@ export const lockWholeSaleProducts = async (
   taskId: ObjectId,
   action: Action
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
 
   const options: Options = {};
   const query: Query = {};
 
-  query["taskId"] = `${taskId.toString()}`;
+  query["taskId"] = setTaskId(taskId);
 
   if (action === "recover") {
     query["clrName"] = `${hostname}`;
@@ -71,7 +75,7 @@ export const updateWholeSaleProduct = async (
   productId: ObjectId,
   update: UpdateFilter<DbProductRecord>
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
 
   update["updatedAt"] = new UTCDate().toISOString();
@@ -90,7 +94,7 @@ export const updateWholeSaleProducts = async (
   query: Filter<DbProductRecord>,
   update: UpdateFilter<DbProductRecord>
 ) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const collection = db.collection<DbProductRecord>(collectionName);
   return collection.updateMany(query, {
     $set: {
@@ -100,7 +104,7 @@ export const updateWholeSaleProducts = async (
 };
 
 export const deleteProductsForTask = async (taskId: ObjectId) => {
-  const db = await getCrawlDataDb();
+  const db = await getArbispotterDb();
   const collection = db.collection(collectionName);
   return collection.deleteMany({ taskId });
 };

@@ -19,6 +19,7 @@ import { resetEbyProductQuery } from "../db/util/ebyQueries";
 import { UTCDate } from "@date-fns/utc";
 import { getEanFromProduct } from "./getEanFromProduct";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats";
+import { log } from "./logger";
 
 export async function handleLookupCategoryProductInfo(
   collection: string,
@@ -43,13 +44,14 @@ export async function handleLookupCategoryProductInfo(
 
     if (hasEan) {
       if (!ean) {
-        await updateArbispotterProductQuery(
+        const result = await updateArbispotterProductQuery(
           collection,
           productId,
           resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
         );
+        log(`No ean: ${collection}-${productId}`, result);
       } else if (ean !== exisitingEan) {
-        await updateArbispotterProductQuery(
+        const result = await updateArbispotterProductQuery(
           collection,
           productId,
           resetEbyProductQuery({
@@ -57,6 +59,7 @@ export async function handleLookupCategoryProductInfo(
             eby_prop: "",
           })
         );
+        log(`Ean missmatch: ${collection}-${productId}`, result);
       } else {
         await handleCategoryAndUpdate(
           collection,
@@ -74,11 +77,12 @@ export async function handleLookupCategoryProductInfo(
       );
     }
   } else {
-    await updateArbispotterProductQuery(
+    const result = await updateArbispotterProductQuery(
       collection,
       productId,
       resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
     );
+    log(`No product info: ${collection}-${productId}`, result);
   }
 }
 
@@ -86,15 +90,15 @@ export async function handleLookupCategoryNotFound(
   collection: string,
   infos: LookupCategoryStats,
   queue: QueryQueue,
-  id: ObjectId,
+  productId: ObjectId,
   cause: NotFoundCause
 ) {
   infos.notFound++;
   infos.shops[collection]++;
   infos.total++;
   queue.total++;
-  if (cause === "timeout") {
-    await updateArbispotterProductQuery(collection, id, {
+  if (cause === "exceedsLimit") {
+    const result = await updateArbispotterProductQuery(collection, productId, {
       $set: {
         cat_prop: "timeout",
       },
@@ -102,8 +106,10 @@ export async function handleLookupCategoryNotFound(
         cat_taskId: "",
       },
     });
+    log(`Exceeds limit: ${collection}-${productId}`, result);
   } else {
-    await moveArbispotterProduct(collection, "grave", id);
+    await moveArbispotterProduct(collection, "grave", productId);
+    log(`Moved to grave ${collection}-${productId} ${cause}`);
   }
 }
 
@@ -161,22 +167,29 @@ export const handleCategoryAndUpdate = async (
         e_pblsh: true,
         esin,
       };
-      await updateArbispotterProductQuery(shopDomain, productId, {
-        $set: productUpdate,
-        $unset: { cat_taskId: "" },
-      });
+      const result = await updateArbispotterProductQuery(
+        shopDomain,
+        productId,
+        {
+          $set: productUpdate,
+          $unset: { cat_taskId: "" },
+        }
+      );
+      log(`Updated: ${shopDomain}-${productId}`, result);
     } else {
-      await updateArbispotterProductQuery(
+      const result = await updateArbispotterProductQuery(
         shopDomain,
         productId,
         resetEbyProductQuery({ cat_prop: "category_not_found", eby_prop: "" })
       );
+      log(`Category mapping failed: ${shopDomain}-${productId}`, result);
     }
   } else {
-    await updateArbispotterProductQuery(
+    const result = await updateArbispotterProductQuery(
       shopDomain,
       productId,
       resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
     );
+    log(`No categories parsed: ${shopDomain}-${productId}`, result);
   }
 };

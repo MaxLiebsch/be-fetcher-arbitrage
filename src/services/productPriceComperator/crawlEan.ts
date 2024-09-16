@@ -9,6 +9,7 @@ import {
   QueryQueue,
   Shop,
   uuid,
+  removeSearchParams 
 } from "@dipmaxtech/clr-pkg";
 import { updateTask } from "../../db/util/tasks";
 import {
@@ -21,7 +22,7 @@ import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
 } from "../../util/crawlEanHelper";
-import { removeSearchParams } from "../../util/removeSearch";
+
 import { salesDbName } from "../../db/mongo";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask";
 import { ScrapeEanStats } from "../../types/taskStats/ScrapeEanStats";

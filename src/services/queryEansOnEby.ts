@@ -28,22 +28,24 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../util/queryEansOnEbyHelper";
-import { getProductLimit } from "../util/getProductLimit";
+import { getProductLimitMulti } from "../util/getProductLimit";
 import { getEanFromProduct } from "../util/getEanFromProduct";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
 import { TaskCompletedStatus } from "../status";
 import { QueryEansOnEbyTask } from "../types/tasks/Tasks";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { log } from "../util/logger";
+import { countRemainingProducts } from "../util/countRemainingProducts";
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask
 ): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id, action, type } = task;
+    const { productLimit, _id: taskId, action, type } = task;
 
     let infos: QueryEansOnEbyStats = {
-      total: 1,
+      total: 0,
       notFound: 0,
       locked: 0,
       shops: {},
@@ -52,7 +54,17 @@ export default async function queryEansOnEby(
     };
 
     const { products: productsWithShop, shops } =
-      await lookForUnmatchedQueryEansOnEby(_id, action || "none", productLimit);
+      await lookForUnmatchedQueryEansOnEby(
+        taskId,
+        action || "none",
+        productLimit
+      );
+
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${productsWithShop.length} products`);
+    } else {
+      log(`Starting ${type} with ${productsWithShop.length} products`);
+    }
 
     shops.forEach(async (info) => {
       infos.shops[info.shop.d] = 0;
@@ -65,10 +77,12 @@ export default async function queryEansOnEby(
     if (!productsWithShop.length)
       return reject(new MissingProductsError(`No products ${type}`, task));
 
-    const _productLimit = getProductLimit(
+    const _productLimit = getProductLimitMulti(
       productsWithShop.length,
       productLimit
     );
+    const remaining = await countRemainingProducts(shops, taskId, type);
+    log(`Product limit: ${_productLimit}, Remaining products: ${remaining}`);
     task.actualProductLimit = _productLimit;
 
     infos.locked = productsWithShop.length;
@@ -83,7 +97,7 @@ export default async function queryEansOnEby(
       proxyAuth,
       task
     );
-    queue.total = 1;
+    queue.total = 0;
     await queue.connect();
 
     await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
@@ -103,16 +117,13 @@ export default async function queryEansOnEby(
         productLimit: _productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
-        clearInterval(interval);
+        const remaining = await countRemainingProducts(shops, taskId, type);
+        log(`Remaining products: ${remaining}`);
         await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
         await updateProgressInLookupCategoryTask(); // update lookup category task
         handleResult(check, resolve, reject);
       }
     }
-    const interval = setInterval(
-      async () => await isProcessComplete(),
-      DEFAULT_CHECK_PROGRESS_INTERVAL
-    );
 
     for (let index = 0; index < productsWithShop.length; index++) {
       const { shop, product } = productsWithShop[index];
@@ -139,12 +150,17 @@ export default async function queryEansOnEby(
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        if (cause === "timeout") {
-          await updateArbispotterProductQuery(srcShopDomain, productId, {
-            $unset: {
-              eby_taskId: "",
-            },
-          });
+        if (cause === "exceedsLimit") {
+          const result = await updateArbispotterProductQuery(
+            srcShopDomain,
+            productId,
+            {
+              $unset: {
+                eby_taskId: "",
+              },
+            }
+          );
+          log(`ExceedsLimit: ${srcShopDomain}-${productId}`, result);
         } else {
           await handleQueryEansOnEbyNotFound(
             srcShopDomain,

@@ -29,23 +29,28 @@ import { WholeSaleTask } from "../types/tasks/Tasks";
 import { getMaxLoadQueue } from "../util/getMaxLoadQueue";
 import { WholeSaleStats } from "../types/taskStats/WholeSaleStats";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { getProductLimitMulti } from "../util/getProductLimit";
+import { log } from "../util/logger";
+import { multiQueueInitializer } from "../util/multiQueueInitializer";
+import { TaskCompletedStatus } from "../status";
+import { countRemainingProductsShop } from "../util/countRemainingProducts";
+import { wholesaleCollectionName } from "../db/mongo";
 
-export default async function wholesale(task: WholeSaleTask):TaskReturnType {
+export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const {
-      shopDomain,
-      productLimit,
-      _id: taskId,
-      action,
-      userId,
-      browserConcurrency,
-    } = task;
+    const { productLimit, _id: taskId, action, userId, type } = task;
 
     const wholeSaleProducts = await lockWholeSaleProducts(
       productLimit,
       taskId,
       action || "none"
     );
+
+    if (action === "recover") {
+      log(`Recovering ${type} and found ${wholeSaleProducts.length} products`);
+    } else {
+      log(`Starting ${type} with ${wholeSaleProducts.length} products`);
+    }
 
     let infos: WholeSaleStats = {
       total: 0,
@@ -59,18 +64,18 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
       },
       notFound: 0,
       elapsedTime: "",
-      failedSave: 0
+      failedSave: 0,
     };
 
     if (!wholeSaleProducts.length)
-      return reject(
-        new MissingProductsError(`No products for ${shopDomain}`, task)
-      );
+      return reject(new MissingProductsError(`No products`, task));
 
-    const _productLimit =
-      wholeSaleProducts.length < productLimit
-        ? wholeSaleProducts.length
-        : productLimit;
+    const _productLimit = getProductLimitMulti(
+      wholeSaleProducts.length,
+      productLimit
+    );
+    log(`Product limit: ${_productLimit}`);
+
     task.actualProductLimit = _productLimit;
 
     infos.locked = wholeSaleProducts.length;
@@ -91,69 +96,38 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
     const queues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
-
-    await Promise.all(
-      Array.from({ length: browserConcurrency ?? 1 }, (v, k) => k + 1).map(
-        async () => {
-          const queue = new QueryQueue(
-            task?.concurrency ? task.concurrency : CONCURRENCY,
-            proxyAuth,
-            task
-          );
-          queue.total = 1;
-          queuesWithId[queue.queueId] = queue;
-          queues.push(queue);
-          //@ts-ignore
-          eventEmitter.on(
-            `${queue.queueId}-finished`,
-            async function wholesaleCallback({ queueId }) {
-              console.log("Emitter: Queue completed ", queueId);
-              const maxQueue = getMaxLoadQueue(queues);
-              const tasks = maxQueue.pullTasksFromQueue();
-              if (tasks) {
-                console.log(
-                  "Adding ",
-                  tasks.length,
-                  " tasks from: ",
-                  maxQueue.queueId,
-                  " to queue: ",
-                  queueId
-                );
-                queuesWithId[queueId].addTasksToQueue(tasks);
-              } else {
-                console.log(
-                  "Closing ",
-                  queueId,
-                  ". No more tasks to distribute."
-                );
-                await queuesWithId[queueId].disconnect(true);
-              }
-            }
-          );
-          return queue.connect();
-        }
-      )
-    );
+    await multiQueueInitializer(task, queuesWithId, queues, eventEmitter);
 
     const queueIterator = yieldQueues(queues);
 
-    const interval = setInterval(async () => {
+    const isCompleted = async () => {
       const isDone = queues.every((q) => q.workload() === 0);
-      await updateWholesaleProgress(taskId);
       if (isDone) {
-        await checkProgress({
+        const check = await checkProgress({
           task,
           queue: queues,
           infos,
           startTime,
-          productLimit,
-        }).catch(async (r) => {
+          productLimit: _productLimit,
+        });
+        if (check instanceof TaskCompletedStatus) {
+          const remaining = await countRemainingProductsShop(
+            wholesaleCollectionName,
+            taskId,
+            type
+          );
+          log(`Remaining products: ${remaining}`);
           clearInterval(interval);
           await updateWholesaleProgress(taskId);
-          handleResult(r, resolve, reject);
-        });
+          handleResult(check, resolve, reject);
+        }
       }
-    }, DEFAULT_CHECK_PROGRESS_INTERVAL);
+    };
+
+    const interval = setInterval(
+      async () => await isCompleted(),
+      DEFAULT_CHECK_PROGRESS_INTERVAL
+    );
 
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
@@ -193,6 +167,7 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
               locked: false,
               clrName: "",
             });
+            log(`Updated: ${ean}`, result);
             if (result.acknowledged) {
               if (result.upsertedId) infos.new++;
               else infos.old++;
@@ -213,6 +188,7 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
                 locked: false,
                 clrName: "",
               });
+              log(`Not found: ${ean}`, result);
               if (result.acknowledged) {
                 if (result.upsertedId) infos.new++;
                 else infos.old++;
@@ -228,6 +204,7 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
             locked: false,
             clrName: "",
           });
+          log(`Product info missing: ${ean}`, result);
           if (result.acknowledged) {
             if (result.upsertedId) infos.new++;
             else infos.old++;
@@ -235,18 +212,7 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
             infos.failedSave++;
           }
         }
-        if (infos.total === _productLimit) {
-          await checkProgress({
-            task,
-            queue: queues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            await updateWholesaleProgress(taskId);
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isCompleted();
       };
 
       const handleNotFound = async (cause: NotFoundCause) => {
@@ -259,24 +225,14 @@ export default async function wholesale(task: WholeSaleTask):TaskReturnType {
           locked: false,
           clrName: "",
         });
+        log(`Not found: ${ean} - ${cause}`, result);
         if (result.acknowledged) {
           if (result.upsertedId) infos.new++;
           else infos.old++;
         } else {
           infos.failedSave++;
         }
-        if (infos.total === _productLimit) {
-          await checkProgress({
-            task,
-            queue: queues,
-            infos,
-            startTime,
-            productLimit: _productLimit,
-          }).catch(async (r) => {
-            await updateWholesaleProgress(taskId);
-            handleResult(r, resolve, reject);
-          });
-        }
+        await isCompleted();
       };
 
       queue.pushTask(querySellerInfosQueue, {

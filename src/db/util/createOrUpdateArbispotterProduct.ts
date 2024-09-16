@@ -1,10 +1,10 @@
 import { MongoServerError } from "mongodb";
 import {
-  findProductByLink,
-  updateArbispotterProductLinkQuery,
-  upsertArbispotterProduct,
-} from "./crudArbispotterProduct.js";
-import { DbProductRecord } from "@dipmaxtech/clr-pkg";
+  findProductByHash,
+  insertArbispotterProduct,
+  updateArbispotterProductHashQuery,
+} from "./crudArbispotterProduct";
+import { DbProductRecord, UpdateResult } from "@dipmaxtech/clr-pkg";
 
 //ARBISPOTTER DB UTILS
 // Remove keepa properties
@@ -38,22 +38,32 @@ export const keepaProperties = [
   { name: "totalOfferCount" }, // The total count of offers for this product (all conditions combined). The offer count per condition can be found in the current field.
 ];
 
-export const createOrUpdateArbispotterProduct = async (domain: string, procProd: DbProductRecord) => {
-  const { lnk } = procProd;
-  const product = await findProductByLink(domain, lnk);
+export const createOrUpdateArbispotterProduct = async (
+  domain: string,
+  procProd: DbProductRecord
+) => {
+  const { s_hash: productHash } = procProd;
+  const product = await findProductByHash(domain, productHash);
   try {
     if (product) {
-      return await updateArbispotterProductLinkQuery(domain, lnk, {
+      return await updateArbispotterProductHashQuery(domain, productHash, {
         $set: procProd,
       });
     } else {
       const newProduct = procProd;
-      return await upsertArbispotterProduct(domain, newProduct);
+      return await insertArbispotterProduct(domain, newProduct);
     }
   } catch (error) {
     if (error instanceof MongoServerError) {
       if (error.code === 11000) {
-        return { acknowledged: false, upsertedId: null };
+        const result: UpdateResult<Document> = {
+          acknowledged: false,
+          matchedCount: 0,
+          modifiedCount: 0,
+          upsertedCount: 0,
+          upsertedId: null
+        }
+        return result;
       }
     }
   }

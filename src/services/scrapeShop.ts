@@ -10,7 +10,6 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { createArbispotterCollection } from "../db/mongo";
-import { MissingShopError} from "../errors";
 import { getShop } from "../db/util/shops";
 import {
   CONCURRENCY,
@@ -27,10 +26,10 @@ import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats";
 import { ScrapeShopTask } from "../types/tasks/Tasks";
 import { TaskCompletedStatus } from "../status";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { MissingShopError } from "../errors";
+import { log } from "../util/logger";
 
-async function crawl(
-  task: ScrapeShopTask
-): TaskReturnType {
+async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
     const {
       shopDomain,
@@ -40,6 +39,7 @@ async function crawl(
       categories,
       concurrency,
     } = task;
+    log(`Scrape categories ${shopDomain}`);
 
     const shop = await getShop(shopDomain);
     if (shop === null) {
@@ -81,10 +81,11 @@ async function crawl(
         lnk: 0,
         img: 0,
       },
-      notFound: 0
+      notFound: 0,
     };
 
     task.actualProductLimit = productLimit;
+    log(`Product limit: ${productLimit}`);
     const queue = new CrawlerQueue(
       concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
@@ -101,6 +102,7 @@ async function crawl(
         productLimit,
       });
       if (check instanceof TaskCompletedStatus) {
+        log(`Task completed with ${uniqueLinks.length} products.`);
         clearInterval(interval);
         await updateProgressInCrawlEanTask(proxyType);
         await updateMatchProgress(shopDomain, hasEan);
@@ -111,11 +113,8 @@ async function crawl(
     emitter.on(`${queue.queueId}-finished`, async () => await isCompleted());
 
     await queue.connect();
-
     await createArbispotterCollection(`${shopDomain}`);
-
     const startTime = Date.now();
-
     const interval = setInterval(
       async () => await isCompleted(),
       DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
@@ -141,8 +140,10 @@ async function crawl(
             shopDomain,
             transformedProduct
           );
+
+          log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
           if (result?.acknowledged) {
-            if (result.upsertedId) infos.new++;
+            if ("insertedId" && result) infos.new++;
             else infos.old++;
           } else {
             infos.failedSave++;
@@ -203,4 +204,4 @@ async function crawl(
   });
 }
 
-export default crawl;
+export default scrapeShop;

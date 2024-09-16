@@ -26,6 +26,7 @@ import {
 import { DailySalesStats } from "../types/taskStats/DailySalesStats";
 import { combineQueueStats } from "../util/combineQueueStats";
 import { TaskReturnType } from "../types/TaskReturnType";
+import { log } from "../util/logger";
 
 const logService = LoggerService.getSingleton();
 
@@ -33,11 +34,11 @@ interface AllQueueStats {
   [key: string]: QueueStats;
 }
 
-export const productPriceComperator = async (
+export const dailySales = async (
   task: DailySalesTask
 ): TaskReturnType => {
   const processStartTime = Date.now();
-  const { productLimit, shopDomain } = task;
+  const { productLimit, shopDomain, type, progress, action } = task;
 
   return new Promise(async (res, rej) => {
     const shops = await findShops([
@@ -46,6 +47,12 @@ export const productPriceComperator = async (
       "sellercentral.amazon.de",
       "ebay.de",
     ]);
+
+    if (action === "recover") {
+      log(`Recovering ${type}`);
+    } else {
+      log(`Starting ${type}`);
+    }
 
     if (!shops) {
       return rej(new MissingShopError(`No shop found for ${shopDomain}`, task));
@@ -88,8 +95,8 @@ export const productPriceComperator = async (
     await createArbispotterCollection("sales");
 
     if (
-      task.action === "recover" &&
-      Object.keys(task.progress).some(
+      action === "recover" &&
+      Object.keys(progress).some(
         (key) => task.progress[key as keyof DailySalesProgress].length > 0
       )
     ) {
@@ -101,23 +108,24 @@ export const productPriceComperator = async (
         Object.keys(task.progress).forEach(
           (key) => (task.progress[key as keyof DailySalesProgress] = [])
         );
-        console.log("Task CrawlProducts... ", retry, " try.");
+        log(`Task CrawlProducts... ${retry} try.`);
         const crawledProductsInfo = await crawlProducts(origin, task);
         infos["crawlProducts"] = crawledProductsInfo.infos;
         infos["total"] = crawledProductsInfo.infos.total;
         const limit = task.browserConfig.crawlShop.limit;
         if (infos.total >= task.productLimit) {
+          log(`Total products as expected: ${infos.total} ${retry} try.`);
           done = true;
           break;
         }
-        console.log("Total products as low as: ", infos.total);
+        log(`Total products as low as: ${infos.total} ${retry} try.`);
         if (
           retry < MAX_TASK_RETRIES &&
           infos.total > COMPLETE_FAILURE_THRESHOLD &&
           task.browserConfig.crawlShop.limit.pages <=
             SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
         ) {
-          console.log("Updating page limit...");
+          log(`Increasing page limit... ${retry} try.`);
           const newPageLimit = calculatePageLimit(
             limit.pages,
             productLimit,
@@ -127,14 +135,10 @@ export const productPriceComperator = async (
             ...limit,
             pages: newPageLimit,
           };
-          console.log("New limit", task.browserConfig.crawlShop.limit);
+          log(`New limit ${task.browserConfig.crawlShop.limit}`);
         }
         if (retry === MAX_TASK_RETRIES && infos.total > 1) {
-          console.log(
-            "Limit never reached after ",
-            retry,
-            " retries. Continuing...."
-          );
+          log(`Limit reached after ${retry} retries. Continuing....`);
           task.productLimit = infos.total;
           await updateTask(task._id, { $set: { ...task } });
           done = true;
@@ -146,6 +150,7 @@ export const productPriceComperator = async (
         } else if (infos.total === 1 && retry < MAX_TASK_RETRIES) {
           retry++;
         } else if (infos.total === 1 && retry === MAX_TASK_RETRIES) {
+          log(`Total products 1 after ${retry} retries. Failed.`);
           return res(
             new TaskCompletedStatus("DAILY_DEALS FAILED", task, {
               taskStats: infos,
@@ -156,23 +161,10 @@ export const productPriceComperator = async (
       }
     }
     let stepStartTime = Date.now();
-    if (task.progress.crawlEan.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task CrawlEan ", task.progress.crawlEan.length);
+
+    /* CrawlEan */
+    if (progress.crawlEan.length > 0) {
+      log(`DailySales: CrawlEan ${progress.crawlEan.length}`);
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.crawlEan },
       });
@@ -182,128 +174,101 @@ export const productPriceComperator = async (
         const crawlEansInfo = await crawlEans(origin, task);
         infos["crawlEan"] = crawlEansInfo.infos;
         queueStats.crawlEan = crawlEansInfo.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.crawlEan.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: CrawlEan 0`);
     }
     infos.crawlEan["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
-    if (task.progress.lookupInfo.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task LookupInfo ", task.progress.lookupInfo.length);
+
+    /* Lookup Info */
+
+    if (progress.lookupInfo.length > 0) {
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupInfo },
       });
       if (products.length) {
+        log(`DailySales: LookupInfo ${products.length}`);
         task.lookupInfo = products;
         task.browserConfig.lookupInfo.productLimit = products.length;
         const lookupInfos = await lookupInfo(sellerCentral, origin, task);
         infos["lookupInfo"] = lookupInfos.infos;
         queueStats.lookupInfo = lookupInfos.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.lookupInfo.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: LookupInfo 0`);
     }
     infos.lookupInfo["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
+
+    /* QueryEansOnEby */
     if (task.progress.queryEansOnEby.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task QueryEansOnEby", task.progress.queryEansOnEby.length);
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.queryEansOnEby },
       });
       if (products.length) {
+        log(`DailySales: QueryEansOnEby ${products.length}`);
         task.queryEansOnEby = products;
         task.browserConfig.queryEansOnEby.productLimit = products.length;
         const queryEansOnEbyInfo = await queryEansOnEby(ebay, task);
         infos["queryEansOnEby"] = queryEansOnEbyInfo.infos;
         queueStats.queryEansOnEby = queryEansOnEbyInfo.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.queryEansOnEby.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: QueryEansOnEby 0`);
     }
     infos.queryEansOnEby["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     stepStartTime = Date.now();
+
+    /* LookupCategory */
     if (task.progress.lookupCategory.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task LookupCategory ", task.progress.lookupCategory.length);
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.lookupCategory },
       });
       if (products.length) {
+        log(`DailySales: LookupCategory ${products.length}`);
         task.lookupCategory = products;
         task.browserConfig.lookupCategory.productLimit = products.length;
         const lookupCategoryInfo = await lookupCategory(ebay, origin, task);
         infos["lookupCategory"] = lookupCategoryInfo.infos;
         queueStats.lookupCategory = lookupCategoryInfo.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.lookupCategory.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: LookupCategory 0`);
     }
+
     infos.lookupCategory["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
+    /* AznListings */
     if (task.progress.aznListings.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task AznListings ", task.progress.aznListings.length);
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.aznListings },
       });
       if (products.length) {
+        log(`DailySales: AznListings ${products.length}`);
         task.aznListings = products;
         task.browserConfig.crawlAznListings.productLimit = products.length;
         const crawlAznListingsInfo = await scrapeAznListings(
@@ -313,38 +278,36 @@ export const productPriceComperator = async (
         );
         infos["aznListings"] = crawlAznListingsInfo.infos;
         queueStats.aznListings = crawlAznListingsInfo.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.aznListings.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: AznListings 0`);
     }
     infos.aznListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
+    /* EbyListings */
     if (task.progress.ebyListings.length > 0) {
-      console.log(
-        "Checking progress... ",
-        "\nCRAWLEAN: ",
-        task.progress.crawlEan.length,
-        "\nQUERYEANSONEBY: ",
-        task.progress.queryEansOnEby.length,
-        "\nLOOKUPINFO: ",
-        task.progress.lookupInfo.length,
-        "\nLOOKUPCATEGORY: ",
-        task.progress.lookupCategory.length,
-        "\nAZNLISTINGS: ",
-        task.progress.aznListings.length,
-        "\nEBYLISTINGS: ",
-        task.progress.ebyListings.length
-      );
-      console.log("Task EbyListings ", task.progress.ebyListings.length);
       const products = await findArbispotterProductsNoLimit(salesDbName, {
         _id: { $in: task.progress.ebyListings },
       });
       if (products.length) {
+        log(`DailySales: EbyListings ${products.length}`);
         task.ebyListings = products;
         task.browserConfig.crawlEbyListings.productLimit = products.length;
         const crawlEbyListingsInfo = await crawlEbyListings(ebay, task);
         infos["ebyListings"] = crawlEbyListingsInfo.infos;
         queueStats.ebyListings = crawlEbyListingsInfo.queueStats;
+      } else {
+        log(
+          `DailySales Progress ${task.progress.ebyListings.length} but no products found`
+        );
       }
+    } else {
+      log(`DailySales: EbyListings 0`);
     }
     infos.ebyListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
@@ -362,6 +325,9 @@ export const productPriceComperator = async (
       elapsedTime: elapsedTimeStr,
     });
     const combinedStats = combineQueueStats(Object.values(queueStats));
+    log(
+      `Remaining: CRAWLEAN ${progress.crawlEan.length} QUERYEANSONEBY ${progress.queryEansOnEby.length} LOOKUPINFO ${progress.lookupInfo.length} LOOKUPCATEGORY ${progress.lookupCategory.length} AZNLISTINGS ${progress.aznListings.length} EBYLISTINGS ${progress.ebyListings.length} `
+    );
     res(
       new TaskCompletedStatus("DAILY_DEALS COMPLETED", task, {
         taskStats: infos,

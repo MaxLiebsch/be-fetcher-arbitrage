@@ -7,10 +7,11 @@ import {
   Shop,
   AddProductInfoProps,
   uuid,
+  removeSearchParams,
 } from "@dipmaxtech/clr-pkg";
-import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
+import { handleDealsProductInfo } from "./scrapeProductInfoHelper";
 import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants";
-import { removeSearchParams } from "../removeSearch";
+import { log } from "../logger";
 
 export async function scrapeProductInfo(
   queue: QueryQueue,
@@ -18,7 +19,7 @@ export async function scrapeProductInfo(
   product: DbProductRecord
 ) {
   return new Promise((res, rej) => {
-    let { lnk: productLink, s_hash } = product;
+    let { lnk: productLink, s_hash, _id: productId } = product;
     productLink = removeSearchParams(productLink);
     const { d: shopDomain } = source;
     const addProduct = async (product: ProductRecord) => {};
@@ -31,6 +32,7 @@ export async function scrapeProductInfo(
       );
     };
     const handleNotFound = async (cause: NotFoundCause) => {
+      log(`Not found: ${source.d}-${productId} ${cause}`);
       res(null);
     };
 

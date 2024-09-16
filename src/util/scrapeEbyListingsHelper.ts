@@ -14,6 +14,7 @@ import { resetEbyProductQuery } from "../db/util/ebyQueries";
 import { UTCDate } from "@date-fns/utc";
 import { defaultEbyDealTask } from "../constants";
 import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats";
+import { log } from "./logger";
 
 export const expiredIndicatorStrs = [
   "beendet",
@@ -56,11 +57,12 @@ export async function handleEbyListingProductInfo(
         instock.toLowerCase().includes(str.toLowerCase())
       )
     ) {
-      await updateArbispotterProductQuery(
+      const result = await updateArbispotterProductQuery(
         collection,
         productId,
         resetEbyProductQuery()
       );
+      log(`Product expired: ${collection}-${productId}`, result);
     } else {
       let productUpdate: Partial<DbProductRecord> = {
         e_lnk: url.split("?")[0],
@@ -103,34 +105,47 @@ export async function handleEbyListingProductInfo(
               $unset: { [taskIdProp]: "" },
             };
 
-            await updateArbispotterProductQuery(collection, productId, query);
+            const result = await updateArbispotterProductQuery(
+              collection,
+              productId,
+              query
+            );
+            log(`Product updated: ${collection}-${productId}`, result);
           } else {
             infos.missingProperties.calculationFailed++;
-            await updateArbispotterProductQuery(
+            const result = await updateArbispotterProductQuery(
               collection,
               productId,
               resetEbyProductQuery()
             );
+            log(`Calculation failed: ${collection}-${productId}`, result);
           }
         } else {
           infos.missingProperties.mappedCat++;
-          await updateArbispotterProductQuery(
+          const result = await updateArbispotterProductQuery(
             collection,
             productId,
             resetEbyProductQuery()
           );
+          log(`Mapped category not found: ${collection}-${productId}`, result);
         }
       } else {
         infos.missingProperties.price++;
-        await updateArbispotterProductQuery(
+        const result = await updateArbispotterProductQuery(
           collection,
           productId,
           resetEbyProductQuery()
         );
+        log(`Price not found: ${collection}-${productId}`, result);
       }
     }
   } else {
-    await updateArbispotterProductQuery(collection, productId, resetEbyProductQuery());
+    const result = await updateArbispotterProductQuery(
+      collection,
+      productId,
+      resetEbyProductQuery()
+    );
+    log(`Product info not found: ${collection}-${productId}`, result);
     infos.notFound++;
   }
 }
@@ -139,5 +154,10 @@ export async function handleEbyListingNotFound(
   collection: string,
   id: ObjectId
 ) {
-  await updateArbispotterProductQuery(collection, id, resetEbyProductQuery());
+  const result = await updateArbispotterProductQuery(
+    collection,
+    id,
+    resetEbyProductQuery()
+  );
+  log(`Not found: ${collection}-${id}`, result);
 }

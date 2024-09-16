@@ -6,10 +6,12 @@ import {
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { resetAznProductQuery } from "../db/util/aznQueries";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
 import { upsertAsin } from "../db/util/asinTable.js";
 import { UTCDate } from "@date-fns/utc";
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";
+
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
+import { log } from "./logger";
 
 export async function handleLookupInfoProductInfo(
   collection: string,
@@ -51,44 +53,54 @@ export async function handleLookupInfoProductInfo(
         };
       }
 
-      await updateArbispotterProductQuery(collection, productId, {
-        $set: {
-          ...update,
-          ...(a_nm && typeof a_nm === "string"
-            ? { a_nm: replaceAllHiddenCharacters(a_nm) }
-            : {}),
-          info_prop: "complete",
-          aznUpdatedAt: new UTCDate().toISOString(),
-          infoUpdatedAt: new UTCDate().toISOString(),
-        },
-        $unset: { info_taskId: "" },
-      });
+      const result = await updateArbispotterProductQuery(
+        collection,
+        productId,
+        {
+          $set: {
+            ...update,
+            ...(a_nm && typeof a_nm === "string"
+              ? { a_nm: replaceAllHiddenCharacters(a_nm) }
+              : {}),
+            info_prop: "complete",
+            aznUpdatedAt: new UTCDate().toISOString(),
+            infoUpdatedAt: new UTCDate().toISOString(),
+          },
+          $unset: { info_taskId: "" },
+        }
+      );
+      log(`Updated infos: ${collection}-${productId.toString()}`, result);
     } catch (error) {
       if (error instanceof Error) {
+        let loggerMessage = "";
         if (error.message === "a_prc is 0") {
+          loggerMessage = `Price 0: ${collection}-${productId.toString()}`;
           infos.missingProperties.price++;
         }
         if (error.message === "costs.azn is 0") {
+          loggerMessage = `Azn Costs 0: ${collection}-${productId.toString()}`;
           infos.missingProperties.costs++;
         }
-        await updateArbispotterProductQuery(
+        const result = await updateArbispotterProductQuery(
           collection,
           productId,
           resetAznProductQuery({
             info_prop: "missing",
           })
         );
+        log(loggerMessage, result);
       }
     }
   } else {
     infos.missingProperties.infos++;
-    await updateArbispotterProductQuery(
+    const result = await updateArbispotterProductQuery(
       collection,
       productId,
       resetAznProductQuery({
         info_prop: "missing",
       })
     );
+    log(`No infos: ${collection}-${productId.toString()}`, result);
   }
 }
 
@@ -96,11 +108,12 @@ export async function handleLookupInfoNotFound(
   collection: string,
   productId: ObjectId
 ) {
-  await updateArbispotterProductQuery(
+  const result = await updateArbispotterProductQuery(
     collection,
     productId,
     resetAznProductQuery({
       info_prop: "missing",
     })
   );
+  log(`Not found: ${collection}-${productId.toString()}`, result);
 }

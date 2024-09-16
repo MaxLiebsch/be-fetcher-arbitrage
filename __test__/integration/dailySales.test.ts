@@ -1,7 +1,11 @@
-import { ObjectId } from "mongodb";
-import { productPriceComperator } from "../src/services/productPriceComparator.js";
-import { deleteAllArbispotterProducts } from "../src/db/util/crudArbispotterProduct.js";
-const shopDomain = 'voelkner.de'
+import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import { deleteAllArbispotterProducts } from "../../src/db/util/crudArbispotterProduct";
+import { dailySales } from "../../src/services/dailySales";
+import { DailySalesTask } from "../../src/types/tasks/DailySalesTask";
+import { setTaskLogger } from "../../src/util/logger";
+import { describe, expect, test, beforeAll } from "@jest/globals";
+
+const shopDomain = "voelkner.de";
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),
   type: "DAILY_SALES",
@@ -9,27 +13,27 @@ const task = {
   id: "daily_sales_" + shopDomain,
   shopDomain,
   executing: false,
-  productLimit: 100,
+  productLimit: 50,
   lastCrawler: [],
   categories: [
     {
-      "name": "Sale",
-      "link": "https://www.voelkner.de/categories/13150_13268/Freizeit-Hobby/Sale.html",
-      "limit": {
-        "subCategories": 100,
-        "pages": 10
+      name: "Sale",
+      link: "https://www.voelkner.de/categories/13150_13268/Freizeit-Hobby/Sale.html",
+      limit: {
+        subCategories: 100,
+        pages: 10,
       },
-      "productLimit": 20
+      productLimit: 20,
     },
     {
-      "name": "Sale",
-      "link": "https://www.voelkner.de/products/dailydeals.html?itm_source=info&itm_medium=deals_block&itm_campaign=goToDealsPage",
-      "limit": {
-        "subCategories": 100,
-        "pages": 10
+      name: "Sale",
+      link: "https://www.voelkner.de/products/dailydeals.html?itm_source=info&itm_medium=deals_block&itm_campaign=goToDealsPage",
+      limit: {
+        subCategories: 100,
+        pages: 10,
       },
-      "productLimit": 20
-    }
+      productLimit: 20,
+    },
   ],
   test: false,
   maintenance: false,
@@ -49,11 +53,11 @@ const task = {
   browserConfig: {
     crawlShop: {
       concurrency: 4,
-     "limit": {
-          "pages": 23,
-          "subCategory": 100,
-          "mainCategory": 20
-        }, 
+      limit: {
+        pages: 23,
+        subCategory: 100,
+        mainCategory: 20,
+      },
     },
     crawlEan: {
       productLimit: 20,
@@ -84,46 +88,19 @@ const task = {
   retry: 0,
 };
 
-async function main() {
-  await deleteAllArbispotterProducts('sales')
-  const infos = await productPriceComperator(task);
-  console.log(JSON.stringify(infos, null, 2));
-}
+describe("Daily Sales", () => {
+  beforeAll(async () => {
+    await deleteAllArbispotterProducts("sales");
+  }, 100000);
 
+  test("Daily Sales listings", async () => {
+    const logger = new LocalLogger().createLogger("DAILY_SALES");
+    setTaskLogger(logger);
 
-main().then()
-
-const errorHandler = (err, origin) => {
-  const IsTargetError = `${err}`.includes("Target closed");
-  const IsSessionError = `${err}`.includes("Session closed");
-  const IsNavigationDetachedError = `${err}`.includes(
-    "Navigating frame was detached"
-  );
-
-  const metaData = {
-    reason: err?.stack || err,
-    origin,
-  };
-  let type = "unhandledException";
-  if (IsTargetError) {
-    type = "TargetClosed";
-  } else if (IsSessionError) {
-    type = "SessionClosed";
-  } else if (IsNavigationDetachedError) {
-    type = "NavigationDetached";
-  }
-
-  if (type === "unhandledException") {
-    throw err; //unhandledException:  Re-throw all other errors
-  } else {
-    return;
-  }
-};
-process.on("unhandledRejection", errorHandler);
-
-process.on("uncaughtException", errorHandler);
-
-
+    const infos = await dailySales(task as unknown as DailySalesTask);
+    console.log(JSON.stringify(infos, null, 2));
+  }, 1000000);
+});
 
 let task2 = {
   _id: new ObjectId("66b30a822cfd0e4c93aba609"),
