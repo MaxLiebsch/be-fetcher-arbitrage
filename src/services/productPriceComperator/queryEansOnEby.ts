@@ -16,16 +16,16 @@ import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../../constants";
-import { updateTask } from "../../db/util/tasks";
+} from "../../constants.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
-} from "../../util/queryEansOnEbyHelper";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { QueryEansOnEbyStats } from "../../types/taskStats/QueryEansOnEbyStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+} from "../../util/queryEansOnEbyHelper.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { QueryEansOnEbyStats } from "../../types/taskStats/QueryEansOnEbyStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 
 export const queryEansOnEby = async (
   ebay: Shop,

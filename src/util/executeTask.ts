@@ -1,17 +1,17 @@
-import match from "../services/match";
-import scrapeShop from "../services/scrapeShop";
-import scan from "../services/scan";
-import crawlEan from "../services/crawlEan";
-import lookupInfo from "../services/lookupInfo";
-import wholesale from "../services/wholesale";
-import queryEansOnEby from "../services/queryEansOnEby";
-import lookupCategory from "../services/lookupCategory";
-import { dailySales } from "../services/dailySales";
-import dealsOnEby from "../services/deals/daily/dealsOnEby";
-import dealsOnAzn from "../services/deals/daily/dealsOnAzn";
-import negEbyDeals from "../services/deals/weekly/negEbyDeals";
-import negAznDeals from "../services/deals/weekly/negAznDeals";
-import { TASK_TYPES } from "./taskTypes";
+import match from "../services/match.js";
+import scrapeShop from "../services/scrapeShop.js";
+import scan from "../services/scan.js";
+import crawlEan from "../services/crawlEan.js";
+import lookupInfo from "../services/lookupInfo.js";
+import wholesale from "../services/wholesale.js";
+import queryEansOnEby from "../services/queryEansOnEby.js";
+import lookupCategory from "../services/lookupCategory.js";
+import { dailySales } from "../services/dailySales.js";
+import dealsOnEby from "../services/deals/daily/dealsOnEby.js";
+import dealsOnAzn from "../services/deals/daily/dealsOnAzn.js";
+import negEbyDeals from "../services/deals/weekly/negEbyDeals.js";
+import negAznDeals from "../services/deals/weekly/negAznDeals.js";
+import { TASK_TYPES } from "./taskTypes.js";
 import {
   DealOnAznTask,
   DealOnEbyTask,
@@ -26,12 +26,12 @@ import {
   ScrapeShopTask,
   Tasks,
   WholeSaleTask,
-} from "../types/tasks/Tasks";
-import { MissingTaskError, TaskErrors } from "../errors";
-import { TaskCompletedStatus } from "../status";
-import { DailySalesTask } from "../types/tasks/DailySalesTask";
+} from "../types/tasks/Tasks.js";
+import { MissingTaskError, TaskErrors } from "../errors.js";
+import { TaskCompletedStatus } from "../status.js";
+import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { LocalLogger } from "@dipmaxtech/clr-pkg";
-import { setTaskLogger } from "./logger";
+import { setTaskLogger } from "./logger.js";
 
 export async function executeTask(
   task: Tasks

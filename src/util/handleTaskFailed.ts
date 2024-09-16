@@ -1,9 +1,9 @@
 import { UTCDate } from "@date-fns/utc";
-import { COOLDOWN, COOLDOWN_MULTIPLIER, MAX_TASK_RETRIES } from "../constants";
-import { hostname } from "../db/mongo";
-import { updateTask } from "../db/util/tasks";
+import { COOLDOWN, COOLDOWN_MULTIPLIER, MAX_TASK_RETRIES } from "../constants.js";
+import { hostname } from "../db/mongo.js";
+import { updateTask } from "../db/util/tasks.js";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { Task } from "../types/tasks/Tasks";
+import { Task } from "../types/tasks/Tasks.js";
 
 export const handleTaskFailed = async (id: ObjectId, retry: number) => {
   const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;

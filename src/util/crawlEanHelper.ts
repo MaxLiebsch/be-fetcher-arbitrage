@@ -15,13 +15,13 @@ import {
   insertArbispotterProduct,
   moveArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../db/util/crudArbispotterProduct";
+} from "../db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
-import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats";
-import { ScrapeEansTask } from "../types/tasks/Tasks";
-import { DailySalesTask } from "../types/tasks/DailySalesTask";
-import { log } from "./logger";
+import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats.js";
+import { ScrapeEansTask } from "../types/tasks/Tasks.js";
+import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
+import { log } from "./logger.js";
 
 export async function handleCrawlEanProductInfo(
   collectionName: string,

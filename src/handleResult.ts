@@ -1,9 +1,9 @@
-import { TaskErrors } from "./errors";
+import { TaskErrors } from "./errors.js";
 import {
   ProductLimitReachedStatus,
   TaskCompletedStatus,
   TimeLimitReachedStatus,
-} from "./status";
+} from "./status.js";
 
 export type ResultType =
   | typeof TaskCompletedStatus

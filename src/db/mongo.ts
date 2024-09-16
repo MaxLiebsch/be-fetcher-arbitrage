@@ -1,5 +1,5 @@
 import { SiteMap } from "@dipmaxtech/clr-pkg";
-import clientPool from "./mongoPool";
+import clientPool from "./mongoPool.js";
 import os from "os";
 export const arbispotter_db = "arbispotter";
 export const crawl_data_db = "crawler-data";

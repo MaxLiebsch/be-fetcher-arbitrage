@@ -1,5 +1,3 @@
-import { getShop } from "../../../db/util/shops";
-import { TaskCompletedStatus } from "../../../status";
 import {
   AddProductInfoProps,
   DbProductRecord,
@@ -10,32 +8,34 @@ import {
   Shop,
   uuid,
 } from "@dipmaxtech/clr-pkg";
+import { differenceInHours } from "date-fns";
+import { getShop } from "../../../db/util/shops.js";
+import { TaskCompletedStatus } from "../../../status.js";
 import {
   defaultEbyDealTask,
   defaultQuery,
   proxyAuth,
-} from "../../../constants";
-import { differenceInHours } from "date-fns";
+} from "../../../constants.js";
 import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
-} from "../../../util/scrapeEbyListingsHelper";
+} from "../../../util/scrapeEbyListingsHelper.js";
 import {
   deleteArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../../../db/util/crudArbispotterProduct";
-import { getProductLimitMulti } from "../../../util/getProductLimit";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
-import { lookForOudatedNegMarginEbyListings } from "../../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings";
-import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks";
-import { NegEbyDealTask } from "../../../types/tasks/Tasks";
-import { TaskStats } from "../../../types/taskStats/TasksStats";
-import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
-import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby";
-import { MissingShopError } from "../../../errors";
-import { TaskReturnType } from "../../../types/TaskReturnType";
-import { log } from "../../../util/logger";
-import { countRemainingProducts } from "../../../util/countRemainingProducts";
+} from "../../../db/util/crudArbispotterProduct.js";
+import { getProductLimitMulti } from "../../../util/getProductLimit.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { lookForOudatedNegMarginEbyListings } from "../../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings.js";
+import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
+import { NegEbyDealTask } from "../../../types/tasks/Tasks.js";
+import { TaskStats } from "../../../types/taskStats/TasksStats.js";
+import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats.js";
+import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby.js";
+import { MissingShopError } from "../../../errors.js";
+import { TaskReturnType } from "../../../types/TaskReturnType.js";
+import { log } from "../../../util/logger.js";
+import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;

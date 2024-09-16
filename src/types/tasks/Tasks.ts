@@ -4,7 +4,7 @@ import {
   QueueStats,
   TaskTypes,
 } from "@dipmaxtech/clr-pkg";
-import { DailySalesTask } from "./DailySalesTask";
+import { DailySalesTask } from "./DailySalesTask.js";
 
 export interface Category {
   name: string;

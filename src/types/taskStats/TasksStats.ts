@@ -1,12 +1,12 @@
-import { DealsOnAznStats } from "./DealsOnAznStats";
-import { DealsOnEbyStats } from "./DealsOnEbyStats";
-import { LookupCategoryStats } from "./LookupCategoryStats";
-import { NegDealsOnAznStats } from "./NegDealsOnAzn";
-import { NegDealsOnEbyStats } from "./NegDealsOnEby";
-import { ScrapeEanStats } from "./ScrapeEanStats";
-import { ScrapeShopStats } from "./ScrapeShopStats";
-import { MatchProductsStats } from "./MatchProductsStats";
-import { DailySalesStats } from "./DailySalesStats";
+import { DealsOnAznStats } from "./DealsOnAznStats.js";
+import { DealsOnEbyStats } from "./DealsOnEbyStats.js";
+import { LookupCategoryStats } from "./LookupCategoryStats.js";
+import { NegDealsOnAznStats } from "./NegDealsOnAzn.js";
+import { NegDealsOnEbyStats } from "./NegDealsOnEby.js";
+import { ScrapeEanStats } from "./ScrapeEanStats.js";
+import { ScrapeShopStats } from "./ScrapeShopStats.js";
+import { MatchProductsStats } from "./MatchProductsStats.js";
+import { DailySalesStats } from "./DailySalesStats.js";
 
 //TODO add all the stats
 export type TaskStats =

@@ -1,11 +1,11 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
-import { lockProductsForCrawlAznListings } from "../../../crawlAznListings/lockProductsForCrawlAznListings";
-import { getOutdatedNegMarginAznListingsPerShop } from "./getOutdatedNegMarginAznListingsPerShop";
-import { getRecoveryNegMarginAznListings } from "./getRecoveryNegMarginAznListings";
-import { getProductsWithShop } from "../../../getProductsWithShop";
+import { lockProductsForCrawlAznListings } from "../../../crawlAznListings/lockProductsForCrawlAznListings.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "./getOutdatedNegMarginAznListingsPerShop.js";
+import { getRecoveryNegMarginAznListings } from "./getRecoveryNegMarginAznListings.js";
+import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks";
+import { Action } from "../../../../../types/tasks/Tasks.js";
 import {
   PendingShops,
   PendingShopsWithBatch,

@@ -1,10 +1,10 @@
 import { shuffle } from "underscore";
-import { findArbispotterProducts } from "../crudArbispotterProduct";
-import { recoveryQueryEansOnEby } from "../queries";
-import { getShopsForService } from "../filteredShops";
-import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { PendingShops } from "../../../types/shops";
+import { findArbispotterProducts } from "../crudArbispotterProduct.js";
+import { recoveryQueryEansOnEby } from "../queries.js";
+import { getShopsForService } from "../filteredShops.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { PendingShops } from "../../../types/shops.js";
 
 export async function getRecoveryQueryEansOnEby(
   taskId: ObjectId,

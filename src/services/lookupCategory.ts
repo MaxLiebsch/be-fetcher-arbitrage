@@ -7,29 +7,29 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
-import { handleResult } from "../handleResult";
-import { MissingProductsError, MissingShopError } from "../errors";
+import { handleResult } from "../handleResult.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
-import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks";
-import { lookForMissingEbyCategory } from "../db/util/lookupCategory/lookForMissingEbyCategory";
-import { getShop } from "../db/util/shops";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
+import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
+import { lookForMissingEbyCategory } from "../db/util/lookupCategory/lookForMissingEbyCategory.js";
+import { getShop } from "../db/util/shops.js";
 import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
-} from "../util/lookupCategoryHelper";
-import { getProductLimitMulti } from "../util/getProductLimit";
-import { TaskCompletedStatus } from "../status";
-import { LookupCategoryTask } from "../types/tasks/Tasks";
-import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { log } from "../util/logger";
-import { countRemainingProducts } from "../util/countRemainingProducts";
+} from "../util/lookupCategoryHelper.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
+import { TaskCompletedStatus } from "../status.js";
+import { LookupCategoryTask } from "../types/tasks/Tasks.js";
+import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { log } from "../util/logger.js";
+import { countRemainingProducts } from "../util/countRemainingProducts.js";
 
 async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

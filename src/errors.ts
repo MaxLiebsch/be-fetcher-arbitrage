@@ -1,5 +1,5 @@
 import { TaskTypes } from "@dipmaxtech/clr-pkg";
-import { Tasks } from "./types/tasks/Tasks";
+import { Tasks } from "./types/tasks/Tasks.js";
 
 export function ProductLimitReachedError(
   this: any,

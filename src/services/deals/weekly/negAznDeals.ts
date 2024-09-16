@@ -1,5 +1,3 @@
-import { getShop } from "../../../db/util/shops";
-import { TaskCompletedStatus } from "../../../status";
 import {
   AddProductInfoProps,
   DbProduct,
@@ -12,31 +10,33 @@ import {
   ShopObject,
   uuid,
 } from "@dipmaxtech/clr-pkg";
+import { differenceInHours } from "date-fns";
+import { getShop } from "../../../db/util/shops.js";
+import { TaskCompletedStatus } from "../../../status.js";
 import {
   defaultAznDealTask,
   defaultQuery,
   proxyAuth,
-} from "../../../constants";
-import { differenceInHours } from "date-fns";
+} from "../../../constants.js";
 import {
   deleteArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../../../db/util/crudArbispotterProduct";
-import { getProductLimitMulti } from "../../../util/getProductLimit";
+} from "../../../db/util/crudArbispotterProduct.js";
+import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
-} from "../../../util/scrapeAznListingsHelper";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
-import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks";
-import { lookForOutdatedNegMarginAznListings } from "../../../db/util/deals/weekly/azn/lookForOutdatedNegMarginAznListings";
-import { NegAznDealTask } from "../../../types/tasks/Tasks";
-import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn";
-import { MissingShopError, TaskErrors } from "../../../errors";
-import { TaskStats } from "../../../types/taskStats/TasksStats";
-import { TaskReturnType } from "../../../types/TaskReturnType";
-import { log } from "../../../util/logger";
-import { countRemainingProducts } from "../../../util/countRemainingProducts";
+} from "../../../util/scrapeAznListingsHelper.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedNegMarginAznListings } from "../../../db/util/deals/weekly/azn/lookForOutdatedNegMarginAznListings.js";
+import { NegAznDealTask } from "../../../types/tasks/Tasks.js";
+import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn.js";
+import { MissingShopError, TaskErrors } from "../../../errors.js";
+import { TaskStats } from "../../../types/taskStats/TasksStats.js";
+import { TaskReturnType } from "../../../types/TaskReturnType.js";
+import { log } from "../../../util/logger.js";
+import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 
 const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
@@ -177,7 +177,7 @@ export async function scrapeAznListings(
       infos.notFound++;
       infos.total++;
       queue.total++;
-      if (cause === 'exceedsLimit') {
+      if (cause === "exceedsLimit") {
         const result = await updateArbispotterProductQuery(shopDomain, _id, {
           $unset: {
             [taskIdProp]: "",

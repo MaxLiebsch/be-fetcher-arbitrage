@@ -11,22 +11,22 @@ import {
   transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
+import { parseISO } from "date-fns";
+import { UTCDate } from "@date-fns/utc";
 import {
   MAX_RETIRES_SCRAPE_SHOP,
   proxyAuth,
   RECHECK_EAN_EBY_AZN_INTERVAL,
-} from "../../constants";
-import { parseISO } from "date-fns";
+} from "../../constants.js";
 import {
   findProductByHash,
   insertArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../../db/util/crudArbispotterProduct";
-import { UTCDate } from "@date-fns/utc";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+} from "../../db/util/crudArbispotterProduct.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 import { log } from "../../util/logger.js";
 
 export const crawlProducts = async (

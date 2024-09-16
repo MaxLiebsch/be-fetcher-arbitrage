@@ -8,13 +8,13 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { resetAznProductQuery } from "../db/util/aznQueries";
 import { UTCDate } from "@date-fns/utc";
-import { defaultAznDealTask } from "../constants";
-import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn";
-import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats";
-import { log } from "./logger";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
+import { defaultAznDealTask } from "../constants.js";
+import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn.js";
+import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats.js";
+import { log } from "./logger.js";
 
 export async function handleAznListingProductInfo(
   collection: string,

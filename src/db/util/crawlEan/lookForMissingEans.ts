@@ -1,13 +1,13 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../tasks";
-import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan";
-import { getMissingEanShops } from "./getMissingEanShops";
-import { getRecoveryCrawlEan } from "./getRecoveryCrawlEan";
-import { getProductsWithShop } from "../getProductsWithShop";
+import { updateTaskWithQuery } from "../tasks.js";
+import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
+import { getMissingEanShops } from "./getMissingEanShops.js";
+import { getRecoveryCrawlEan } from "./getRecoveryCrawlEan.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks";
+import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
-import { log } from "../../../util/logger";
+import { log } from "../../../util/logger.js";
 
 export async function lookForMissingEans(
   taskId: ObjectId,

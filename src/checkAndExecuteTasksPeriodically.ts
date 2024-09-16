@@ -1,7 +1,7 @@
-import { sendMail } from "./email";
+import { sendMail } from "./email.js";
 import os from "os";
 import { LoggerService } from "@dipmaxtech/clr-pkg";
-import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks";
+import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks.js";
 import { UTCDate } from "@date-fns/utc";
 
 const hostname = os.hostname();

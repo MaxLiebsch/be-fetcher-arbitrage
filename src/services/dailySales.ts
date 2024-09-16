@@ -1,32 +1,32 @@
-import { findShops } from "../db/util/shops";
-import { createArbispotterCollection, salesDbName } from "../db/mongo";
-import { crawlProducts } from "./productPriceComperator/crawlProducts";
-import { crawlEans } from "./productPriceComperator/crawlEan";
-import { lookupInfo } from "./productPriceComperator/lookupInfo";
-import { queryEansOnEby } from "./productPriceComperator/queryEansOnEby";
-import { lookupCategory } from "./productPriceComperator/lookupCategory";
-import { crawlEbyListings } from "./productPriceComperator/crawlEbyListings";
-import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct";
-import { TaskCompletedStatus } from "../status";
+import { LoggerService, QueueStats } from "@dipmaxtech/clr-pkg";
+import { findShops } from "../db/util/shops.js";
+import { createArbispotterCollection, salesDbName } from "../db/mongo.js";
+import { crawlProducts } from "./productPriceComperator/crawlProducts.js";
+import { crawlEans } from "./productPriceComperator/crawlEan.js";
+import { lookupInfo } from "./productPriceComperator/lookupInfo.js";
+import { queryEansOnEby } from "./productPriceComperator/queryEansOnEby.js";
+import { lookupCategory } from "./productPriceComperator/lookupCategory.js";
+import { crawlEbyListings } from "./productPriceComperator/crawlEbyListings.js";
+import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
+import { TaskCompletedStatus } from "../status.js";
 import {
   COMPLETE_FAILURE_THRESHOLD,
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
-} from "../constants";
-import calculatePageLimit from "../util/calculatePageLimit";
-import { updateTask } from "../db/util/tasks";
-import { LoggerService, QueueStats } from "@dipmaxtech/clr-pkg";
-import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings";
-import { getElapsedTime } from "../util/dates";
-import { MissingShopError } from "../errors";
+} from "../constants.js";
+import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings.js";
+import calculatePageLimit from "../util/calculatePageLimit.js";
+import { updateTask } from "../db/util/tasks.js";
+import { getElapsedTime } from "../util/dates.js";
+import { MissingShopError } from "../errors.js";
 import {
   DailySalesProgress,
   DailySalesTask,
-} from "../types/tasks/DailySalesTask";
-import { DailySalesStats } from "../types/taskStats/DailySalesStats";
-import { combineQueueStats } from "../util/combineQueueStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { log } from "../util/logger";
+} from "../types/tasks/DailySalesTask.js";
+import { DailySalesStats } from "../types/taskStats/DailySalesStats.js";
+import { combineQueueStats } from "../util/combineQueueStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { log } from "../util/logger.js";
 
 const logService = LoggerService.getSingleton();
 

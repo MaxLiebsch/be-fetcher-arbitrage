@@ -1,4 +1,4 @@
-import { getShopsForService } from "../filteredShops";
+import { getShopsForService } from "../filteredShops.js";
 import { getQueryEansOnEbyProgress } from "./getQueryEansOnEbyProgress.js";
 
 export async function getUnmatchedQueryEansOnEbyShops() {

@@ -1,9 +1,9 @@
-import { getArbispotterDb } from "../../mongo";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   countCompletedProductsForCrawlEbyListingsAggregation,
   countPendingProductsForCrawlEbyListingsAggregation,
   countTotalProductsCrawlEbyListingsAggregation,
-} from "../queries";
+} from "../queries.js";
 
 // arbispotter amazon
 export const countTotalProductsCrawlEbyListings = async (

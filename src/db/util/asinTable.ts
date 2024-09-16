@@ -1,5 +1,5 @@
 import { Costs } from "@dipmaxtech/clr-pkg";
-import { getCrawlDataDb } from "../mongo";
+import { getCrawlDataDb } from "../mongo.js";
 import { UTCDate } from "@date-fns/utc";
 const collectionName = "asinean";
 

@@ -9,9 +9,9 @@ import {
   uuid,
   removeSearchParams,
 } from "@dipmaxtech/clr-pkg";
-import { handleDealsProductInfo } from "./scrapeProductInfoHelper";
-import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants";
-import { log } from "../logger";
+import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
+import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants.js";
+import { log } from "../logger.js";
 
 export async function scrapeProductInfo(
   queue: QueryQueue,

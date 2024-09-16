@@ -1,6 +1,6 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getShopsForService } from "../filteredShops";
-import { getCrawlEanProgress } from "./getCrawlEanProgress";
+import { getShopsForService } from "../filteredShops.js";
+import { getCrawlEanProgress } from "./getCrawlEanProgress.js";
 
 export async function getMissingEanShops(proxyType: ProxyType) {
   const { filteredShops, shops } = await getShopsForService(

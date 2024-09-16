@@ -1,7 +1,7 @@
-import { Tasks } from "./types/tasks/Tasks";
-import { TASK_RESULT } from "./util/TaskResult";
-import { Stats } from "./types/tasks/TaskResult";
-import { TASK_ERROR } from "./util/TaskError";
+import { Tasks } from "./types/tasks/Tasks.js";
+import { TASK_RESULT } from "./util/TaskResult.js";
+import { Stats } from "./types/tasks/TaskResult.js";
+import { TASK_ERROR } from "./util/TaskError.js";
 
 export class ProductLimitReachedStatus {
   message: string;

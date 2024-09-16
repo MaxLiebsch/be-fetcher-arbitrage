@@ -1,6 +1,6 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getShopsForService } from "../../../filteredShops";
-import { getDealsOnAznProgress } from "./getDealsOnAznProgress";
+import { getShopsForService } from "../../../filteredShops.js";
+import { getDealsOnAznProgress } from "./getDealsOnAznProgress.js";
 
 export async function getOutdatedDealsOnAznShops(proxyType: ProxyType) {
   const { filteredShops, shops } = await getShopsForService(

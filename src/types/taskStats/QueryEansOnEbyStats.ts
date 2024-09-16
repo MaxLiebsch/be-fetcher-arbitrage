@@ -1,4 +1,4 @@
-import { BaseStats } from "./TasksStats";
+import { BaseStats } from "./TasksStats.js";
 
 export interface QueryEansOnEbyStats extends BaseStats {
   shops: { [key: string]: number };

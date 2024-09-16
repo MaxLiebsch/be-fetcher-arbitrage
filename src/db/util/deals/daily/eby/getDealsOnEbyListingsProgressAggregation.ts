@@ -1,4 +1,4 @@
-import { getArbispotterDb } from "../../../../mongo";
+import { getArbispotterDb } from "../../../../mongo.js";
 import {
   countPendingProductsForDealsOnEbyAgg,
   countTotalProductsDealsOnEbyAgg,

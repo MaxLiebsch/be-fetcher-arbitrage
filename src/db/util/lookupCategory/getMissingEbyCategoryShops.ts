@@ -1,5 +1,5 @@
-import { getShopsForService } from "../filteredShops";
-import { getLookupCategoryProgress } from "./getLookupCategoryProgress";
+import { getShopsForService } from "../filteredShops.js";
+import { getLookupCategoryProgress } from "./getLookupCategoryProgress.js";
 
 export async function getMissingEbyCategoryShops() {
   const {filteredShops, shops} = await getShopsForService("lookupCategory"); 

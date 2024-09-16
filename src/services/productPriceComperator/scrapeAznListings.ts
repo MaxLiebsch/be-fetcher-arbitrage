@@ -8,16 +8,16 @@ import {
   Shop,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { defaultQuery, proxyAuth } from "../../constants";
-import { updateTask } from "../../db/util/tasks";
+import { defaultQuery, proxyAuth } from "../../constants.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleAznListingNotFound,
   handleAznListingProductInfo,
-} from "../../util/scrapeAznListingsHelper";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
+} from "../../util/scrapeAznListingsHelper.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { DealsOnAznStats } from "../../types/taskStats/DealsOnAznStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 
 export const scrapeAznListings = (
   amazon: Shop,

@@ -1,5 +1,5 @@
 import { QueueStats } from "@dipmaxtech/clr-pkg";
-import { TaskStats } from "../taskStats/TasksStats";
+import { TaskStats } from "../taskStats/TasksStats.js";
 
 export type TaskResultEvent = "PRODUCT_LIMIT_REACHED" | "TIME_LIMIT_REACHED" | "TASK_COMPLETED" 
 

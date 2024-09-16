@@ -11,21 +11,21 @@ import {
   uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants";
+import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
 
-import { updateTask } from "../../db/util/tasks";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
-} from "../../util/lookupInfoHelper";
-import { getEanFromProduct } from "../../util/getEanFromProduct";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { getMaxLoadQueue } from "../../util/getMaxLoadQueue";
-import { LookupInfoStats } from "../../types/taskStats/LookupInfoStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
-import { combineQueueStats } from "../../util/combineQueueStats";
-import { log } from "../../util/logger";
+} from "../../util/lookupInfoHelper.js";
+import { getEanFromProduct } from "../../util/getEanFromProduct.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { getMaxLoadQueue } from "../../util/getMaxLoadQueue.js";
+import { LookupInfoStats } from "../../types/taskStats/LookupInfoStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { combineQueueStats } from "../../util/combineQueueStats.js";
+import { log } from "../../util/logger.js";
 
 export const lookupInfo = async (
   sellerCentral: Shop,

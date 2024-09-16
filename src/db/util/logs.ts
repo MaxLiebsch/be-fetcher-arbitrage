@@ -1,5 +1,5 @@
 import { Filter } from "mongodb";
-import { getCrawlDataDb, logsCollectionName } from "../mongo";
+import { getCrawlDataDb, logsCollectionName } from "../mongo.js";
 
 export const deleteLogs = async () => {
   const db = await getCrawlDataDb();

@@ -9,12 +9,12 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { resetEbyProductQuery } from "../db/util/ebyQueries";
 import { UTCDate } from "@date-fns/utc";
-import { defaultEbyDealTask } from "../constants";
-import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats";
-import { log } from "./logger";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
+import { defaultEbyDealTask } from "../constants.js";
+import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
+import { log } from "./logger.js";
 
 export const expiredIndicatorStrs = [
   "beendet",

@@ -1,19 +1,19 @@
 import { ScanQueue, scanShop, StatService, uuid } from "@dipmaxtech/clr-pkg";
-import { upsertSiteMap } from "../db/mongo";
-import { handleResult } from "../handleResult";
-import { MissingShopError } from "../errors";
-import { getShops } from "../db/util/shops";
+import { upsertSiteMap } from "../db/mongo.js";
+import { handleResult } from "../handleResult.js";
+import { MissingShopError } from "../errors.js";
+import { getShops } from "../db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
-import { ScanTask } from "../types/tasks/Tasks";
-import { TaskCompletedStatus } from "../status";
-import { ScanShopStats } from "../types/taskStats/ScanShopStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { log } from "../util/logger";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
+import { ScanTask } from "../types/tasks/Tasks.js";
+import { TaskCompletedStatus } from "../status.js";
+import { ScanShopStats } from "../types/taskStats/ScanShopStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { log } from "../util/logger.js";
 
 export default async function scan(task: ScanTask): TaskReturnType {
   return new Promise(async (res, reject) => {

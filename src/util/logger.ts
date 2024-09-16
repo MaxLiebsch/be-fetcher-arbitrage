@@ -38,9 +38,3 @@ export function log(
 
   logger?.info(_message);
 }
-
-module.exports = {
-  log,
-  setTaskLogger,
-  getTaskLogger,
-};

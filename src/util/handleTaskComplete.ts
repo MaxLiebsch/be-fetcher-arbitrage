@@ -1,9 +1,9 @@
 import { UTCDate } from "@date-fns/utc";
-import { COOLDOWN } from "../constants";
-import { hostname } from "../db/mongo";
-import { updateShopStats } from "../db/util/shops";
-import { updateTask } from "../db/util/tasks";
-import { TaskStats } from "../types/taskStats/TasksStats";
+import { COOLDOWN } from "../constants.js";
+import { hostname } from "../db/mongo.js";
+import { updateShopStats } from "../db/util/shops.js";
+import { updateTask } from "../db/util/tasks.js";
+import { TaskStats } from "../types/taskStats/TasksStats.js";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
 
 export const handleTaskCompleted = async (

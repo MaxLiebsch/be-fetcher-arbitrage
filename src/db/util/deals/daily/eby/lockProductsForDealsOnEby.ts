@@ -1,10 +1,10 @@
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks";
-import { getArbispotterDb } from "../../../../mongo";
+import { Action } from "../../../../../types/tasks/Tasks.js";
+import { getArbispotterDb } from "../../../../mongo.js";
 import {
   lockProductsForDealsOnEbyAgg,
   setProductsLockedForDealsOnEbyQuery,
-} from "../../../../util/queries";
+} from "../../../../util/queries.js";
 
 export const lockProductsForDealsOnEby = async (
   domain: string,

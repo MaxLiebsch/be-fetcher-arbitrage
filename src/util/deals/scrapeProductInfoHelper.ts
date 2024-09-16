@@ -7,8 +7,8 @@ import {
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { updateArbispotterProductQuery } from "../../db/util/crudArbispotterProduct";
-import { log } from "../logger";
+import { updateArbispotterProductQuery } from "../../db/util/crudArbispotterProduct.js";
+import { log } from "../logger.js";
 
 export async function handleDealsProductInfo(
   collection: string,

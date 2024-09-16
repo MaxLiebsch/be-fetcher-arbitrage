@@ -11,35 +11,35 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
-import { handleResult } from "../handleResult";
-import { MissingProductsError, TaskErrors } from "../errors";
+import { handleResult } from "../handleResult.js";
+import { MissingProductsError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
-import { lookForMissingEans } from "../db/util/crawlEan/lookForMissingEans";
-import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
+import { lookForMissingEans } from "../db/util/crawlEan/lookForMissingEans.js";
+import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import {
   updateProgressInCrawlEanTask,
   updateProgressInLookupInfoTask,
   updateProgressInQueryEansOnEbyTask,
-} from "../util/updateProgressInTasks";
+} from "../util/updateProgressInTasks.js";
 import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
-} from "../util/crawlEanHelper";
-import { getProductLimitMulti } from "../util/getProductLimit";
+} from "../util/crawlEanHelper.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { TaskCompletedStatus } from "../status.js";
-import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats";
-import { ScrapeEansTask } from "../types/tasks/Tasks";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { log } from "../util/logger";
-import { countRemainingProducts } from "../util/countRemainingProducts";
-import { setTaskId } from "../db/util/queries";
+import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats.js";
+import { ScrapeEansTask } from "../types/tasks/Tasks.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { log } from "../util/logger.js";
+import { countRemainingProducts } from "../util/countRemainingProducts.js";
+import { setTaskId } from "../db/util/queries.js";
 
 export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

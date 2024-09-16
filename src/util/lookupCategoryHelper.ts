@@ -11,15 +11,15 @@ import {
   roundToTwoDecimals,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
+import { UTCDate } from "@date-fns/utc";
 import {
   moveArbispotterProduct,
   updateArbispotterProductQuery,
-} from "../db/util/crudArbispotterProduct";
-import { resetEbyProductQuery } from "../db/util/ebyQueries";
-import { UTCDate } from "@date-fns/utc";
-import { getEanFromProduct } from "./getEanFromProduct";
-import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats";
-import { log } from "./logger";
+} from "../db/util/crudArbispotterProduct.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
+import { getEanFromProduct } from "./getEanFromProduct.js";
+import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
+import { log } from "./logger.js";
 
 export async function handleLookupCategoryProductInfo(
   collection: string,

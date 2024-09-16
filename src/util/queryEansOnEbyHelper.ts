@@ -7,14 +7,14 @@ import {
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
 } from "@dipmaxtech/clr-pkg";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { createHash } from "./hash";
 import { UTCDate } from "@date-fns/utc";
-import { calculateMinMaxMedian } from "./calculateMinMaxMedian";
-import { resetEbyProductQuery } from "../db/util/ebyQueries";
-import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats";
-import { DailySalesTask } from "../types/tasks/DailySalesTask";
-import { log } from "./logger";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { createHash } from "./hash.js";
+import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
+import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
+import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
+import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
+import { log } from "./logger.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection: string,

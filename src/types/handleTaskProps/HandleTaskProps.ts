@@ -1,7 +1,7 @@
-import { TaskCompletedStatus } from "../../status";
-import { TaskCompletion } from "../../util/isTaskComplete";
-import { DailySalesTask } from "../tasks/DailySalesTask";
-import { ScrapeShopTask, Tasks } from "../tasks/Tasks";
+import { TaskCompletedStatus } from "../../status.js";
+import { TaskCompletion } from "../../util/isTaskComplete.js";
+import { DailySalesTask } from "../tasks/DailySalesTask.js";
+import { ScrapeShopTask, Tasks } from "../tasks/Tasks.js";
 
 export interface HandleTaskProps {
   taskResult: TaskCompletedStatus;

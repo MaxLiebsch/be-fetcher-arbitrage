@@ -1,4 +1,4 @@
-import { insertShop } from "./db/util/shops";
+import { insertShop } from "./db/util/shops.js";
 
 export const shops: { [key: string]: any } = {
   "idealo.de": {

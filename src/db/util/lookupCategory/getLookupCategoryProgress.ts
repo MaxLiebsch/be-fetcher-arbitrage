@@ -1,8 +1,8 @@
-import { getArbispotterDb } from "../../mongo";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   countPendingProductsForLookupCategoryQuery,
   countTotalProductsForLookupCategoryQuery,
-} from "../queries";
+} from "../queries.js";
 
 export const countTotalProductsForLookupCategory = async (
   shopProductCollectionName: string

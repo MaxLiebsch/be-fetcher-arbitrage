@@ -1,20 +1,20 @@
-import { getShop } from "../../../db/util/shops";
-import { TaskCompletedStatus } from "../../../status";
 import { QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
-import { proxyAuth } from "../../../constants";
 import { differenceInHours } from "date-fns";
-import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimitMulti } from "../../../util/getProductLimit";
-import { scrapeEbyListings } from "../weekly/negEbyDeals";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
-import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks";
-import { lookForOutdatedDealsOnEby } from "../../../db/util/deals/daily/eby/lookForOutdatedDealsOnEby";
-import { DealOnEbyTask } from "../../../types/tasks/Tasks";
-import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats";
-import { MissingShopError } from "../../../errors";
-import { TaskReturnType } from "../../../types/TaskReturnType";
-import { countRemainingProducts } from "../../../util/countRemainingProducts";
-import { log } from "../../../util/logger";
+import { getShop } from "../../../db/util/shops.js";
+import { TaskCompletedStatus } from "../../../status.js";
+import { proxyAuth } from "../../../constants.js";
+import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct.js";
+import { getProductLimitMulti } from "../../../util/getProductLimit.js";
+import { scrapeEbyListings } from "../weekly/negEbyDeals.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedDealsOnEby } from "../../../db/util/deals/daily/eby/lookForOutdatedDealsOnEby.js";
+import { DealOnEbyTask } from "../../../types/tasks/Tasks.js";
+import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats.js";
+import { MissingShopError } from "../../../errors.js";
+import { TaskReturnType } from "../../../types/TaskReturnType.js";
+import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
+import { log } from "../../../util/logger.js";
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;

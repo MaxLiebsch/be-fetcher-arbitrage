@@ -3,7 +3,7 @@ import {
   findProductByHash,
   insertArbispotterProduct,
   updateArbispotterProductHashQuery,
-} from "./crudArbispotterProduct";
+} from "./crudArbispotterProduct.js";
 import { DbProductRecord, UpdateResult } from "@dipmaxtech/clr-pkg";
 
 //ARBISPOTTER DB UTILS

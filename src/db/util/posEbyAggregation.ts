@@ -1,4 +1,4 @@
-import { DEFAULT_LIMIT } from "../../constants";
+import { DEFAULT_LIMIT } from "../../constants.js";
 import {
   ebayMarginCalculationAggregationStep,
   totalPositivEbay,

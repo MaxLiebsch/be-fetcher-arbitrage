@@ -1,20 +1,20 @@
-import { getShop } from "../../../db/util/shops";
-import { TaskCompletedStatus } from "../../../status";
 import { DbProductRecord, QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
-import { proxyAuth } from "../../../constants";
 import { differenceInHours } from "date-fns";
-import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct";
-import { getProductLimitMulti } from "../../../util/getProductLimit";
-import { scrapeAznListings } from "../weekly/negAznDeals";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo";
-import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks";
-import { lookForOutdatedDealsOnAzn } from "../../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn";
-import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats";
-import { DealOnAznTask } from "../../../types/tasks/Tasks";
-import { TaskReturnType } from "../../../types/TaskReturnType";
-import { MissingShopError } from "../../../errors";
-import { log } from "../../../util/logger";
-import { countRemainingProducts } from "../../../util/countRemainingProducts";
+import { getShop } from "../../../db/util/shops.js";
+import { TaskCompletedStatus } from "../../../status.js";
+import { proxyAuth } from "../../../constants.js";
+import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct.js";
+import { getProductLimitMulti } from "../../../util/getProductLimit.js";
+import { scrapeAznListings } from "../weekly/negAznDeals.js";
+import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
+import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
+import { lookForOutdatedDealsOnAzn } from "../../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
+import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats.js";
+import { DealOnAznTask } from "../../../types/tasks/Tasks.js";
+import { TaskReturnType } from "../../../types/TaskReturnType.js";
+import { MissingShopError } from "../../../errors.js";
+import { log } from "../../../util/logger.js";
+import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;

@@ -10,31 +10,30 @@ import {
   NotFoundCause,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
-import { handleResult } from "../handleResult";
-import { MissingProductsError, MissingShopError } from "../errors";
-import { getShop } from "../db/util/shops";
+import { handleResult } from "../handleResult.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
+import { getShop } from "../db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
 import {
   lockWholeSaleProducts,
   updateWholeSaleProduct,
-} from "../db/util/wholesaleSearch/crudWholeSaleSearch";
-import { updateWholesaleProgress } from "../util/updateProgressInTasks";
-import { upsertAsin } from "../db/util/asinTable";
-import { WholeSaleTask } from "../types/tasks/Tasks";
-import { getMaxLoadQueue } from "../util/getMaxLoadQueue";
-import { WholeSaleStats } from "../types/taskStats/WholeSaleStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { getProductLimitMulti } from "../util/getProductLimit";
-import { log } from "../util/logger";
-import { multiQueueInitializer } from "../util/multiQueueInitializer";
-import { TaskCompletedStatus } from "../status";
-import { countRemainingProductsShop } from "../util/countRemainingProducts";
-import { wholesaleCollectionName } from "../db/mongo";
+} from "../db/util/wholesaleSearch/crudWholeSaleSearch.js";
+import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
+import { upsertAsin } from "../db/util/asinTable.js";
+import { WholeSaleTask } from "../types/tasks/Tasks.js";
+import { WholeSaleStats } from "../types/taskStats/WholeSaleStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
+import { log } from "../util/logger.js";
+import { multiQueueInitializer } from "../util/multiQueueInitializer.js";
+import { TaskCompletedStatus } from "../status.js";
+import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
+import { wholesaleCollectionName } from "../db/mongo.js";
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

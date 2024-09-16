@@ -8,34 +8,34 @@ import {
   DbProductRecord,
 } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
-import { handleResult } from "../handleResult";
-import { MissingProductsError, MissingShopError } from "../errors";
-import { getShop, getShops } from "../db/util/shops";
+import { handleResult } from "../handleResult.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
+import { getShop, getShops } from "../db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
-import { parseAsinFromUrl } from "../util/parseAsin";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
+import { parseAsinFromUrl } from "../util/parseAsin.js";
 import {
   updateMatchProgress,
   updateProgressInLookupCategoryTask,
   updateProgressInLookupInfoTask,
-} from "../util/updateProgressInTasks";
-import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch";
+} from "../util/updateProgressInTasks.js";
+import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
 import { TaskCompletedStatus } from "../status.js";
-import { MatchProductsTask } from "../types/tasks/Tasks";
-import { MatchProductsStats } from "../types/taskStats/MatchProductsStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { getProductLimit } from "../util/getProductLimit";
-import { log } from "../util/logger";
-import { countRemainingProductsShop } from "../util/countRemainingProducts";
+import { MatchProductsTask } from "../types/tasks/Tasks.js";
+import { MatchProductsStats } from "../types/taskStats/MatchProductsStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { getProductLimit } from "../util/getProductLimit.js";
+import { log } from "../util/logger.js";
+import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
 
 export default async function match(task: MatchProductsTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

@@ -9,28 +9,28 @@ import {
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
-import { handleResult } from "../handleResult";
-import { CONCURRENCY, proxyAuth } from "../constants";
-import { checkProgress } from "../util/checkProgress";
-import { lookForUnmatchedEans } from "../db/util/lookupInfo/lookForUnmatchedEans";
-import { getShop } from "../db/util/shops";
-import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks";
+import { handleResult } from "../handleResult.js";
+import { CONCURRENCY, proxyAuth } from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
+import { lookForUnmatchedEans } from "../db/util/lookupInfo/lookForUnmatchedEans.js";
+import { getShop } from "../db/util/shops.js";
+import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
-} from "../util/lookupInfoHelper";
-import { getProductLimitMulti } from "../util/getProductLimit";
-import { getEanFromProduct } from "../util/getEanFromProduct";
-import { TaskCompletedStatus } from "../status";
-import { LookupInfoStats } from "../types/taskStats/LookupInfoStats";
-import { getMaxLoadQueue } from "../util/getMaxLoadQueue";
-import { LookupInfoTask } from "../types/tasks/Tasks";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { countRemainingProducts } from "../util/countRemainingProducts";
-import { setTaskId } from "../db/util/queries";
-import { MissingProductsError } from "../errors";
-import { MissingShopError } from "../errors";
-import { log } from "../util/logger";
+} from "../util/lookupInfoHelper.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { TaskCompletedStatus } from "../status.js";
+import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";
+import { getMaxLoadQueue } from "../util/getMaxLoadQueue.js";
+import { LookupInfoTask } from "../types/tasks/Tasks.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { countRemainingProducts } from "../util/countRemainingProducts.js";
+import { setTaskId } from "../db/util/queries.js";
+import { MissingProductsError } from "../errors.js";
+import { MissingShopError } from "../errors.js";
+import { log } from "../util/logger.js";
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

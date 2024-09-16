@@ -1,5 +1,5 @@
-import { getShopsForService } from "../filteredShops";
-import { getLookupInfoProgress } from "./getLookupInfoProgress";
+import { getShopsForService } from "../filteredShops.js";
+import { getLookupInfoProgress } from "./getLookupInfoProgress.js";
 
 export async function getUnmatchedEanShops() {
   const {filteredShops, shops} = await getShopsForService("lookupInfo"); 

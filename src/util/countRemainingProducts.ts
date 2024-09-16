@@ -1,7 +1,7 @@
 import { ObjectId, Shop, TaskTypes } from "@dipmaxtech/clr-pkg";
-import { countArbispotterProducts } from "../db/util/crudArbispotterProduct";
-import { PendingShops } from "../types/shops";
-import { setTaskId } from "../db/util/queries";
+import { countArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { PendingShops } from "../types/shops.js";
+import { setTaskId } from "../db/util/queries.js";
 
 const taskIds: { [key in TaskTypes]: string } = {
   LOOKUP_INFO: "info_taskId",

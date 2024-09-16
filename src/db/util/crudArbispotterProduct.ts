@@ -1,5 +1,5 @@
 import { UTCDate } from "@date-fns/utc";
-import { getArbispotterDb } from "../mongo";
+import { getArbispotterDb } from "../mongo.js";
 import { Db, MongoError, UpdateFilter } from "mongodb";
 import {
   DbProductRecord,

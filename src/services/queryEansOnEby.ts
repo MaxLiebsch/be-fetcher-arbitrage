@@ -9,34 +9,34 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 
-import { handleResult } from "../handleResult";
-import { MissingProductsError, MissingShopError } from "../errors";
+import { handleResult } from "../handleResult.js";
+import { MissingProductsError, MissingShopError } from "../errors.js";
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
 import {
   updateProgressInLookupCategoryTask,
   updateProgressInQueryEansOnEbyTask,
-} from "../util/updateProgressInTasks";
-import { lookForUnmatchedQueryEansOnEby } from "../db/util/queryEansOnEby/lookForUnmatchedEansOnEby";
-import { getShop } from "../db/util/shops";
+} from "../util/updateProgressInTasks.js";
+import { lookForUnmatchedQueryEansOnEby } from "../db/util/queryEansOnEby/lookForUnmatchedEansOnEby.js";
+import { getShop } from "../db/util/shops.js";
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
-} from "../util/queryEansOnEbyHelper";
-import { getProductLimitMulti } from "../util/getProductLimit";
-import { getEanFromProduct } from "../util/getEanFromProduct";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { TaskCompletedStatus } from "../status";
-import { QueryEansOnEbyTask } from "../types/tasks/Tasks";
-import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { log } from "../util/logger";
-import { countRemainingProducts } from "../util/countRemainingProducts";
+} from "../util/queryEansOnEbyHelper.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
+import { getEanFromProduct } from "../util/getEanFromProduct.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { TaskCompletedStatus } from "../status.js";
+import { QueryEansOnEbyTask } from "../types/tasks/Tasks.js";
+import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { log } from "../util/logger.js";
+import { countRemainingProducts } from "../util/countRemainingProducts.js";
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask

@@ -13,16 +13,16 @@ import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../../constants";
-import { updateTask } from "../../db/util/tasks";
+} from "../../constants.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
-} from "../../util/lookupCategoryHelper";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { LookupCategoryStats } from "../../types/taskStats/LookupCategoryStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+} from "../../util/lookupCategoryHelper.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { LookupCategoryStats } from "../../types/taskStats/LookupCategoryStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 
 export const lookupCategory = async (
   ebay: Shop,
@@ -78,7 +78,7 @@ export const lookupCategory = async (
       task.progress.lookupCategory.pop();
       if (!product) continue;
 
-      const { _id: productId,  esin, s_hash } = product;
+      const { _id: productId, esin, s_hash } = product;
 
       const queryUrl = "https://www.ebay.de/itm/" + esin;
 

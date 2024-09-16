@@ -1,5 +1,5 @@
 import { UTCDate } from "@date-fns/utc";
-import { keepaProperties } from "./createOrUpdateArbispotterProduct";
+import { keepaProperties } from "./createOrUpdateArbispotterProduct.js";
 import { DbProductRecord } from "@dipmaxtech/clr-pkg";
 
 export const aznUnsetProperties: { [key in keyof DbProductRecord]?: string } = {

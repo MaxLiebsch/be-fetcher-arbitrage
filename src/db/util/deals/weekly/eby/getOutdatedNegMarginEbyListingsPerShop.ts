@@ -1,6 +1,6 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getCrawlEbyListingsProgressAggregation } from "../../../crawlEbyListings/getCrawlEbyListingsProgressAggregation";
-import { getShopsForService } from "../../../filteredShops";
+import { getCrawlEbyListingsProgressAggregation } from "../../../crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { getShopsForService } from "../../../filteredShops.js";
 
 export async function getOutdatedNegMarginEbyListingsPerShop(
   proxyType: ProxyType

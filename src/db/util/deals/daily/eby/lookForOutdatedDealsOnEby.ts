@@ -1,16 +1,16 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../../../tasks";
-import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby";
-import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops";
-import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby";
-import { getProductsWithShop } from "../../../getProductsWithShop";
+import { updateTaskWithQuery } from "../../../tasks.js";
+import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";
+import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops.js";
+import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby.js";
+import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks";
+import { Action } from "../../../../../types/tasks/Tasks.js";
 import {
   PendingShops,
   PendingShopsWithBatch,
-} from "../../../../../types/shops";
-import { log } from "../../../../../util/logger";
+} from "../../../../../types/shops.js";
+import { log } from "../../../../../util/logger.js";
 
 export async function lookForOutdatedDealsOnEby(
   taskId: ObjectId,

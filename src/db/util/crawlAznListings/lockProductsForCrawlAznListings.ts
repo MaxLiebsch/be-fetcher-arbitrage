@@ -1,9 +1,9 @@
-import { Action } from "../../../types/tasks/Tasks";
-import { getArbispotterDb } from "../../mongo";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   lockProductsForCrawlAznListingsQuery,
   setProductsLockedForCrawlAznListingsQuery,
-} from "../queries";
+} from "../queries.js";
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
 
 export const lockProductsForCrawlAznListings = async (

@@ -1,25 +1,25 @@
-import { getCrawlDataDb, hostname, tasksCollectionName } from "../mongo";
-import { countPendingProductsForMatch } from "./match/getMatchProgress";
-import { findTasksQuery } from "./queries";
-import { getMissingEanShops } from "./crawlEan/getMissingEanShops";
-import { getUnmatchedQueryEansOnEbyShops } from "./queryEansOnEby/getUnmatchedQueryEansOnEbyShops";
-import { getUnmatchedEanShops } from "./lookupInfo/getUnmatchedEanShops";
-import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops";
-import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress";
+import { getCrawlDataDb, hostname, tasksCollectionName } from "../mongo.js";
+import { countPendingProductsForMatch } from "./match/getMatchProgress.js";
+import { findTasksQuery } from "./queries.js";
+import { getMissingEanShops } from "./crawlEan/getMissingEanShops.js";
+import { getUnmatchedQueryEansOnEbyShops } from "./queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
+import { getUnmatchedEanShops } from "./lookupInfo/getUnmatchedEanShops.js";
+import { getMissingEbyCategoryShops } from "./lookupCategory/getMissingEbyCategoryShops.js";
+import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
 import {
   MINIMUM_PENDING_PRODUCTS,
   ObjectId,
   TaskTypes,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { getOutdatedDealsOnAznShops } from "./deals/daily/azn/getOutdatedDealsOnAznShops";
-import { getOutdatedNegMarginEbyListingsPerShop } from "./deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop";
-import { getOutdatedNegMarginAznListingsPerShop } from "./deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop";
-import { getOutdatedDealsOnEbyShops } from "./deals/daily/eby/getOutdatedDealsOnEbyShops";
-import { TASK_TYPES } from "../../util/taskTypes";
-import { MatchProductsTask, Tasks } from "../../types/tasks/Tasks";
-import { PendingShops } from "../../types/shops";
-import { COOLDOWN, COOLDOWN_LONG } from "../../constants";
+import { getOutdatedDealsOnAznShops } from "./deals/daily/azn/getOutdatedDealsOnAznShops.js";
+import { getOutdatedNegMarginEbyListingsPerShop } from "./deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "./deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
+import { getOutdatedDealsOnEbyShops } from "./deals/daily/eby/getOutdatedDealsOnEbyShops.js";
+import { TASK_TYPES } from "../../util/taskTypes.js";
+import { MatchProductsTask, Tasks } from "../../types/tasks/Tasks.js";
+import { PendingShops } from "../../types/shops.js";
+import { COOLDOWN, COOLDOWN_LONG } from "../../constants.js";
 import { Filter, UpdateFilter } from "mongodb";
 
 const handleComulativTasks = async (

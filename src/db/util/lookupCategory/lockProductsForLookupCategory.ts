@@ -1,10 +1,10 @@
-import { getArbispotterDb } from "../../mongo";
+import { getArbispotterDb } from "../../mongo.js";
 import {
   lockProductsForLookupCategoryQuery,
   setProductsLockedForLookupCategoryQuery,
-} from "../../util/queries";
+} from "../../util/queries.js";
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks";
+import { Action } from "../../../types/tasks/Tasks.js";
 
 export const lockProductsForLookupCategory = async (
   domain: string,

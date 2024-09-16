@@ -5,13 +5,13 @@ import {
   ObjectId,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
-import { resetAznProductQuery } from "../db/util/aznQueries";
+import { resetAznProductQuery } from "../db/util/aznQueries.js";
 import { upsertAsin } from "../db/util/asinTable.js";
 import { UTCDate } from "@date-fns/utc";
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";
 
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct";
-import { log } from "./logger";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { log } from "./logger.js";
 
 export async function handleLookupInfoProductInfo(
   collection: string,

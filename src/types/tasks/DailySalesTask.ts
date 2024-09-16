@@ -1,4 +1,4 @@
-import { Task } from "./Tasks";
+import { Task } from "./Tasks.js";
 import { DbProductRecord, ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 
 export interface Limit {

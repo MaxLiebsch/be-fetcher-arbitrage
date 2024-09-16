@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
-import { getRedirectUrl } from "../services/head";
 import { DbProductRecord } from "@dipmaxtech/clr-pkg";
-import { MatchProductsStats } from "../types/taskStats/MatchProductsStats";
+import { getRedirectUrl } from "../services/head.js";
+import { MatchProductsStats } from "../types/taskStats/MatchProductsStats.js";
 
 export const handleRelocateLinks = async (
   procProd: DbProductRecord,

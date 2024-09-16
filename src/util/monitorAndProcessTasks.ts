@@ -1,22 +1,22 @@
-import { updateTask } from "../db/util/tasks";
-import { sendMail } from "../email";
-import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status";
 import { LoggerService, ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
-import { MissingProductsError } from "../errors";
-import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants";
-
-import { executeTask } from "./executeTask";
-import { checkForNewTask } from "./checkForNewTask";
-import { hostname } from "../db/mongo";
-import { handleTask } from "./taskHandler";
-import clientPool from "../db/mongoPool";
 import { UTCDate } from "@date-fns/utc";
+import { executeTask } from "./executeTask.js";
+import { handleTask } from "./taskHandler.js";
+import { checkForNewTask } from "./checkForNewTask.js";
+import { updateTask } from "../db/util/tasks.js";
+import { sendMail } from "../email.js";
+import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
+import { MissingProductsError } from "../errors.js";
+import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
+
+import { hostname } from "../db/mongo.js";
+import clientPool from "../db/mongoPool.js";
 import {
   updateProgressDealTasks,
   updateProgressNegDealTasks,
-} from "./updateProgressInTasks";
-import { TASK_TYPES } from "./taskTypes";
-import { Task } from "../types/tasks/Tasks";
+} from "./updateProgressInTasks.js";
+import { TASK_TYPES } from "./taskTypes.js";
+import { Task } from "../types/tasks/Tasks.js";
 
 const { errorLogger } = LoggerService.getSingleton();
 

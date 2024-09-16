@@ -1,12 +1,12 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../tasks";
-import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops";
-import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory";
-import { getRecoveryLookupCategory } from "./getRecoveryLookupCategory";
-import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks";
-import { PendingShops, PendingShopsWithBatch } from "../../../types/shops";
+import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
+import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
+import { getRecoveryLookupCategory } from "./getRecoveryLookupCategory.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 
 export async function lookForMissingEbyCategory(
   taskId: ObjectId,

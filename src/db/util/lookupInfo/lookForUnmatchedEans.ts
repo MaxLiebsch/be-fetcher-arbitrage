@@ -1,13 +1,13 @@
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
 
-import { updateTaskWithQuery } from "../tasks";
-import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo";
-import { getUnmatchedEanShops } from "./getUnmatchedEanShops";
-import { getRecoveryLookupInfoProducts } from "./getRecoveryLookupInfoProducts";
-import { getProductsWithShop } from "../getProductsWithShop";
-import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks";
-import { PendingShops, PendingShopsWithBatch } from "../../../types/shops";
+import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
+import { getUnmatchedEanShops } from "./getUnmatchedEanShops.js";
+import { getRecoveryLookupInfoProducts } from "./getRecoveryLookupInfoProducts.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 
 export async function lookForUnmatchedEans(
   taskId: ObjectId,

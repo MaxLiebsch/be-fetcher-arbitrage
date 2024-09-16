@@ -1,5 +1,5 @@
 import { TaskTypes } from "@dipmaxtech/clr-pkg";
-import { TASK_TYPES } from "./taskTypes";
+import { TASK_TYPES } from "./taskTypes.js";
 
 export const getTaskSymbol = (type: TaskTypes) => {
   switch (type) {

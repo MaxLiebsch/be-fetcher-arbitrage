@@ -1,13 +1,13 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../tasks";
-import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby";
-import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops";
-import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby";
-import { getProductsWithShop } from "../getProductsWithShop";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks";
-import { PendingShops, PendingShopsWithBatch } from "../../../types/shops";
-import { log } from "../../../util/logger";
+import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
+import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
+import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { log } from "../../../util/logger.js";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId: ObjectId,

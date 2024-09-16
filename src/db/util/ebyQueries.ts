@@ -1,6 +1,6 @@
 import { UTCDate } from "@date-fns/utc";
 import { DbProductRecord } from "@dipmaxtech/clr-pkg";
-import { Query } from "./aznQueries";
+import { Query } from "./aznQueries.js";
 
 export const ebyUnsetProperties: { [key in keyof DbProductRecord]?: string } = {
   //standard properties

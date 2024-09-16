@@ -1,19 +1,19 @@
-import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress";
-import { getMatchProgress } from "../db/util/match/getMatchProgress";
-import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress";
-import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops";
-import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops";
-import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops";
-import { updateTaskWithQuery } from "../db/util/tasks";
-import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops";
-import { getCrawlEbyListingsProgressAggregation } from "../db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation";
-import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops";
-import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop";
-import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop";
-import { getOutdatedDealsOnEbyShops } from "../db/util/deals/daily/eby/getOutdatedDealsOnEbyShops";
-import { TASK_TYPES } from "./taskTypes";
+import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
+import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
+import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops.js";
+import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops.js";
+import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
+import { updateTaskWithQuery } from "../db/util/tasks.js";
+import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops.js";
+import { getCrawlEbyListingsProgressAggregation } from "../db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
+import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
+import { getOutdatedDealsOnEbyShops } from "../db/util/deals/daily/eby/getOutdatedDealsOnEbyShops.js";
+import { TASK_TYPES } from "./taskTypes.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { PendingShops } from "../types/shops";
+import { PendingShops } from "../types/shops.js";
 
 export const updateMatchProgress = async (
   shopDomain: string,

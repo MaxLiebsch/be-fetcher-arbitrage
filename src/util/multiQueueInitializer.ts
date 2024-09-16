@@ -1,8 +1,8 @@
 import { QueryQueue } from "@dipmaxtech/clr-pkg";
-import { MultiShopMultiQueueTask } from "../types/tasks/Tasks";
-import { CONCURRENCY, proxyAuth } from "../constants";
-import { getMaxLoadQueue } from "./getMaxLoadQueue";
-import { log } from "./logger";
+import { MultiShopMultiQueueTask } from "../types/tasks/Tasks.js";
+import { CONCURRENCY, proxyAuth } from "../constants.js";
+import { getMaxLoadQueue } from "./getMaxLoadQueue.js";
+import { log } from "./logger.js";
 
 export async function multiQueueInitializer(
   task: MultiShopMultiQueueTask,

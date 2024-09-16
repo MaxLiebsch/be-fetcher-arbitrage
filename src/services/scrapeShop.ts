@@ -9,25 +9,25 @@ import {
   transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { createArbispotterCollection } from "../db/mongo";
-import { getShop } from "../db/util/shops";
+import { createArbispotterCollection } from "../db/mongo.js";
+import { getShop } from "../db/util/shops.js";
 import {
   CONCURRENCY,
   DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants";
-import { checkProgress } from "../util/checkProgress";
+} from "../constants.js";
+import { checkProgress } from "../util/checkProgress.js";
 import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
-} from "../util/updateProgressInTasks";
-import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbispotterProduct";
-import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats";
-import { ScrapeShopTask } from "../types/tasks/Tasks";
-import { TaskCompletedStatus } from "../status";
-import { TaskReturnType } from "../types/TaskReturnType";
-import { MissingShopError } from "../errors";
-import { log } from "../util/logger";
+} from "../util/updateProgressInTasks.js";
+import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbispotterProduct.js";
+import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats.js";
+import { ScrapeShopTask } from "../types/tasks/Tasks.js";
+import { TaskCompletedStatus } from "../status.js";
+import { TaskReturnType } from "../types/TaskReturnType.js";
+import { MissingShopError } from "../errors.js";
+import { log } from "../util/logger.js";
 
 async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {

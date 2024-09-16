@@ -4,18 +4,18 @@ import {
   COOLDOWN,
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
-} from "../constants";
-import { hostname } from "../db/mongo";
-import { updateShopStats } from "../db/util/shops";
-import { updateTask } from "../db/util/tasks";
-import calculatePageLimit from "./calculatePageLimit";
-import { getTaskSymbol } from "./getTaskSymbol";
-import { handleTaskCompleted } from "./handleTaskComplete";
-import { handleTaskFailed } from "./handleTaskFailed";
-import isTaskComplete from "./isTaskComplete";
-import { TASK_TYPES } from "./taskTypes";
-import { MatchProductsTask, ScrapeShopTask } from "../types/tasks/Tasks";
-import { TaskCompletedStatus } from "../status";
+} from "../constants.js";
+import { hostname } from "../db/mongo.js";
+import { updateShopStats } from "../db/util/shops.js";
+import { updateTask } from "../db/util/tasks.js";
+import calculatePageLimit from "./calculatePageLimit.js";
+import { getTaskSymbol } from "./getTaskSymbol.js";
+import { handleTaskCompleted } from "./handleTaskComplete.js";
+import { handleTaskFailed } from "./handleTaskFailed.js";
+import isTaskComplete from "./isTaskComplete.js";
+import { TASK_TYPES } from "./taskTypes.js";
+import { MatchProductsTask, ScrapeShopTask } from "../types/tasks/Tasks.js";
+import { TaskCompletedStatus } from "../status.js";
 import {
   CrawlEansTaskProps,
   DailySalesTaskProps,
@@ -28,7 +28,7 @@ import {
   ScanTaskProps,
   ScrapeShopTaskProps,
   WholeSaleTaskProps,
-} from "../types/handleTaskProps/HandleTaskProps";
+} from "../types/handleTaskProps/HandleTaskProps.js";
 
 async function handleDailySalesTask({
   taskResult,

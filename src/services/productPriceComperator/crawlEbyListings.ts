@@ -8,16 +8,16 @@ import {
   Shop,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { defaultQuery, proxyAuth } from "../../constants";
-import { updateTask } from "../../db/util/tasks";
+import { defaultQuery, proxyAuth } from "../../constants.js";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   handleEbyListingNotFound,
   handleEbyListingProductInfo,
-} from "../../util/scrapeEbyListingsHelper";
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { DealsOnEbyStats } from "../../types/taskStats/DealsOnEbyStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+} from "../../util/scrapeEbyListingsHelper.js";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { DealsOnEbyStats } from "../../types/taskStats/DealsOnEbyStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 
 export const crawlEbyListings = (
   ebay: Shop,

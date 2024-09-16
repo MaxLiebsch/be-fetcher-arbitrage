@@ -1,16 +1,16 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../../../tasks";
-import { getOutdatedNegMarginEbyListingsPerShop } from "./getOutdatedNegMarginEbyListingsPerShop";
-import { lockProductsForCrawlEbyListings } from "../../../crawlEbyListings/lockProductsForCrawlEbyListings";
-import { getRecoveryNegMarginEbyListings } from "./getRecoveryNegMarginEbyListings";
-import { getProductsWithShop } from "../../../getProductsWithShop";
+import { updateTaskWithQuery } from "../../../tasks.js";
+import { getOutdatedNegMarginEbyListingsPerShop } from "./getOutdatedNegMarginEbyListingsPerShop.js";
+import { lockProductsForCrawlEbyListings } from "../../../crawlEbyListings/lockProductsForCrawlEbyListings.js";
+import { getRecoveryNegMarginEbyListings } from "./getRecoveryNegMarginEbyListings.js";
+import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks";
+import { Action } from "../../../../../types/tasks/Tasks.js";
 import {
   PendingShops,
   PendingShopsWithBatch,
-} from "../../../../../types/shops";
-import { log } from "../../../../../util/logger";
+} from "../../../../../types/shops.js";
+import { log } from "../../../../../util/logger.js";
 
 export async function lookForOudatedNegMarginEbyListings(
   taskId: ObjectId,

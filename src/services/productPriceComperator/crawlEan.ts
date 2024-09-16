@@ -11,22 +11,22 @@ import {
   uuid,
   removeSearchParams 
 } from "@dipmaxtech/clr-pkg";
-import { updateTask } from "../../db/util/tasks";
+import { updateTask } from "../../db/util/tasks.js";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
-} from "../../constants";
+} from "../../constants.js";
 import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
-} from "../../util/crawlEanHelper";
+} from "../../util/crawlEanHelper.js";
 
-import { salesDbName } from "../../db/mongo";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask";
-import { ScrapeEanStats } from "../../types/taskStats/ScrapeEanStats";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType";
+import { salesDbName } from "../../db/mongo.js";
+import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
+import { ScrapeEanStats } from "../../types/taskStats/ScrapeEanStats.js";
+import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
 
 export const crawlEans = async (
   shop: Shop,
