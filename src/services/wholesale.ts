@@ -14,9 +14,7 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { getShop } from "../db/util/shops.js";
 import {
-  CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
-  proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import {

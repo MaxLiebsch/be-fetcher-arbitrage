@@ -41,7 +41,7 @@ export const lockWholeSaleProducts = async (
   const options: Options = {};
   const query: Query = {};
 
-  query["taskId"] = setTaskId(taskId);
+  query["taskId"] = taskId.toString();
 
   if (action === "recover") {
     query["clrName"] = `${hostname}`;

@@ -817,7 +817,7 @@ export const countPendingProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   const query = {
-    taskId: setTaskId(taskId),
+    taskId: taskId.toString(),
     lookup_pending: true,
     locked: false,
   };
@@ -827,7 +827,7 @@ export const countCompletedProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   return {
-    taskId: setTaskId(taskId),
+    taskId: taskId.toString(),
     status: { $in: ["complete", "not found"] },
   };
 };
