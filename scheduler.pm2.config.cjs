@@ -1,5 +1,5 @@
 const version = process.env.APP_VERSION || require("./package.json").version;
-const environment = "development";
+const environment = "production";
 module.exports = {
   apps: [
     {

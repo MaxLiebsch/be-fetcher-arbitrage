@@ -12,7 +12,7 @@
 In daily deals and crawl shop
 - [x] Remove search params,  when added in scrape shop
 
-- [ ] environment in pm2 file
-- [ ] revert mongouri in dev file
+- [x]  environment in pm2 file
+- [x] revert mongouri in dev file
 
 
