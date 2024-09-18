@@ -21,6 +21,7 @@ import { MatchProductsTask, Tasks } from "../../types/tasks/Tasks.js";
 import { PendingShops } from "../../types/shops.js";
 import { COOLDOWN, COOLDOWN_LONG } from "../../constants.js";
 import { Filter, UpdateFilter } from "mongodb";
+import { logGlobal } from "../../util/logger.js";
 
 const handleComulativTasks = async (
   task: Tasks,
@@ -74,143 +75,172 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
   const prioTask = await taskCollection.findOneAndUpdate(prioQuery, update, {
     returnDocument: "after",
   });
-  console.log("Prio:task:", prioTask?.type, " ", prioTask?.id);
+  console.log("Prioritytask: ", prioTask?.type || "no task");
+  prioTask?.type &&
+    logGlobal("Prioritytask:" + prioTask?.type + " " + prioTask?.id);
   if (prioTask) {
     if (prioTask.type === TASK_TYPES.DEALS_ON_EBY && "proxyType" in prioTask) {
       const { pendingShops, shops } = await getOutdatedDealsOnEbyShops(
         prioTask.proxyType
       );
-      console.log("DEALS_ON_EBY: pendingShops:", pendingShops.length);
+      logGlobal("DEALS_ON_EBY: pendingShops:" + pendingShops.length);
       return await handleComulativTasks(prioTask, pendingShops, cooldown);
     }
     if (prioTask.type === TASK_TYPES.DEALS_ON_AZN && "proxyType" in prioTask) {
       const { pendingShops, shops } = await getOutdatedDealsOnAznShops(
         prioTask.proxyType
       );
-      console.log("DEALS_ON_AZN: pendingShops:", pendingShops.length);
+      logGlobal("DEALS_ON_AZN: pendingShops:" + pendingShops.length);
       return await handleComulativTasks(prioTask, pendingShops, cooldown);
     }
     return prioTask;
   }
 
-  const task = await taskCollection.findOneAndUpdate(query, update, {
+  const primaryTask = await taskCollection.findOneAndUpdate(query, update, {
     returnDocument: "after",
   });
-  console.log("Primary:task:", task?.type, " ", task?.id);
-  if (task) {
-    if (task.type === TASK_TYPES.SCAN_SHOP) {
-      return task;
+  primaryTask?.type &&
+    logGlobal("Primary:task:" + primaryTask?.type + " " + primaryTask?.id);
+  console.log("primaryTask ", primaryTask?.type || "no task");
+  if (primaryTask) {
+    if (primaryTask.type === TASK_TYPES.SCAN_SHOP) {
+      return primaryTask;
     }
-    if (task.type === TASK_TYPES.WHOLESALE_SEARCH) {
-      const pending = await countPendingProductsForWholesaleSearch(task._id);
-      console.log("WHOLESALE_SEARCH: pending:", pending);
-      return await handleSingleTask(task, pending, cooldown);
+    if (primaryTask.type === TASK_TYPES.WHOLESALE_SEARCH) {
+      const pending = await countPendingProductsForWholesaleSearch(
+        primaryTask._id
+      );
+      logGlobal("WHOLESALE_SEARCH: pending:" + pending);
+      return await handleSingleTask(primaryTask, pending, cooldown);
     }
-    if (task.type === TASK_TYPES.CRAWL_EAN && "proxyType" in task) {
-      const { pendingShops, shops } = await getMissingEanShops(task.proxyType);
-      console.log("CRAWL_EAN: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+    if (
+      primaryTask.type === TASK_TYPES.CRAWL_EAN &&
+      "proxyType" in primaryTask
+    ) {
+      const { pendingShops, shops } = await getMissingEanShops(
+        primaryTask.proxyType
+      );
+      logGlobal("CRAWL_EAN: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
-    if (task.type === TASK_TYPES.LOOKUP_INFO) {
+    if (primaryTask.type === TASK_TYPES.LOOKUP_INFO) {
       const { pendingShops, shops } = await getUnmatchedEanShops();
-      console.log("LOOKUP_INFO: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+      logGlobal("LOOKUP_INFO: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
-    if (task.type === TASK_TYPES.QUERY_EANS_EBY) {
+    if (primaryTask.type === TASK_TYPES.QUERY_EANS_EBY) {
       const { pendingShops, shops } = await getUnmatchedQueryEansOnEbyShops();
-      console.log("QUERY_EANS_EBY: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+      logGlobal("QUERY_EANS_EBY: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
-    if (task.type === TASK_TYPES.MATCH_PRODUCTS) {
-      const shopProductCollectionName = (task as MatchProductsTask).shopDomain;
+    if (primaryTask.type === TASK_TYPES.MATCH_PRODUCTS) {
+      const shopProductCollectionName = (primaryTask as MatchProductsTask)
+        .shopDomain;
       const pending = await countPendingProductsForMatch(
         shopProductCollectionName,
         false
       );
-      console.log("MATCH_PRODUCTS: pending:", pending);
-      return await handleSingleTask(task, pending, cooldown);
+      logGlobal("MATCH_PRODUCTS: pending:" + pending);
+      return await handleSingleTask(primaryTask, pending, cooldown);
     }
-    if (task.type === TASK_TYPES.NEG_AZN_DEALS && "proxyType" in task) {
+    if (
+      primaryTask.type === TASK_TYPES.NEG_AZN_DEALS &&
+      "proxyType" in primaryTask
+    ) {
       const { pendingShops, shops } =
-        await getOutdatedNegMarginAznListingsPerShop(task.proxyType);
-      console.log("NEG_AZN_DEALS: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+        await getOutdatedNegMarginAznListingsPerShop(primaryTask.proxyType);
+      logGlobal("NEG_AZN_DEALS: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
-    if (task.type === TASK_TYPES.NEG_EBY_DEALS && "proxyType" in task) {
+    if (
+      primaryTask.type === TASK_TYPES.NEG_EBY_DEALS &&
+      "proxyType" in primaryTask
+    ) {
       const { pendingShops, shops } =
-        await getOutdatedNegMarginEbyListingsPerShop(task.proxyType);
-      console.log("NEG_EBY_DEALS: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+        await getOutdatedNegMarginEbyListingsPerShop(primaryTask.proxyType);
+      logGlobal("NEG_EBY_DEALS: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
-    if (task.type === TASK_TYPES.LOOKUP_CATEGORY && "proxyType" in task) {
+    if (
+      primaryTask.type === TASK_TYPES.LOOKUP_CATEGORY &&
+      "proxyType" in primaryTask
+    ) {
       const { pendingShops, shops } = await getMissingEbyCategoryShops();
-      console.log("LOOKUP_CATEGORY: pendingShops:", pendingShops.length);
-      return await handleComulativTasks(task, pendingShops, cooldown);
+      logGlobal("LOOKUP_CATEGORY: pendingShops:" + pendingShops.length);
+      return await handleComulativTasks(primaryTask, pendingShops, cooldown);
     }
   } else {
     //fallback
-    const task = await taskCollection.findOneAndUpdate(fallbackQuery, update, {
-      returnDocument: "after",
-    });
-    console.log("Fallback:task:", task?.type, " ", task?.id);
+    const fallbackTask = await taskCollection.findOneAndUpdate(
+      fallbackQuery,
+      update,
+      {
+        returnDocument: "after",
+      }
+    );
+    fallbackTask?.type &&
+      logGlobal("Fallbacktask:" + fallbackTask?.type + " " + fallbackTask?.id);
+
+    console.log("FallbackTask ", fallbackTask?.type || "no task");
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN_LONG; // 60 min in future
     const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString();
-    if (task) {
-      if (task.type === TASK_TYPES.WHOLESALE_SEARCH) {
-        const pending = await countPendingProductsForWholesaleSearch(task._id);
-        console.log("WHOLESALE_SEARCH: pending:", pending);
-        return await handleSingleTask(task, pending, cooldown);
+    if (fallbackTask) {
+      const { _id, type } = fallbackTask;
+      if (type === TASK_TYPES.WHOLESALE_SEARCH) {
+        const pending = await countPendingProductsForWholesaleSearch(_id);
+        logGlobal("WHOLESALE_SEARCH: pending:" + pending);
+        return await handleSingleTask(fallbackTask, pending, cooldown);
       }
-      if (task.type === TASK_TYPES.MATCH_PRODUCTS) {
-        const shopProductCollectionName = (task as MatchProductsTask)
+      if (type === TASK_TYPES.MATCH_PRODUCTS) {
+        const shopProductCollectionName = (fallbackTask as MatchProductsTask)
           .shopDomain;
         const pending = await countPendingProductsForMatch(
           shopProductCollectionName,
           false
         );
-        console.log("MATCH_PRODUCTS: pending:", pending);
-        return await handleSingleTask(task, pending, cooldown);
+        logGlobal("MATCH_PRODUCTS: pending:" + pending);
+        return await handleSingleTask(fallbackTask, pending, cooldown);
       }
-      if (task.type === TASK_TYPES.QUERY_EANS_EBY) {
+      if (type === TASK_TYPES.QUERY_EANS_EBY) {
         const { pendingShops, shops } = await getUnmatchedQueryEansOnEbyShops();
-        console.log("QUERY_EANS_EBY: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+        logGlobal("QUERY_EANS_EBY: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.CRAWL_EAN && "proxyType" in task) {
+      if (type === TASK_TYPES.CRAWL_EAN && "proxyType" in fallbackTask) {
         const { pendingShops, shops } = await getMissingEanShops(
-          task.proxyType
+          fallbackTask.proxyType
         );
-        console.log("CRAWL_EAN: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+        logGlobal("CRAWL_EAN: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.NEG_AZN_DEALS && "proxyType" in task) {
+      if (type === TASK_TYPES.NEG_AZN_DEALS && "proxyType" in fallbackTask) {
         const { pendingShops, shops } =
-          await getOutdatedNegMarginAznListingsPerShop(task.proxyType);
-        console.log("NEG_AZN_DEALS: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+          await getOutdatedNegMarginAznListingsPerShop(fallbackTask.proxyType);
+        logGlobal("NEG_AZN_DEALS: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.NEG_EBY_DEALS && "proxyType" in task) {
+      if (type === TASK_TYPES.NEG_EBY_DEALS && "proxyType" in fallbackTask) {
         const { pendingShops, shops } =
-          await getOutdatedNegMarginEbyListingsPerShop(task.proxyType);
-        console.log("NEG_EBY_DEALS: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+          await getOutdatedNegMarginEbyListingsPerShop(fallbackTask.proxyType);
+        logGlobal("NEG_EBY_DEALS: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.CRAWL_EAN && "proxyType" in task) {
+      if (type === TASK_TYPES.CRAWL_EAN && "proxyType" in fallbackTask) {
         const { pendingShops, shops } = await getMissingEanShops(
-          task.proxyType
+          fallbackTask.proxyType
         );
-        console.log("CRAWL_EAN: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+        logGlobal("CRAWL_EAN: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.LOOKUP_INFO) {
+      if (type === TASK_TYPES.LOOKUP_INFO) {
         const { pendingShops, shops } = await getUnmatchedEanShops();
-        console.log("LOOKUP_INFO: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+        logGlobal("LOOKUP_INFO: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
-      if (task.type === TASK_TYPES.LOOKUP_CATEGORY) {
+      if (type === TASK_TYPES.LOOKUP_CATEGORY) {
         const { pendingShops, shops } = await getMissingEbyCategoryShops();
-        console.log("LOOKUP_CATEGORY: pendingShops:", pendingShops.length);
-        return await handleComulativTasks(task, pendingShops, cooldown);
+        logGlobal("LOOKUP_CATEGORY: pendingShops:" + pendingShops.length);
+        return await handleComulativTasks(fallbackTask, pendingShops, cooldown);
       }
     }
     return null;

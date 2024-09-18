@@ -1,14 +1,30 @@
+import { TaskTypes } from "@dipmaxtech/clr-pkg";
 import { hostname } from "../db/mongo.js";
-import { findTasks, getNewTask } from "../db/util/tasks.js";
+import { findTask, getNewTask } from "../db/util/tasks.js";
 import { Action } from "../types/tasks/Tasks.js";
+import { logGlobal } from "./logger.js";
+import { TASK_TYPES } from "./taskTypes.js";
+
+// const relevantRemainingProductsTasks: TaskTypes[] = [
+//   TASK_TYPES.DEALS_ON_AZN,
+//   TASK_TYPES.DEALS_ON_EBY,
+//   TASK_TYPES.NEG_AZN_DEALS,
+//   TASK_TYPES.NEG_EBY_DEALS,
+//   TASK_TYPES.CRAWL_EAN,
+//   TASK_TYPES.LOOKUP_INFO,
+//   TASK_TYPES.QUERY_EANS_EBY,
+//   TASK_TYPES.WHOLESALE_SEARCH,
+//   TASK_TYPES.LOOKUP_CATEGORY,
+// ];
 
 export async function checkForNewTask() {
-  const remainingTask = await findTasks({
+  const remainingTask = await findTask({
     lastCrawler: hostname,
     maintenance: false,
   });
-  if (remainingTask.length) {
-    return { ...remainingTask[0], action: "recover" as Action };
+  if (remainingTask) {
+    logGlobal(`Recovering task ${remainingTask} ${remainingTask.id}`);
+    return { ...remainingTask, action: "recover" as Action };
   }
   const task = await getNewTask();
   if (task) return task;

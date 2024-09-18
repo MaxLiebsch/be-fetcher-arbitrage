@@ -2,17 +2,29 @@ import { DbProductRecord, DeleteResult } from "@dipmaxtech/clr-pkg";
 import { InsertOneResult, UpdateResult } from "mongodb";
 import pino from "pino";
 
+type LOGGER = "TASK_LOGGER" | "GLOBAL";
 // Create a placeholder for the task logger instance
-let taskLogger: pino.Logger | null = null;
+let taskLoggers = {} as { [key in LOGGER]: pino.Logger | null };
 
 // Function to set the logger for the current task
-export function setTaskLogger(logger: pino.Logger | null) {
-  taskLogger = logger;
+export function setTaskLogger(logger: pino.Logger | null, name: LOGGER) {
+  taskLoggers[name] = logger;
 }
 
 // Function to get the current task logger
-export function getTaskLogger() {
-  return taskLogger;
+export function getTaskLogger(name?: LOGGER) {
+  if (name) {
+    return taskLoggers[name];
+  } else {
+    return taskLoggers["TASK_LOGGER"];
+  }
+}
+
+export function logGlobal(message: string) {
+  const logger = getTaskLogger("GLOBAL");
+  const _message = message;
+
+  logger?.info(_message);
 }
 
 export function log(
@@ -22,7 +34,7 @@ export function log(
     | InsertOneResult<Document>
     | DeleteResult
 ) {
-  const logger = getTaskLogger();
+  const logger = getTaskLogger("TASK_LOGGER");
   let resultStr = "";
 
   if (result) {

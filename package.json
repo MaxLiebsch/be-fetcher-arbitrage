@@ -1,6 +1,6 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.12",
+  "version": "0.0.121",
   "description": "",
   "type": "module",
   "scripts": {
@@ -23,7 +23,7 @@
     "crawl": "node ./dist/services/crawl.js",
     "proxy": "node ./proxy/dist/index.js",
     "scheduler:standalone": "node ./dist/checkAndExecuteTasksPeriodically.js",
-    "dev:scheduler": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=true concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./dist/checkAndExecuteTasksPeriodically.js\"",
+    "dev:scheduler": "cross-env NODE_ENV=development PROXY_TYPE=request DEBUG=false concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./dist/checkAndExecuteTasksPeriodically.js\"",
     "prod:scheduler": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=false concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./dist/checkAndExecuteTasksPeriodically.js\"",
     "start:dev:match": "nodemon --ignore ./data/ --exec \"node ./dist/services/match.js\"",
     "start:test:wholesale": "nodemon --ignore ./data/ --exec \"node ./__test__/wholesale.js\"",

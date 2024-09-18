@@ -1,22 +1,18 @@
-import { sendMail } from "./email.js";
 import os from "os";
-import { LoggerService } from "@dipmaxtech/clr-pkg";
+import { LocalLogger } from "@dipmaxtech/clr-pkg";
 import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks.js";
-import { UTCDate } from "@date-fns/utc";
+import { logGlobal, setTaskLogger } from "./util/logger.js";
 
 const hostname = os.hostname();
-const { errorLogger } = LoggerService.getSingleton();
+const logger = new LocalLogger().createLogger("GLOBAL");
+setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
 
 let taskId = "";
 
 monitorAndProcessTasks()
   .then()
   .catch((e) => {
-    errorLogger.error(`Error: Queue failed on ${hostname} error: ${e}`);
-    sendMail({
-      subject: `Error: Queue failed on ${hostname}`,
-      html: e,
-    }).then();
+    logGlobal(`Error: Queue failed on ${hostname} error: ${e.message}`);
   });
 
 const errorHandler = (err: any, origin: any) => {
@@ -26,10 +22,6 @@ const errorHandler = (err: any, origin: any) => {
     "Navigating frame was detached"
   );
 
-  const metaData = {
-    reason: err?.stack || err,
-    origin,
-  };
   let type = "unhandledException";
   if (IsTargetError) {
     type = "TargetClosed";
@@ -38,14 +30,9 @@ const errorHandler = (err: any, origin: any) => {
   } else if (IsNavigationDetachedError) {
     type = "NavigationDetached";
   }
-  errorLogger.error({
-    type,
-    hostname,
-    taskId,
-    created: new UTCDate().toISOString(),
-    ...metaData,
-  });
-
+  logGlobal(
+    `Error: ${type} on ${hostname} taskId: ${taskId} error: ${err?.message}`
+  );
   if (type === "unhandledException") {
     throw err; //unhandledException:  Re-throw all other errors
   } else {

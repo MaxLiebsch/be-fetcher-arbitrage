@@ -3,6 +3,7 @@ import {
   QueryQueue,
   ScanQueue,
   sleep,
+  TaskTypes,
 } from "@dipmaxtech/clr-pkg";
 import { TaskCompletedStatus } from "../status.js";
 import { MATCH_TIME_LIMIT } from "../constants.js";
@@ -43,6 +44,9 @@ const handleSingleQueue = async (
   return await queue.clearQueue(status, taskStats);
 };
 
+// Tasks that should be considered successful before reaching the product limit
+const preSuccessTasks: TaskTypes[] = ["DAILY_SALES", "CRAWL_SHOP"];
+
 export const checkProgress = async ({
   queue,
   infos: taskStats,
@@ -57,7 +61,13 @@ export const checkProgress = async ({
 
   const { total } = taskStats;
 
-  console.log("checkProgress total: ", total, "Expected: ", productLimit);
+  console.log(
+    task.type,
+    " CheckProgress total: ",
+    total,
+    "Expected: ",
+    productLimit
+  );
 
   if (queue instanceof Array) {
     const isDone = queue.every((q) => q.workload() === 0);
@@ -86,7 +96,10 @@ export const checkProgress = async ({
         queueStats: combinedQueueStats,
       });
     }
-    if (isDone && total >= productLimit) {
+    if (
+      isDone &&
+      (total >= productLimit || preSuccessTasks.includes(task.type))
+    ) {
       status = TASK_RESULT.TASK_COMPLETED;
       await sleep(15000);
       const combinedQueueStats = await handleArrayOfQueues(
@@ -119,7 +132,11 @@ export const checkProgress = async ({
         queueStats: queue.queueStats,
       });
     }
-    if (queue.workload() === 0 && total >= productLimit) {
+    
+    if (
+      queue.workload() === 0 &&
+      (total >= productLimit || preSuccessTasks.includes(task.type))
+    ) {
       status = TASK_RESULT.TASK_COMPLETED;
       await handleSingleQueue(queue, taskStats, status);
 

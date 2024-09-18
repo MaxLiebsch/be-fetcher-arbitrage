@@ -17,8 +17,7 @@ import {
 } from "./updateProgressInTasks.js";
 import { TASK_TYPES } from "./taskTypes.js";
 import { Task } from "../types/tasks/Tasks.js";
-
-const { errorLogger } = LoggerService.getSingleton();
+import { logGlobal } from "./logger.js";
 
 const timeTracker = ProcessTimeTracker.getSingleton(
   hostname,
@@ -27,21 +26,31 @@ const timeTracker = ProcessTimeTracker.getSingleton(
 let taskId = "";
 
 export async function monitorAndProcessTasks() {
+  logGlobal(`Checking for new tasks on ${hostname}`);
   const intervalId = setInterval(async () => {
     const task = await checkForNewTask(); // Implement this function to check for new tasks
-    if (!task) return;
+    if (!task) {
+      return;
+    }
+    clearInterval(intervalId); // Stop checking while executing the task
+    logGlobal(`Task ${task.id} ${task.type} found`);
 
     const { type, id, _id } = task;
 
     const isMatchLookup =
       type === TASK_TYPES.MATCH_PRODUCTS || type === TASK_TYPES.NEG_AZN_DEALS;
-    clearInterval(intervalId); // Stop checking while executing the task
     taskId = id;
 
     try {
       if (!timeTracker.initialized) await timeTracker.initPromise;
       timeTracker.markActive(task.type);
+      logGlobal(`Executing task ${id} ${type}`);
+      const startTime = Date.now();
       const taskResult = await executeTask(task);
+      const endTime = Date.now();
+      logGlobal(
+        `Task ${id} ${type} executed, took ${(endTime - startTime) / 1000/ 1000} min.`
+      );
       timeTracker.markInactive();
 
       if (taskResult instanceof TimeLimitReachedStatus) {
@@ -75,15 +84,15 @@ export async function monitorAndProcessTasks() {
           });
         }
       }
+      logGlobal(
+        `Task ${id} ${type} completed - Resume checking after task execution`
+      );
       monitorAndProcessTasks().then(); // Resume checking after task execution
     } catch (error) {
       timeTracker.markInactive();
-      errorLogger.error({
-        error,
-        taskId: id,
-        type: type,
-        hostname,
-      });
+      logGlobal(
+        `Hostname: ${hostname} TaskId: ${id} Type: ${type} Error: ${error}`
+      );
       const cooldown = new UTCDate(Date.now() + COOLDOWN).toISOString(); // 30 min from now
 
       if (error instanceof MissingProductsError) {

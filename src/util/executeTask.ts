@@ -31,21 +31,19 @@ import { MissingTaskError, TaskErrors } from "../errors.js";
 import { TaskCompletedStatus } from "../status.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { LocalLogger } from "@dipmaxtech/clr-pkg";
-import { setTaskLogger } from "./logger.js";
+import { logGlobal, setTaskLogger } from "./logger.js";
 
 export async function executeTask(
   task: Tasks
 ): Promise<TaskCompletedStatus | TaskErrors> {
   const { type } = task;
   const logger = new LocalLogger().createLogger(type);
-  setTaskLogger(logger);
-  logger.info(`Executing task ${type}`);
+  setTaskLogger(logger, "TASK_LOGGER"); // DEFAULT logger
   try {
     if (type === TASK_TYPES.CRAWL_SHOP) {
       return await scrapeShop(task as ScrapeShopTask);
     }
     if (type === TASK_TYPES.DEALS_ON_EBY) {
-      //@ts-ignore tody: fix this
       return await dealsOnEby(task as DealOnEbyTask);
     }
     if (type === TASK_TYPES.DEALS_ON_AZN) {
@@ -83,7 +81,8 @@ export async function executeTask(
     }
     throw MissingTaskError("", task);
   } finally {
+    logGlobal(`Destroying logger for task ${type} after execution`);
     LocalLogger.instance.destroy(type);
-    setTaskLogger(null);
+    setTaskLogger(null, "TASK_LOGGER");
   }
 }

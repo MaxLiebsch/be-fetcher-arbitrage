@@ -10,6 +10,7 @@ import { getArbispotterDb } from "../../src/db/mongo";
 import { sub } from "date-fns";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
+import { updateProgressNegDealAznTasks } from "../../src/util/updateProgressInTasks";
 const proxyType = "mix";
 
 const shopDomain = "gamestop.de";
@@ -31,6 +32,8 @@ describe("crawl azn listings", () => {
     await deleteAllArbispotterProducts(shopDomain);
     const shops = await getAllShopsAsArray();
     const spotter = await getArbispotterDb();
+    //@ts-ignore
+    shops!.push({ d: "sales" });
     await Promise.all(
       shops!.map(async (shop) => {
         return spotter.collection(shop.d).updateMany(
@@ -42,7 +45,7 @@ describe("crawl azn listings", () => {
         );
       })
     );
-
+    await updateProgressNegDealAznTasks('mix');
     await insertArbispotterProducts(
       shopDomain,
       aznListings.map((l) => {
@@ -53,7 +56,7 @@ describe("crawl azn listings", () => {
 
   test("crawl azn listings", async () => {
     const logger = new LocalLogger().createLogger("CRAWL_AZN_LISTINGS");
-    setTaskLogger(logger);
+    setTaskLogger(logger, 'TASK_LOGGER');
     //@ts-ignore
     const infos = await negAznDeals({
       proxyType: "mix",

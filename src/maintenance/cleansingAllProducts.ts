@@ -6,9 +6,9 @@ import { recalculateAznMargin } from "../util/recalculateAznMargin.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
 import { resetAznProductQuery } from "../db/util/aznQueries.js";
 import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
-import { reduceSalesRankArray } from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, reduceSalesRankArray } from "@dipmaxtech/clr-pkg";
 
-function isArrayOfNumberPairs(arr) {
+function isArrayOfNumberPairs(arr: any[]) {
   if (!Array.isArray(arr)) return false;
 
   return arr.every(
@@ -20,7 +20,7 @@ function isArrayOfNumberPairs(arr) {
   );
 }
 
-function isArrayOfNumbers(arr) {
+function isArrayOfNumbers(arr: any) {
   if (!Array.isArray(arr)) return false;
   return arr.every((item) => typeof item === "number");
 }
@@ -28,8 +28,9 @@ function isArrayOfNumbers(arr) {
 const cleansingAllProducts = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops.filter((shop) => shop.active);
-
+  const activeShops = shops!.filter((shop) => shop.d === 'sales');
+  //@ts-ignore
+ activeShops.push({d: 'sales'});
   let count = 0;
   let sampleSize = await countTotal();
   for (let index = 0; index < activeShops.length; index++) {
@@ -41,7 +42,7 @@ const cleansingAllProducts = async () => {
     let hasMoreProducts = true;
     let complete = false;
     while (!complete) {
-      const spotterBulkWrites = [];
+      const spotterBulkWrites: any[]= [];
       const products = await findArbispotterProducts(
         shop.d,
         {},
@@ -65,8 +66,8 @@ const cleansingAllProducts = async () => {
             ebyCategories,
           } = p;
           count++;
-          const spotterSet = {};
-          const unset = {
+          const spotterSet: Partial<DbProductRecord> = {};
+          const unset: {$unset: any} = {
             $unset: {
               a_urpc: "",
               e_urpc: "",
@@ -90,12 +91,12 @@ const cleansingAllProducts = async () => {
           */
 
           // a_mrgn: NaN a_prc, costs.azn > 0.3 neuberechnen
-          if (!a_mrgn && a_prc && costs?.azn > 0.3) {
+          if (!a_mrgn && a_prc && costs && costs?.azn > 0.3) {
             recalculateAznMargin(p, spotterSet);
           }
 
           // e_mrgn NaN e_prc, ebyCategories.length > 0, ebyCategories.every(cat => typeof cat !== "number") neuberechnen
-          if (!e_mrgn && e_prc && ebyCategories?.length > 0) {
+          if (!e_mrgn && e_prc && ebyCategories &&ebyCategories?.length > 0) {
             recalculateEbyMargin(p, spotterSet);
           }
 
@@ -112,6 +113,7 @@ const cleansingAllProducts = async () => {
           }
 
           Object.keys(p).forEach((key) => {
+            //@ts-ignore
             if (p[key] === null) {
               unset.$unset[key] = "";
             }
@@ -121,7 +123,7 @@ const cleansingAllProducts = async () => {
             const _salesRanks = salesRanks;
             Object.entries(salesRanks).forEach(([key, value]) => {
               if (value.length > 2 && isArrayOfNumbers(value)) {
-                _salesRanks[key] = reduceSalesRankArray(value);
+                (_salesRanks as any)[key] = reduceSalesRankArray(value);
               }
             });
             if (Object.keys(_salesRanks).length > 0) {
@@ -132,7 +134,9 @@ const cleansingAllProducts = async () => {
           }
 
           if (ahstprcs && isArrayOfNumbers(ahstprcs)) {
+            //@ts-ignore
             if (ahstprcs.length > 2) {
+              //@ts-ignore
               spotterSet["ahstprcs"] = reduceSalesRankArray(ahstprcs);
             } else {
               unset.$unset["ahstprcs"] = "";
@@ -140,6 +144,7 @@ const cleansingAllProducts = async () => {
           }
           if (auhstprcs && isArrayOfNumbers(auhstprcs)) {
             if (auhstprcs.length > 2) {
+              //@ts-ignore
               spotterSet["auhstprcs"] = reduceSalesRankArray(auhstprcs);
             } else {
               unset.$unset["auhstprcs"] = "";
@@ -147,6 +152,7 @@ const cleansingAllProducts = async () => {
           }
           if (anhstprcs && isArrayOfNumbers(anhstprcs)) {
             if (anhstprcs.length > 2) {
+              //@ts-ignore
               spotterSet["anhstprcs"] = reduceSalesRankArray(anhstprcs);
             } else {
               unset.$unset["anhstprcs"] = "";
@@ -161,6 +167,7 @@ const cleansingAllProducts = async () => {
           };
 
           if (Object.keys(spotterSet).length) {
+            //@ts-ignore
             spotterBulk.updateOne.update.$set = spotterSet;
           }
           if (Object.keys(unset.$unset).length) {

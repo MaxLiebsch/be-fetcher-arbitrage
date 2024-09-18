@@ -10,6 +10,7 @@ import { setTaskLogger } from "../../src/util/logger";
 import { getAllShopsAsArray } from "../../src/db/util/shops";
 import { getArbispotterDb } from "../../src/db/mongo";
 import { sub } from "date-fns";
+import { updateProgressDealsOnAznTasks } from "../../src/util/updateProgressInTasks";
 
 const shopDomain = ["cyberport.de", "reichelt.de", "alza.de"];
 
@@ -40,6 +41,8 @@ describe("pos azn listign", () => {
       })
     );
     const shops = await getAllShopsAsArray();
+    //@ts-ignore
+    shops!.push({ d: "sales" });
     const spotter = await getArbispotterDb();
     await Promise.all(
       shops!.map(async (shop) => {
@@ -54,11 +57,12 @@ describe("pos azn listign", () => {
         );
       })
     );
+    await updateProgressDealsOnAznTasks("mix");
   }, 100000);
 
   test("pos azn listign", async () => {
     const logger = new LocalLogger().createLogger("DEALS_ON_AZN");
-    setTaskLogger(logger);
+    setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await dealOnAzn({
       productLimit,

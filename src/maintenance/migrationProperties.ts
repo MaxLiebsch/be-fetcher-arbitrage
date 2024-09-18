@@ -4,10 +4,7 @@ import {
   findArbispotterProducts,
 } from "../db/util/crudArbispotterProduct.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
-import {
-  DbProductRecord,
-  removeSearchParams,
-} from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, removeSearchParams } from "@dipmaxtech/clr-pkg";
 import { createHash } from "../util/hash.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
 
@@ -18,13 +15,10 @@ const migrationProperties = async () => {
   const shops = await getAllShopsAsArray();
   const activeShops = shops!.filter(
     (shop) =>
-      shop.active &&
-      shop.d !== "mueller.de" &&
-      shop.d !== "dm.de" &&
-      shop.d !== "fressnapf.de" &&
-      shop.d !== "bergfreunde.de" && 
-      shop.d !== ''
+      shop.active 
   );
+  //@ts-ignore
+  activeShops.push({ d: "sales" });
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
     let total = await spotter.collection(shop.d).countDocuments(query);
