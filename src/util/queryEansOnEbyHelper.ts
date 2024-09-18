@@ -6,12 +6,12 @@ import {
   QueryQueue,
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
+  resetEbyProductQuery
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 import { createHash } from "./hash.js";
 import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { log } from "./logger.js";

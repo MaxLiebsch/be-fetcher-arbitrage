@@ -8,10 +8,10 @@ import {
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
+  resetEbyProductQuery
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 import { defaultEbyDealTask } from "../constants.js";
 import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
 import { log } from "./logger.js";

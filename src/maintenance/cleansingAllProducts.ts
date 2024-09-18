@@ -1,12 +1,15 @@
-import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { getArbispotterDb } from "../db/mongo.js";
 import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
 import { countTotal } from "./countProducts.js";
 import { recalculateAznMargin } from "../util/recalculateAznMargin.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
-import { resetAznProductQuery } from "../db/util/aznQueries.js";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
-import { DbProductRecord, reduceSalesRankArray } from "@dipmaxtech/clr-pkg";
+import {
+  DbProductRecord,
+  reduceSalesRankArray,
+  resetEbyProductQuery,
+  resetAznProductQuery,
+} from "@dipmaxtech/clr-pkg";
 
 function isArrayOfNumberPairs(arr: any[]) {
   if (!Array.isArray(arr)) return false;
@@ -28,9 +31,12 @@ function isArrayOfNumbers(arr: any) {
 const cleansingAllProducts = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops!.filter((shop) => shop.d === 'sales');
-  //@ts-ignore
- activeShops.push({d: 'sales'});
+  const activeShops = shops!.filter(
+    (shop) =>
+      shop.d !== "ebay.de" &&
+      shop.d !== "amazon.de" &&
+      shop.d !== "sellercentral.amazon.de"
+  );
   let count = 0;
   let sampleSize = await countTotal();
   for (let index = 0; index < activeShops.length; index++) {
@@ -42,7 +48,7 @@ const cleansingAllProducts = async () => {
     let hasMoreProducts = true;
     let complete = false;
     while (!complete) {
-      const spotterBulkWrites: any[]= [];
+      const spotterBulkWrites: any[] = [];
       const products = await findArbispotterProducts(
         shop.d,
         {},
@@ -67,7 +73,7 @@ const cleansingAllProducts = async () => {
           } = p;
           count++;
           const spotterSet: Partial<DbProductRecord> = {};
-          const unset: {$unset: any} = {
+          const unset: { $unset: any } = {
             $unset: {
               a_urpc: "",
               e_urpc: "",
@@ -96,7 +102,7 @@ const cleansingAllProducts = async () => {
           }
 
           // e_mrgn NaN e_prc, ebyCategories.length > 0, ebyCategories.every(cat => typeof cat !== "number") neuberechnen
-          if (!e_mrgn && e_prc && ebyCategories &&ebyCategories?.length > 0) {
+          if (!e_mrgn && e_prc && ebyCategories && ebyCategories?.length > 0) {
             recalculateEbyMargin(p, spotterSet);
           }
 
@@ -123,6 +129,7 @@ const cleansingAllProducts = async () => {
             const _salesRanks = salesRanks;
             Object.entries(salesRanks).forEach(([key, value]) => {
               if (value.length > 2 && isArrayOfNumbers(value)) {
+                //@ts-ignore
                 (_salesRanks as any)[key] = reduceSalesRankArray(value);
               }
             });
@@ -177,9 +184,9 @@ const cleansingAllProducts = async () => {
             };
           }
 
-          if(Object.keys(spotterBulk.updateOne.update).length === 0) {
+          if (Object.keys(spotterBulk.updateOne.update).length === 0) {
             return;
-          } 
+          }
           spotterBulkWrites.push(spotterBulk);
         });
         await spotter.collection(shop.d).bulkWrite(spotterBulkWrites);

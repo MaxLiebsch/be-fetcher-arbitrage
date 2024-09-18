@@ -3,9 +3,9 @@ import {
   DbProductRecord,
   generateUpdate,
   ObjectId,
+  resetAznProductQuery,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
-import { resetAznProductQuery } from "../db/util/aznQueries.js";
 import { upsertAsin } from "../db/util/asinTable.js";
 import { UTCDate } from "@date-fns/utc";
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";

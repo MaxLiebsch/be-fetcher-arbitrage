@@ -16,7 +16,7 @@ const shopDomain = "ebay.de";
 //TODO : make sure mimic does not create fake block
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "126.0.6478.126");
+    await myBeforeAll(shopDomain, false, "126.0.6478.182");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -26,7 +26,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   test("Extract product Infos", async () => {
     const products: Product[] = [];
     const addProduct = async (product: ProductRecord) => {
-      products.push(<Product>product);
+      products.push(<any>product);
     };
     const handleNotFound = async (cause: string) => {
       console.log("Not found!");
@@ -35,21 +35,21 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       console.log("Is done!");
       console.log(products.length);
       console.log(
-        products.reduce((acc, product) => {
+        products.reduce<any>((acc, product: any) => {
           if (product.price && product.link) {
             acc.push({ price: product.price, link: product.link });
           }
           return acc;
         }, [])
       );
-      const result = calculateMinMaxMedian(products);
+      const result = calculateMinMaxMedian(products as any);
       console.log("result:", result);
     };
     await queryEansOnEby(
       addProduct,
       handleNotFound,
       isFinished,
-      "4011689688157"
+      "8000070025066"
     );
   }, 200000);
 

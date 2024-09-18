@@ -27,9 +27,13 @@ export function calculateMinMaxMedian(foundProducts: Product[]) {
     (price) => price >= lowerBound && price <= upperBound
   );
 
+  
   if (filteredPrices.length === 0) {
     return { min: null, max: null, median: null };
   }
+  
+  // Sort the filtered prices array
+  filteredPrices.sort((a, b) => a - b);
 
   // Calculate min and max prices from filtered prices
   const min = filteredPrices[0];

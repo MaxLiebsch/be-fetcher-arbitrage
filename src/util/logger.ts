@@ -1,5 +1,9 @@
-import { DbProductRecord, DeleteResult } from "@dipmaxtech/clr-pkg";
-import { InsertOneResult, UpdateResult } from "mongodb";
+import {
+  DbProductRecord,
+  DeleteResult,
+  InsertOneResult,
+  UpdateResult,
+} from "@dipmaxtech/clr-pkg";
 import pino from "pino";
 
 type LOGGER = "TASK_LOGGER" | "GLOBAL";

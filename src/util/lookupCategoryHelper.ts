@@ -9,6 +9,7 @@ import {
   parseEbyCategories,
   QueryQueue,
   roundToTwoDecimals,
+  resetEbyProductQuery,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
@@ -16,7 +17,6 @@ import {
   moveArbispotterProduct,
   updateArbispotterProductQuery,
 } from "../db/util/crudArbispotterProduct.js";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
 import { getEanFromProduct } from "./getEanFromProduct.js";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
 import { log } from "./logger.js";

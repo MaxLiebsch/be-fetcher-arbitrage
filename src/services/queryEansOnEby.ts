@@ -13,7 +13,6 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import {
   CONCURRENCY,
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
 } from "../constants.js";

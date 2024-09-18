@@ -59,7 +59,7 @@ const task = {
 describe("crawlproducts", () => {
   test("lookup info listings", async () => {
     const logger = new LocalLogger().createLogger("CRAWL_SHOP");
-    setTaskLogger(logger);
+    setTaskLogger(logger, 'TASK_LOGGER');
 
     const infos = await scrapeShop(task as unknown as ScrapeShopTask);
     console.log(JSON.stringify(infos, null, 2));

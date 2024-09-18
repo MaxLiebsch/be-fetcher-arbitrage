@@ -1,12 +1,12 @@
 import { LoggerService, QueueStats } from "@dipmaxtech/clr-pkg";
 import { findShops } from "../db/util/shops.js";
 import { createArbispotterCollection, salesDbName } from "../db/mongo.js";
-import { crawlProducts } from "./productPriceComperator/crawlProducts.js";
-import { crawlEans } from "./productPriceComperator/crawlEan.js";
-import { lookupInfo } from "./productPriceComperator/lookupInfo.js";
-import { queryEansOnEby } from "./productPriceComperator/queryEansOnEby.js";
-import { lookupCategory } from "./productPriceComperator/lookupCategory.js";
-import { crawlEbyListings } from "./productPriceComperator/crawlEbyListings.js";
+import { crawlProducts } from "./dailySales/crawlProducts.js";
+import { crawlEans } from "./dailySales/crawlEan.js";
+import { lookupInfo } from "./dailySales/lookupInfo.js";
+import { queryEansOnEby } from "./dailySales/queryEansOnEby.js";
+import { lookupCategory } from "./dailySales/lookupCategory.js";
+import { crawlEbyListings } from "./dailySales/crawlEbyListings.js";
 import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
 import { TaskCompletedStatus } from "../status.js";
 import {
@@ -14,7 +14,7 @@ import {
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
-import { scrapeAznListings } from "./productPriceComperator/scrapeAznListings.js";
+import { scrapeAznListings } from "./dailySales/scrapeAznListings.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "../db/util/tasks.js";
 import { getElapsedTime } from "../util/dates.js";

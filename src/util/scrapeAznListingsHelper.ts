@@ -7,10 +7,10 @@ import {
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
+  resetAznProductQuery
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
-import { resetAznProductQuery } from "../db/util/aznQueries.js";
 import { defaultAznDealTask } from "../constants.js";
 import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn.js";
 import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats.js";
