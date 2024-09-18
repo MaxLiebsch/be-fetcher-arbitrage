@@ -10,7 +10,7 @@ import {
   removeSearchParams,
 } from "@dipmaxtech/clr-pkg";
 import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
-import { defaultQuery, MAX_RETRIES_SCRAPE_EAN } from "../../constants.js";
+import { defaultQuery, MAX_RETRIES_SCRAPE_INFO } from "../../constants.js";
 import { log } from "../logger.js";
 
 export async function scrapeProductInfo(
@@ -48,7 +48,7 @@ export async function scrapeProductInfo(
         d: shopDomain,
       },
       onNotFound: handleNotFound,
-      retriesOnFail: MAX_RETRIES_SCRAPE_EAN,
+      retriesOnFail: MAX_RETRIES_SCRAPE_INFO,
       addProductInfo,
       queue: queue,
       query: defaultQuery,

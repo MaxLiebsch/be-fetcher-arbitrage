@@ -20,6 +20,7 @@ export const NEW_TASK_CHECK_INTERVAL = 10000;
 export const RECHECK_EAN_EBY_AZN_INTERVAL = 7; // 7 days
 export const RECHECK_EAN_INTERVAL = 14; // 14 days
 export const MAX_RETRIES_SCRAPE_EAN = 5;
+export const MAX_RETRIES_SCRAPE_INFO = 8;
 export const MAX_RETIRES_SCRAPE_SHOP = 5;
 export const DEFAULT_LIMIT = 500;
 
