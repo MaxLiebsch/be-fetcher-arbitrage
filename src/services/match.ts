@@ -221,7 +221,8 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         query,
         task,
         prodInfo,
-        srcShop
+        srcShop,
+        log
       );
 
       procProductsPromiseArr.push(
@@ -231,7 +232,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
           if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
             const procProd = targetShopProducts[0]?.procProd;
             await handleOutput(procProd as DbProductRecord, product);
-          } else {
+          } else if (targetShopProducts[0].path !== "wtf") {
             const { procProd, candidates } = matchTargetShopProdsWithRawProd(
               targetShopProducts,
               prodInfo

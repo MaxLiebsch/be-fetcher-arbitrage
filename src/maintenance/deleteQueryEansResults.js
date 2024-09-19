@@ -1,14 +1,16 @@
-import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
+import { resetEbyProductQuery } from "@dipmaxtech/clr-pkg";
+import { getArbispotterDb } from "../db/mongo.js";
 import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
-import { resetEbyProductQuery } from "../db/util/ebyQueries.js";
-import { getAllShopsAsArray } from "../db/util/shops.js";
+import { getActiveShops } from "../db/util/shops.js";
 
 const query = { eby_prop: "missing", e_prc: { $exists: true } };
 
 const deleteQueryEansResults = async () => {
   const spotter = await getArbispotterDb();
-  const shops = await getAllShopsAsArray();
+  const shops = await getActiveShops();
+  if (!shops) return;
   const activeShops = shops.filter((shop) => shop.active);
+
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
     const total = await spotter.collection(shop.d).countDocuments(query);
