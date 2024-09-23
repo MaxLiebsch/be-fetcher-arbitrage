@@ -196,7 +196,11 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       const { nm, mnfctr } = product;
       const ean = getEanFromProduct(product);
 
-      const reducedName = mnfctr + " " + reduceString(nm, 55);
+      let reducedName = reduceString(nm, 55);
+
+      if (mnfctr !== undefined) {
+        reducedName = `${mnfctr} ${reducedName}`;
+      }
 
       const query = {
         ...defaultQuery,

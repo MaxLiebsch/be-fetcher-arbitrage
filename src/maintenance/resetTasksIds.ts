@@ -3,6 +3,7 @@ import { getTasks } from "../db/util/tasks";
 import { getArbispotterDb } from "../db/mongo";
 import { getAllShopsAsArray } from "../db/util/shops";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
+import { add } from "date-fns";
 
 const taskIdScraperMap = {
   ean_taskId: ["CRAWL_EAN"],
@@ -26,6 +27,15 @@ const problems = {
   MATCH_TITLES: 0,
   DETECT_QUANTITY: 0,
 };
+const idsMap = new Map<string, number>();
+
+const addToIdMap = (id: string) => { 
+  if (idsMap.has(id)) {
+    idsMap.set(id, idsMap.get(id) + 1);
+  } else {
+    idsMap.set(id, 1);
+  }
+}
 
 const taskIds = [
   "ean_taskId",
@@ -114,12 +124,14 @@ const resetTaskIds = async () => {
             p.ean_taskId &&
             !isTaskRunning(tasks, p.ean_taskId, "ean_taskId")
           ) {
+            addToIdMap(p.ean_taskId);
             update["$unset"] = { ean_taskId: "" };
           }
           if (
             p.info_taskId &&
             !isTaskRunning(tasks, p.info_taskId, "info_taskId")
           ) {
+            addToIdMap(p.info_taskId);
             problems.LOOKUP_INFO++;
             update["$unset"] = { ...update["$unset"], info_taskId: "" };
           }
@@ -128,6 +140,7 @@ const resetTaskIds = async () => {
             p.dealAznTaskId &&
             !isTaskRunning(tasks, p.dealAznTaskId, "dealAznTaskId")
           ) {
+            addToIdMap(p.dealAznTaskId);
             problems.DEALS_ON_AZN++;
             update["$unset"] = { ...update["$unset"], dealAznTaskId: "" };
           }
@@ -136,6 +149,7 @@ const resetTaskIds = async () => {
             p.dealEbyTaskId &&
             !isTaskRunning(tasks, p.dealEbyTaskId, "dealEbyTaskId")
           ) {
+            addToIdMap(p.dealEbyTaskId);
             problems.DEALS_ON_EBY++;
             update["$unset"] = { ...update["$unset"], dealEbyTaskId: "" };
           }
@@ -144,6 +158,7 @@ const resetTaskIds = async () => {
             p.eby_taskId &&
             !isTaskRunning(tasks, p.eby_taskId, "eby_taskId")
           ) {
+            addToIdMap(p.eby_taskId);
             problems.CRAWL_EBY_LISTINGS++;
             problems.QUERY_EANS_EBY++;
             update["$unset"] = { ...update["$unset"], eby_taskId: "" };
@@ -153,6 +168,7 @@ const resetTaskIds = async () => {
             p.azn_taskId &&
             !isTaskRunning(tasks, p.azn_taskId, "azn_taskId")
           ) {
+            addToIdMap(p.azn_taskId);
             problems.CRAWL_AZN_LISTINGS++;
             update["$unset"] = { ...update["$unset"], azn_taskId: "" };
           }
@@ -161,6 +177,7 @@ const resetTaskIds = async () => {
             p.cat_taskId &&
             !isTaskRunning(tasks, p.cat_taskId, "cat_taskId")
           ) {
+            addToIdMap(p.cat_taskId);
             problems.LOOKUP_CATEGORY++;
             update["$unset"] = { ...update["$unset"], cat_taskId: "" };
           }
@@ -169,6 +186,7 @@ const resetTaskIds = async () => {
             p.nm_batchId &&
             !isAiTaskRunning(tasks, p.nm_batchId, "nm_batchId")
           ) {
+            addToIdMap(p.nm_batchId);
             problems.MATCH_TITLES++;
             if (p.nm_prop === "is_progress") {
               update["$unset"] = { ...update["$unset"], nm_prop: "" };
@@ -180,6 +198,7 @@ const resetTaskIds = async () => {
             p.qty_batchId &&
             !isAiTaskRunning(tasks, p.qty_batchId, "qty_batchId")
           ) {
+            addToIdMap(p.qty_batchId);
             problems.DETECT_QUANTITY++;
             if (p.qty_prop === "is_progress") {
               update["$unset"] = { ...update["$unset"], qty_prop: "" };

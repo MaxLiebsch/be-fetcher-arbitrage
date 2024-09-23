@@ -11,11 +11,7 @@ import _ from "underscore";
 
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
-import {
-  CONCURRENCY,
-  defaultQuery,
-  proxyAuth,
-} from "../constants.js";
+import { CONCURRENCY, defaultQuery, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import {
   updateProgressInLookupCategoryTask,
@@ -161,13 +157,12 @@ export default async function queryEansOnEby(
           );
           log(`ExceedsLimit: ${srcShopDomain}-${productId}`, result);
         } else {
-          await handleQueryEansOnEbyNotFound(
-            srcShopDomain,
-            infos,
-            product,
-            queue
-          );
+          await handleQueryEansOnEbyNotFound(srcShopDomain, product);
         }
+        infos.notFound++;
+        infos.shops[shop.d]++;
+        infos.total++;
+        queue.total++;
         await isProcessComplete();
       };
       const query = {

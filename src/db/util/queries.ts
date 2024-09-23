@@ -367,7 +367,6 @@ export const lockProductsForMatchQuery = (
 export const setProductsLockedForMatchQuery = (taskId: ObjectId) => {
   return {
     $set: {
-      locked: true,
       taskId: setTaskId(taskId),
     },
   };

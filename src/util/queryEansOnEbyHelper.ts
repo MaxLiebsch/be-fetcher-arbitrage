@@ -6,7 +6,7 @@ import {
   QueryQueue,
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
-  resetEbyProductQuery
+  resetEbyProductQuery,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
@@ -116,9 +116,7 @@ export async function handleQueryEansOnEbyIsFinished(
 
 export async function handleQueryEansOnEbyNotFound(
   collection: string,
-  infos: QueryEansOnEbyStats,
-  product: DbProductRecord,
-  queue: QueryQueue
+  product: DbProductRecord
 ) {
   const { _id: productId } = product;
 
@@ -128,8 +126,4 @@ export async function handleQueryEansOnEbyNotFound(
     resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
   );
   log(`No product info: ${collection}-${productId}`, result);
-  infos.notFound++;
-  infos.shops[collection]++;
-  infos.total++;
-  queue.total++;
 }

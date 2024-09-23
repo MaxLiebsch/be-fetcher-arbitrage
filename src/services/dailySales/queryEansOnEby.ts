@@ -32,7 +32,7 @@ export const queryEansOnEby = async (
   task: DailySalesTask
 ): Promise<DailySalesReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id: taskId } = task;
+    const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
     task.actualProductLimit = task.queryEansOnEby.length;
@@ -116,7 +116,11 @@ export const queryEansOnEby = async (
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         completedProducts.push(productId);
-        await handleQueryEansOnEbyNotFound(salesDbName, infos, product, queue);
+        await handleQueryEansOnEbyNotFound(salesDbName, product);
+        infos.notFound++;
+        infos.shops[shopDomain]++;
+        infos.total++;
+        queue.total++;
         await isProcessComplete();
       };
 
