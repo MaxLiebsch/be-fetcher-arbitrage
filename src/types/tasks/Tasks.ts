@@ -1,10 +1,15 @@
 import {
+  DbProductRecord,
   ObjectId,
   ProxyType,
   QueueStats,
   TaskTypes,
 } from "@dipmaxtech/clr-pkg";
-import { DailySalesTask } from "./DailySalesTask.js";
+import {
+  BrowserConfig,
+  DailySalesProgress,
+  DailySalesTask,
+} from "./DailySalesTask.js";
 
 export interface Category {
   name: string;
@@ -87,8 +92,7 @@ export interface ScrapeEansTask extends MultipleShopTask {
   proxyType: ProxyType;
   concurrency: number;
 }
-export interface LookupInfoTask extends MultiShopMultiQueueTask {
-}
+export interface LookupInfoTask extends MultiShopMultiQueueTask {}
 
 export interface LookupCategoryTask extends MultipleShopTask {
   proxyType: ProxyType;
@@ -121,6 +125,16 @@ export interface NegEbyDealTask extends MultipleShopTask {
 
 export interface WholeSaleTask extends MultiShopMultiQueueTask {
   userId: string;
+  clrName: string[]
+}
+
+export interface WholeSaleEbyTask extends Task {
+  shopDomain: string;
+  clrName: string[]
+  queryEansOnEby: DbProductRecord[];
+  lookupCategory: DbProductRecord[];
+  progress: Pick<DailySalesProgress, "queryEansOnEby" | "lookupCategory">;
+  browserConfig: Pick<BrowserConfig, "queryEansOnEby" | "lookupCategory">;
 }
 
 export interface ScanTask extends ShopSpecificTask {
@@ -133,6 +147,7 @@ export type Tasks =
   | MatchProductsTask
   | LookupInfoTask
   | ScanTask
+  | WholeSaleEbyTask
   | WholeSaleTask
   | DailySalesTask
   | LookupCategoryTask

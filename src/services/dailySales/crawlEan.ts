@@ -26,12 +26,12 @@ import {
 import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { ScrapeEanStats } from "../../types/taskStats/ScrapeEanStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 
 export const crawlEans = async (
   shop: Shop,
   task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit } = browserConfig.crawlEan;

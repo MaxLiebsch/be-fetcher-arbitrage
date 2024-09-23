@@ -810,15 +810,15 @@ const scanTaskQuery = [
   { executing: { $eq: false } },
 ];
 
-/*               Queries: Wholesale  (6)                         */
+/*               Queries: Wholesale Azn  (6)                         */
 
 export const countPendingProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   const query = {
-    taskId: taskId.toString(),
-    lookup_pending: true,
-    locked: false,
+    taskIds: taskId.toString(),
+    target: "a",
+    a_lookup_pending: true,
   };
   return query;
 };
@@ -826,12 +826,40 @@ export const countCompletedProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   return {
-    taskId: taskId.toString(),
-    status: { $in: ["complete", "not found"] },
+    taskIds: taskId.toString(),
+    target: "a",
+    a_status: { $in: ["complete", "not found"] },
   };
 };
 const wholesaleTaskQuery = [
   { type: TASK_TYPES.WHOLESALE_SEARCH },
+  { "progress.pending": { $gt: 0 } },
+];
+
+/*               Queries: Wholesale Eby (6.1)                         */
+
+export const countPendingProductsForWholesaleEbySearchQuery = (
+  taskId: ObjectId
+) => {
+  const query = {
+    taskIds: taskId.toString(),
+    target: "e",
+    e_lookup_pending: true,
+  };
+  return query;
+};
+export const countCompletedProductsForWholesaleEbySearchQuery = (
+  taskId: ObjectId
+) => {
+  return {
+    taskIds: taskId.toString(),
+    target: "e",
+    a_status: { $in: ["complete", "not found"] },
+  };
+};
+
+const wholesaleEbyTaskQuery = [
+  { type: TASK_TYPES.WHOLESALE_EBY_SEARCH },
   { "progress.pending": { $gt: 0 } },
 ];
 
@@ -1270,6 +1298,12 @@ export const findTasksQuery = () => {
           },
           {
             $and: [
+              ...wholesaleEbyTaskQuery,
+              { cooldown: { $lt: new UTCDate().toISOString() } },
+            ],
+          },
+          {
+            $and: [
               ...crawlEanTaskQuery,
               { cooldown: { $lt: new UTCDate().toISOString() } },
             ],
@@ -1315,6 +1349,9 @@ export const findTasksQuery = () => {
           },
           {
             $and: wholesaleTaskQuery,
+          },
+          {
+            $and: wholesaleEbyTaskQuery,
           },
           {
             $and: queryEansOnEbyTaskQuery,

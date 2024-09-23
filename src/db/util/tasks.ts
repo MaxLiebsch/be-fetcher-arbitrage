@@ -108,9 +108,18 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
     }
     if (primaryTask.type === TASK_TYPES.WHOLESALE_SEARCH) {
       const pending = await countPendingProductsForWholesaleSearch(
-        primaryTask._id
+        primaryTask._id,
+        "WHOLESALE_SEARCH"
       );
       logGlobal("WHOLESALE_SEARCH: pending:" + pending);
+      return await handleSingleTask(primaryTask, pending, cooldown);
+    }
+    if (primaryTask.type === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
+      const pending = await countPendingProductsForWholesaleSearch(
+        primaryTask._id,
+        "WHOLESALE_EBY_SEARCH"
+      );
+      logGlobal("WHOLESALE_EBY_SEARCH: pending:" + pending);
       return await handleSingleTask(primaryTask, pending, cooldown);
     }
     if (
@@ -187,8 +196,19 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
     if (fallbackTask) {
       const { _id, type } = fallbackTask;
       if (type === TASK_TYPES.WHOLESALE_SEARCH) {
-        const pending = await countPendingProductsForWholesaleSearch(_id);
+        const pending = await countPendingProductsForWholesaleSearch(
+          _id,
+          "WHOLESALE_SEARCH"
+        );
         logGlobal("WHOLESALE_SEARCH: pending:" + pending);
+        return await handleSingleTask(fallbackTask, pending, cooldown);
+      }
+      if (type === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
+        const pending = await countPendingProductsForWholesaleSearch(
+          _id,
+          "WHOLESALE_EBY_SEARCH"
+        );
+        logGlobal("WHOLESALE_EBY_SEARCH: pending:" + pending);
         return await handleSingleTask(fallbackTask, pending, cooldown);
       }
       if (type === TASK_TYPES.MATCH_PRODUCTS) {

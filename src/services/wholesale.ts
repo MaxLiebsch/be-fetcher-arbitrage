@@ -13,14 +13,9 @@ import _ from "underscore";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { getShop } from "../db/util/shops.js";
-import {
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
-} from "../constants.js";
+import { DEFAULT_CHECK_PROGRESS_INTERVAL } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import {
-  lockWholeSaleProducts,
-  updateWholeSaleProduct,
-} from "../db/util/wholesaleSearch/crudWholeSaleSearch.js";
+import { lockWholeSaleProducts } from "../db/util/wholesaleSearch/lockWholeSaleProducts.js";
 import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
 import { upsertAsin } from "../db/util/asinTable.js";
 import { WholeSaleTask } from "../types/tasks/Tasks.js";
@@ -31,7 +26,8 @@ import { log } from "../util/logger.js";
 import { multiQueueInitializer } from "../util/multiQueueInitializer.js";
 import { TaskCompletedStatus } from "../status.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
-import { wholesaleCollectionName } from "../db/mongo.js";
+import { hostname, wholesaleCollectionName } from "../db/mongo.js";
+import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -40,7 +36,8 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     const wholeSaleProducts = await lockWholeSaleProducts(
       productLimit,
       taskId,
-      action || "none"
+      action || "none",
+      "WHOLESALE_SEARCH"
     );
 
     if (action === "recover") {
@@ -78,7 +75,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     infos.locked = wholeSaleProducts.length;
 
     //Update task progress
-    await updateWholesaleProgress(taskId);
+    await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
 
     const startTime = Date.now();
 
@@ -115,10 +112,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           );
           log(`Remaining products: ${remaining}`);
           clearInterval(interval);
-          await updateWholesaleProgress(taskId);
           handleResult(check, resolve, reject);
         }
       }
+      await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
     };
 
     const interval = setInterval(
@@ -157,15 +154,21 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             let reducedCosts = { ...productUpdate.costs };
             delete reducedCosts.azn;
             await upsertAsin(productUpdate.asin, [ean], reducedCosts);
-            const result = await updateWholeSaleProduct(productId, {
-              ...productUpdate,
-              status: "complete",
-              lookup_pending: false,
-              locked: false,
-              clrName: "",
-            });
+            const result = await updateArbispotterProductQuery(
+              wholesaleCollectionName,
+              productId,
+              {
+                $set: {
+                  ...productUpdate,
+                  a_status: "complete",
+                  a_lookup_pending: false,
+                },
+                $unset: { a_locked: "" },
+                $pull: { clrName: hostname },
+              }
+            );
             log(`Updated: ${ean}`, result);
-            if (result.acknowledged) {
+            if (result && result.acknowledged) {
               if (result.upsertedId) infos.new++;
               else infos.old++;
             } else {
@@ -179,14 +182,20 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
               if (error.message === "costs.azn is 0") {
                 infos.missingProperties.costs++;
               }
-              const result = await updateWholeSaleProduct(productId, {
-                status: "not found",
-                lookup_pending: false,
-                locked: false,
-                clrName: "",
-              });
+              const result = await updateArbispotterProductQuery(
+                wholesaleCollectionName,
+                productId,
+                {
+                  $set: {
+                    a_status: "not found",
+                    a_lookup_pending: false,
+                  },
+                  $unset: { a_locked: "" },
+                  $pull: { clrName: hostname },
+                }
+              );
               log(`Not found: ${ean}`, result);
-              if (result.acknowledged) {
+              if (result && result.acknowledged) {
                 if (result.upsertedId) infos.new++;
                 else infos.old++;
               } else {
@@ -195,14 +204,20 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             }
           }
         } else {
-          const result = await updateWholeSaleProduct(productId, {
-            status: "not found",
-            lookup_pending: false,
-            locked: false,
-            clrName: "",
-          });
+          const result = await updateArbispotterProductQuery(
+            wholesaleCollectionName,
+            productId,
+            {
+              $set: {
+                a_status: "not found",
+                a_lookup_pending: false,
+              },
+              $unset: { a_locked: "" },
+              $pull: { clrName: hostname },
+            }
+          );
           log(`Product info missing: ${ean}`, result);
-          if (result.acknowledged) {
+          if (result && result.acknowledged) {
             if (result.upsertedId) infos.new++;
             else infos.old++;
           } else {
@@ -216,14 +231,20 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        const result = await updateWholeSaleProduct(productId, {
-          status: "not found",
-          lookup_pending: false,
-          locked: false,
-          clrName: "",
-        });
+        const result = await updateArbispotterProductQuery(
+          wholesaleCollectionName,
+          productId,
+          {
+            $set: {
+              a_status: "not found",
+              a_lookup_pending: false,
+            },
+            $unset: { a_locked: "" },
+            $pull: { clrName: hostname },
+          }
+        );
         log(`Not found: ${ean} - ${cause}`, result);
-        if (result.acknowledged) {
+        if (result && result.acknowledged) {
           if (result.upsertedId) infos.new++;
           else infos.old++;
         } else {

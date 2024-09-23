@@ -95,7 +95,7 @@ describe("Daily Sales", () => {
 
   test("Daily Sales listings", async () => {
     const logger = new LocalLogger().createLogger("DAILY_SALES");
-    setTaskLogger(logger);
+    setTaskLogger(logger, 'TASK_LOGGER');
 
     const infos = await dailySales(task as unknown as DailySalesTask);
     console.log(JSON.stringify(infos, null, 2));

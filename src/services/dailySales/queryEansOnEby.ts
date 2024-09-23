@@ -1,7 +1,5 @@
 import {
   Content,
-  DbProduct,
-  DbProductRecord,
   globalEventEmitter,
   NotFoundCause,
   ObjectId,
@@ -22,17 +20,22 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../../util/queryEansOnEbyHelper.js";
-import { salesDbName } from "../../db/mongo.js";
+import { wholesaleCollectionName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { QueryEansOnEbyStats } from "../../types/taskStats/QueryEansOnEbyStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
+import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
+import { TASK_TYPES } from "../../util/taskTypes.js";
+import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
 
 export const queryEansOnEby = async (
+  collection: string,
   ebay: Shop,
-  task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+  task: DailySalesTask | WholeSaleEbyTask
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
+    const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
     task.actualProductLimit = task.queryEansOnEby.length;
@@ -44,7 +47,11 @@ export const queryEansOnEby = async (
       `${queue.queueId}-finished`,
       async function queryEansOnEbyCallback() {
         interval && clearInterval(interval);
-        await updateTask(taskId, { $set: { progress: task.progress } });
+        if (isWholeSaleEbyTask) {
+          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+        } else {
+          await updateTask(taskId, { $set: { progress: task.progress } });
+        }
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -52,27 +59,30 @@ export const queryEansOnEby = async (
 
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
-      await updateTask(taskId, {
-        $pull: {
-          "progress.queryEansOnEby": { _id: { $in: completedProducts } },
-        },
-        $addToSet: {
-          "progress.lookupCategory": { $each: task.progress.lookupCategory },
-        },
-      });
+      if (isWholeSaleEbyTask) {
+        await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+      } else {
+        await updateTask(taskId, {
+          $pull: {
+            "progress.queryEansOnEby": { _id: { $in: completedProducts } },
+          },
+          $addToSet: {
+            "progress.lookupCategory": { $each: task.progress.lookupCategory },
+          },
+        });
+      }
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     await queue.connect();
     let infos: QueryEansOnEbyStats = {
-      total: 1,
+      total: 0,
       notFound: 0,
       locked: 0,
-
       shops: {
-        [salesDbName]: 0,
+        [collection]: 0,
       },
       missingProperties: {
-        [salesDbName]: {
+        [collection]: {
           ean: 0,
           image: 0,
         },
@@ -83,7 +93,11 @@ export const queryEansOnEby = async (
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         interval && clearInterval(interval);
-        await updateTask(taskId, { $set: { progress: task.progress } });
+        if (isWholeSaleEbyTask) {
+          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+        } else {
+          await updateTask(taskId, { $set: { progress: task.progress } });
+        }
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -92,6 +106,7 @@ export const queryEansOnEby = async (
     while (task.progress.queryEansOnEby.length) {
       const product = task.queryEansOnEby.pop();
       task.progress.queryEansOnEby.pop();
+
       if (!product) continue;
 
       const { ean, s_hash, _id: productId } = product;
@@ -105,7 +120,7 @@ export const queryEansOnEby = async (
       const isFinished = async () => {
         completedProducts.push(productId);
         await handleQueryEansOnEbyIsFinished(
-          salesDbName,
+          collection,
           queue,
           product,
           infos,
@@ -116,7 +131,11 @@ export const queryEansOnEby = async (
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         completedProducts.push(productId);
-        await handleQueryEansOnEbyNotFound(salesDbName, product);
+        await handleQueryEansOnEbyNotFound(
+          collection,
+          product,
+          isWholeSaleEbyTask
+        );
         infos.notFound++;
         infos.shops[shopDomain]++;
         infos.total++;
@@ -140,8 +159,8 @@ export const queryEansOnEby = async (
         shop: ebay,
         targetShop: {
           prefix: "",
-          d: salesDbName,
-          name: salesDbName,
+          d: wholesaleCollectionName,
+          name: wholesaleCollectionName,
         },
         addProduct,
         isFinished,

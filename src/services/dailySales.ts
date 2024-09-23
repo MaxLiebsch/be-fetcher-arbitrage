@@ -34,9 +34,7 @@ interface AllQueueStats {
   [key: string]: QueueStats;
 }
 
-export const dailySales = async (
-  task: DailySalesTask
-): TaskReturnType => {
+export const dailySales = async (task: DailySalesTask): TaskReturnType => {
   const processStartTime = Date.now();
   const { productLimit, shopDomain, type, progress, action } = task;
 
@@ -222,7 +220,11 @@ export const dailySales = async (
         log(`DailySales: QueryEansOnEby ${products.length}`);
         task.queryEansOnEby = products;
         task.browserConfig.queryEansOnEby.productLimit = products.length;
-        const queryEansOnEbyInfo = await queryEansOnEby(ebay, task);
+        const queryEansOnEbyInfo = await queryEansOnEby(
+          salesDbName,
+          ebay,
+          task
+        );
         infos["queryEansOnEby"] = queryEansOnEbyInfo.infos;
         queueStats.queryEansOnEby = queryEansOnEbyInfo.queueStats;
       } else {
@@ -247,7 +249,12 @@ export const dailySales = async (
         log(`DailySales: LookupCategory ${products.length}`);
         task.lookupCategory = products;
         task.browserConfig.lookupCategory.productLimit = products.length;
-        const lookupCategoryInfo = await lookupCategory(ebay, origin, task);
+        const lookupCategoryInfo = await lookupCategory(
+          salesDbName,
+          ebay,
+          origin,
+          task
+        );
         infos["lookupCategory"] = lookupCategoryInfo.infos;
         queueStats.lookupCategory = lookupCategoryInfo.queueStats;
       } else {

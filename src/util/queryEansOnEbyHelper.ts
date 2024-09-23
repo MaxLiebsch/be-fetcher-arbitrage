@@ -15,6 +15,9 @@ import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { log } from "./logger.js";
+import { WholeSaleEbyTask } from "../types/tasks/Tasks.js";
+import { TASK_TYPES } from "./taskTypes.js";
+import { wholeSaleNotFoundQuery } from "./wholeSales.js";
 
 export async function handleQueryEansOnEbyIsFinished(
   collection: string,
@@ -22,7 +25,7 @@ export async function handleQueryEansOnEbyIsFinished(
   product: DbProductRecord,
   infos: QueryEansOnEbyStats,
   foundProducts: Product[],
-  task: DailySalesTask | null = null
+  task: DailySalesTask | WholeSaleEbyTask | null = null
 ) {
   const {
     e_qty: sellQty,
@@ -32,6 +35,9 @@ export async function handleQueryEansOnEbyIsFinished(
     qty: buyQty,
     _id: productId,
   } = product;
+
+  const isWholeSaleEbyTask = task?.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
+
   let update: Partial<DbProductRecord> = {};
   const priceRange = calculateMinMaxMedian(foundProducts);
   const foundProduct = foundProducts.find(
@@ -102,10 +108,16 @@ export async function handleQueryEansOnEbyIsFinished(
     log(`Updated: ${collection}-${productId}`, result);
     if (task) task.progress.lookupCategory.push(productId);
   } else {
+    let query = {};
+    if (isWholeSaleEbyTask) {
+      query = wholeSaleNotFoundQuery 
+    } else {
+      query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
+    }
     const result = await updateArbispotterProductQuery(
       collection,
       productId,
-      resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
+      query
     );
     log(`No product found for ${collection}-${productId}`, result);
   }
@@ -116,14 +128,21 @@ export async function handleQueryEansOnEbyIsFinished(
 
 export async function handleQueryEansOnEbyNotFound(
   collection: string,
-  product: DbProductRecord
+  product: DbProductRecord,
+  isWholeSaleEby?: boolean
 ) {
   const { _id: productId } = product;
+  let query = {};
+  if (isWholeSaleEby) {
+    query = wholeSaleNotFoundQuery;
+  } else {
+    query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
+  }
 
   const result = await updateArbispotterProductQuery(
     collection,
     productId,
-    resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" })
+    query
   );
   log(`No product info: ${collection}-${productId}`, result);
 }

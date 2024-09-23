@@ -17,12 +17,12 @@ import {
 import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { DealsOnEbyStats } from "../../types/taskStats/DealsOnEbyStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 
 export const crawlEbyListings = (
   ebay: Shop,
   task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     let infos: DealsOnEbyStats = {
       new: 0,

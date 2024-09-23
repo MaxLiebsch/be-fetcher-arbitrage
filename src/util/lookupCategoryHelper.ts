@@ -20,6 +20,8 @@ import {
 import { getEanFromProduct } from "./getEanFromProduct.js";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
 import { log } from "./logger.js";
+import { hostname } from "../db/mongo.js";
+import { wholeSaleNotFoundQuery } from "./wholeSales.js";
 
 export async function handleLookupCategoryProductInfo(
   collection: string,
@@ -27,7 +29,8 @@ export async function handleLookupCategoryProductInfo(
   { productInfo, url }: AddProductInfoProps,
   queue: QueryQueue,
   infos: LookupCategoryStats,
-  product: DbProductRecord
+  product: DbProductRecord,
+  isWholeSaleEbyTask?: boolean
 ) {
   infos.total++;
   queue.total++;
@@ -47,17 +50,21 @@ export async function handleLookupCategoryProductInfo(
         const result = await updateArbispotterProductQuery(
           collection,
           productId,
-          resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
+          isWholeSaleEbyTask
+            ? wholeSaleNotFoundQuery
+            : resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
         );
         log(`No ean: ${collection}-${productId}`, result);
-      } else if (ean !== exisitingEan) {
+      } else if (formatEan(ean) !== formatEan(exisitingEan)) {
         const result = await updateArbispotterProductQuery(
           collection,
           productId,
-          resetEbyProductQuery({
-            cat_prop: "ean_missmatch",
-            eby_prop: "",
-          })
+          isWholeSaleEbyTask
+            ? wholeSaleNotFoundQuery
+            : resetEbyProductQuery({
+                cat_prop: "ean_missmatch",
+                eby_prop: "",
+              })
         );
         log(`Ean missmatch: ${collection}-${productId}`, result);
       } else {
@@ -65,7 +72,8 @@ export async function handleLookupCategoryProductInfo(
           collection,
           product,
           ebyListingPrice,
-          categories
+          categories,
+          isWholeSaleEbyTask
         );
       }
     } else {
@@ -73,14 +81,17 @@ export async function handleLookupCategoryProductInfo(
         collection,
         product,
         ebyListingPrice,
-        categories
+        categories,
+        isWholeSaleEbyTask
       );
     }
   } else {
     const result = await updateArbispotterProductQuery(
       collection,
       productId,
-      resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
+      isWholeSaleEbyTask
+        ? wholeSaleNotFoundQuery
+        : resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
     );
     log(`No product info: ${collection}-${productId}`, result);
   }
@@ -91,33 +102,48 @@ export async function handleLookupCategoryNotFound(
   infos: LookupCategoryStats,
   queue: QueryQueue,
   productId: ObjectId,
-  cause: NotFoundCause
+  cause: NotFoundCause,
+  isWholeSaleEby?: boolean
 ) {
   infos.notFound++;
   infos.shops[collection]++;
   infos.total++;
   queue.total++;
+
   if (cause === "exceedsLimit") {
-    const result = await updateArbispotterProductQuery(collection, productId, {
-      $set: {
-        cat_prop: "timeout",
-      },
-      $unset: {
-        cat_taskId: "",
-      },
-    });
+    const result = await updateArbispotterProductQuery(
+      collection,
+      productId,
+      isWholeSaleEby
+        ? wholeSaleNotFoundQuery
+        : {
+            $set: {
+              cat_prop: "timeout",
+            },
+            $unset: {
+              cat_taskId: "",
+            },
+          }
+    );
     log(`Exceeds limit: ${collection}-${productId}`, result);
   } else {
-    await moveArbispotterProduct(collection, "grave", productId);
+    !isWholeSaleEby &&
+      (await moveArbispotterProduct(collection, "grave", productId));
+
     log(`Moved to grave ${collection}-${productId} ${cause}`);
   }
+}
+
+function formatEan(ean: any): string {
+  return ean.toString().trim().padStart(13, "0");
 }
 
 export const handleCategoryAndUpdate = async (
   shopDomain: string,
   product: DbProductRecord,
   ebyListingPrice: string,
-  categories: string[]
+  categories: string[],
+  isWholeSaleEbyTask?: boolean
 ) => {
   const {
     esin,
@@ -167,28 +193,50 @@ export const handleCategoryAndUpdate = async (
         e_pblsh: true,
         esin,
       };
+      let query = {};
+      if (isWholeSaleEbyTask) {
+        query = {
+          $set: {
+            e_status: "complete",
+            e_lookup_pending: false,
+            ...productUpdate,
+          },
+          $unset: { e_locked: "" },
+          $pull: { clrName: hostname },
+        };
+      } else {
+        query = {
+          $set: { ...productUpdate },
+          $unset: { cat_taskId: "" },
+        };
+      }
       const result = await updateArbispotterProductQuery(
         shopDomain,
         productId,
-        {
-          $set: productUpdate,
-          $unset: { cat_taskId: "" },
-        }
+        query
       );
       log(`Updated: ${shopDomain}-${productId}`, result);
     } else {
       const result = await updateArbispotterProductQuery(
         shopDomain,
         productId,
-        resetEbyProductQuery({ cat_prop: "category_not_found", eby_prop: "" })
+        isWholeSaleEbyTask
+          ? wholeSaleNotFoundQuery
+          : resetEbyProductQuery({
+              cat_prop: "category_not_found",
+              eby_prop: "",
+            })
       );
+
       log(`Category mapping failed: ${shopDomain}-${productId}`, result);
     }
   } else {
     const result = await updateArbispotterProductQuery(
       shopDomain,
       productId,
-      resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
+      isWholeSaleEbyTask
+        ? wholeSaleNotFoundQuery
+        : resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
     );
     log(`No categories parsed: ${shopDomain}-${productId}`, result);
   }

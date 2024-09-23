@@ -25,6 +25,7 @@ import {
   ScrapeEansTask,
   ScrapeShopTask,
   Tasks,
+  WholeSaleEbyTask,
   WholeSaleTask,
 } from "../types/tasks/Tasks.js";
 import { MissingTaskError, TaskErrors } from "../errors.js";
@@ -32,6 +33,7 @@ import { TaskCompletedStatus } from "../status.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { LocalLogger } from "@dipmaxtech/clr-pkg";
 import { logGlobal, setTaskLogger } from "./logger.js";
+import { wholeSaleEby } from "../services/wholesaleEbay.js";
 
 export async function executeTask(
   task: Tasks
@@ -54,6 +56,9 @@ export async function executeTask(
     }
     if (type === TASK_TYPES.WHOLESALE_SEARCH) {
       return await wholesale(task as WholeSaleTask);
+    }
+    if (type === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
+      return await wholeSaleEby(task as WholeSaleEbyTask);
     }
     if (type === TASK_TYPES.SCAN_SHOP) {
       return await scan(task as ScanTask);

@@ -4,5 +4,5 @@ export function getProductLimit(productsLength: number, productLimit: number) {
 
 
 export function getProductLimitMulti(productsLength: number, productLimit: number) {
-  return productsLength < productLimit ? productsLength : productLimit;
+  return productsLength > productLimit ? productsLength : productLimit;
 }

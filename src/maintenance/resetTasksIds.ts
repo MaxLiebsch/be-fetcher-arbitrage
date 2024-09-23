@@ -22,6 +22,8 @@ const problems = {
   DEALS_ON_EBY: 0,
   CRAWL_EBY_LISTINGS: 0,
   CRAWL_AZN_LISTINGS: 0,
+  WHOLESALE_SEARCH: 0,
+  WHOLESALE_EBY_SEARCH: 0,
   LOOKUP_CATEGORY: 0,
   QUERY_EANS_EBY: 0,
   MATCH_TITLES: 0,
@@ -29,13 +31,13 @@ const problems = {
 };
 const idsMap = new Map<string, number>();
 
-const addToIdMap = (id: string) => { 
+const addToIdMap = (id: string) => {
   if (idsMap.has(id)) {
-    idsMap.set(id, idsMap.get(id) + 1);
+    idsMap.set(id, idsMap.get(id)! + 1);
   } else {
     idsMap.set(id, 1);
   }
-}
+};
 
 const taskIds = [
   "ean_taskId",

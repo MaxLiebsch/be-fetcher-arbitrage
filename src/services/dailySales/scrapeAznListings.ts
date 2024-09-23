@@ -17,13 +17,13 @@ import {
 import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { DealsOnAznStats } from "../../types/taskStats/DealsOnAznStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 
 export const scrapeAznListings = (
   amazon: Shop,
   origin: Shop,
   task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId } = task;
     const { concurrency, productLimit } = browserConfig.crawlAznListings;

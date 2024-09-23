@@ -1,9 +1,8 @@
-import { TaskTypes } from "@dipmaxtech/clr-pkg";
+
 import { hostname } from "../db/mongo.js";
 import { findTask, getNewTask } from "../db/util/tasks.js";
 import { Action } from "../types/tasks/Tasks.js";
 import { logGlobal } from "./logger.js";
-import { TASK_TYPES } from "./taskTypes.js";
 
 // const relevantRemainingProductsTasks: TaskTypes[] = [
 //   TASK_TYPES.DEALS_ON_AZN,

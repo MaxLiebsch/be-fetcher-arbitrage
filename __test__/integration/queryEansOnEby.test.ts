@@ -37,7 +37,7 @@ describe("query eans on eby", () => {
 
   test("query eans on eby", async () => {
     const logger = new LocalLogger().createLogger("QUERY_EANS_EBY");
-    setTaskLogger(logger);
+    setTaskLogger(logger, 'TASK_LOGGER');
     //@ts-ignore
     const infos = await queryEansOnEby({
       concurrency: 4,

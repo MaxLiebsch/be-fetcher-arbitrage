@@ -19,37 +19,46 @@ import {
   handleLookupCategoryNotFound,
   handleLookupCategoryProductInfo,
 } from "../../util/lookupCategoryHelper.js";
-import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { LookupCategoryStats } from "../../types/taskStats/LookupCategoryStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
+import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
+import { TASK_TYPES } from "../../util/taskTypes.js";
+import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
 
 export const lookupCategory = async (
+  collection: string,
   ebay: Shop,
-  origin: Shop,
-  task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+  origin: Pick<Shop, "d" | "ean" | "hasEan">,
+  task: DailySalesTask | WholeSaleEbyTask
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
+    const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
+
     const { concurrency, productLimit } = browserConfig.lookupCategory;
     let infos: LookupCategoryStats = {
       total: 0,
       notFound: 0,
       locked: 0,
       shops: {
-        [salesDbName]: 0,
+        [collection]: 0,
       },
       elapsedTime: "",
     };
 
-    task.actualProductLimit = task.lookupCategory.length;
+    task.actualProductLimit = task.lookupCategory && task.lookupCategory.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     const eventEmitter = globalEventEmitter;
 
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function lookupCategoryCallback() {
-        await updateTask(taskId, { $set: { progress: task.progress } });
+        if (isWholeSaleEbyTask) {
+          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+        } else {
+          await updateTask(taskId, { $set: { progress: task.progress } });
+        }
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
@@ -57,19 +66,27 @@ export const lookupCategory = async (
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         interval && clearInterval(interval);
-        await updateTask(taskId, { $set: { progress: task.progress } });
+        if (isWholeSaleEbyTask) {
+          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+        } else {
+          await updateTask(taskId, { $set: { progress: task.progress } });
+        }
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
       }
     }
 
     const completedProducts: ObjectId[] = [];
-    let interval = setInterval(async () => {
-      await updateTask(taskId, {
-        $pull: {
-          "progress.lookupCategory": { _id: { $in: completedProducts } },
-        },
-      });
+    const interval = setInterval(async () => {
+      if (isWholeSaleEbyTask) {
+        await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+      } else {
+        await updateTask(taskId, {
+          $pull: {
+            "progress.lookupCategory": { _id: { $in: completedProducts } },
+          },
+        });
+      }
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
     await queue.connect();
 
@@ -91,23 +108,25 @@ export const lookupCategory = async (
       }: AddProductInfoProps) => {
         completedProducts.push(productId);
         await handleLookupCategoryProductInfo(
-          salesDbName,
+          collection,
           Boolean(origin.hasEan || origin.ean),
           { productInfo, url },
           queue,
           infos,
-          product
+          product,
+          isWholeSaleEbyTask
         );
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         completedProducts.push(productId);
         await handleLookupCategoryNotFound(
-          salesDbName,
+          collection,
           infos,
           queue,
           productId,
-          cause
+          cause,
+          isWholeSaleEbyTask
         );
         await isProcessComplete();
       };

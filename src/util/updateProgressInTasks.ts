@@ -11,8 +11,8 @@ import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdat
 import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
 import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
 import { getOutdatedDealsOnEbyShops } from "../db/util/deals/daily/eby/getOutdatedDealsOnEbyShops.js";
-import { TASK_TYPES } from "./taskTypes.js";
-import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { MultiStageTaskTypes, TASK_TYPES } from "./taskTypes.js";
+import { ObjectId, ProxyType, TaskTypes } from "@dipmaxtech/clr-pkg";
 import { PendingShops } from "../types/shops.js";
 
 export const updateMatchProgress = async (
@@ -216,8 +216,11 @@ export const updateProgressInLookupInfoTask = async () => {
   return progress;
 };
 
-export const updateWholesaleProgress = async (taskId: ObjectId) => {
-  const progress = await getWholesaleSearchProgress(taskId);
+export const updateWholesaleProgress = async (
+  taskId: ObjectId,
+  taskType: MultiStageTaskTypes
+) => {
+  const progress = await getWholesaleSearchProgress(taskId, taskType);
 
   await updateTaskWithQuery({ _id: taskId }, { progress });
   return progress;

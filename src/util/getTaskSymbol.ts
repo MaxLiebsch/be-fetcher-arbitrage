@@ -9,6 +9,8 @@ export const getTaskSymbol = (type: TaskTypes) => {
       return "🕷️";
     case TASK_TYPES.WHOLESALE_SEARCH:
       return "🔍";
+    case TASK_TYPES.WHOLESALE_EBY_SEARCH:
+      return "🔍";
     case TASK_TYPES.SCAN_SHOP:
       return "🔎";
     case TASK_TYPES.MATCH_PRODUCTS:

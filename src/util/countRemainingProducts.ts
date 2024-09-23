@@ -1,4 +1,4 @@
-import { ObjectId, Shop, TaskTypes } from "@dipmaxtech/clr-pkg";
+import { ObjectId,  TaskTypes } from "@dipmaxtech/clr-pkg";
 import { countArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
 import { PendingShops } from "../types/shops.js";
 import { setTaskId } from "../db/util/queries.js";
@@ -8,6 +8,7 @@ const taskIds: { [key in TaskTypes]: string } = {
   LOOKUP_CATEGORY: "cat_taskId",
   QUERY_EANS_EBY: "eby_taskId",
   CRAWL_EAN: "ean_taskId",
+  WHOLESALE_EBY_SEARCH: "eby_taskId",
   DAILY_SALES: "",
   MATCH_PRODUCTS: "taskId",
   SCAN_SHOP: "",

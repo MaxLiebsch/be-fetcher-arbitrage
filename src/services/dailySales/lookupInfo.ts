@@ -23,7 +23,7 @@ import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { getMaxLoadQueue } from "../../util/getMaxLoadQueue.js";
 import { LookupInfoStats } from "../../types/taskStats/LookupInfoStats.js";
-import { DailySalesReturnType } from "../../types/DailySalesReturnType.js";
+import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 import { combineQueueStats } from "../../util/combineQueueStats.js";
 import { log } from "../../util/logger.js";
 
@@ -31,7 +31,7 @@ export const lookupInfo = async (
   sellerCentral: Shop,
   origin: Shop,
   task: DailySalesTask
-): Promise<DailySalesReturnType> =>
+): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
     const { concurrency, productLimit, browserConcurrency } =

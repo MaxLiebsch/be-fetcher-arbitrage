@@ -432,6 +432,9 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
   if (type === TASK_TYPES.WHOLESALE_SEARCH) {
     return await handleWholesaleTask(infos);
   }
+  if(type === TASK_TYPES.WHOLESALE_EBY_SEARCH){
+    return await handleWholesaleTask(infos);
+  }
   if (type === TASK_TYPES.SCAN_SHOP) {
     return await handleScanTask(infos);
   }
