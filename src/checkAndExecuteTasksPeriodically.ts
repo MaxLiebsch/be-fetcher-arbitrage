@@ -9,7 +9,7 @@ const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
 
 if (hostname === "clr1") {
-  scheduleJob("* */60 * * * *", async () => {
+  scheduleJob("42 * * * *", async () => {
     try {
       logGlobal(`Scheduled job: updateAllTasksProgress...`);
       await updateAllTasksProgress();

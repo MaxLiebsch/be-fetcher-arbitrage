@@ -18,23 +18,24 @@ export const resetProperty = async (query) => {
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
     const result = await spotter.collection(shop.d).updateMany(
-      {
-        $or: [
-          { eby_prop: { $in: ["complete"] } },
-          // { cat_prop: "ean_missmatch" },
-        ],
-      },
+      // {
+      //   $or: [
+      //     // { eby_prop: { $in: ["complete"] } },
+      //     { cat_prop: "ean_missmatch" },
+      //   ],
+      // }
+      {},
       query
     );
-    console.log(shop.d, "result:", result);
+    console.log(shop.d, "result:", result.modifiedCount);
   }
 };
 
-resetProperty({
-  $unset: {
-    eby_prop: "",
-    // cat_prop: "",
-  },
-}).then((r) => {
-  process.exit(0);
-});
+// resetProperty({
+//   $unset: {
+//     // eby_prop: "",
+//     cat_prop: "",
+//   },
+// }).then((r) => {
+//   process.exit(0);
+// });
