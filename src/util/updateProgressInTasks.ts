@@ -12,7 +12,7 @@ import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/
 import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
 import { getOutdatedDealsOnEbyShops } from "../db/util/deals/daily/eby/getOutdatedDealsOnEbyShops.js";
 import { MultiStageTaskTypes, TASK_TYPES } from "./taskTypes.js";
-import { ObjectId, ProxyType, TaskTypes } from "@dipmaxtech/clr-pkg";
+import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { PendingShops } from "../types/shops.js";
 
 export const updateMatchProgress = async (

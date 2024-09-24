@@ -1,11 +1,24 @@
-import os from "os";
 import { LocalLogger } from "@dipmaxtech/clr-pkg";
 import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks.js";
 import { logGlobal, setTaskLogger } from "./util/logger.js";
+import { hostname } from "./db/mongo.js";
+import { updateAllTasksProgress } from "./db/util/updateAllTasksProgress.js";
+import { scheduleJob } from "node-schedule";
 
-const hostname = os.hostname();
 const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
+
+if (hostname === "clr1") {
+  scheduleJob("* */60 * * * *", async () => {
+    try {
+      logGlobal(`Scheduled job: updateAllTasksProgress...`);
+      await updateAllTasksProgress();
+      logGlobal(`Scheduled job: updateAllTasksProgress done...`);
+    } catch (error) {
+      logGlobal(`Scheduled job: updateAllTasksProgress failed: ${error}`);
+    }
+  });
+}
 
 let taskId = "";
 

@@ -40,12 +40,21 @@ export async function handleQueryEansOnEbyIsFinished(
 
   let update: Partial<DbProductRecord> = {};
   const priceRange = calculateMinMaxMedian(foundProducts);
-  const foundProduct = foundProducts.find(
-    (p) =>
-      p.link &&
-      p.price &&
-      (!priceRange.min ||
-        (p.price >= priceRange.min && p.price <= priceRange.max))
+  const foundProduct = foundProducts.reduce(
+    (cheapest, current) => {
+      const { price, link, name } = current;
+      if (
+        (!cheapest || (price && price <= cheapest.price)) &&
+        (!priceRange.median || (price && price <= priceRange.median)) &&
+        link &&
+        name
+      ) {
+        return current;
+      }
+      return cheapest;
+    },
+
+    null as Product | null
   );
   if (foundProduct) {
     const { image, price: sellPrice, name, link } = foundProduct;
@@ -110,7 +119,7 @@ export async function handleQueryEansOnEbyIsFinished(
   } else {
     let query = {};
     if (isWholeSaleEbyTask) {
-      query = wholeSaleNotFoundQuery 
+      query = wholeSaleNotFoundQuery;
     } else {
       query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
     }

@@ -7,7 +7,8 @@ import {
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
-  resetAznProductQuery
+  resetAznProductQuery,
+  replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
@@ -41,6 +42,7 @@ export async function handleAznListingProductInfo(
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
     const price = infoMap.get("a_prc");
     const image = infoMap.get("a_img");
+    const rawName = infoMap.get("name");
     const bsr = infoMap.get("bsr");
     const parsedPrice = safeParsePrice(price || "0");
 
@@ -54,6 +56,7 @@ export async function handleAznListingProductInfo(
           [timestamp]: new UTCDate().toISOString(),
           a_prc,
           a_uprc,
+          ...(rawName && { a_nm: replaceAllHiddenCharacters(rawName) }),
           ...(currency && { a_cur: currency }),
           ...(image && { a_img: image }),
           ...(bsr && { bsr }),

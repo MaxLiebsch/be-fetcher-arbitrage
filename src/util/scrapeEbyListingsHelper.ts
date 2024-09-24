@@ -8,7 +8,8 @@ import {
   QueryQueue,
   roundToTwoDecimals,
   safeParsePrice,
-  resetEbyProductQuery
+  resetEbyProductQuery,
+  replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
@@ -48,6 +49,7 @@ export async function handleEbyListingProductInfo(
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
     const rawSellPrice = infoMap.get("e_prc");
+    const rawName = infoMap.get("name");
     const image = infoMap.get("image");
     const instock = infoMap.get("instock");
 
@@ -74,6 +76,7 @@ export async function handleEbyListingProductInfo(
         productUpdate = {
           ...productUpdate,
           ...(currency && { e_cur: currency }),
+          ...(rawName && { e_nm: replaceAllHiddenCharacters(rawName) }),
           e_prc: parsedSellPrice,
           e_uprc: roundToTwoDecimals(parsedSellPrice / buyQty),
         };

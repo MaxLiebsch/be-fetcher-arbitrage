@@ -13,7 +13,7 @@ const shopDomain = "ebay.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "126.0.6478.126");
+    await myBeforeAll(shopDomain, false, '128.0.6613.119');
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

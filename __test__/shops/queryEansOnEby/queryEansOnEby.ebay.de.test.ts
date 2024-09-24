@@ -24,7 +24,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test("Extract product Infos", async () => {
-    const products: Product[] = [];
+    const products: any[] = [];
     const addProduct = async (product: ProductRecord) => {
       products.push(<any>product);
     };
@@ -34,22 +34,31 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     const isFinished = async () => {
       console.log("Is done!");
       console.log(products.length);
-      console.log(
-        products.reduce<any>((acc, product: any) => {
-          if (product.price && product.link) {
-            acc.push({ price: product.price, link: product.link });
+      const priceRange = calculateMinMaxMedian(products as any);
+      console.log("priceRange:", priceRange);
+      const foundProduct = products.reduce(
+        (cheapest, current) => {
+          if (
+            (!cheapest || (current.price && current.price <= cheapest.price)) &&
+            (!priceRange.median ||
+              (current.price && current.price <= priceRange.median)) &&
+            current.link &&
+            current.name
+          ) {
+            return current;
           }
-          return acc;
-        }, [])
+          return cheapest;
+        },
+
+        null as Product | null
       );
-      const result = calculateMinMaxMedian(products as any);
-      console.log("result:", result);
+      console.log("result:", priceRange, foundProduct.price, foundProduct.link);
     };
     await queryEansOnEby(
       addProduct,
       handleNotFound,
       isFinished,
-      "8000070025066"
+      "5032410212945"
     );
   }, 200000);
 

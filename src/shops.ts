@@ -2600,6 +2600,12 @@ export const shops: { [key: string]: any } = {
         path: "desktop_buybox_group_1[0].priceAmount",
       },
       {
+        sel: "span[id=productTitle]",
+        parent: "h1[id=title]",
+        type: "text",
+        content: "name",
+      },
+      {
         sel: "span.a-offscreen",
         parent: "div[id=corePrice_feature_div] span.a-price",
         type: "text",
@@ -2943,6 +2949,12 @@ export const shops: { [key: string]: any } = {
         type: "table",
         keys: ["ean", "upc", "gtin", "gtin13", "gtin11"],
         content: "ean",
+      },
+      {
+        sel: "span.ux-textspans",
+        parent: "h1.x-item-title__mainTitle",
+        type: "text",
+        content: "name",
       },
       {
         sel: "img",

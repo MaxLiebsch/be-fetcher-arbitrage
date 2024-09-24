@@ -143,7 +143,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
 
           log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
           if (result?.acknowledged) {
-            if ("insertedId" && result) infos.new++;
+            if ("insertedId" in result) infos.new++;
             else infos.old++;
           } else {
             infos.failedSave++;
@@ -153,6 +153,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         const properties: Array<
           keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
         > = ["nm", "prc", "lnk", "img"];
+        
         properties.forEach((prop) => {
           if (!transformedProduct[prop]) {
             infos.missingProperties[prop]++;
