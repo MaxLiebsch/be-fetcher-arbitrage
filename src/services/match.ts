@@ -33,7 +33,7 @@ import { TaskCompletedStatus } from "../status.js";
 import { MatchProductsTask } from "../types/tasks/Tasks.js";
 import { MatchProductsStats } from "../types/taskStats/MatchProductsStats.js";
 import { TaskReturnType } from "../types/TaskReturnType.js";
-import { getProductLimit } from "../util/getProductLimit.js";
+import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { log } from "../util/logger.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
 
@@ -81,7 +81,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    const _productLimit = getProductLimit(lockedProducts.length, productLimit);
+    const _productLimit = getProductLimitMulti(lockedProducts.length, productLimit);
     log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
 
