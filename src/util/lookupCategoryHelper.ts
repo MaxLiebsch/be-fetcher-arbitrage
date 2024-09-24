@@ -14,6 +14,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import {
+  deleteArbispotterProduct,
   moveArbispotterProduct,
   updateArbispotterProductQuery,
 } from "../db/util/crudArbispotterProduct.js";
@@ -126,12 +127,17 @@ export async function handleLookupCategoryNotFound(
           }
     );
     log(`Exceeds limit: ${collection}-${productId}`, result);
-  } else {
+  } else if(cause === "notFound") {
+    const result = await deleteArbispotterProduct(collection, productId);
+    log(`Deleted: ${collection}-${productId}`, result);
+  }else {
+    
     !isWholeSaleEby &&
       (await moveArbispotterProduct(collection, "grave", productId));
 
     log(`Moved to grave ${collection}-${productId} ${cause}`);
   }
+
 }
 
 function formatEan(ean: any): string {

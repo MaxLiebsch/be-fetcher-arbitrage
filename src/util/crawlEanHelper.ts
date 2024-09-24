@@ -152,8 +152,11 @@ export async function handleCrawlEanNotFound(
       },
     });
     log(`ExceedsLimit: ${collection}-${productId} - ${cause}`, result);
+  } else if (cause === "notFound") {
+    const result = await deleteArbispotterProduct(collection, productId);
+    log(`Deleted: ${collection}-${productId} - ${cause}`, result);
   } else {
     await moveArbispotterProduct(collection, "grave", productId);
-    log(`Moved to grave: ${collection}-${productId}`);
+    log(`Moved to grave: ${collection}-${productId} - ${cause} - ${cause}`);
   }
 }
