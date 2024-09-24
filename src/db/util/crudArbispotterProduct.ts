@@ -126,7 +126,6 @@ export const updateArbispotterProductQuery = async (
             `${domain}-${id.toString()}`,
             JSON.stringify(query)
           );
-          
         }
         return; // Exit the function
       }
@@ -300,7 +299,12 @@ export const moveArbispotterProduct = async (
 
     if (!product) return null;
 
-    await toCollection.insertOne(product);
+    const graved = await toCollection.findOne({ lnk: product.lnk });
+
+    if (!graved) {
+      await toCollection.insertOne(product);
+    }
+
     await fromCollection.deleteOne({ _id: id });
 
     return product;
