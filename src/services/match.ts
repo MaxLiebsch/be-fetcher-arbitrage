@@ -244,7 +244,6 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
             await handleOutput(procProd, product);
           }
           await isProcessComplete();
-          return;
         })
       );
     }
