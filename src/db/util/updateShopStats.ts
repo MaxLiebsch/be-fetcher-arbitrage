@@ -1,4 +1,4 @@
-import { getActiveShops, updateShopStats } from "./shops";
+import { getActiveShops, updateShopStats } from "./shops.js";
 
 export async function updateAllShopsStats() {
   const activeShops = await getActiveShops();
