@@ -1,14 +1,17 @@
 import { getArbispotterDb } from "../db/mongo.js";
 import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
-import { getAllShopsAsArray } from "../db/util/shops.js";
+import { getActiveShops, getAllShopsAsArray } from "../db/util/shops.js";
 import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 import { countTotal } from "./countProducts.js";
 
 const migrationMonthlySold = async () => {
   const spotter = await getArbispotterDb();
-  const shops = await getAllShopsAsArray();
+  const shops = await getActiveShops();
+
+  if (!shops) return;
+
   const activeShops = shops.filter((shop) => shop.active);
-  activeShops.push({ d: "sales" });
+
   let count = 0;
   let sampleSize = await countTotal();
   for (let index = 0; index < activeShops.length; index++) {
@@ -20,7 +23,7 @@ const migrationMonthlySold = async () => {
     let hasMoreProducts = true;
     let complete = false;
     while (!complete) {
-      const spotterBulkWrites = [];
+      const spotterBulkWrites: any = [];
       const products = await findArbispotterProducts(
         shop.d,
         {
@@ -36,7 +39,7 @@ const migrationMonthlySold = async () => {
       if (products.length) {
         products.map((p) => {
           count++;
-          const set = {};
+          const set: any = {};
 
           if (p.categories && p.salesRanks && p.categoryTree) {
             const monthlySold = calculateMonthlySales(

@@ -237,5 +237,6 @@ const resetTaskIds = async () => {
 
 resetTaskIds().then((r) => {
   console.log("Problems:", JSON.stringify(problems, null, 2));
+  console.log("Ids:", JSON.stringify(idsMap, null, 2));
   process.exit(0);
 });
