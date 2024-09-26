@@ -1,22 +1,19 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-import {
-  findArbispotterProduct,
-  //@ts-ignore
-} from "../../src/db/util/crudArbispotterProduct.js";
+import { findArbispotterProductFilter } from "../../src/db/util/crudArbispotterProduct.js";
 import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 
 describe("Calculate Monthly sales", () => {
   test("Calculate Monthly sales", async () => {
-    const product = await findArbispotterProduct("idealo.de", {
+    const product = await findArbispotterProductFilter("cyberport.de", {
       // eanList: "3389119405058", //sales
-      eanList: "0773602470358"
+      asin: 'B09H2N5QFH',
     });
     //0773602470358 hauptkategorie in categoryTree
     if (product) {
       const monthlySales = calculateMonthlySales(
-        product.categories,
-        product.salesRanks,
-        product.categoryTree
+        product.categories!,
+        product.salesRanks!,
+        product.categoryTree!
       );
       console.log("monthlySales:", monthlySales);
     }
