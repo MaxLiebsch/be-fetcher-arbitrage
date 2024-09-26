@@ -88,6 +88,12 @@ export async function handleEbyListingProductInfo(
             max: parsedSellPrice,
           };
         }
+        if (sellPriceRange && parsedSellPrice <= sellPriceRange?.min) {
+          productUpdate["e_pRange"] = {
+            ...sellPriceRange,
+            min: parsedSellPrice,
+          };
+        }
 
         const mappedCategory = findMappedCategory(
           ebyCategories!.reduce<number[]>((acc, curr) => {
