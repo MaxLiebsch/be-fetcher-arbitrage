@@ -6,7 +6,6 @@ import {
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
 import { hostname } from "../db/mongo.js";
-import { updateShopStats } from "../db/util/shops.js";
 import { updateTask } from "../db/util/tasks.js";
 import calculatePageLimit from "./calculatePageLimit.js";
 import { getTaskSymbol } from "./getTaskSymbol.js";
@@ -45,7 +44,6 @@ async function handleDailySalesTask({
   if (taskCompleted) {
     subject += " " + taskStats.total;
     await handleTaskCompleted(_id, taskStats, { executing: false });
-    await updateShopStats("sales");
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
@@ -206,7 +204,6 @@ async function handleMatchTask({
 
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
-    await updateShopStats(shopDomain);
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     await handleTaskFailed(_id, retry);

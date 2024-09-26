@@ -4,6 +4,7 @@ import { logGlobal, setTaskLogger } from "./util/logger.js";
 import { hostname } from "./db/mongo.js";
 import { updateAllTasksProgress } from "./db/util/updateAllTasksProgress.js";
 import { scheduleJob } from "node-schedule";
+import { updateAllShopsStats } from "./db/util/updateShopStats.js";
 
 const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
@@ -16,6 +17,16 @@ if (hostname === "clr1") {
       logGlobal(`Scheduled job: updateAllTasksProgress done...`);
     } catch (error) {
       logGlobal(`Scheduled job: updateAllTasksProgress failed: ${error}`);
+    }
+  });
+
+  scheduleJob("15 *  * * *", async () => {
+    try {
+      logGlobal(`Scheduled job: updateAll Shop Stats...`);
+      await updateAllShopsStats();
+      logGlobal(`Scheduled job: updateAll Shop Stats done...`);
+    } catch (error) {
+      logGlobal(`Scheduled job: updateAll Shop Stats failed: ${error}`);
     }
   });
 }

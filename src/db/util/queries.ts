@@ -9,6 +9,7 @@ import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
 } from "../../constants.js";
+import { totalPositivAmazon, totalPositivEbay } from "@dipmaxtech/clr-pkg";
 // a_origin setzen when infos ueber lookup ean
 
 /*
@@ -65,15 +66,6 @@ type AggregationReturnTotalProps = {
 
 /*               General                                       */
 
-export const totalPositivAmazon = {
-  $and: [
-    { a_pblsh: true },
-    { a_prc: { $gt: 0 } },
-    { a_uprc: { $gt: 0 } },
-    { a_mrgn: { $gt: 0 } },
-    { a_mrgn_pct: { $gt: 0 } },
-  ],
-};
 export const totalNegativAmazon = {
   $and: [
     { a_prc: { $gt: 0 } },
@@ -82,15 +74,7 @@ export const totalNegativAmazon = {
     { a_mrgn_pct: { $lte: 0 } },
   ],
 };
-export const totalPositivEbay = {
-  $and: [
-    { e_pblsh: true },
-    { e_prc: { $gt: 0 } },
-    { e_uprc: { $gt: 0 } },
-    { e_mrgn: { $gt: 0 } },
-    { e_mrgn_pct: { $gt: 0 } },
-  ],
-};
+
 export const totalNegativEbay = {
   $and: [
     { e_prc: { $gt: 0 } },

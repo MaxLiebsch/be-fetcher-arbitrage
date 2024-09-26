@@ -1,4 +1,9 @@
-import { Filter, Shop } from "@dipmaxtech/clr-pkg";
+import {
+  countProductsPerCategoryAzn,
+  countProductsPerCategoryEby,
+  Filter,
+  Shop,
+} from "@dipmaxtech/clr-pkg";
 import {
   getArbispotterDb,
   getCrawlDataDb,
@@ -100,6 +105,28 @@ export const updateShopStats = async (shopDomain: string) => {
   const shopCollection = db.collection<Shop>(shopDomain);
   if (!shopCollection) return;
 
+  const productsPerCategoryAzn = await shopCollection
+    .aggregate(countProductsPerCategoryAzn)
+    .toArray();
+  const reducedToObjectAzn = productsPerCategoryAzn.reduce((acc, category) => {
+    const entry = Object.entries(category)[0];
+    return {
+      ...acc,
+      [entry[0]]: entry[1],
+    };
+  }, {});
+  const productsPerCategoryEby = await shopCollection
+    .aggregate(countProductsPerCategoryEby)
+    .toArray();
+    
+  const reducedToObjectEby = productsPerCategoryEby.reduce((acc, category) => {
+    const entry = Object.entries(category)[0];
+    return {
+      ...acc,
+      [entry[0]]: entry[1],
+    };
+  }, {});
+
   const total = await shopCollection.countDocuments();
   const a_fat_total = await shopCollection.countDocuments({
     a_mrgn_pct: { $gt: 0 },
@@ -117,6 +144,8 @@ export const updateShopStats = async (shopDomain: string) => {
         a_fat_total,
         e_fat_total,
         total,
+        a_cats: reducedToObjectAzn,
+        e_cats: reducedToObjectEby,
       },
     }
   );

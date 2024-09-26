@@ -1,7 +1,8 @@
+import { totalPositivEbay } from "@dipmaxtech/clr-pkg";
 import { DEFAULT_LIMIT } from "../../constants.js";
 import {
   ebayMarginCalculationAggregationStep,
-  totalPositivEbay,
+ 
 } from "./queries.js";
 
 const match = {

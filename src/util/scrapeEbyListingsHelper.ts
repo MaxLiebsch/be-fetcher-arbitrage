@@ -41,6 +41,7 @@ export async function handleEbyListingProductInfo(
     ebyCategories,
     e_qty: sellQty,
     _id: productId,
+    e_pRange: sellPriceRange,
   } = product;
   const { timestamp, taskIdProp } = processProps;
   infos.total++;
@@ -80,6 +81,13 @@ export async function handleEbyListingProductInfo(
           e_prc: parsedSellPrice,
           e_uprc: roundToTwoDecimals(parsedSellPrice / buyQty),
         };
+
+        if (sellPriceRange && parsedSellPrice >= sellPriceRange?.max) {
+          productUpdate["e_pRange"] = {
+            ...sellPriceRange,
+            max: parsedSellPrice,
+          };
+        }
 
         const mappedCategory = findMappedCategory(
           ebyCategories!.reduce<number[]>((acc, curr) => {
