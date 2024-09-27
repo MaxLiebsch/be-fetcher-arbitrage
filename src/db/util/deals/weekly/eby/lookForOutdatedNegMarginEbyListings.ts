@@ -1,7 +1,7 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
 import { getOutdatedNegMarginEbyListingsPerShop } from "./getOutdatedNegMarginEbyListingsPerShop.js";
-import { lockProductsForCrawlEbyListings } from "../../../crawlEbyListings/lockProductsForCrawlEbyListings.js";
+import { lockProductsForNegEbyListings } from "./lockProductsForNegMarginEbyListings.js";
 import { getRecoveryNegMarginEbyListings } from "./getRecoveryNegMarginEbyListings.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
@@ -47,7 +47,7 @@ export async function lookForOudatedNegMarginEbyListings(
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const limit = Math.min(pending, productsPerShop);
-        const products = await lockProductsForCrawlEbyListings(
+        const products = await lockProductsForNegEbyListings(
           shop.d,
           limit,
           taskId,

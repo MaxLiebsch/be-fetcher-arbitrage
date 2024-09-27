@@ -1,7 +1,5 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
-import { lockProductsForCrawlAznListings } from "../../../crawlAznListings/lockProductsForCrawlAznListings.js";
-import { getOutdatedNegMarginAznListingsPerShop } from "./getOutdatedNegMarginAznListingsPerShop.js";
 import { getRecoveryNegMarginAznListings } from "./getRecoveryNegMarginAznListings.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
@@ -11,6 +9,8 @@ import {
   PendingShopsWithBatch,
 } from "../../../../../types/shops.js";
 import { log } from "../../../../../util/logger.js";
+import { lockProductsForNegMarginAznListings } from "./lockProductsForNEgMarginAznListings.js";
+import { getOutdatedNegMarginAznListingsPerShop } from "./getOutdatedNegMarginAznListingsPerShop.js";
 
 export async function lookForOutdatedNegMarginAznListings(
   taskId: ObjectId,
@@ -47,7 +47,7 @@ export async function lookForOutdatedNegMarginAznListings(
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const limit = Math.min(pending, productsPerShop);
-        const products = await lockProductsForCrawlAznListings(
+        const products = await lockProductsForNegMarginAznListings(
           shop.d,
           limit,
           taskId,

@@ -1,5 +1,5 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getCrawlEbyListingsProgressAggregation } from "../../../crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { getNegMarginEbyListingsProgressAggregation } from "./getNegMarginEbyListingsProgressAggregation.js";
 import { getShopsForService } from "../../../filteredShops.js";
 
 export async function getOutdatedNegMarginEbyListingsPerShop(
@@ -11,7 +11,7 @@ export async function getOutdatedNegMarginEbyListingsPerShop(
   );
   const negMarginEbyListingsProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getCrawlEbyListingsProgressAggregation(shop.d);
+      const progress = await getNegMarginEbyListingsProgressAggregation(shop.d);
       return { pending: progress.pending, shop };
     })
   );

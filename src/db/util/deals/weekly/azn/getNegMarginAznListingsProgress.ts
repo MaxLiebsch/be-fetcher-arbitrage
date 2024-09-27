@@ -1,9 +1,9 @@
-import { getArbispotterDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../../../mongo.js";
 import {
   countCompletedProductsForCrawlAznListingsQuery,
   countPendingProductsForCrawlAznListingsQuery,
   countTotalProductsCrawlAznListingsQuery,
-} from "../queries.js";
+} from "../../../queries.js";
 
 // arbispotter amazon
 export const countTotalProductsCrawlAznListings = async (
@@ -22,7 +22,7 @@ export const countCompletedProductsForCrawlAznListings = async (
   const db = await getArbispotterDb();
   const shopProductCollection = db.collection(shopProductCollectionName);
   return shopProductCollection.countDocuments(
-    countCompletedProductsForCrawlAznListingsQuery
+    countCompletedProductsForCrawlAznListingsQuery()
   );
 };
 

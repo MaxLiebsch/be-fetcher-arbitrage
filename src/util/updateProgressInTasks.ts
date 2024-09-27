@@ -1,4 +1,4 @@
-import { getCrawlAznListingsProgress } from "../db/util/crawlAznListings/getCrawlAznListingsProgress.js";
+import { getCrawlAznListingsProgress } from "../db/util/deals/weekly/azn/getNegMarginAznListingsProgress.js";
 import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
 import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
 import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops.js";
@@ -6,7 +6,7 @@ import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops
 import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import { updateTaskWithQuery } from "../db/util/tasks.js";
 import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops.js";
-import { getCrawlEbyListingsProgressAggregation } from "../db/util/crawlEbyListings/getCrawlEbyListingsProgressAggregation.js";
+import { getNegMarginEbyListingsProgressAggregation } from "../db/util/deals/weekly/eby/getNegMarginEbyListingsProgressAggregation.js";
 import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
 import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
 import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
@@ -140,7 +140,7 @@ export const updateCrawlAznListingsProgress = async (shopDomain: string) => {
 };
 
 export const updateCrawlEbyListingsProgress = async (shopDomain: string) => {
-  const progress = await getCrawlEbyListingsProgressAggregation(shopDomain);
+  const progress = await getNegMarginEbyListingsProgressAggregation(shopDomain);
 
   await updateTaskWithQuery(
     {

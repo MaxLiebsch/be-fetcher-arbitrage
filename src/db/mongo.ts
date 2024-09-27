@@ -54,12 +54,35 @@ export const createArbispotterCollection = async (name: string) => {
   if (await doesCollectionArbispotterExists(name)) return;
   const db = await getArbispotterDb();
   const collection = await db.createCollection(name);
+  await collection.createIndex({ sdmn: 1})
   await collection.createIndex({ lnk: 1 }, { unique: true });
   await collection.createIndex({ a_mrgn: -1, a_mrgn_pct: -1 });
   await collection.createIndex({ a_w_mrgn: -1, a_w_mrgn_pct: -1 });
   await collection.createIndex({ a_p_mrgn: -1, a_p_mrgn_pct: -1 });
   await collection.createIndex({ a_p_w_mrgn: -1, a_p_w_mrgn_pct: -1 });
   await collection.createIndex({ e_mrgn: -1, e_mrgn_pct: -1 });
+  await collection.createIndex({ e_ns_mrgn: -1, e_ns_mrgn_pct: -1 });
+  await collection.createIndex({ cat_prop: 1 });
+  await collection.createIndex({ ean_prop: 1 });
+  await collection.createIndex({ info_prop: 1 });
+  await collection.createIndex({ eby_prop: 1 });
+  await collection.createIndex({keepaUpdatedAt: 1})
+  await collection.createIndex({keepaEanUpdatedAt: 1})
+  await collection.createIndex({dealEbyUpdatedAt: 1})
+  await collection.createIndex({dealAznUpdatedAt: 1})
+  await collection.createIndex({ebyUpdatedAt: 1})
+  await collection.createIndex({aznUpdatedAt: 1})
+  await collection.createIndex({ eanList: 1})
+
+  await collection.createIndex({ "a_vrfd.nm_prop": 1 });
+  await collection.createIndex({ "a_vrfd.qty_prop": 1 });
+
+  await collection.createIndex({ "e_vrfd.nm_prop": 1 });
+  await collection.createIndex({ "e_vrfd.qty_prop": 1 });
+
+  await collection.createIndex({ asin: 1})
+  await collection.createIndex({ esin: 1})
+
   await collection.createIndex({ a_pblsh: 1 });
   await collection.createIndex({ e_pblsh: 1 });
   return collection;

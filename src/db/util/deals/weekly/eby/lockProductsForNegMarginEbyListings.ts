@@ -1,12 +1,12 @@
-import { Action } from "../../../types/tasks/Tasks.js";
-import { getArbispotterDb } from "../../mongo.js";
-import {
-  lockProductsForCrawlAznListingsQuery,
-  setProductsLockedForCrawlAznListingsQuery,
-} from "../queries.js";
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
+import { getArbispotterDb } from "../../../../mongo.js";
+import {
+  lockProductsForCrawlEbyListingsAggregation,
+  setProductsLockedForCrawlEbyListingsQuery,
+} from "../../../queries.js";
+import { Action } from "../../../../../types/tasks/Tasks.js";
 
-export const lockProductsForCrawlAznListings = async (
+export const lockProductsForNegEbyListings = async (
   domain: string,
   limit = 0,
   taskId: ObjectId,
@@ -15,20 +15,16 @@ export const lockProductsForCrawlAznListings = async (
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const { query, options } = lockProductsForCrawlAznListingsQuery(
-    limit,
-    taskId,
-    action
-  );
+  const agg = lockProductsForCrawlEbyListingsAggregation(limit, taskId, action);
 
   const documents = await db
     .collection<DbProductRecord>(collectionName)
-    .find(query, options)
+    .aggregate(agg)
     .toArray() as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover") {
-    const query = setProductsLockedForCrawlAznListingsQuery(taskId);
+    const query = setProductsLockedForCrawlEbyListingsQuery(taskId);
     await db
       .collection(collectionName)
       .updateMany({ _id: { $in: documents.map((doc) => doc._id) } }, query);

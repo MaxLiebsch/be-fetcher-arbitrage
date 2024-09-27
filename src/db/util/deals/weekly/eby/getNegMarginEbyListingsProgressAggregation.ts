@@ -1,9 +1,9 @@
-import { getArbispotterDb } from "../../mongo.js";
+import { getArbispotterDb } from "../../../../mongo.js";
 import {
   countCompletedProductsForCrawlEbyListingsAggregation,
   countPendingProductsForCrawlEbyListingsAggregation,
   countTotalProductsCrawlEbyListingsAggregation,
-} from "../queries.js";
+} from "../../../queries.js";
 
 // arbispotter amazon
 export const countTotalProductsCrawlEbyListings = async (
@@ -36,7 +36,7 @@ export const countPendingProductsForCrawlEbyListingsAggregationFn = async (
   return shopProductCollection.aggregate(aggregation).toArray();
 };
 
-export const getCrawlEbyListingsProgressAggregation = async (
+export const getNegMarginEbyListingsProgressAggregation = async (
   shopDomain: string
 ) => {
   const shopProductCollectionName = shopDomain;

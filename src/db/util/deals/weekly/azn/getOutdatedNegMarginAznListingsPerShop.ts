@@ -1,5 +1,5 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getCrawlAznListingsProgress } from "../../../crawlAznListings/getCrawlAznListingsProgress.js";
+import { getCrawlAznListingsProgress } from "./getNegMarginAznListingsProgress.js";
 import { getShopsForService } from "../../../filteredShops.js";
 
 export async function getOutdatedNegMarginAznListingsPerShop(
