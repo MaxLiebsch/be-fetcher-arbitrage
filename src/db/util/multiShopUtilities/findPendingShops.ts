@@ -1,15 +1,19 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
 import { getShopsForService } from "../filteredShops.js";
 import { getTaskProgress } from "../multiShopUtilities/getTaskProgress.js";
+import { MultiShopTaskTypesWithQuery } from "../../../util/taskTypes.js";
 
-export async function getMissingEanShops(proxyType: ProxyType) {
+export async function findPendingShops(
+  taskType: MultiShopTaskTypesWithQuery,
+  proxyType?: ProxyType
+) {
   const { filteredShops, shops } = await getShopsForService(
-    "CRAWL_EAN",
+    taskType,
     proxyType
   );
   const crawlEanProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getTaskProgress(shop.d, "CRAWL_EAN");
+      const progress = await getTaskProgress(shop.d, taskType);
       return { pending: progress.pending, shop: shop };
     })
   );

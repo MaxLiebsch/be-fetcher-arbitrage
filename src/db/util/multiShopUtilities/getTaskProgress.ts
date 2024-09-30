@@ -1,10 +1,10 @@
-import { MultiShopTaskProgressQueries, MultiShopTaskTypes } from "../../../util/taskTypes.js";
+import { LockProductTaskTypes } from "../../../util/taskTypes.js";
 import { getProductsCol } from "../../mongo.js";
-import { progressQueries } from "./progressQueries.js";
+import { progressQueries } from "./progressQueryFns.js";
 
 export const countTotalProducts = async (
   domain: string,
-  multiShopTask: MultiShopTaskProgressQueries,
+  multiShopTask: LockProductTaskTypes,
   hasEan?: boolean
 ) => {
   const productsCol = await getProductsCol();
@@ -14,7 +14,7 @@ export const countTotalProducts = async (
 
 export const countPendingProducts = async (
   domain: string,
-  multiShopTask: MultiShopTaskProgressQueries,
+  multiShopTask: LockProductTaskTypes,
   hasEan?: boolean
 ) => {
   const productsCol = await getProductsCol();
@@ -24,7 +24,7 @@ export const countPendingProducts = async (
 
 export const getTaskProgress = async (
   domain: string,
-  multiShopTask: MultiShopTaskProgressQueries,
+  multiShopTask: LockProductTaskTypes,
   hasEan?: boolean
 ) => {
   const pending = await countPendingProducts(domain, multiShopTask, hasEan);

@@ -1,38 +1,37 @@
 import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../../../tasks.js";
-import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";
-import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops.js";
-import { getProductsWithShop } from "../../../getProductsWithShop.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks.js";
-import {
-  PendingShops,
-  PendingShopsWithBatch,
-} from "../../../../../types/shops.js";
-import { log } from "../../../../../util/logger.js";
-import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { log } from "../../../util/logger.js";
+import { getRecoveryProducts } from "../multiShopUtilities/getRecoveryProducts.js";
+import { lockProducts } from "../multiShopUtilities/lockProducts.js";
+import { findPendingShops } from "./findPendingShops.js";
+import { MultiShopTaskTypesWithQuery } from "../../../util/taskTypes.js";
 
-export async function lookForOutdatedDealsOnEby(
+export async function findPendingProductsForTask(
+  taskType: MultiShopTaskTypesWithQuery,
   taskId: ObjectId,
-  proxyType: ProxyType,
   action: Action,
-  productLimit: number
+  productLimit: number,
+  proxyType?: ProxyType
 ) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryProducts(
-      'DEALS_ON_EBY',
+      taskType,
       taskId,
       productLimit,
       proxyType
     );
     log(
-      `Deals On Eby: ${recoveryProducts.shops
+      `Missing ${taskType}: ${recoveryProducts.shops
         .map((info) => `${info.shop.d}: p: ${info.pending} `)
         .join("")}`
     );
     return recoveryProducts;
   } else {
-    const { pendingShops, shops } = await getOutdatedDealsOnEbyShops(proxyType);
+    const { pendingShops, shops } = await findPendingShops(taskType, proxyType);
     const stats = pendingShops.reduce<PendingShopsWithBatch>(
       (acc, { pending, shop }) => {
         acc[shop.d] = { shop, pending, batch: 0 };
@@ -43,11 +42,14 @@ export async function lookForOutdatedDealsOnEby(
 
     const numberOfShops = pendingShops.length;
     const productsPerShop = Math.round(productLimit / numberOfShops);
+
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
-        const products = await lockProductsForDealsOnEby(
+        const limit = Math.min(pending, productsPerShop);
+        const products = await lockProducts(
+          taskType,
           shop.d,
-          productsPerShop,
+          limit,
           action,
           taskId
         );
@@ -70,7 +72,7 @@ export async function lookForOutdatedDealsOnEby(
     );
 
     log(
-      `Deals On Eby: ${Object.values(stats)
+      `Missing ${taskType}: ${Object.values(stats)
         .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
         .join("")}`
     );

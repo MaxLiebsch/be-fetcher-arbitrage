@@ -29,7 +29,6 @@ import {
 } from "../../../util/scrapeAznListingsHelper.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks.js";
-import { lookForOutdatedNegMarginAznListings } from "../../../db/util/deals/weekly/azn/lookForOutdatedNegMarginAznListings.js";
 import { NegAznDealTask } from "../../../types/tasks/Tasks.js";
 import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn.js";
 import { MissingShopError, TaskErrors } from "../../../errors.js";
@@ -37,16 +36,18 @@ import { TaskStats } from "../../../types/taskStats/TasksStats.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
+import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id: taskId, action, concurrency, proxyType, type } = task;
   return new Promise<TaskCompletedStatus | TaskErrors>(async (res, rej) => {
-    const { products, shops } = await lookForOutdatedNegMarginAznListings(
+    const { products, shops } = await findPendingProductsForTask(
+      "NEG_AZN_DEALS",
       taskId,
-      proxyType,
       action || "none",
-      productLimit
+      productLimit,
+      proxyType
     );
 
     if (action === "recover") {

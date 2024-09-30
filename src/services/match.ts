@@ -24,7 +24,6 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
-import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
@@ -36,6 +35,7 @@ import { TaskReturnType } from "../types/TaskReturnType.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { log } from "../util/logger.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
+import { lockProducts } from "../db/util/multiShopUtilities/lockProducts.js";
 
 export default async function match(task: MatchProductsTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -55,12 +55,13 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
 
     const { hasEan, ean } = srcShop;
 
-    const lockedProducts = await lockProductsForMatch(
-      taskId,
+    const lockedProducts = await lockProducts(
+      "MATCH_PRODUCTS",
       shopDomain,
+      productLimit,
       action || "none",
+      taskId,
       Boolean(hasEan || ean),
-      productLimit
     );
 
     if (action === "recover") {

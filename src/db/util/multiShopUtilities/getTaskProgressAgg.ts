@@ -1,10 +1,10 @@
-import { MultiShopTaskProgressQueriesAgg } from "../../../util/taskTypes.js";
+import { MultiShopTaskTypesWithAgg } from "../../../util/taskTypes.js";
 import { getProductsCol } from "../../mongo.js";
-import { progressAggs } from "./progressQueries.js";
+import { progressAggs } from "./progressQueryFns.js";
 
 export const countTotalProducts = async (
   domain: string,
-  taskType: MultiShopTaskProgressQueriesAgg
+  taskType: MultiShopTaskTypesWithAgg
 ) => {
   const productsCol = await getProductsCol();
   const aggregation = progressAggs[taskType].total(domain);
@@ -13,7 +13,7 @@ export const countTotalProducts = async (
 
 export const countPendingProductsAggFn = async (
   domain: string,
-  taskType: MultiShopTaskProgressQueriesAgg
+  taskType: MultiShopTaskTypesWithAgg
 ) => {
   const productsCol = await getProductsCol();
   const aggregation = progressAggs[taskType].pending({
@@ -26,7 +26,7 @@ export const countPendingProductsAggFn = async (
 
 export const getTaskProgressAgg = async (
   domain: string,
-  taskType: MultiShopTaskProgressQueriesAgg
+  taskType: MultiShopTaskTypesWithAgg
 ) => {
   const [pending] = await countPendingProductsAggFn(domain, taskType);
   const [total] = await countTotalProducts(domain, taskType);

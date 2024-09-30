@@ -1,8 +1,7 @@
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { MultiShopTaskTypes } from "../../../util/taskTypes.js";
+import {  MultiShopTaskTypes } from "../../../util/taskTypes.js";
 import { getShopsForService } from "../filteredShops.js";
 import {
-  findArbispotterProducts,
   findProducts,
 } from "../crudArbispotterProduct.js";
 import { PendingShops } from "../../../types/shops.js";

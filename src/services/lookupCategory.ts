@@ -17,7 +17,6 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
-import { lookForMissingEbyCategory } from "../db/util/lookupCategory/lookForMissingEbyCategory.js";
 import { getShop } from "../db/util/shops.js";
 import {
   handleLookupCategoryNotFound,
@@ -30,6 +29,7 @@ import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
 import { TaskReturnType } from "../types/TaskReturnType.js";
 import { log } from "../util/logger.js";
 import { countRemainingProducts } from "../util/countRemainingProducts.js";
+import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -43,7 +43,8 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
       elapsedTime: "",
     };
 
-    const { products: products, shops } = await lookForMissingEbyCategory(
+    const { products: products, shops } = await findPendingProductsForTask(
+      'LOOKUP_CATEGORY',
       taskId,
       action || "none",
       productLimit

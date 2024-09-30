@@ -17,7 +17,6 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
-import { lookForUnmatchedQueryEansOnEby } from "../db/util/queryEansOnEby/lookForUnmatchedEansOnEby.js";
 import { getShop } from "../db/util/shops.js";
 import {
   handleQueryEansOnEbyIsFinished,
@@ -32,6 +31,7 @@ import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
 import { TaskReturnType } from "../types/TaskReturnType.js";
 import { log } from "../util/logger.js";
 import { countRemainingProducts } from "../util/countRemainingProducts.js";
+import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask
@@ -49,7 +49,8 @@ export default async function queryEansOnEby(
     };
 
     const { products: productsWithShop, shops } =
-      await lookForUnmatchedQueryEansOnEby(
+      await findPendingProductsForTask(
+        "QUERY_EANS_EBY",
         taskId,
         action || "none",
         productLimit

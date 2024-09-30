@@ -1,11 +1,6 @@
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 import {
-    MultiShopTaskProgressQueries,
-  MultiShopTaskProgressQueriesAgg,
-  MultiShopTaskTypes,
-  MultiStageTaskTypes,
-} from "../../../util/taskTypes.js";
-import {
-    AggregationReturnTotalProps,
+  AggregationReturnTotalProps,
   countPendingProductsForCrawlEanQuery,
   countPendingProductsForNetMarginEbyListingsAgg as countPendingProductsForNegMarginEbyListingsAgg,
   countPendingProductsForDealsOnEbyAgg,
@@ -22,11 +17,21 @@ import {
   pendingDealsOnAznQuery,
   pendingNegMarginAznListingsQuery,
   countTotalProductsNegMarginEbyListingsAgg,
+  setProductsLockedForNegMarginEbyListingsQuery,
+  lockProductsForNegMarginEbyListings,
+  setProductsLockedForDealsOnEbyQuery,
+  lockProductsForDealsOnEbyAgg,
+  countPendingProductsForMatchQuery,
+  countTotalProductsForMatchQuery,
 } from "../queries.js";
+import { Action } from "../../../types/tasks/Tasks.js";
+import {
+  LockProductTaskTypes,
+  MultiShopTaskTypesWithAgg,
+} from "../../../util/taskTypes.js";
 
 export const progressQueries: {
-  [key in MultiShopTaskProgressQueries
-  ]: {
+  [key in LockProductTaskTypes]: {
     pending: (domain: string, hasEan?: boolean) => {};
     total: (domain: string, hasEan?: boolean) => {};
   };
@@ -55,21 +60,36 @@ export const progressQueries: {
     pending: countPendingProductsLookupInfoQuery,
     total: countTotalProductsForLookupInfoQuery,
   },
+  MATCH_PRODUCTS: {
+    pending: countPendingProductsForMatchQuery,
+    total: countTotalProductsForMatchQuery,
+  },
 };
 
-export const progressAggs:{
-    [key in MultiShopTaskProgressQueriesAgg
-    ]: {
-      pending: (args: AggregationReturnTotalProps) => any[];
-      total: (domain: string) => any[];
-    };
-  } = {
+export const progressAggs: {
+  [key in MultiShopTaskTypesWithAgg]: {
+    pending: (args: AggregationReturnTotalProps) => any[];
+    set: (taskId: ObjectId) => {};
+    lock: (
+      taskId: ObjectId,
+      domain: string,
+      limit: number,
+      action: Action,
+      hasEan?: boolean
+    ) => any[];
+    total: (domain: string) => any[];
+  };
+} = {
   NEG_EBY_DEALS: {
     pending: countPendingProductsForNegMarginEbyListingsAgg,
+    set: setProductsLockedForNegMarginEbyListingsQuery,
+    lock: lockProductsForNegMarginEbyListings,
     total: countTotalProductsNegMarginEbyListingsAgg,
   },
   DEALS_ON_EBY: {
     pending: countPendingProductsForDealsOnEbyAgg,
+    lock: lockProductsForDealsOnEbyAgg,
+    set: setProductsLockedForDealsOnEbyQuery,
     total: countTotalProductsDealsOnEbyAgg,
-  }
+  },
 };

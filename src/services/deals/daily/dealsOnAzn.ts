@@ -8,24 +8,25 @@ import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeAznListings } from "../weekly/negAznDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
-import { lookForOutdatedDealsOnAzn } from "../../../db/util/deals/daily/azn/lookForOutdatedDealsOnAzn.js";
 import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats.js";
 import { DealOnAznTask } from "../../../types/tasks/Tasks.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { MissingShopError } from "../../../errors.js";
 import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
+import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id: taskId, action, proxyType, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
-      await lookForOutdatedDealsOnAzn(
+      await findPendingProductsForTask(
+        "DEALS_ON_AZN",
         taskId,
-        proxyType,
         action || "none",
-        productLimit
+        productLimit,
+        proxyType
       );
 
     if (action === "recover") {

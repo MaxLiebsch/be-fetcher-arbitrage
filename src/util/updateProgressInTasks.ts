@@ -1,23 +1,17 @@
-import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
 import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
-import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops.js";
-import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops.js";
-import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import { updateTaskWithQuery } from "../db/util/tasks.js";
-import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops.js";
-import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
-import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
-import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
-import { getOutdatedDealsOnEbyShops } from "../db/util/deals/daily/eby/getOutdatedDealsOnEbyShops.js";
 import { MultiStageTaskTypes, TASK_TYPES } from "./taskTypes.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { PendingShops } from "../types/shops.js";
+import { findPendingShops } from "../db/util/multiShopUtilities/findPendingShops.js";
+import { getTaskProgress } from "../db/util/multiShopUtilities/getTaskProgress.js";
+import { findPendingShopsWithAgg } from "../db/util/multiShopUtilities/findPendingShopsWithAgg.js";
 
 export const updateMatchProgress = async (
   shopDomain: string,
   hasEan: boolean
 ) => {
-  const progress = await getMatchProgress(shopDomain, hasEan);
+  const progress = await getTaskProgress(shopDomain, "MATCH_PRODUCTS", hasEan);
 
   await updateTaskWithQuery(
     { type: TASK_TYPES.MATCH_PRODUCTS, id: `match_products_${shopDomain}` },
@@ -27,7 +21,8 @@ export const updateMatchProgress = async (
 };
 
 export const updateProgressDealsOnAznTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await getOutdatedDealsOnAznShops(
+  const { pendingShops: aprogress } = await findPendingShops(
+    "DEALS_ON_AZN",
     proxyType
   );
   return await updateTaskWithQuery(
@@ -40,7 +35,8 @@ export const updateProgressDealsOnAznTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressDealsOnEbyTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: eprogress } = await getOutdatedDealsOnEbyShops(
+  const { pendingShops: eprogress } = await findPendingShopsWithAgg(
+    "DEALS_ON_EBY",
     proxyType
   );
   return await updateTaskWithQuery(
@@ -53,10 +49,12 @@ export const updateProgressDealsOnEbyTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressDealTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await getOutdatedDealsOnAznShops(
+  const { pendingShops: aprogress } = await findPendingShops(
+    "DEALS_ON_AZN",
     proxyType
   );
-  const { pendingShops: eprogress } = await getOutdatedDealsOnEbyShops(
+  const { pendingShops: eprogress } = await findPendingShopsWithAgg(
+    "DEALS_ON_EBY",
     proxyType
   );
   return await Promise.all([
@@ -78,8 +76,10 @@ export const updateProgressDealTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressNegDealAznTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } =
-    await getOutdatedNegMarginAznListingsPerShop(proxyType);
+  const { pendingShops: aprogress } = await findPendingShops(
+    "NEG_AZN_DEALS",
+    proxyType
+  );
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.NEG_AZN_DEALS,
@@ -90,8 +90,10 @@ export const updateProgressNegDealAznTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressNegDealEbyTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: eprogress } =
-    await getOutdatedNegMarginEbyListingsPerShop(proxyType);
+  const { pendingShops: eprogress } = await findPendingShopsWithAgg(
+    "NEG_EBY_DEALS",
+    proxyType
+  );
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.NEG_EBY_DEALS,
@@ -102,10 +104,14 @@ export const updateProgressNegDealEbyTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressNegDealTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } =
-    await getOutdatedNegMarginAznListingsPerShop(proxyType);
-  const { pendingShops: eprogress } =
-    await getOutdatedNegMarginEbyListingsPerShop(proxyType);
+  const { pendingShops: aprogress } = await findPendingShops(
+    "NEG_AZN_DEALS",
+    proxyType
+  );
+  const { pendingShops: eprogress } = await findPendingShopsWithAgg(
+    "NEG_EBY_DEALS",
+    proxyType
+  );
   return await Promise.all([
     await updateTaskWithQuery(
       {
@@ -125,7 +131,7 @@ export const updateProgressNegDealTasks = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressInQueryEansOnEbyTask = async () => {
-  const { pendingShops, shops } = await getUnmatchedQueryEansOnEbyShops();
+  const { pendingShops, shops } = await findPendingShops("QUERY_EANS_EBY");
   const progress = pendingShops.reduce<PendingShops>(
     (acc, { shop, pending }) => {
       acc.push({
@@ -141,7 +147,10 @@ export const updateProgressInQueryEansOnEbyTask = async () => {
 };
 
 export const updateProgressInCrawlEanTask = async (proxyType: ProxyType) => {
-  const { pendingShops, shops } = await getMissingEanShops(proxyType);
+  const { pendingShops, shops } = await findPendingShops(
+    "CRAWL_EAN",
+    proxyType
+  );
   const progress = pendingShops.reduce<PendingShops>(
     (acc, { shop, pending }) => {
       acc.push({
@@ -157,7 +166,7 @@ export const updateProgressInCrawlEanTask = async (proxyType: ProxyType) => {
 };
 
 export const updateProgressInLookupCategoryTask = async () => {
-  const { pendingShops, shops } = await getMissingEbyCategoryShops();
+  const { pendingShops, shops } = await findPendingShops("LOOKUP_CATEGORY");
   const progress = pendingShops.reduce<PendingShops>(
     (acc, { shop, pending }) => {
       acc.push({
@@ -173,7 +182,7 @@ export const updateProgressInLookupCategoryTask = async () => {
 };
 
 export const updateProgressInLookupInfoTask = async () => {
-  const { pendingShops, shops } = await getUnmatchedEanShops();
+  const { pendingShops, shops } = await findPendingShops("LOOKUP_INFO");
   const progress = pendingShops.reduce<PendingShops>(
     (acc, { shop, pending }) => {
       acc.push({

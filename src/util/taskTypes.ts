@@ -45,7 +45,7 @@ export type MultiShopTaskTypes =
   | "QUERY_EANS_EBY"
   | "LOOKUP_CATEGORY";
 
-export type MultiShopTaskProgressQueries =
+export type MultiShopTaskTypesWithQuery =
   | "DEALS_ON_AZN"
   | "NEG_AZN_DEALS"
   | "CRAWL_EAN"
@@ -53,9 +53,9 @@ export type MultiShopTaskProgressQueries =
   | "QUERY_EANS_EBY"
   | "LOOKUP_CATEGORY";
 
-export type MultiShopTaskProgressQueriesAgg =
-  | "DEALS_ON_EBY"
-  | "NEG_EBY_DEALS"
+export type LockProductTaskTypes = MultiShopTaskTypesWithQuery | "MATCH_PRODUCTS";
+
+export type MultiShopTaskTypesWithAgg = "DEALS_ON_EBY" | "NEG_EBY_DEALS";
 
 export const MULTI_SHOP_TASKS: {
   [key in MultiShopTaskTypes]: MultiShopTaskTypes;

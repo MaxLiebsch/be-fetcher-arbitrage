@@ -203,7 +203,10 @@ export const lockProductsForCrawlEanQuery = (
   let options: Options = {};
 
   if (action === "recover") {
-    query["ean_taskId"] = setTaskId(taskId);
+    query = {
+      sdmn: domain,
+      ean_taskId: setTaskId(taskId),
+    };
   } else {
     query = countPendingProductsForCrawlEanQuery(domain);
     if (limit) {
@@ -253,13 +256,13 @@ export const lockProductsForLookupInfoQuery = (
   domain: string,
   limit: number,
   action: Action,
-  hasEan: boolean
+  hasEan?: boolean
 ) => {
   let query: Query = {};
   let options: Options = {};
 
   if (action === "recover") {
-    query["info_taskId"] = setTaskId(taskId);
+    query = { info_taskId: setTaskId(taskId), sdmn: domain };
   } else {
     query = countPendingProductsLookupInfoQuery(domain, hasEan);
 
@@ -337,19 +340,19 @@ export const lookupInfoTaskQueryFn = (lowerThenStartedAt: string) => {
 /*               Queries: Match (3.2) - crawl-data            */
 
 export const lockProductsForMatchQuery = (
-  limit: number,
   taskId: ObjectId,
+  domain: string,
+  limit: number,
   action: Action,
-  hasEan: boolean
+  hasEan?: boolean
 ) => {
   const options: Options = {};
   let query: Query = {};
 
   if (action === "recover") {
-    query["taskId"] = setTaskId(taskId);
+    query = { taskId: setTaskId(taskId), sdmn: domain };
   } else {
-    // @ts-ignore
-    query = countPendingProductsForMatchQuery(hasEan);
+    query = countPendingProductsForMatchQuery(domain, hasEan);
     if (limit) {
       options["limit"] = limit;
     }
@@ -363,10 +366,14 @@ export const setProductsLockedForMatchQuery = (taskId: ObjectId) => {
     },
   };
 };
-export const countPendingProductsForMatchQuery = (hasEan: boolean) => {
+export const countPendingProductsForMatchQuery = (
+  domain: string,
+  hasEan?: boolean
+) => {
   const twentyFourAgo = subDateDaysISO(1);
   let query = {
     $and: [
+      { sdmn: domain },
       { taskId: { $exists: false } },
       { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
       {
@@ -383,8 +390,13 @@ export const countPendingProductsForMatchQuery = (hasEan: boolean) => {
   }
   return query;
 };
-export const countTotalProductsForMatchQuery = (hasEan: boolean) => {
-  let query: Query = {};
+export const countTotalProductsForMatchQuery = (
+  domain: string,
+  hasEan?: boolean
+) => {
+  let query: Query = {
+    sdmn: domain,
+  };
 
   if (hasEan) {
     query["$or"] = eanExistsQuery;
@@ -420,6 +432,7 @@ export const matchTaskQueryFn = (
 
 export const lockProductsForQueryEansOnEbyQuery = (
   taskId: ObjectId,
+  domain: string,
   limit: number,
   action: Action
 ) => {
@@ -427,9 +440,12 @@ export const lockProductsForQueryEansOnEbyQuery = (
   let options: Options = {};
 
   if (action === "recover") {
-    query["eby_taskId"] = setTaskId(taskId);
+    query = {
+      sdmn: domain,
+      eby_taskId: setTaskId(taskId),
+    };
   } else {
-    query = countPendingProductsQueryEansOnEbyQuery;
+    query = countPendingProductsQueryEansOnEbyQuery(domain);
     if (limit) {
       options["limit"] = limit;
     }
@@ -482,8 +498,8 @@ export const queryEansOnEbyTaskQueryFn = (lowerThenStartedAt: string) => {
 */
 
 export const lockProductsForLookupCategoryQuery = (
-  domain: string,
   taskId: ObjectId,
+  domain: string,
   limit: number,
   action: Action
 ) => {
@@ -493,7 +509,7 @@ export const lockProductsForLookupCategoryQuery = (
   if (action === "recover") {
     query = recoveryLookupCategoryQuery(taskId, domain);
   } else {
-    query = countPendingProductsForLookupCategoryQuery;
+    query = countPendingProductsForLookupCategoryQuery(domain);
     if (limit) {
       options["limit"] = limit;
     }
@@ -570,9 +586,9 @@ export const pendingNegMarginAznListingsQuery = (domain: string) => {
   };
 };
 export const lockProductsForNegMarginAznListingsQuery = (
+  taskId: ObjectId,
   domain: string,
   limit: number,
-  taskId: ObjectId,
   action: Action
 ) => {
   let query: Query = {};
@@ -588,7 +604,9 @@ export const lockProductsForNegMarginAznListingsQuery = (
   }
   return { options, query };
 };
-export const setProductsLockedForCrawlAznListingsQuery = (taskId: ObjectId) => {
+export const setProductsLockedForNegMarginAznListingsQuery = (
+  taskId: ObjectId
+) => {
   return {
     $set: {
       azn_taskId: setTaskId(taskId),
@@ -660,7 +678,9 @@ export const lockProductsForCrawlEbyListingsQuery = (
   }
   return { options, query };
 };
-export const setProductsLockedForCrawlEbyListingsQuery = (taskId: ObjectId) => {
+export const setProductsLockedForNegMarginEbyListingsQuery = (
+  taskId: ObjectId
+) => {
   return {
     $set: {
       eby_taskId: setTaskId(taskId),
@@ -735,9 +755,9 @@ const pendingScrapeEbyListingsMatchStage = [
   ...totalNegativEbay.$and,
 ];
 export const lockProductsForNegMarginEbyListings = (
+  taskId: ObjectId,
   domain: string,
   limit: number,
-  taskId: ObjectId,
   action: Action
 ) => {
   let agg = [];
@@ -890,8 +910,8 @@ export const crawlDailySalesQueryFn = (start: string) => {
 */
 
 export const lockProductsForDealsOnEbyAgg = (
-  domain: string,
   taskId: ObjectId,
+  domain: string,
   limit: number,
   action: Action
 ) => {
@@ -1048,9 +1068,9 @@ export const recoveryDealsOnAznQuery = (taskId: ObjectId, domain: string) => {
   return { dealAznTaskId: setTaskId(taskId), sdmn: domain };
 };
 export const lockProductsForDealsOnAznQuery = (
+  taskId: ObjectId,
   domain: string,
   limit: number,
-  taskId: ObjectId,
   action: Action
 ) => {
   let query: Query = {};

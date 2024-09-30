@@ -1,18 +1,17 @@
-import { shuffle } from "underscore";
-import { updateTaskWithQuery } from "../../../tasks.js";
-import { getOutdatedNegMarginEbyListingsPerShop } from "./getOutdatedNegMarginEbyListingsPerShop.js";
-import { lockProductsForNegEbyListings } from "./lockProductsForNegMarginEbyListings.js";
-import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../../../types/tasks/Tasks.js";
-import {
-  PendingShops,
-  PendingShopsWithBatch,
-} from "../../../../../types/shops.js";
-import { log } from "../../../../../util/logger.js";
-import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
+import { shuffle } from "underscore";
+import { Action } from "../../../types/tasks/Tasks.js";
+import { getRecoveryProducts } from "./getRecoveryProducts.js";
+import { MultiShopTaskTypesWithAgg } from "../../../util/taskTypes.js";
+import { log } from "../../../util/logger.js";
+import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { findPendingShopsWithAgg } from "./findPendingShopsWithAgg.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { updateTaskWithQuery } from "../tasks.js";
+import { lockProductsWithAgg } from "./lockProducts.js";
 
-export async function lookForOudatedNegMarginEbyListings(
+export async function findPendingProductsWithAggForTask(
+  taskType: MultiShopTaskTypesWithAgg,
   taskId: ObjectId,
   proxyType: ProxyType,
   action: Action,
@@ -20,20 +19,22 @@ export async function lookForOudatedNegMarginEbyListings(
 ) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryProducts(
-      "NEG_EBY_DEALS",
+      taskType,
       taskId,
       productLimit,
       proxyType
     );
     log(
-      `Neg Eby Listings: ${recoveryProducts.shops
+      `${taskType}: ${recoveryProducts.shops
         .map((info) => `${info.shop.d}: p: ${info.pending} `)
         .join("")}`
     );
     return recoveryProducts;
   } else {
-    const { pendingShops, shops } =
-      await getOutdatedNegMarginEbyListingsPerShop(proxyType);
+    const { pendingShops, shops } = await findPendingShopsWithAgg(
+      taskType,
+      proxyType
+    );
     const stats = pendingShops.reduce<PendingShopsWithBatch>(
       (acc, { pending, shop }) => {
         acc[shop.d] = { shop, pending, batch: 0 };
@@ -48,7 +49,8 @@ export async function lookForOudatedNegMarginEbyListings(
     const products = await Promise.all(
       pendingShops.map(async ({ shop, pending }) => {
         const limit = Math.min(pending, productsPerShop);
-        const products = await lockProductsForNegEbyListings(
+        const products = await lockProductsWithAgg(
+          taskType,
           shop.d,
           limit,
           taskId,
@@ -73,7 +75,7 @@ export async function lookForOudatedNegMarginEbyListings(
     );
 
     log(
-      `Neg Eby Listings: ${Object.values(stats)
+      `${taskType}: ${Object.values(stats)
         .map((stat) => `${stat.shop.d}: p: ${stat.pending} b: ${stat?.batch} `)
         .join("")}`
     );
