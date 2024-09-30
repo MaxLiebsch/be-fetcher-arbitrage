@@ -1,7 +1,7 @@
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
 import { getArbispotterDb } from "../../../../mongo.js";
 import {
-  lockProductsForCrawlEbyListingsAggregation,
+  lockProductsForNegMarginEbyListings as lockProductsForNegMarginEbyListingsAgg,
   setProductsLockedForCrawlEbyListingsQuery,
 } from "../../../queries.js";
 import { Action } from "../../../../../types/tasks/Tasks.js";
@@ -15,7 +15,7 @@ export const lockProductsForNegEbyListings = async (
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const agg = lockProductsForCrawlEbyListingsAggregation(limit, taskId, action);
+  const agg = lockProductsForNegMarginEbyListingsAgg(domain,limit, taskId, action);
 
   const documents = await db
     .collection<DbProductRecord>(collectionName)

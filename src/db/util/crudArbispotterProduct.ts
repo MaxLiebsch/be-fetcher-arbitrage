@@ -1,5 +1,5 @@
 import { UTCDate } from "@date-fns/utc";
-import { getArbispotterDb } from "../mongo.js";
+import { getArbispotterDb, getProductsCol } from "../mongo.js";
 import { Db, MongoError, UpdateFilter } from "mongodb";
 import {
   DbProductRecord,
@@ -43,6 +43,19 @@ export const insertArbispotterProducts = async (
   return collection.insertMany(products);
 };
 
+export const findProducts = async (
+  query: Filter<DbProductRecord>,
+  limit = 500,
+  page = 0
+) => {
+  const productCol = await getProductsCol();
+  return productCol
+    .find({ ...query })
+    .limit(limit ?? 500)
+    .skip(page * limit)
+    .toArray();
+};
+
 export const findArbispotterProducts = async (
   domain: string,
   query: Filter<DbProductRecord>,
@@ -63,6 +76,7 @@ export const findProduct = async (domain: string, name: string) => {
   const collection = await getCollection(collectionName);
   return collection.findOne({ nm: name });
 };
+
 export const findProductByHash = async (domain: string, hash: string) => {
   const collectionName = domain;
   const collection = await getCollection(collectionName);

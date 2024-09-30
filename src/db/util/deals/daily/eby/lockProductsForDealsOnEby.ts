@@ -15,7 +15,7 @@ export const lockProductsForDealsOnEby = async (
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const agg = lockProductsForDealsOnEbyAgg(taskId, limit, action);
+  const agg = lockProductsForDealsOnEbyAgg(domain,taskId, limit, action);
 
   const documents = (await db
     .collection(collectionName)

@@ -2,12 +2,12 @@ import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../tasks.js";
 import { lockProductsForCrawlEan } from "./lockProductsForCrawlEan.js";
 import { getMissingEanShops } from "./getMissingEanShops.js";
-import { getRecoveryCrawlEan } from "./getRecoveryCrawlEan.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 import { log } from "../../../util/logger.js";
+import { getRecoveryProducts } from "../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForMissingEans(
   taskId: ObjectId,
@@ -16,10 +16,11 @@ export async function lookForMissingEans(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryCrawlEan(
+    const recoveryProducts = await getRecoveryProducts(
+      "CRAWL_EAN",
       taskId,
-      proxyType,
-      productLimit
+      productLimit,
+      proxyType
     );
     log(
       `Missing Eans: ${recoveryProducts.shops
@@ -49,7 +50,6 @@ export async function lookForMissingEans(
           action,
           taskId
         );
-
 
         const productsWithShop = getProductsWithShop(products, shop, shops);
         stats[shop.d].batch = productsWithShop.length;

@@ -2,7 +2,6 @@ import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
 import { getOutdatedNegMarginEbyListingsPerShop } from "./getOutdatedNegMarginEbyListingsPerShop.js";
 import { lockProductsForNegEbyListings } from "./lockProductsForNegMarginEbyListings.js";
-import { getRecoveryNegMarginEbyListings } from "./getRecoveryNegMarginEbyListings.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../../../types/tasks/Tasks.js";
@@ -11,6 +10,7 @@ import {
   PendingShopsWithBatch,
 } from "../../../../../types/shops.js";
 import { log } from "../../../../../util/logger.js";
+import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForOudatedNegMarginEbyListings(
   taskId: ObjectId,
@@ -19,10 +19,11 @@ export async function lookForOudatedNegMarginEbyListings(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryNegMarginEbyListings(
+    const recoveryProducts = await getRecoveryProducts(
+      "NEG_EBY_DEALS",
       taskId,
-      proxyType,
-      productLimit
+      productLimit,
+      proxyType
     );
     log(
       `Neg Eby Listings: ${recoveryProducts.shops

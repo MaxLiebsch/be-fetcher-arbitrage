@@ -16,6 +16,7 @@ export const lockProductsForLookupCategory = async (
   const db = await getArbispotterDb();
 
   const { query, options } = lockProductsForLookupCategoryQuery(
+    domain,
     taskId,
     limit,
     action

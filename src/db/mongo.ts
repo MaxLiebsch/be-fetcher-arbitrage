@@ -1,4 +1,4 @@
-import { SiteMap } from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, SiteMap } from "@dipmaxtech/clr-pkg";
 import clientPool from "./mongoPool.js";
 import os from "os";
 export const arbispotter_db = "arbispotter";
@@ -8,6 +8,7 @@ export const tasksCollectionName = "tasks";
 export const logsCollectionName = "logs";
 export const shopCollectionName = "shops";
 export const wholesaleCollectionName = "wholesale";
+export const productsCollectionName = "products";
 export const salesDbName = "sales";
 export const hostname = os.hostname();
 
@@ -24,6 +25,11 @@ export const getArbispotterCollection = async (name: string) => {
 export const getArbispotterDb = async () => {
   const client = await clientPool[arbispotter_db];
   return client.db();
+};
+
+export const getProductsCol = async () => {
+  const db = await getArbispotterDb();
+  return db.collection<DbProductRecord>(productsCollectionName);
 };
 
 export const getCrawlDataDb = async () => {
@@ -54,7 +60,7 @@ export const createArbispotterCollection = async (name: string) => {
   if (await doesCollectionArbispotterExists(name)) return;
   const db = await getArbispotterDb();
   const collection = await db.createCollection(name);
-  await collection.createIndex({ sdmn: 1})
+  await collection.createIndex({ sdmn: 1 });
   await collection.createIndex({ lnk: 1 }, { unique: true });
   await collection.createIndex({ a_mrgn: -1, a_mrgn_pct: -1 });
   await collection.createIndex({ a_w_mrgn: -1, a_w_mrgn_pct: -1 });
@@ -66,13 +72,13 @@ export const createArbispotterCollection = async (name: string) => {
   await collection.createIndex({ ean_prop: 1 });
   await collection.createIndex({ info_prop: 1 });
   await collection.createIndex({ eby_prop: 1 });
-  await collection.createIndex({keepaUpdatedAt: 1})
-  await collection.createIndex({keepaEanUpdatedAt: 1})
-  await collection.createIndex({dealEbyUpdatedAt: 1})
-  await collection.createIndex({dealAznUpdatedAt: 1})
-  await collection.createIndex({ebyUpdatedAt: 1})
-  await collection.createIndex({aznUpdatedAt: 1})
-  await collection.createIndex({ eanList: 1})
+  await collection.createIndex({ keepaUpdatedAt: 1 });
+  await collection.createIndex({ keepaEanUpdatedAt: 1 });
+  await collection.createIndex({ dealEbyUpdatedAt: 1 });
+  await collection.createIndex({ dealAznUpdatedAt: 1 });
+  await collection.createIndex({ ebyUpdatedAt: 1 });
+  await collection.createIndex({ aznUpdatedAt: 1 });
+  await collection.createIndex({ eanList: 1 });
 
   await collection.createIndex({ "a_vrfd.nm_prop": 1 });
   await collection.createIndex({ "a_vrfd.qty_prop": 1 });
@@ -80,8 +86,8 @@ export const createArbispotterCollection = async (name: string) => {
   await collection.createIndex({ "e_vrfd.nm_prop": 1 });
   await collection.createIndex({ "e_vrfd.qty_prop": 1 });
 
-  await collection.createIndex({ asin: 1})
-  await collection.createIndex({ esin: 1})
+  await collection.createIndex({ asin: 1 });
+  await collection.createIndex({ esin: 1 });
 
   await collection.createIndex({ a_pblsh: 1 });
   await collection.createIndex({ e_pblsh: 1 });

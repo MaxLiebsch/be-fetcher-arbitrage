@@ -17,15 +17,16 @@ export const lockProductsForLookupInfo = async (
 
   const { query, options } = lockProductsForLookupInfoQuery(
     taskId,
+    domain,
     limit,
     action,
     hasEan
   );
 
-  const documents = await db
+  const documents = (await db
     .collection(collectionName)
     .find(query, options)
-    .toArray() as DbProductRecord[];
+    .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover") {

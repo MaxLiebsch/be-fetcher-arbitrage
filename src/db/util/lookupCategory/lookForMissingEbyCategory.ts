@@ -2,11 +2,11 @@ import { shuffle } from "underscore";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { getMissingEbyCategoryShops } from "./getMissingEbyCategoryShops.js";
 import { lockProductsForLookupCategory } from "./lockProductsForLookupCategory.js";
-import { getRecoveryLookupCategory } from "./getRecoveryLookupCategory.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { getRecoveryProducts } from "../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForMissingEbyCategory(
   taskId: ObjectId,
@@ -14,7 +14,8 @@ export async function lookForMissingEbyCategory(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryLookupCategory(
+    const recoveryProducts = await getRecoveryProducts(
+      'LOOKUP_CATEGORY',
       taskId,
       productLimit
     );

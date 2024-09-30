@@ -2,12 +2,12 @@ import { shuffle } from "underscore";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { lockProductsForQueryEansOnEby } from "./lockProductsForQueryEansOnEby.js";
 import { getUnmatchedQueryEansOnEbyShops } from "./getUnmatchedQueryEansOnEbyShops.js";
-import { getRecoveryQueryEansOnEby } from "./getRecoveryQueryEansOnEby.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 import { log } from "../../../util/logger.js";
+import { getRecoveryProducts } from "../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForUnmatchedQueryEansOnEby(
   taskId: ObjectId,
@@ -15,7 +15,8 @@ export async function lookForUnmatchedQueryEansOnEby(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryQueryEansOnEby(
+    const recoveryProducts = await getRecoveryProducts(
+      'QUERY_EANS_EBY',
       taskId,
       productLimit
     );

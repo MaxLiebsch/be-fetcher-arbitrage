@@ -1,15 +1,15 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
 import { getShopsForService } from "../../../filteredShops.js";
-import { getDealsOnAznProgress } from "./getDealsOnAznProgress.js";
+import { getTaskProgress } from "../../../multiShopUtilities/getTaskProgress.js";
 
 export async function getOutdatedDealsOnAznShops(proxyType: ProxyType) {
   const { filteredShops, shops } = await getShopsForService(
-    "dealsOnAzn",
+    "DEALS_ON_AZN",
     proxyType
   );
   const dealsOnAznProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getDealsOnAznProgress(shop.d);
+      const progress = await getTaskProgress(shop.d, "DEALS_ON_AZN");
       return { pending: progress.pending, shop };
     })
   );

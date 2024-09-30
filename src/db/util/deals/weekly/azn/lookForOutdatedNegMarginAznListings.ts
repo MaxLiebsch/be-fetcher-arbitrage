@@ -1,6 +1,5 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
-import { getRecoveryNegMarginAznListings } from "./getRecoveryNegMarginAznListings.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../../../types/tasks/Tasks.js";
@@ -11,6 +10,7 @@ import {
 import { log } from "../../../../../util/logger.js";
 import { lockProductsForNegMarginAznListings } from "./lockProductsForNEgMarginAznListings.js";
 import { getOutdatedNegMarginAznListingsPerShop } from "./getOutdatedNegMarginAznListingsPerShop.js";
+import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForOutdatedNegMarginAznListings(
   taskId: ObjectId,
@@ -19,10 +19,11 @@ export async function lookForOutdatedNegMarginAznListings(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryNegMarginAznListings(
+    const recoveryProducts = await getRecoveryProducts(
+      "NEG_AZN_DEALS",
       taskId,
-      proxyType,
-      productLimit
+      productLimit,
+      proxyType
     );
     log(
       `Outdated Negative Margin Azn: ${recoveryProducts.shops

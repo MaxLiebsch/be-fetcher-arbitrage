@@ -17,6 +17,7 @@ export const lockProductsForCrawlEan = async (
 
   const { query, options } = lockProductsForCrawlEanQuery(
     taskId,
+    domain,
     limit,
     action
   );

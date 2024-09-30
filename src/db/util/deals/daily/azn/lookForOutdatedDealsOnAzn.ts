@@ -2,7 +2,6 @@ import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
 import { lockProductsForDealsOnAzn } from "./lockProductsForDealsOnAzn.js";
 import { getOutdatedDealsOnAznShops } from "./getOutdatedDealsOnAznShops.js";
-import { getRecoveryDealsOnAzn } from "./getRecoveryDealsOnAzn.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../../../types/tasks/Tasks.js";
@@ -11,6 +10,7 @@ import {
   PendingShopsWithBatch,
 } from "../../../../../types/shops.js";
 import { log } from "../../../../../util/logger.js";
+import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForOutdatedDealsOnAzn(
   taskId: ObjectId,
@@ -19,10 +19,11 @@ export async function lookForOutdatedDealsOnAzn(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryDealsOnAzn(
+    const recoveryProducts = await getRecoveryProducts(
+      'DEALS_ON_AZN',
       taskId,
-      proxyType,
-      productLimit
+      productLimit,
+      proxyType
     );
     log(
       `Deals On Azn: ${recoveryProducts.shops

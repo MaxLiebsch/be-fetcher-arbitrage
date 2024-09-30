@@ -2,7 +2,6 @@ import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../../../tasks.js";
 import { lockProductsForDealsOnEby } from "./lockProductsForDealsOnEby.js";
 import { getOutdatedDealsOnEbyShops } from "./getOutdatedDealsOnEbyShops.js";
-import { getRecoveryDealsOnEby } from "./getRecoveryDealsOnEby.js";
 import { getProductsWithShop } from "../../../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../../../types/tasks/Tasks.js";
@@ -11,6 +10,7 @@ import {
   PendingShopsWithBatch,
 } from "../../../../../types/shops.js";
 import { log } from "../../../../../util/logger.js";
+import { getRecoveryProducts } from "../../../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForOutdatedDealsOnEby(
   taskId: ObjectId,
@@ -19,10 +19,11 @@ export async function lookForOutdatedDealsOnEby(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryDealsOnEby(
+    const recoveryProducts = await getRecoveryProducts(
+      'DEALS_ON_EBY',
       taskId,
-      proxyType,
-      productLimit
+      productLimit,
+      proxyType
     );
     log(
       `Deals On Eby: ${recoveryProducts.shops

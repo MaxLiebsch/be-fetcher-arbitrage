@@ -1,7 +1,7 @@
 import { Action } from "../../../../../types/tasks/Tasks.js";
 import { getArbispotterDb } from "../../../../mongo.js";
 import {
-  lockProductsForCrawlAznListingsQuery,
+  lockProductsForNegMarginAznListingsQuery,
   setProductsLockedForCrawlAznListingsQuery,
 } from "../../../queries.js";
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
@@ -15,7 +15,8 @@ export const lockProductsForNegMarginAznListings = async (
   const collectionName = domain;
   const db = await getArbispotterDb();
 
-  const { query, options } = lockProductsForCrawlAznListingsQuery(
+  const { query, options } = lockProductsForNegMarginAznListingsQuery(
+    domain,
     limit,
     taskId,
     action

@@ -1,17 +1,17 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getNegMarginEbyListingsProgressAggregation } from "./getNegMarginEbyListingsProgressAggregation.js";
 import { getShopsForService } from "../../../filteredShops.js";
+import { getTaskProgressAgg } from "../../../multiShopUtilities/getTaskProgressAgg.js";
 
 export async function getOutdatedNegMarginEbyListingsPerShop(
   proxyType: ProxyType
 ) {
   const { filteredShops, shops } = await getShopsForService(
-    "negEbyDeals",
+    "NEG_EBY_DEALS",
     proxyType
   );
   const negMarginEbyListingsProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getNegMarginEbyListingsProgressAggregation(shop.d);
+      const progress = await getTaskProgressAgg(shop.d, 'NEG_EBY_DEALS');
       return { pending: progress.pending, shop };
     })
   );

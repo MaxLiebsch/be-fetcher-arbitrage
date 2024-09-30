@@ -3,11 +3,11 @@ import { shuffle } from "underscore";
 
 import { lockProductsForLookupInfo } from "./lockProductsForLookupInfo.js";
 import { getUnmatchedEanShops } from "./getUnmatchedEanShops.js";
-import { getRecoveryLookupInfoProducts } from "./getRecoveryLookupInfoProducts.js";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
+import { getRecoveryProducts } from "../multiShopUtilities/getRecoveryProducts.js";
 
 export async function lookForUnmatchedEans(
   taskId: ObjectId,
@@ -15,7 +15,8 @@ export async function lookForUnmatchedEans(
   productLimit: number
 ) {
   if (action === "recover") {
-    const recoveryProducts = await getRecoveryLookupInfoProducts(
+    const recoveryProducts = await getRecoveryProducts(
+      'LOOKUP_INFO',
       taskId,
       productLimit
     );

@@ -1,26 +1,30 @@
-import { shuffle } from "underscore";
-import { findArbispotterProducts } from "../crudArbispotterProduct.js";
-import { recoveryCrawlEanQuery } from "../queries.js";
-import { getShopsForService } from "../filteredShops.js";
-import { getProductsWithShop } from "../getProductsWithShop.js";
 import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { MultiShopTaskTypes } from "../../../util/taskTypes.js";
+import { getShopsForService } from "../filteredShops.js";
+import {
+  findArbispotterProducts,
+  findProducts,
+} from "../crudArbispotterProduct.js";
 import { PendingShops } from "../../../types/shops.js";
+import { getProductsWithShop } from "../getProductsWithShop.js";
+import { shuffle } from "underscore";
+import { recoverQueries } from "./recoverQueries.js";
 
-export async function getRecoveryCrawlEan(
+export async function getRecoveryProducts(
+  multiStopTask: MultiShopTaskTypes,
   taskId: ObjectId,
-  proxyType: ProxyType,
-  productLimit: number
+  productLimit: number,
+  proxyType: ProxyType | undefined = undefined
 ) {
   const { filteredShops, shops } = await getShopsForService(
-    "crawlEan",
+    multiStopTask,
     proxyType
   );
   let pendingShops: PendingShops = [];
   const products = await Promise.all(
     filteredShops.map(async (shop) => {
-      const products = await findArbispotterProducts(
-        shop.d,
-        recoveryCrawlEanQuery(taskId),
+      const products = await findProducts(
+        recoverQueries[multiStopTask](taskId, shop.d),
         productLimit
       );
       if (products.length > 0) {

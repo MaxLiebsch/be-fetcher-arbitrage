@@ -34,3 +34,38 @@ export const TASK_TYPES: { [key in TaskKeys]: TaskTypes } = {
   QUERY_EANS_EBY: "QUERY_EANS_EBY",
   LOOKUP_CATEGORY: "LOOKUP_CATEGORY",
 };
+
+export type MultiShopTaskTypes =
+  | "DEALS_ON_AZN"
+  | "NEG_AZN_DEALS"
+  | "DEALS_ON_EBY"
+  | "NEG_EBY_DEALS"
+  | "CRAWL_EAN"
+  | "LOOKUP_INFO"
+  | "QUERY_EANS_EBY"
+  | "LOOKUP_CATEGORY";
+
+export type MultiShopTaskProgressQueries =
+  | "DEALS_ON_AZN"
+  | "NEG_AZN_DEALS"
+  | "CRAWL_EAN"
+  | "LOOKUP_INFO"
+  | "QUERY_EANS_EBY"
+  | "LOOKUP_CATEGORY";
+
+export type MultiShopTaskProgressQueriesAgg =
+  | "DEALS_ON_EBY"
+  | "NEG_EBY_DEALS"
+
+export const MULTI_SHOP_TASKS: {
+  [key in MultiShopTaskTypes]: MultiShopTaskTypes;
+} = {
+  CRAWL_EAN: "CRAWL_EAN",
+  LOOKUP_INFO: "LOOKUP_INFO",
+  QUERY_EANS_EBY: "QUERY_EANS_EBY",
+  LOOKUP_CATEGORY: "LOOKUP_CATEGORY",
+  DEALS_ON_EBY: "DEALS_ON_EBY",
+  DEALS_ON_AZN: "DEALS_ON_AZN",
+  NEG_AZN_DEALS: "NEG_AZN_DEALS",
+  NEG_EBY_DEALS: "NEG_EBY_DEALS",
+};

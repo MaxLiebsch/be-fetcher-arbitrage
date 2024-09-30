@@ -1,17 +1,17 @@
 import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { getCrawlAznListingsProgress } from "./getNegMarginAznListingsProgress.js";
 import { getShopsForService } from "../../../filteredShops.js";
+import { getTaskProgress } from "../../../multiShopUtilities/getTaskProgress.js";
 
 export async function getOutdatedNegMarginAznListingsPerShop(
   proxyType: ProxyType
 ) {
   const { filteredShops, shops } = await getShopsForService(
-    "negAznDeals",
+    "NEG_AZN_DEALS",
     proxyType
   );
   const negMarginAznListingsProgressPerShop = await Promise.all(
     filteredShops.map(async (shop) => {
-      const progress = await getCrawlAznListingsProgress(shop.d);
+      const progress = await getTaskProgress(shop.d, "NEG_AZN_DEALS");
       return { pending: progress.pending, shop };
     })
   );

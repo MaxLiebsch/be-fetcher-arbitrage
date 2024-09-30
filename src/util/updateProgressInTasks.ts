@@ -1,4 +1,3 @@
-import { getCrawlAznListingsProgress } from "../db/util/deals/weekly/azn/getNegMarginAznListingsProgress.js";
 import { getMatchProgress } from "../db/util/match/getMatchProgress.js";
 import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
 import { getMissingEanShops } from "../db/util/crawlEan/getMissingEanShops.js";
@@ -6,7 +5,6 @@ import { getUnmatchedEanShops } from "../db/util/lookupInfo/getUnmatchedEanShops
 import { getUnmatchedQueryEansOnEbyShops } from "../db/util/queryEansOnEby/getUnmatchedQueryEansOnEbyShops.js";
 import { updateTaskWithQuery } from "../db/util/tasks.js";
 import { getMissingEbyCategoryShops } from "../db/util/lookupCategory/getMissingEbyCategoryShops.js";
-import { getNegMarginEbyListingsProgressAggregation } from "../db/util/deals/weekly/eby/getNegMarginEbyListingsProgressAggregation.js";
 import { getOutdatedDealsOnAznShops } from "../db/util/deals/daily/azn/getOutdatedDealsOnAznShops.js";
 import { getOutdatedNegMarginAznListingsPerShop } from "../db/util/deals/weekly/azn/getOutdatedNegMarginAznListingsPerShop.js";
 import { getOutdatedNegMarginEbyListingsPerShop } from "../db/util/deals/weekly/eby/getOutdatedNegMarginEbyListingsPerShop.js";
@@ -124,32 +122,6 @@ export const updateProgressNegDealTasks = async (proxyType: ProxyType) => {
       { progress: eprogress }
     ),
   ]);
-};
-
-export const updateCrawlAznListingsProgress = async (shopDomain: string) => {
-  const progress = await getCrawlAznListingsProgress(shopDomain);
-
-  await updateTaskWithQuery(
-    {
-      type: TASK_TYPES.NEG_AZN_DEALS,
-      id: `crawl_azn_listings_${shopDomain}`,
-    },
-    { progress }
-  );
-  return progress;
-};
-
-export const updateCrawlEbyListingsProgress = async (shopDomain: string) => {
-  const progress = await getNegMarginEbyListingsProgressAggregation(shopDomain);
-
-  await updateTaskWithQuery(
-    {
-      type: TASK_TYPES.NEG_EBY_DEALS,
-      id: `crawl_eby_listings_${shopDomain}`,
-    },
-    { progress }
-  );
-  return progress;
 };
 
 export const updateProgressInQueryEansOnEbyTask = async () => {
