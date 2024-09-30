@@ -39,7 +39,7 @@ export async function handleDealsProductInfo(
       ...(mku && { mku }),
     };
 
-    const result = await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateArbispotterProductQuery( productId, {
       $set: productUpdate,
     });
     log(`Updated product info: ${collection}-${productId.toString()}`, result);

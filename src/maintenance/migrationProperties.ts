@@ -62,13 +62,13 @@ const migrationProperties = async () => {
               });
             } else {
               if (findDocuments.length === 2) {
-                await deleteArbispotterProduct(shop.d, product._id);
+                await deleteArbispotterProduct( product._id);
               } else {
                 findDocuments.pop();
                 await Promise.all(
                   findDocuments.map(async (doc) => {
                     const { _id } = doc;
-                    await deleteArbispotterProduct(shop.d, _id);
+                    await deleteArbispotterProduct( _id);
                   })
                 );
               }

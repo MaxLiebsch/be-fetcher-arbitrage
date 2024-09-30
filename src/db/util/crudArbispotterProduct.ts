@@ -1,10 +1,10 @@
 import { UTCDate } from "@date-fns/utc";
 import { getArbispotterDb, getProductsCol } from "../mongo.js";
-import { Db, MongoError, UpdateFilter } from "mongodb";
 import {
   DbProductRecord,
   Filter,
   InsertOneResult,
+  MongoError,
   ObjectId,
 } from "@dipmaxtech/clr-pkg";
 
@@ -13,35 +13,6 @@ const getCollection = async (collectionName: string) => {
   return db.collection<DbProductRecord>(collectionName);
 };
 
-export const countProducts = async (domain: string, query = {}) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.countDocuments(query);
-};
-
-export const findArbispotterProduct = async (domain: string, id: ObjectId) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.findOne({ _id: id });
-};
-
-export const findArbispotterProductFilter = async (
-  domain: string,
-  query: Filter<DbProductRecord>
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.findOne(query);
-};
-
-export const insertArbispotterProducts = async (
-  domain: string,
-  products: DbProductRecord[]
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.insertMany(products);
-};
 
 export const findProducts = async (
   query: Filter<DbProductRecord>,
@@ -71,30 +42,18 @@ export const findArbispotterProducts = async (
     .toArray();
 };
 
-export const findProduct = async (domain: string, name: string) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.findOne({ nm: name });
-};
-
-export const findProductByHash = async (domain: string, hash: string) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
+export const findProductByHash = async (hash: string) => {
+  const collection = await getProductsCol();
   return collection.findOne({ s_hash: hash });
 };
-export const insertArbispotterProduct = async (
-  domain: string,
-  product: DbProductRecord
-) => {
-  try {
-    const collectionName = domain;
-    const db = await getArbispotterDb();
-    const collection = db.collection(collectionName);
 
+export const insertArbispotterProduct = async (product: DbProductRecord) => {
+  try {
+    const productsCol = await getProductsCol();
     product["createdAt"] = new UTCDate().toISOString();
     product["updatedAt"] = new UTCDate().toISOString();
 
-    return await collection.insertOne(product);
+    return await productsCol.insertOne(product);
   } catch (error) {
     if (error instanceof MongoError) {
       console.error("Error creating product:", error?.message, product.lnk);
@@ -104,14 +63,12 @@ export const insertArbispotterProduct = async (
 };
 
 export const updateArbispotterProductQuery = async (
-  domain: string,
   id: ObjectId,
   query: Filter<DbProductRecord>
 ) => {
   const maxRetries = 3;
   let attempt = 0;
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
+  const productsCol = await getProductsCol();
 
   while (attempt < maxRetries) {
     try {
@@ -121,14 +78,14 @@ export const updateArbispotterProductQuery = async (
         query["$set"] = { updatedAt: new UTCDate().toISOString() };
       }
 
-      return await collection.updateOne({ _id: id }, query); // Exit the function if the update is successful
+      return await productsCol.updateOne({ _id: id }, query); // Exit the function if the update is successful
     } catch (e) {
       attempt++;
       if (e instanceof MongoError && e.code === 11000) {
         console.error(
           "Duplicate key error:",
           e.message,
-          `${domain}-${id.toString()}`,
+          `${id.toString()}`,
           JSON.stringify(query)
         );
         break; // Exit the function
@@ -137,7 +94,7 @@ export const updateArbispotterProductQuery = async (
           console.error(
             "Error updating product:",
             e?.message,
-            `${domain}-${id.toString()}`,
+            `${id.toString()}`,
             JSON.stringify(query)
           );
         }
@@ -148,14 +105,12 @@ export const updateArbispotterProductQuery = async (
 };
 
 export const updateArbispotterProductHashQuery = async (
-  domain: string,
   link: string,
   query: Filter<DbProductRecord>
 ) => {
   const maxRetries = 3;
   let attempt = 0;
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
+  const productCol = await getProductsCol();
 
   while (attempt < maxRetries) {
     try {
@@ -165,7 +120,7 @@ export const updateArbispotterProductHashQuery = async (
         query["$set"] = { updatedAt: new UTCDate().toISOString() };
       }
 
-      return await collection.updateOne({ lnk: link }, query); // Exit the function if the update is successful
+      return await productCol.updateOne({ lnk: link }, query); // Exit the function if the update is successful
     } catch (e) {
       attempt++;
       if (e instanceof MongoError && e.code === 11000) {
@@ -192,124 +147,27 @@ export const updateArbispotterProductHashQuery = async (
 };
 
 export const countArbispotterProducts = async (
-  shopDomain: string,
   query: Filter<DbProductRecord>
 ) => {
-  const collection = await getCollection(shopDomain);
-  return collection.countDocuments(query);
-};
-
-export const updateProductQuery = async (
-  domain: string,
-  _id: ObjectId,
-  query: Filter<DbProductRecord>
-) => {
-  const maxRetries = 3;
-  let attempt = 0;
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-
-  while (attempt < maxRetries) {
-    try {
-      if (query?.$set) {
-        query.$set["updatedAt"] = new UTCDate().toISOString();
-      } else {
-        query["$set"] = { updatedAt: new UTCDate().toISOString() };
-      }
-
-      return await collection.updateOne({ _id: _id }, query); // Exit the function if the update is successful
-    } catch (e) {
-      attempt++;
-      if (e instanceof MongoError && e.code === 11000) {
-        console.error(
-          "Duplicate key error:",
-          e.message,
-          _id,
-          JSON.stringify(query)
-        );
-        break; // Exit the function
-      } else if (attempt >= maxRetries) {
-        if (e instanceof Error) {
-          console.error(
-            "Error updating product:",
-            e?.message,
-            _id,
-            JSON.stringify(query)
-          );
-        }
-        return; // Exit the function
-      }
-    }
-  }
-};
-
-export const updateArbispotterProductSet = async (
-  domain: string,
-  link: string,
-  update: UpdateFilter<DbProductRecord>
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  update["updatedAt"] = new UTCDate().toISOString();
-
-  return collection.updateOne(
-    { lnk: link },
-    {
-      $set: {
-        ...update,
-      },
-    }
-  );
+  const productsCol = await getProductsCol();
+  return productsCol.countDocuments(query);
 };
 
 export const findArbispotterProductsNoLimit = async (
-  domain: string,
   query: Filter<DbProductRecord>
 ): Promise<DbProductRecord[]> => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.find({ ...query }).toArray();
+  const productsCol = await getProductsCol();
+  return productsCol.find({ ...query }).toArray();
 };
 
-export const moveArbispotterLinkProduct = async (
-  from: string,
-  to: string,
-  lnk: string
-) => {
+export const moveArbispotterProduct = async (to: string, id: ObjectId) => {
   try {
-    const fromCollectionName = from;
     const toCollectionName = to;
     const db = await getArbispotterDb();
-    const fromCollection = db.collection(fromCollectionName);
+    const productsCol = await getProductsCol();
     const toCollection = db.collection(toCollectionName);
 
-    const product = await fromCollection.findOne({ lnk });
-
-    if (!product) return null;
-
-    await toCollection.insertOne(product);
-    await fromCollection.deleteOne({ lnk });
-
-    return product;
-  } catch (error) {
-    console.log("error:", error);
-    return null;
-  }
-};
-
-export const moveArbispotterProduct = async (
-  from: string,
-  to: string,
-  id: ObjectId
-) => {
-  try {
-    const fromCollectionName = from;
-    const toCollectionName = to;
-    const db = await getArbispotterDb();
-    const fromCollection = db.collection(fromCollectionName);
-    const toCollection = db.collection(toCollectionName);
-
-    const product = await fromCollection.findOne({ _id: id });
+    const product = await productsCol.findOne({ _id: id });
 
     if (!product) return null;
 
@@ -319,7 +177,7 @@ export const moveArbispotterProduct = async (
       await toCollection.insertOne(product);
     }
 
-    await fromCollection.deleteOne({ _id: id });
+    await productsCol.deleteOne({ _id: id });
 
     return product;
   } catch (error) {
@@ -328,43 +186,7 @@ export const moveArbispotterProduct = async (
   }
 };
 
-export const updateArbispotterProducts = async (
-  domain: string,
-  query: Filter<DbProductRecord>,
-  update: UpdateFilter<DbProductRecord>
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.updateMany(
-    { ...query },
-    {
-      $set: {
-        ...update,
-      },
-    }
-  );
-};
-
-export const deleteArbispotterProduct = async (
-  domain: string,
-  id: ObjectId
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.deleteOne({ _id: id });
-};
-
-export const deleteArbispotterLinkProduct = async (
-  domain: string,
-  link: string
-) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.deleteOne({ lnk: link });
-};
-
-export const deleteAllArbispotterProducts = async (domain: string) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection.deleteMany({});
+export const deleteArbispotterProduct = async (id: ObjectId) => {
+  const productsCol = await getProductsCol();
+  return productsCol.deleteOne({ _id: id });
 };

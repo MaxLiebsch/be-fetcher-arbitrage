@@ -54,7 +54,6 @@ export async function handleLookupInfoProductInfo(
       }
 
       const result = await updateArbispotterProductQuery(
-        collection,
         productId,
         {
           $set: {
@@ -82,7 +81,6 @@ export async function handleLookupInfoProductInfo(
           infos.missingProperties.costs++;
         }
         const result = await updateArbispotterProductQuery(
-          collection,
           productId,
           resetAznProductQuery({
             info_prop: "missing",
@@ -94,7 +92,6 @@ export async function handleLookupInfoProductInfo(
   } else {
     infos.missingProperties.infos++;
     const result = await updateArbispotterProductQuery(
-      collection,
       productId,
       resetAznProductQuery({
         info_prop: "missing",
@@ -109,7 +106,6 @@ export async function handleLookupInfoNotFound(
   productId: ObjectId
 ) {
   const result = await updateArbispotterProductQuery(
-    collection,
     productId,
     resetAznProductQuery({
       info_prop: "missing",

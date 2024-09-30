@@ -124,7 +124,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteArbispotterProduct(shopDomain, productId);
+            await deleteArbispotterProduct( productId);
           }
         } else {
           await scrapeAznListings(queue, azn, source, aznLink, product, infos);
@@ -179,7 +179,7 @@ export async function scrapeAznListings(
       infos.total++;
       queue.total++;
       if (cause === "exceedsLimit") {
-        const result = await updateArbispotterProductQuery(shopDomain, _id, {
+        const result = await updateArbispotterProductQuery( _id, {
           $unset: {
             [taskIdProp]: "",
           },

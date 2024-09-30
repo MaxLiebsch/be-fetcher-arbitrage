@@ -7,19 +7,18 @@ import {
 import { DbProductRecord, UpdateResult } from "@dipmaxtech/clr-pkg";
 
 export const createOrUpdateArbispotterProduct = async (
-  domain: string,
   procProd: DbProductRecord
 ) => {
   const { s_hash: productHash } = procProd;
-  const product = await findProductByHash(domain, productHash);
+  const product = await findProductByHash(productHash);
   try {
     if (product) {
-      return await updateArbispotterProductHashQuery(domain, productHash, {
+      return await updateArbispotterProductHashQuery(productHash, {
         $set: procProd,
       });
     } else {
       const newProduct = procProd;
-      return await insertArbispotterProduct(domain, newProduct);
+      return await insertArbispotterProduct(newProduct);
     }
   } catch (error) {
     if (error instanceof MongoServerError) {
@@ -29,8 +28,8 @@ export const createOrUpdateArbispotterProduct = async (
           matchedCount: 0,
           modifiedCount: 0,
           upsertedCount: 0,
-          upsertedId: null
-        }
+          upsertedId: null,
+        };
         return result;
       }
     }

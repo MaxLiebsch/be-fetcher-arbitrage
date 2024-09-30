@@ -104,7 +104,7 @@ export async function handleQueryEansOnEbyIsFinished(
       }
     }
 
-    const result = await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateArbispotterProductQuery(productId, {
       $set: {
         ...update,
         qEbyUpdatedAt: new UTCDate().toISOString(),
@@ -124,7 +124,6 @@ export async function handleQueryEansOnEbyIsFinished(
       query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
     }
     const result = await updateArbispotterProductQuery(
-      collection,
       productId,
       query
     );
@@ -149,7 +148,6 @@ export async function handleQueryEansOnEbyNotFound(
   }
 
   const result = await updateArbispotterProductQuery(
-    collection,
     productId,
     query
   );

@@ -20,7 +20,7 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from "../../util/queryEansOnEbyHelper.js";
-import { wholesaleCollectionName } from "../../db/mongo.js";
+import { wholeSaleColname } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { QueryEansOnEbyStats } from "../../types/taskStats/QueryEansOnEbyStats.js";
 import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
@@ -159,8 +159,8 @@ export const queryEansOnEby = async (
         shop: ebay,
         targetShop: {
           prefix: "",
-          d: wholesaleCollectionName,
-          name: wholesaleCollectionName,
+          d: wholeSaleColname,
+          name: wholeSaleColname,
         },
         addProduct,
         isFinished,

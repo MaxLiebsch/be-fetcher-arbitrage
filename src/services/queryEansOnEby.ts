@@ -148,7 +148,6 @@ export default async function queryEansOnEby(
       const handleNotFound = async (cause: NotFoundCause) => {
         if (cause === "exceedsLimit") {
           const result = await updateArbispotterProductQuery(
-            srcShopDomain,
             productId,
             {
               $unset: {

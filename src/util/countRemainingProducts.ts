@@ -1,4 +1,4 @@
-import { ObjectId,  TaskTypes } from "@dipmaxtech/clr-pkg";
+import { ObjectId, TaskTypes } from "@dipmaxtech/clr-pkg";
 import { countArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
 import { PendingShops } from "../types/shops.js";
 import { setTaskId } from "../db/util/queries.js";
@@ -27,7 +27,8 @@ export async function countRemainingProducts(
 ) {
   let totalRemaining = 0;
   for (const shop of pendingShops) {
-    const remaining = await countArbispotterProducts(shop.shop.d, {
+    const remaining = await countArbispotterProducts({
+      sdmn: shop.shop.d,
       [taskIds[taskType]]: setTaskId(taskId),
     });
     totalRemaining += remaining;
@@ -40,7 +41,8 @@ export async function countRemainingProductsShop(
   taskId: ObjectId,
   taskType: TaskTypes
 ) {
-  return await countArbispotterProducts(shop, {
+  return await countArbispotterProducts({
+    sdmn: shop,
     [taskIds[taskType]]: setTaskId(taskId),
   });
 }

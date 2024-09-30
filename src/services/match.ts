@@ -174,7 +174,6 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       productUpdate["matched"] = true;
 
       const result = await updateArbispotterProductQuery(
-        shopDomain,
         productId,
         {
           $set: productUpdate,

@@ -42,7 +42,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { _id: taskId, action, concurrency, proxyType, type } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await findPendingProductsWithAggForTask(
-      "DEALS_ON_EBY",
+      'NEG_EBY_DEALS',
       taskId,
       proxyType,
       action || "none",
@@ -118,7 +118,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteArbispotterProduct(shopDomain, productId);
+            await deleteArbispotterProduct( productId);
             //DELETE PRODUCT
           }
         } else {
@@ -175,7 +175,6 @@ export async function scrapeEbyListings(
       queue.total++;
       if (cause === "exceedsLimit") {
         const result = await updateArbispotterProductQuery(
-          shopDomain,
           productId,
           {
             $unset: {

@@ -26,7 +26,7 @@ import { log } from "../util/logger.js";
 import { multiQueueInitializer } from "../util/multiQueueInitializer.js";
 import { TaskCompletedStatus } from "../status.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
-import { hostname, wholesaleCollectionName } from "../db/mongo.js";
+import { hostname, wholeSaleColname } from "../db/mongo.js";
 import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
@@ -106,7 +106,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         });
         if (check instanceof TaskCompletedStatus) {
           const remaining = await countRemainingProductsShop(
-            wholesaleCollectionName,
+            wholeSaleColname,
             taskId,
             type
           );
@@ -155,7 +155,6 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             delete reducedCosts.azn;
             await upsertAsin(productUpdate.asin, [ean], reducedCosts);
             const result = await updateArbispotterProductQuery(
-              wholesaleCollectionName,
               productId,
               {
                 $set: {
@@ -183,7 +182,6 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
                 infos.missingProperties.costs++;
               }
               const result = await updateArbispotterProductQuery(
-                wholesaleCollectionName,
                 productId,
                 {
                   $set: {
@@ -205,7 +203,6 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           }
         } else {
           const result = await updateArbispotterProductQuery(
-            wholesaleCollectionName,
             productId,
             {
               $set: {
@@ -232,7 +229,6 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         infos.total++;
         queue.total++;
         const result = await updateArbispotterProductQuery(
-          wholesaleCollectionName,
           productId,
           {
             $set: {

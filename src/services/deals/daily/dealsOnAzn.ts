@@ -119,7 +119,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               );
             } else {
               infos.total++;
-              await deleteArbispotterProduct(shopDomain, productId);
+              await deleteArbispotterProduct( productId);
               log(`Deleted: ${shopDomain}-${productId}`);
               //DELETE PRODUCT
             }

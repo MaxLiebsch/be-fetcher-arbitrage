@@ -136,8 +136,8 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           transformedProduct["uprc"] = roundToTwoDecimals(
             prc / transformedProduct["qty"]
           );
+          transformedProduct["sdmn"] = shopDomain;
           const result = await createOrUpdateArbispotterProduct(
-            shopDomain,
             transformedProduct
           );
 
@@ -153,7 +153,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         const properties: Array<
           keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
         > = ["nm", "prc", "lnk", "img"];
-        
+
         properties.forEach((prop) => {
           if (!transformedProduct[prop]) {
             infos.missingProperties[prop]++;

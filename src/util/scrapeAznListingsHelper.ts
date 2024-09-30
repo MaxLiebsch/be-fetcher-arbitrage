@@ -71,21 +71,16 @@ export async function handleAznListingProductInfo(
         Object.entries(arbitrage).forEach(([key, val]) => {
           productUpdate[key] = val;
         });
-        const result = await updateArbispotterProductQuery(
-          collection,
-          productId,
-          {
-            $set: productUpdate,
-            $unset: {
-              [taskIdProp]: "",
-            },
-          }
-        );
+        const result = await updateArbispotterProductQuery(productId, {
+          $set: productUpdate,
+          $unset: {
+            [taskIdProp]: "",
+          },
+        });
         log(`Product info: ${collection}-${productId}`, result);
       } else {
         infos.missingProperties.aznCostNeg++;
         const result = await updateArbispotterProductQuery(
-          collection,
           productId,
           resetAznProductQuery()
         );
@@ -94,7 +89,6 @@ export async function handleAznListingProductInfo(
     } else {
       infos.missingProperties.price++;
       const result = await updateArbispotterProductQuery(
-        collection,
         productId,
         resetAznProductQuery()
       );
@@ -103,7 +97,6 @@ export async function handleAznListingProductInfo(
   } else {
     infos.missingProperties.infos++;
     const result = await updateArbispotterProductQuery(
-      collection,
       productId,
       resetAznProductQuery()
     );
@@ -115,7 +108,6 @@ export async function handleAznListingNotFound(
   id: ObjectId
 ) {
   const result = await updateArbispotterProductQuery(
-    collection,
     id,
     resetAznProductQuery()
   );

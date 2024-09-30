@@ -1,6 +1,6 @@
 import {
   createArbispotterCollection,
-  wholesaleCollectionName,
+  wholeSaleColname,
 } from "../db/mongo";
 
 async function main() { 

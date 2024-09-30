@@ -29,7 +29,7 @@ import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats.js";
 import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 import { log } from "../../util/logger.js";
 
-export const crawlProducts = async (
+export const scrapeProducts = async (
   shop: Shop,
   task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
@@ -127,10 +127,7 @@ export const crawlProducts = async (
               );
               transformedProduct["availUpdatedAt"] =
                 new UTCDate().toISOString();
-              const existingProduct = await findProductByHash(
-                salesDbName,
-                productHash
-              );
+              const existingProduct = await findProductByHash(productHash);
               if (existingProduct) {
                 const {
                   _id: productId,
@@ -139,15 +136,11 @@ export const crawlProducts = async (
                   eby_prop, // query ean on eby
                   cat_prop, // lookup category
                 } = existingProduct;
-                const result = await updateArbispotterProductQuery(
-                  salesDbName,
-                  productId,
-                  {
-                    $set: {
-                      availUpdatedAt: transformedProduct["availUpdatedAt"],
-                    },
-                  }
-                );
+                const result = await updateArbispotterProductQuery(productId, {
+                  $set: {
+                    availUpdatedAt: transformedProduct["availUpdatedAt"],
+                  },
+                });
                 log(
                   `Updating availUpdatedAt: ${salesDbName}-${productId}`,
                   result
@@ -219,8 +212,9 @@ export const crawlProducts = async (
                   task.progress.aznListings.push(productId);
                 }
               } else {
+                transformedProduct["sdmn"] = salesDbName;
+                transformedProduct["shop"] = shopDomain;
                 const result = await insertArbispotterProduct(
-                  salesDbName,
                   transformedProduct
                 );
                 log(

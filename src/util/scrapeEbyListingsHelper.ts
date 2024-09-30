@@ -61,7 +61,6 @@ export async function handleEbyListingProductInfo(
       )
     ) {
       const result = await updateArbispotterProductQuery(
-        collection,
         productId,
         resetEbyProductQuery()
       );
@@ -123,7 +122,6 @@ export async function handleEbyListingProductInfo(
             };
 
             const result = await updateArbispotterProductQuery(
-              collection,
               productId,
               query
             );
@@ -131,7 +129,6 @@ export async function handleEbyListingProductInfo(
           } else {
             infos.missingProperties.calculationFailed++;
             const result = await updateArbispotterProductQuery(
-              collection,
               productId,
               resetEbyProductQuery()
             );
@@ -140,7 +137,6 @@ export async function handleEbyListingProductInfo(
         } else {
           infos.missingProperties.mappedCat++;
           const result = await updateArbispotterProductQuery(
-            collection,
             productId,
             resetEbyProductQuery()
           );
@@ -149,7 +145,6 @@ export async function handleEbyListingProductInfo(
       } else {
         infos.missingProperties.price++;
         const result = await updateArbispotterProductQuery(
-          collection,
           productId,
           resetEbyProductQuery()
         );
@@ -158,7 +153,6 @@ export async function handleEbyListingProductInfo(
     }
   } else {
     const result = await updateArbispotterProductQuery(
-      collection,
       productId,
       resetEbyProductQuery()
     );
@@ -172,7 +166,6 @@ export async function handleEbyListingNotFound(
   id: ObjectId
 ) {
   const result = await updateArbispotterProductQuery(
-    collection,
     id,
     resetEbyProductQuery()
   );
