@@ -48,7 +48,7 @@ const deleteQueryEansResults = async () => {
   } else {
     query.$or.push({ nm_prop: "in_progress", nm_batchId: { $exists: true } });
   }
-  console.log('query:', JSON.stringify(query,null,2))
+  console.log("query:", JSON.stringify(query, null, 2));
 
   const activeShops = shops.filter((shop) => shop.active);
 
@@ -63,7 +63,10 @@ const deleteQueryEansResults = async () => {
     let completed = false;
     while (!completed) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(shop.d, query, batchSize);
+      const products = await findArbispotterProducts(
+        { sdmn: shop.d, ...query },
+        batchSize
+      );
       if (products.length) {
         products.map((p) => {
           count++;

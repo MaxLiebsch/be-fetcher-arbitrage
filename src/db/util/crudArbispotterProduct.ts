@@ -8,12 +8,6 @@ import {
   ObjectId,
 } from "@dipmaxtech/clr-pkg";
 
-const getCollection = async (collectionName: string) => {
-  const db = await getArbispotterDb();
-  return db.collection<DbProductRecord>(collectionName);
-};
-
-
 export const findProducts = async (
   query: Filter<DbProductRecord>,
   limit = 500,
@@ -28,14 +22,12 @@ export const findProducts = async (
 };
 
 export const findArbispotterProducts = async (
-  domain: string,
   query: Filter<DbProductRecord>,
   limit = 500,
   page = 0
 ) => {
-  const collectionName = domain;
-  const collection = await getCollection(collectionName);
-  return collection
+  const productCol = await getProductsCol();
+  return productCol
     .find({ ...query })
     .limit(limit ?? 500)
     .skip(page * limit)

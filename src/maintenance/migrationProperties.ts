@@ -8,19 +8,17 @@ import { DbProductRecord, removeSearchParams } from "@dipmaxtech/clr-pkg";
 import { createHash } from "../util/hash.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
 
-const query = {};
-
 const migrationProperties = async () => {
   const spotter = await getArbispotterDb();
   const shops = await getAllShopsAsArray();
-  const activeShops = shops!.filter(
-    (shop) =>
-      shop.active 
-  );
+  const activeShops = shops!.filter((shop) => shop.active);
   //@ts-ignore
   activeShops.push({ d: "sales" });
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
+    const query = {
+      sdmn: shop.d,
+    };
     let total = await spotter.collection(shop.d).countDocuments(query);
 
     console.log("Processing shop:", shop.d, "total:", total);
@@ -29,12 +27,7 @@ const migrationProperties = async () => {
     const batchSize = 1000;
     while (count < total && total > 0) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(
-        shop.d,
-        query,
-        batchSize,
-        cnt
-      );
+      const products = await findArbispotterProducts(query, batchSize, cnt);
       if (products.length) {
         await Promise.all(
           products.map(async (product) => {
@@ -62,13 +55,13 @@ const migrationProperties = async () => {
               });
             } else {
               if (findDocuments.length === 2) {
-                await deleteArbispotterProduct( product._id);
+                await deleteArbispotterProduct(product._id);
               } else {
                 findDocuments.pop();
                 await Promise.all(
                   findDocuments.map(async (doc) => {
                     const { _id } = doc;
-                    await deleteArbispotterProduct( _id);
+                    await deleteArbispotterProduct(_id);
                   })
                 );
               }

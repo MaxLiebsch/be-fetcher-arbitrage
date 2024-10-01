@@ -50,8 +50,7 @@ const cleansingAllProducts = async () => {
     while (!complete) {
       const spotterBulkWrites: any[] = [];
       const products = await findArbispotterProducts(
-        shop.d,
-        {},
+        { sdmn: shop.d },
         batchSize,
         cnt
       );

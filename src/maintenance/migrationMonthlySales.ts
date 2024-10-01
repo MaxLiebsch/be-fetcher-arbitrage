@@ -25,9 +25,9 @@ const migrationMonthlySold = async () => {
     while (!complete) {
       const spotterBulkWrites: any = [];
       const products = await findArbispotterProducts(
-        shop.d,
         {
           $and: [
+            { sdmn: shop.d },
             { categories: { $exists: true, $ne: null } },
             { salesRanks: { $exists: true, $ne: null } },
             { categoryTree: { $exists: true, $ne: null } },
