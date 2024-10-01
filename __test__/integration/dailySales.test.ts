@@ -1,9 +1,9 @@
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
-import { deleteAllArbispotterProducts } from "../../src/db/util/crudArbispotterProduct";
 import { dailySales } from "../../src/services/dailySales";
 import { DailySalesTask } from "../../src/types/tasks/DailySalesTask";
 import { setTaskLogger } from "../../src/util/logger";
-import { describe, expect, test, beforeAll } from "@jest/globals";
+import { describe, test } from "@jest/globals";
+import { deleteAllProducts } from "../../src/db/util/crudProducts";
 
 const shopDomain = "voelkner.de";
 const task = {
@@ -90,7 +90,7 @@ const task = {
 
 describe("Daily Sales", () => {
   beforeAll(async () => {
-    await deleteAllArbispotterProducts("sales");
+    await deleteAllProducts("sales");
   }, 100000);
 
   test("Daily Sales listings", async () => {

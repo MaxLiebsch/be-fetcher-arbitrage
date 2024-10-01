@@ -24,10 +24,9 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
-import { lockProductsForMatch } from "../db/util/match/lockProductsForMatch.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
 import { TaskCompletedStatus } from "../status.js";
 import { MatchProductsTask } from "../types/tasks/Tasks.js";
@@ -36,6 +35,7 @@ import { TaskReturnType } from "../types/TaskReturnType.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { log } from "../util/logger.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
+import { lockProducts } from "../db/util/multiShopUtilities/lockProducts.js";
 
 export default async function match(task: MatchProductsTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -55,12 +55,13 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
 
     const { hasEan, ean } = srcShop;
 
-    const lockedProducts = await lockProductsForMatch(
-      taskId,
+    const lockedProducts = await lockProducts(
+      "MATCH_PRODUCTS",
       shopDomain,
+      productLimit,
       action || "none",
-      Boolean(hasEan || ean),
-      productLimit
+      taskId,
+      Boolean(hasEan || ean)
     );
 
     if (action === "recover") {
@@ -81,7 +82,10 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         new MissingProductsError(`No products for ${shopDomain}`, task)
       );
 
-    const _productLimit = getProductLimitMulti(lockedProducts.length, productLimit);
+    const _productLimit = getProductLimitMulti(
+      lockedProducts.length,
+      productLimit
+    );
     log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
 
@@ -172,16 +176,12 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       }
       productUpdate["matched"] = true;
 
-      const result = await updateArbispotterProductQuery(
-        shopDomain,
-        productId,
-        {
-          $set: productUpdate,
-          $unset: {
-            taskId: "",
-          },
-        }
-      );
+      const result = await updateProductWithQuery(productId, {
+        $set: productUpdate,
+        $unset: {
+          taskId: "",
+        },
+      });
       log(
         `Matched ${shopDomain}-${productId} Ebay: ${Boolean(
           esin
@@ -233,6 +233,11 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         Promise.all(_shops).then(async (targetShopProducts) => {
           infos.total++;
           queue.total++;
+          log(
+            `Product found: ${!!targetShopProducts[0]?.procProd}, Path: ${
+              targetShopProducts[0].path
+            }`
+          );
           if (targetShopProducts[0] && targetShopProducts[0]?.procProd) {
             const procProd = targetShopProducts[0]?.procProd;
             await handleOutput(procProd as DbProductRecord, product);
@@ -242,6 +247,15 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
               prodInfo
             );
             await handleOutput(procProd, product);
+          } else {
+            await updateProductWithQuery(product._id, {
+              $set: {
+                matched: false,
+              },
+              $unset: {
+                taskId: "",
+              },
+            });
           }
           await isProcessComplete();
         })

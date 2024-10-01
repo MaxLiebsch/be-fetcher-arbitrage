@@ -9,7 +9,6 @@ import {
   transformProduct,
   uuid,
 } from "@dipmaxtech/clr-pkg";
-import { createArbispotterCollection } from "../db/mongo.js";
 import { getShop } from "../db/util/shops.js";
 import {
   CONCURRENCY,
@@ -21,7 +20,7 @@ import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
 } from "../util/updateProgressInTasks.js";
-import { createOrUpdateArbispotterProduct } from "../db/util/createOrUpdateArbispotterProduct.js";
+import { upsertProduct } from "../db/util/upsertProduct.js";
 import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats.js";
 import { ScrapeShopTask } from "../types/tasks/Tasks.js";
 import { TaskCompletedStatus } from "../status.js";
@@ -113,7 +112,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
     emitter.on(`${queue.queueId}-finished`, async () => await isCompleted());
 
     await queue.connect();
-    await createArbispotterCollection(`${shopDomain}`);
     const startTime = Date.now();
     const interval = setInterval(
       async () => await isCompleted(),
@@ -136,10 +134,8 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           transformedProduct["uprc"] = roundToTwoDecimals(
             prc / transformedProduct["qty"]
           );
-          const result = await createOrUpdateArbispotterProduct(
-            shopDomain,
-            transformedProduct
-          );
+          transformedProduct["sdmn"] = shopDomain;
+          const result = await upsertProduct(transformedProduct);
 
           log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
           if (result?.acknowledged) {
@@ -153,7 +149,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         const properties: Array<
           keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
         > = ["nm", "prc", "lnk", "img"];
-        
+
         properties.forEach((prop) => {
           if (!transformedProduct[prop]) {
             infos.missingProperties[prop]++;

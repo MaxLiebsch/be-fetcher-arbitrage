@@ -1,10 +1,10 @@
 import { LoggerService, QueueStats } from "@dipmaxtech/clr-pkg";
 import { findShops } from "../db/util/shops.js";
-import { wholesaleCollectionName } from "../db/mongo.js";
+import { wholeSaleColname } from "../db/mongo.js";
 
 import { queryEansOnEby } from "./dailySales/queryEansOnEby.js";
 import { lookupCategory } from "./dailySales/lookupCategory.js";
-import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
+import { findProductsNoLimit } from "../db/util/crudProducts.js";
 import { TaskCompletedStatus } from "../status.js";
 
 import { getElapsedTime } from "../util/dates.js";
@@ -83,7 +83,7 @@ export const wholeSaleEby = async (task: WholeSaleEbyTask): TaskReturnType => {
       task.progress.queryEansOnEby = products.map((p) => p._id);
       task.browserConfig.queryEansOnEby.productLimit = products.length;
       const queryEansOnEbyInfo = await queryEansOnEby(
-        wholesaleCollectionName,
+        wholeSaleColname,
         ebay,
         task
       );
@@ -104,18 +104,15 @@ export const wholeSaleEby = async (task: WholeSaleEbyTask): TaskReturnType => {
       progress.lookupCategory &&
       progress.lookupCategory.length > 0
     ) {
-      const products = await findArbispotterProductsNoLimit(
-        wholesaleCollectionName,
-        {
-          _id: { $in: progress.lookupCategory },
-        }
-      );
+      const products = await findProductsNoLimit({
+        _id: { $in: progress.lookupCategory },
+      });
       if (products.length) {
         log(`WholeSale Eby: LookupCategory ${products.length}`);
         task.lookupCategory = products;
         task.browserConfig.lookupCategory.productLimit = products.length;
         const lookupCategoryInfo = await lookupCategory(
-          wholesaleCollectionName,
+          wholeSaleColname,
           ebay,
           { d: "wholeSaleEby", ean: "", hasEan: true },
           task

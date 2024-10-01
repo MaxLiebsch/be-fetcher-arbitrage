@@ -1,4 +1,4 @@
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct";
+import { findProducts } from "../db/util/crudProducts";
 import { getTasks } from "../db/util/tasks";
 import { getArbispotterDb } from "../db/mongo";
 import { getAllShopsAsArray } from "../db/util/shops";
@@ -82,8 +82,9 @@ export const isAiTaskRunning = (tasks: any, batchId: any, batchIdKey: any) => {
   return false;
 };
 
-export const buildQuery = (taskIds: string[]) => {
+export const buildQuery = (taskIds: string[], domain: string) => {
   return {
+    sdmn: domain,
     $or: taskIds.map((taskId) => ({
       [taskId]: { $exists: true, $ne: "" },
     })),
@@ -107,16 +108,15 @@ const resetTaskIds = async () => {
 
     const total = await spotter
       .collection(shop.d)
-      .countDocuments(buildQuery(taskIds));
+      .countDocuments(buildQuery(taskIds, shop.d));
     console.log("Processing shop:", shop.d);
     let count = 0;
     let cnt = 0;
     const batchSize = 3000;
     while (count < total) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(
-        shop.d,
-        buildQuery(taskIds),
+      const products = await findProducts(
+        buildQuery(taskIds, shop.d),
         batchSize
       );
       if (products.length) {

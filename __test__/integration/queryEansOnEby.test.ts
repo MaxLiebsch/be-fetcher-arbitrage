@@ -1,14 +1,14 @@
 import { describe, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
-import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
 import queryEansOnEby from "../../src/services/queryEansOnEby";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
 import { TASK_TYPES } from "../../src/util/taskTypes";
 import { resetProperty } from "../../src/maintenance/resetProperty";
+import {
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 
 const shopDomain = "gamestop.de";
 
@@ -25,11 +25,12 @@ describe("query eans on eby", () => {
     }
     productLimit = products.length;
     console.log("products", products.length);
-    await deleteAllArbispotterProducts(shopDomain);
-    await insertArbispotterProducts(
-      shopDomain,
+    await deleteAllProducts(shopDomain);
+    await insertProducts(
       products.map((l) => {
-        return { ...l, _id: new ObjectId(l._id.$oid) };
+        const id = l._id.$oid;
+        delete l._id;
+        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
     );
     await resetProperty({ $unset: { eby_prop: "", eby_taskId: "" } });
@@ -37,7 +38,7 @@ describe("query eans on eby", () => {
 
   test("query eans on eby", async () => {
     const logger = new LocalLogger().createLogger("QUERY_EANS_EBY");
-    setTaskLogger(logger, 'TASK_LOGGER');
+    setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await queryEansOnEby({
       concurrency: 4,

@@ -11,7 +11,7 @@ import {
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { defaultAznDealTask } from "../constants.js";
 import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn.js";
 import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats.js";
@@ -71,21 +71,16 @@ export async function handleAznListingProductInfo(
         Object.entries(arbitrage).forEach(([key, val]) => {
           productUpdate[key] = val;
         });
-        const result = await updateArbispotterProductQuery(
-          collection,
-          productId,
-          {
-            $set: productUpdate,
-            $unset: {
-              [taskIdProp]: "",
-            },
-          }
-        );
+        const result = await updateProductWithQuery(productId, {
+          $set: productUpdate,
+          $unset: {
+            [taskIdProp]: "",
+          },
+        });
         log(`Product info: ${collection}-${productId}`, result);
       } else {
         infos.missingProperties.aznCostNeg++;
-        const result = await updateArbispotterProductQuery(
-          collection,
+        const result = await updateProductWithQuery(
           productId,
           resetAznProductQuery()
         );
@@ -93,8 +88,7 @@ export async function handleAznListingProductInfo(
       }
     } else {
       infos.missingProperties.price++;
-      const result = await updateArbispotterProductQuery(
-        collection,
+      const result = await updateProductWithQuery(
         productId,
         resetAznProductQuery()
       );
@@ -102,8 +96,7 @@ export async function handleAznListingProductInfo(
     }
   } else {
     infos.missingProperties.infos++;
-    const result = await updateArbispotterProductQuery(
-      collection,
+    const result = await updateProductWithQuery(
       productId,
       resetAznProductQuery()
     );
@@ -114,8 +107,7 @@ export async function handleAznListingNotFound(
   collection: string,
   id: ObjectId
 ) {
-  const result = await updateArbispotterProductQuery(
-    collection,
+  const result = await updateProductWithQuery(
     id,
     resetAznProductQuery()
   );

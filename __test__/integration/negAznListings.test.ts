@@ -1,16 +1,16 @@
 import { describe, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
-import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
 import negAznDeals from "../../src/services/deals/weekly/negAznDeals";
-import { getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb } from "../../src/db/mongo";
+import { getActiveShops, getAllShopsAsArray } from "../../src/db/util/shops";
+import { getArbispotterDb, getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
 import { updateProgressNegDealAznTasks } from "../../src/util/updateProgressInTasks";
+import {
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 const proxyType = "mix";
 
 const shopDomain = "gamestop.de";
@@ -29,34 +29,36 @@ describe("crawl azn listings", () => {
       throw new Error("No azn listings found for " + shopDomain);
     }
     console.log("aznListings", aznListings.length);
-    await deleteAllArbispotterProducts(shopDomain);
-    const shops = await getAllShopsAsArray();
-    const spotter = await getArbispotterDb();
-    //@ts-ignore
-    shops!.push({ d: "sales" });
+    await deleteAllProducts(shopDomain);
+    const shops = await getActiveShops();
+    const productCol = await getProductsCol();
+
     await Promise.all(
       shops!.map(async (shop) => {
-        return spotter.collection(shop.d).updateMany(
-          {},
+        return productCol.updateMany(
+          { sdmn: shop.d },
           {
-            $set: { availUpdatedAt: sub(new Date(), { days: 2 }).toISOString() },
+            $set: {
+              availUpdatedAt: sub(new Date(), { days: 2 }).toISOString(),
+            },
             $unset: { azn_taskId: "", aznUpdatedAt: "" },
           }
         );
       })
     );
-    await updateProgressNegDealAznTasks('mix');
-    await insertArbispotterProducts(
-      shopDomain,
+    await updateProgressNegDealAznTasks("mix");
+    await insertProducts(
       aznListings.map((l) => {
-        return { ...l, _id: new ObjectId(l._id.$oid) };
+        const id = l._id.$oid;
+        delete l._id;
+        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
     );
   }, 100000);
 
   test("crawl azn listings", async () => {
     const logger = new LocalLogger().createLogger("CRAWL_AZN_LISTINGS");
-    setTaskLogger(logger, 'TASK_LOGGER');
+    setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await negAznDeals({
       proxyType: "mix",

@@ -1,5 +1,5 @@
 import { getArbispotterDb } from "../db/mongo.js";
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { findProducts } from "../db/util/crudProducts.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
 import { countTotal } from "./countProducts.js";
 import { recalculateAznMargin } from "../util/recalculateAznMargin.js";
@@ -49,9 +49,8 @@ const cleansingAllProducts = async () => {
     let complete = false;
     while (!complete) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(
-        shop.d,
-        {},
+      const products = await findProducts(
+        { sdmn: shop.d },
         batchSize,
         cnt
       );

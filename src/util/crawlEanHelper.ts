@@ -11,11 +11,11 @@ import {
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import {
-  deleteArbispotterProduct,
-  insertArbispotterProduct,
-  moveArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  insertProduct,
+  moveProduct,
+  updateProductWithQuery,
+} from "../db/util/crudProducts.js";
 import { createHash } from "./hash.js";
 import { UTCDate } from "@date-fns/utc";
 import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats.js";
@@ -72,18 +72,13 @@ export async function handleCrawlEanProductInfo(
       }
 
       if (url === productLink) {
-        const result = await updateArbispotterProductQuery(
-          collectionName,
-          productId,
-          {
-            $set: productUpdate,
-            $unset: { ean_taskId: "" },
-          }
-        );
+        const result = await updateProductWithQuery(productId, {
+          $set: productUpdate,
+          $unset: { ean_taskId: "" },
+        });
         log(`Product info updated: ${collectionName}-${productId}`, result);
       } else {
-        const result = await deleteArbispotterProduct(
-          collectionName,
+        const result = await deleteProduct(
           productId
         );
         log(`Product deleted: ${collectionName}-${productId}`, result);
@@ -91,7 +86,7 @@ export async function handleCrawlEanProductInfo(
           url = removeSearchParams(url);
           const s_hash = createHash(url);
           delete product.ean_taskId;
-          const result = await insertArbispotterProduct(collectionName, {
+          const result = await insertProduct({
             ...product,
             ...productUpdate,
             lnk: url,
@@ -106,30 +101,22 @@ export async function handleCrawlEanProductInfo(
         eanUpdatedAt: new UTCDate().toISOString(),
         ean_prop: ean ? "invalid" : "missing",
       };
-      const result = await updateArbispotterProductQuery(
-        collectionName,
-        productId,
-        {
-          $set: productUpdate,
-          $unset: { ean_taskId: "" },
-        }
-      );
+      const result = await updateProductWithQuery(productId, {
+        $set: productUpdate,
+        $unset: { ean_taskId: "" },
+      });
       log(`Invalid ean: ${collectionName}-${productId}`, result);
     }
   } else {
-    const result = await updateArbispotterProductQuery(
-      collectionName,
-      productId,
-      {
-        $set: {
-          ean_prop: "invalid",
-          eanUpdatedAt: new UTCDate().toISOString(),
-        },
-        $unset: {
-          ean_taskId: "",
-        },
-      }
-    );
+    const result = await updateProductWithQuery(productId, {
+      $set: {
+        ean_prop: "invalid",
+        eanUpdatedAt: new UTCDate().toISOString(),
+      },
+      $unset: {
+        ean_taskId: "",
+      },
+    });
     log(`Invalid ean: ${collectionName}-${productId}`, result);
   }
   taskStats.shops![collectionName]++;
@@ -142,7 +129,7 @@ export async function handleCrawlEanNotFound(
   productId: ObjectId
 ) {
   if (cause === "exceedsLimit") {
-    const result = await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateProductWithQuery(productId, {
       $set: {
         ean_prop: "timeout",
         eanUpdatedAt: new UTCDate().toISOString(),
@@ -153,10 +140,10 @@ export async function handleCrawlEanNotFound(
     });
     log(`ExceedsLimit: ${collection}-${productId} - ${cause}`, result);
   } else if (cause === "notFound") {
-    const result = await deleteArbispotterProduct(collection, productId);
+    const result = await deleteProduct(productId);
     log(`Deleted: ${collection}-${productId} - ${cause}`, result);
   } else {
-    await moveArbispotterProduct(collection, "grave", productId);
+    await moveProduct("grave", productId);
     log(`Moved to grave: ${collection}-${productId} - ${cause} - ${cause}`);
   }
 }

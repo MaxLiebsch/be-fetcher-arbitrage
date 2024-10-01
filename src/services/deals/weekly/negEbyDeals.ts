@@ -21,12 +21,11 @@ import {
   handleEbyListingProductInfo,
 } from "../../../util/scrapeEbyListingsHelper.js";
 import {
-  deleteArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../../../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  updateProductWithQuery,
+} from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { lookForOudatedNegMarginEbyListings } from "../../../db/util/deals/weekly/eby/lookForOutdatedNegMarginEbyListings.js";
 import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
 import { NegEbyDealTask } from "../../../types/tasks/Tasks.js";
 import { TaskStats } from "../../../types/taskStats/TasksStats.js";
@@ -36,12 +35,14 @@ import { MissingShopError } from "../../../errors.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
+import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js";
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id: taskId, action, concurrency, proxyType, type } = task;
   return new Promise(async (res, rej) => {
-    const { products, shops } = await lookForOudatedNegMarginEbyListings(
+    const { products, shops } = await findPendingProductsWithAggForTask(
+      'NEG_EBY_DEALS',
       taskId,
       proxyType,
       action || "none",
@@ -117,7 +118,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteArbispotterProduct(shopDomain, productId);
+            await deleteProduct( productId);
             //DELETE PRODUCT
           }
         } else {
@@ -173,8 +174,7 @@ export async function scrapeEbyListings(
       infos.total++;
       queue.total++;
       if (cause === "exceedsLimit") {
-        const result = await updateArbispotterProductQuery(
-          shopDomain,
+        const result = await updateProductWithQuery(
           productId,
           {
             $unset: {

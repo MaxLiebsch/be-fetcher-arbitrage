@@ -12,7 +12,7 @@ import {
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { defaultEbyDealTask } from "../constants.js";
 import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
 import { log } from "./logger.js";
@@ -60,8 +60,7 @@ export async function handleEbyListingProductInfo(
         instock.toLowerCase().includes(str.toLowerCase())
       )
     ) {
-      const result = await updateArbispotterProductQuery(
-        collection,
+      const result = await updateProductWithQuery(
         productId,
         resetEbyProductQuery()
       );
@@ -122,16 +121,11 @@ export async function handleEbyListingProductInfo(
               $unset: { [taskIdProp]: "" },
             };
 
-            const result = await updateArbispotterProductQuery(
-              collection,
-              productId,
-              query
-            );
+            const result = await updateProductWithQuery(productId, query);
             log(`Product updated: ${collection}-${productId}`, result);
           } else {
             infos.missingProperties.calculationFailed++;
-            const result = await updateArbispotterProductQuery(
-              collection,
+            const result = await updateProductWithQuery(
               productId,
               resetEbyProductQuery()
             );
@@ -139,8 +133,7 @@ export async function handleEbyListingProductInfo(
           }
         } else {
           infos.missingProperties.mappedCat++;
-          const result = await updateArbispotterProductQuery(
-            collection,
+          const result = await updateProductWithQuery(
             productId,
             resetEbyProductQuery()
           );
@@ -148,8 +141,7 @@ export async function handleEbyListingProductInfo(
         }
       } else {
         infos.missingProperties.price++;
-        const result = await updateArbispotterProductQuery(
-          collection,
+        const result = await updateProductWithQuery(
           productId,
           resetEbyProductQuery()
         );
@@ -157,8 +149,7 @@ export async function handleEbyListingProductInfo(
       }
     }
   } else {
-    const result = await updateArbispotterProductQuery(
-      collection,
+    const result = await updateProductWithQuery(
       productId,
       resetEbyProductQuery()
     );
@@ -169,12 +160,11 @@ export async function handleEbyListingProductInfo(
 
 export async function handleEbyListingNotFound(
   collection: string,
-  id: ObjectId
+  productId: ObjectId
 ) {
-  const result = await updateArbispotterProductQuery(
-    collection,
-    id,
+  const result = await updateProductWithQuery(
+    productId,
     resetEbyProductQuery()
   );
-  log(`Not found: ${collection}-${id}`, result);
+  log(`Not found: ${collection}-${productId}`, result);
 }

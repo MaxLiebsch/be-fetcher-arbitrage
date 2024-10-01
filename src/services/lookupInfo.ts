@@ -12,7 +12,6 @@ import _ from "underscore";
 import { handleResult } from "../handleResult.js";
 import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { lookForUnmatchedEans } from "../db/util/lookupInfo/lookForUnmatchedEans.js";
 import { getShop } from "../db/util/shops.js";
 import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import {
@@ -31,6 +30,7 @@ import { setTaskId } from "../db/util/queries.js";
 import { MissingProductsError } from "../errors.js";
 import { MissingShopError } from "../errors.js";
 import { log } from "../util/logger.js";
+import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -56,7 +56,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       },
     };
 
-    const { products, shops } = await lookForUnmatchedEans(
+    const { products, shops } = await findPendingProductsForTask(
+      "LOOKUP_INFO",
       taskId,
       action || "none",
       productLimit

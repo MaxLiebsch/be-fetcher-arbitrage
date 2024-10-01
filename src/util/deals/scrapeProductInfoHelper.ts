@@ -7,7 +7,7 @@ import {
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { updateArbispotterProductQuery } from "../../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../../db/util/crudProducts.js";
 import { log } from "../logger.js";
 
 export async function handleDealsProductInfo(
@@ -39,7 +39,7 @@ export async function handleDealsProductInfo(
       ...(mku && { mku }),
     };
 
-    const result = await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateProductWithQuery( productId, {
       $set: productUpdate,
     });
     log(`Updated product info: ${collection}-${productId.toString()}`, result);

@@ -15,13 +15,11 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError } from "../errors.js";
 import {
   CONCURRENCY,
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { lookForMissingEans } from "../db/util/crawlEan/lookForMissingEans.js";
 import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
 import {
   updateProgressInCrawlEanTask,
@@ -40,6 +38,7 @@ import { TaskReturnType } from "../types/TaskReturnType.js";
 import { log } from "../util/logger.js";
 import { countRemainingProducts } from "../util/countRemainingProducts.js";
 import { setTaskId } from "../db/util/queries.js";
+import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -54,11 +53,12 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       elapsedTime: "",
     };
 
-    const { products, shops } = await lookForMissingEans(
+    const { products, shops } = await findPendingProductsForTask(
+      "CRAWL_EAN",
       taskId,
-      proxyType,
       action || "none",
-      productLimit
+      productLimit,
+      proxyType
     );
 
     if (action === "recover") {

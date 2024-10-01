@@ -8,7 +8,7 @@ import { ScrapeShopTask } from "../../src/types/tasks/Tasks";
 const shopDomain = "reichelt.de";
 
 const today = new Date();
-const productLimit = 200;
+const productLimit = 150;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -25,22 +25,12 @@ const task = {
   },
   categories: [
     {
-      name: "Neu",
-      link: "https://www.reichelt.de/?PAGE=2",
-      limit: {
-        subCategories: 100,
-        pages: 10,
-      },
-      productLimit: 20,
+      name: "Strom- versorgung",
+      link: "https://www.reichelt.de/de/de/stromversorgung-c1012.html?&nbc=1",
     },
     {
-      name: "Sale",
-      link: "https://www.reichelt.de/sale-l2568.html",
-      limit: {
-        subCategories: 100,
-        pages: 10,
-      },
-      productLimit: 20,
+      name: "Messtechnik",
+      link: "https://www.reichelt.de/de/de/messtechnik-c5868.html?&nbc=1",
     },
   ],
   recurrent: true,
@@ -59,7 +49,7 @@ const task = {
 describe("crawlproducts", () => {
   test("lookup info listings", async () => {
     const logger = new LocalLogger().createLogger("CRAWL_SHOP");
-    setTaskLogger(logger, 'TASK_LOGGER');
+    setTaskLogger(logger, "TASK_LOGGER");
 
     const infos = await scrapeShop(task as unknown as ScrapeShopTask);
     console.log(JSON.stringify(infos, null, 2));

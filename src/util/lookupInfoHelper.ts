@@ -10,7 +10,7 @@ import { upsertAsin } from "../db/util/asinTable.js";
 import { UTCDate } from "@date-fns/utc";
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";
 
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { log } from "./logger.js";
 
 export async function handleLookupInfoProductInfo(
@@ -53,8 +53,7 @@ export async function handleLookupInfoProductInfo(
         };
       }
 
-      const result = await updateArbispotterProductQuery(
-        collection,
+      const result = await updateProductWithQuery(
         productId,
         {
           $set: {
@@ -81,8 +80,7 @@ export async function handleLookupInfoProductInfo(
           loggerMessage = `Azn Costs 0: ${collection}-${productId.toString()}`;
           infos.missingProperties.costs++;
         }
-        const result = await updateArbispotterProductQuery(
-          collection,
+        const result = await updateProductWithQuery(
           productId,
           resetAznProductQuery({
             info_prop: "missing",
@@ -93,8 +91,7 @@ export async function handleLookupInfoProductInfo(
     }
   } else {
     infos.missingProperties.infos++;
-    const result = await updateArbispotterProductQuery(
-      collection,
+    const result = await updateProductWithQuery(
       productId,
       resetAznProductQuery({
         info_prop: "missing",
@@ -108,8 +105,7 @@ export async function handleLookupInfoNotFound(
   collection: string,
   productId: ObjectId
 ) {
-  const result = await updateArbispotterProductQuery(
-    collection,
+  const result = await updateProductWithQuery(
     productId,
     resetAznProductQuery({
       info_prop: "missing",

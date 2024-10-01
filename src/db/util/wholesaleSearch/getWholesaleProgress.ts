@@ -1,5 +1,7 @@
 import { MultiStageTaskTypes, TASK_TYPES } from "../../../util/taskTypes.js";
-import { getArbispotterDb, wholesaleCollectionName } from "../../mongo.js";
+import {
+  getProductsCol,
+} from "../../mongo.js";
 import {
   countCompletedProductsForWholesaleEbySearchQuery,
   countCompletedProductsForWholesaleSearchQuery,
@@ -12,36 +14,33 @@ export const getCompletedProductsCount = async (
   taskId: ObjectId,
   taskType: MultiStageTaskTypes
 ) => {
-  const db = await getArbispotterDb();
-  const wholesaleCollection = db.collection(wholesaleCollectionName);
+  const productCol = await getProductsCol();
   const query =
     taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH
       ? countCompletedProductsForWholesaleEbySearchQuery(taskId)
       : countCompletedProductsForWholesaleSearchQuery(taskId);
 
-  return wholesaleCollection.countDocuments(query);
+  return productCol.countDocuments(query);
 };
 export const countPendingProductsForWholesaleSearch = async (
   taskId: ObjectId,
   taskType: MultiStageTaskTypes
 ) => {
-  const db = await getArbispotterDb();
-  const wholesaleCollection = db.collection(wholesaleCollectionName);
+  const productCol = await getProductsCol();
   const query =
     taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH
       ? countPendingProductsForWholesaleEbySearchQuery(taskId)
       : countPendingProductsForWholesaleSearchQuery(taskId);
 
-  return wholesaleCollection.countDocuments(query);
+  return productCol.countDocuments(query);
 };
 
 export const countTotalProductsForWholesaleSearch = async (
   taskId: ObjectId
 ) => {
-  const db = await getArbispotterDb();
-  const wholesaleCollection = db.collection(wholesaleCollectionName);
+  const productCol = await getProductsCol();
 
-  return wholesaleCollection.countDocuments({ taskIds: taskId.toString() });
+  return productCol.countDocuments({ taskIds: taskId.toString() });
 };
 
 export const getWholesaleSearchProgress = async (

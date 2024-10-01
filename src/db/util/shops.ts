@@ -7,6 +7,7 @@ import {
 import {
   getArbispotterDb,
   getCrawlDataDb,
+  getProductsCol,
   shopCollectionName,
 } from "../mongo.js";
 import { MatchKeysAndValues } from "mongodb";
@@ -100,14 +101,15 @@ export const insertShop = async (shop: Shop) => {
   return collection.replaceOne({ d: shop.d }, shop, { upsert: true });
 };
 
-export const updateShopStats = async (shopDomain: string) => {
-  const db = await getArbispotterDb();
-  const shopCollection = db.collection<Shop>(shopDomain);
-  if (!shopCollection) return;
+export const updateShopStats = async (domain: string) => {
+  const productCol = await getProductsCol();
+  const db = await getCrawlDataDb();
+  if (!productCol) return;
 
-  const productsPerCategoryAzn = await shopCollection
-    .aggregate(countProductsPerCategoryAzn)
+  const productsPerCategoryAzn = await productCol
+    .aggregate(countProductsPerCategoryAzn(domain))
     .toArray();
+
   const reducedToObjectAzn = productsPerCategoryAzn.reduce((acc, category) => {
     const entry = Object.entries(category)[0];
     return {
@@ -115,10 +117,10 @@ export const updateShopStats = async (shopDomain: string) => {
       [entry[0]]: entry[1],
     };
   }, {});
-  const productsPerCategoryEby = await shopCollection
-    .aggregate(countProductsPerCategoryEby)
+  const productsPerCategoryEby = await productCol
+    .aggregate(countProductsPerCategoryEby(domain))
     .toArray();
-    
+
   const reducedToObjectEby = productsPerCategoryEby.reduce((acc, category) => {
     const entry = Object.entries(category)[0];
     return {
@@ -127,18 +129,20 @@ export const updateShopStats = async (shopDomain: string) => {
     };
   }, {});
 
-  const total = await shopCollection.countDocuments();
-  const a_fat_total = await shopCollection.countDocuments({
+  const total = await productCol.countDocuments();
+  const a_fat_total = await productCol.countDocuments({
+    sdmn: domain,
     a_mrgn_pct: { $gt: 0 },
   });
-  const e_fat_total = await shopCollection.countDocuments({
+  const e_fat_total = await productCol.countDocuments({
+    sdmn: domain,
     e_mrgn_pct: { $gt: 0 },
   });
   const shopsCollection = db.collection<Shop>(shopCollectionName);
   if (!shopsCollection) return;
 
   return await shopsCollection.updateOne(
-    { d: shopDomain },
+    { d: domain },
     {
       $set: {
         a_fat_total,

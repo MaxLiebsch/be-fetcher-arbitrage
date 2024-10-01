@@ -17,7 +17,6 @@ import {
   updateProgressInLookupCategoryTask,
   updateProgressInQueryEansOnEbyTask,
 } from "../util/updateProgressInTasks.js";
-import { lookForUnmatchedQueryEansOnEby } from "../db/util/queryEansOnEby/lookForUnmatchedEansOnEby.js";
 import { getShop } from "../db/util/shops.js";
 import {
   handleQueryEansOnEbyIsFinished,
@@ -25,13 +24,14 @@ import {
 } from "../util/queryEansOnEbyHelper.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { TaskCompletedStatus } from "../status.js";
 import { QueryEansOnEbyTask } from "../types/tasks/Tasks.js";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
 import { TaskReturnType } from "../types/TaskReturnType.js";
 import { log } from "../util/logger.js";
 import { countRemainingProducts } from "../util/countRemainingProducts.js";
+import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask
@@ -49,7 +49,8 @@ export default async function queryEansOnEby(
     };
 
     const { products: productsWithShop, shops } =
-      await lookForUnmatchedQueryEansOnEby(
+      await findPendingProductsForTask(
+        "QUERY_EANS_EBY",
         taskId,
         action || "none",
         productLimit
@@ -146,8 +147,7 @@ export default async function queryEansOnEby(
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         if (cause === "exceedsLimit") {
-          const result = await updateArbispotterProductQuery(
-            srcShopDomain,
+          const result = await updateProductWithQuery(
             productId,
             {
               $unset: {

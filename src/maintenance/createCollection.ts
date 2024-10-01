@@ -1,12 +1,10 @@
 import {
-  createArbispotterCollection,
-  wholesaleCollectionName,
+  createCollection,
+  wholeSaleColname,
 } from "../db/mongo";
 
-async function main() {
-  console.log("test");
-  console.log("wholesaleCollectionName:", wholesaleCollectionName);
-  await createArbispotterCollection(wholesaleCollectionName);
+async function main() { 
+  await createCollection('products');
 }
 
 main().then();

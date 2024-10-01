@@ -9,7 +9,7 @@ import {
   resetEbyProductQuery,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { createHash } from "./hash.js";
 import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
@@ -104,7 +104,7 @@ export async function handleQueryEansOnEbyIsFinished(
       }
     }
 
-    const result = await updateArbispotterProductQuery(collection, productId, {
+    const result = await updateProductWithQuery(productId, {
       $set: {
         ...update,
         qEbyUpdatedAt: new UTCDate().toISOString(),
@@ -123,8 +123,7 @@ export async function handleQueryEansOnEbyIsFinished(
     } else {
       query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
     }
-    const result = await updateArbispotterProductQuery(
-      collection,
+    const result = await updateProductWithQuery(
       productId,
       query
     );
@@ -148,8 +147,7 @@ export async function handleQueryEansOnEbyNotFound(
     query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
   }
 
-  const result = await updateArbispotterProductQuery(
-    collection,
+  const result = await updateProductWithQuery(
     productId,
     query
   );

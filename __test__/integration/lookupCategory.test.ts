@@ -1,13 +1,13 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
-import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
 import lookupCategory from "../../src/services/lookupCategory";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
 import { resetProperty } from "../../src/maintenance/resetProperty";
+import {
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 
 const shopDomain = "gamestop.de";
 
@@ -26,11 +26,12 @@ describe("lookup category", () => {
     }
     productLimit = products.length;
     console.log("products", products.length);
-    await deleteAllArbispotterProducts(shopDomain);
-    await insertArbispotterProducts(
-      shopDomain,
+    await deleteAllProducts(shopDomain);
+    await insertProducts(
       products.map((l) => {
-        return { ...l, _id: new ObjectId(l._id.$oid) };
+        const id = l._id.$oid;
+        delete l._id;
+        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
     );
     await resetProperty({
@@ -43,7 +44,7 @@ describe("lookup category", () => {
 
   test("lookup category", async () => {
     const logger = new LocalLogger().createLogger("LOOKUP_CATEGORY");
-    setTaskLogger(logger);
+    setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await lookupCategory({
       concurrency: 4,

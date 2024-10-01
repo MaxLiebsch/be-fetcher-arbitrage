@@ -1,4 +1,5 @@
-import { ProxyType, Shop } from "@dipmaxtech/clr-pkg";
+import { ProxyType, Shop, TaskTypes } from "@dipmaxtech/clr-pkg";
+import { MultiShopTaskTypes } from "../../util/taskTypes";
 
 export const shopFilter = (
   shop: Pick<Shop, "d" | "hasEan" | "ean" | "active" | "proxyType">
@@ -37,13 +38,13 @@ export const queryEansOnEbyFilter = (
   proxyType: ProxyType
 ) => (shop.hasEan || shop?.ean) && shop.active;
 
-export const serviceShopFilters = {
-  crawlEan: crawlEanFilter,
-  lookupInfo: lookupInfoFilter,
-  lookupCategory: lookupCategoryFilter,
-  queryEansOnEby: queryEansOnEbyFilter,
-  dealsOnEby: shopProxyTypeFilter,
-  dealsOnAzn: shopProxyTypeFilter,
-  negAznDeals: shopProxyTypeFilter,
-  negEbyDeals: shopProxyTypeFilter,
+export const serviceShopFilters: {[key in MultiShopTaskTypes]: any} = {
+  "CRAWL_EAN": crawlEanFilter,
+  "LOOKUP_INFO": lookupInfoFilter,
+  "LOOKUP_CATEGORY": lookupCategoryFilter,
+  "QUERY_EANS_EBY": queryEansOnEbyFilter,
+  "DEALS_ON_EBY": shopProxyTypeFilter,
+  "DEALS_ON_AZN": shopProxyTypeFilter,
+  "NEG_AZN_DEALS": shopProxyTypeFilter,
+  "NEG_EBY_DEALS": shopProxyTypeFilter,
 };

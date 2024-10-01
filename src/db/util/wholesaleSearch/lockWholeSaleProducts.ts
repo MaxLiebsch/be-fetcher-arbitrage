@@ -1,14 +1,8 @@
 import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import {
-  getArbispotterDb,
-  hostname,
-  wholesaleCollectionName,
-} from "../../mongo.js";
-import { Action, WholeSaleTask } from "../../../types/tasks/Tasks.js";
+import { getProductsCol, hostname, wholeSaleColname } from "../../mongo.js";
+import { Action } from "../../../types/tasks/Tasks.js";
 import { Options, Query } from "../queries.js";
 import { MultiStageTaskTypes, TASK_TYPES } from "../../../util/taskTypes.js";
-
-const collectionName = wholesaleCollectionName;
 
 export const lockWholeSaleProducts = async (
   limit = 0,
@@ -16,17 +10,21 @@ export const lockWholeSaleProducts = async (
   action: Action,
   taskType: MultiStageTaskTypes
 ) => {
-  const db = await getArbispotterDb();
-
+  const productCol = await getProductsCol();
   const options: Options = {};
-  const query: Query = {};
+  let query: Query = {
+    sdmn: wholeSaleColname,
+  };
 
   query["taskIds"] = taskId.toString();
   const lock =
     taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH ? "e_locked" : "a_locked";
 
   if (action === "recover") {
-    query["clrName"] = `${hostname}`;
+    query = {
+      sdmn: wholeSaleColname,
+      clrName: `${hostname}`,
+    };
   } else {
     if (taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
       query["e_lookup_pending"] = { $eq: true };
@@ -41,14 +39,13 @@ export const lockWholeSaleProducts = async (
     }
   }
 
-  const documents = (await db
-    .collection(collectionName)
+  const documents = (await productCol
     .find(query, options)
     .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
   if (action !== "recover")
-    await db.collection<WholeSaleTask>(collectionName).updateMany(
+    await productCol.updateMany(
       { _id: { $in: documents.map((doc) => doc._id) } },
       {
         $set: {

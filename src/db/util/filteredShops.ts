@@ -20,7 +20,7 @@ export async function getShopsForService(
     hasEan: true,
     ean: "",
     active: true,
-    proxyType: "mix",
+    proxyType,
   });
 
   return { filteredShops, shops };

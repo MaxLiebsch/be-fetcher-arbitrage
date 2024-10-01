@@ -3,25 +3,26 @@ import { differenceInHours } from "date-fns";
 import { getShop } from "../../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import { proxyAuth } from "../../../constants.js";
-import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct.js";
+import { deleteProduct } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeEbyListings } from "../weekly/negEbyDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
-import { lookForOutdatedDealsOnEby } from "../../../db/util/deals/daily/eby/lookForOutdatedDealsOnEby.js";
 import { DealOnEbyTask } from "../../../types/tasks/Tasks.js";
 import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats.js";
 import { MissingShopError } from "../../../errors.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 import { log } from "../../../util/logger.js";
+import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js";
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id: taskId, action, proxyType, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
-      await lookForOutdatedDealsOnEby(
+      await findPendingProductsWithAggForTask(
+        "DEALS_ON_EBY",
         taskId,
         proxyType,
         action || "none",
@@ -111,7 +112,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
             );
           } else {
             infos.total++;
-            await deleteArbispotterProduct(shopDomain, productId);
+            await deleteProduct( productId);
             log(`Deleted: ${shopDomain}-${productId}`);
             //DELETE PRODUCT
           }

@@ -2,7 +2,7 @@ import { countProductsPerCategoryAzn, countProductsPerCategoryEby} from "@dipmax
 import { getArbispotterDb } from "../../src/db/mongo.js";
 const testQueries = async () => {
   const domain = "idealo.de";
-  const aggregation = countProductsPerCategoryAzn;
+  const aggregation = countProductsPerCategoryAzn(domain);
 
   const db = await getArbispotterDb();
 

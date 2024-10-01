@@ -1,6 +1,5 @@
 import {
   AddProductInfoProps,
-  DbProductRecord,
   globalEventEmitter,
   NotFoundCause,
   ObjectId,
@@ -38,7 +37,7 @@ export const lookupInfo = async (
       browserConfig.lookupInfo;
 
     let infos: LookupInfoStats = {
-      total: 1,
+      total: 0,
       notFound: 0,
       locked: 0,
       shops: {
