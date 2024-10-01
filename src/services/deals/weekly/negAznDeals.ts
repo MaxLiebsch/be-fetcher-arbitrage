@@ -7,7 +7,6 @@ import {
   queryProductPageQueue,
   QueryQueue,
   Shop,
-  ShopObject,
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { differenceInHours } from "date-fns";
@@ -19,9 +18,9 @@ import {
   proxyAuth,
 } from "../../../constants.js";
 import {
-  deleteArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../../../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  updateProductWithQuery,
+} from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import {
   handleAznListingNotFound,
@@ -124,7 +123,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteArbispotterProduct( productId);
+            await deleteProduct( productId);
           }
         } else {
           await scrapeAznListings(queue, azn, source, aznLink, product, infos);
@@ -179,7 +178,7 @@ export async function scrapeAznListings(
       infos.total++;
       queue.total++;
       if (cause === "exceedsLimit") {
-        const result = await updateArbispotterProductQuery( _id, {
+        const result = await updateProductWithQuery( _id, {
           $unset: {
             [taskIdProp]: "",
           },

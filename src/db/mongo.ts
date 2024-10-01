@@ -56,7 +56,7 @@ export const createCrawlDataCollection = async (name: string) => {
   return newCollection;
 };
 
-export const createArbispotterCollection = async (name: string) => {
+export const createCollection = async (name: string) => {
   if (await doesCollectionArbispotterExists(name)) return;
   const db = await getArbispotterDb();
   const collection = await db.createCollection(name);

@@ -24,7 +24,7 @@ import {
 } from "../util/queryEansOnEbyHelper.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { TaskCompletedStatus } from "../status.js";
 import { QueryEansOnEbyTask } from "../types/tasks/Tasks.js";
 import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
@@ -147,7 +147,7 @@ export default async function queryEansOnEby(
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         if (cause === "exceedsLimit") {
-          const result = await updateArbispotterProductQuery(
+          const result = await updateProductWithQuery(
             productId,
             {
               $unset: {

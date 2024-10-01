@@ -3,7 +3,7 @@ import { differenceInHours } from "date-fns";
 import { getShop } from "../../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import { proxyAuth } from "../../../constants.js";
-import { deleteArbispotterProduct } from "../../../db/util/crudArbispotterProduct.js";
+import { deleteProduct } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeAznListings } from "../weekly/negAznDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
@@ -119,7 +119,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               );
             } else {
               infos.total++;
-              await deleteArbispotterProduct( productId);
+              await deleteProduct( productId);
               log(`Deleted: ${shopDomain}-${productId}`);
               //DELETE PRODUCT
             }

@@ -1,18 +1,18 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
-import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
 import lookupInfo from "../../src/services/lookupInfo";
 import { setTaskLogger } from "../../src/util/logger";
 import { resetProperty } from "../../src/maintenance/resetProperty";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
+import {
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 
 const shopDomain = "gamestop.de";
 
 describe("lookup info", () => {
-  let productLimit = 10;
+  let productLimit = 15;
   beforeAll(async () => {
     const aznListings = read(
       path("__test__/static/collections/arbispotter.gamestop.de-with-ean.json"),
@@ -23,11 +23,12 @@ describe("lookup info", () => {
       throw new Error("No lookup info listings found for " + shopDomain);
     }
     console.log("lookup info listings", aznListings.length);
-    await deleteAllArbispotterProducts(shopDomain);
-    await insertArbispotterProducts(
-      shopDomain,
+    await deleteAllProducts(shopDomain);
+    await insertProducts(
       aznListings.map((l) => {
-        return { ...l, _id: new ObjectId(l._id.$oid) };
+        const id = l._id.$oid;
+        delete l._id;
+        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
     );
     await resetProperty({
@@ -40,7 +41,7 @@ describe("lookup info", () => {
 
   test("lookup info listings", async () => {
     const logger = new LocalLogger().createLogger("LOOKUP_INFO");
-    setTaskLogger(logger);
+    setTaskLogger(logger, "TASK_LOGGER");
 
     //@ts-ignore
     const infos = await lookupInfo({

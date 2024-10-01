@@ -1,14 +1,14 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
 import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 import dealsOnEby from "../../src/services/deals/daily/dealsOnEby";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
 import { getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb } from "../../src/db/mongo";
+import { getArbispotterDb, getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 
 const shopDomain = ["alternate.de", "idealo.de", "alza.de"];
@@ -30,21 +30,24 @@ describe("pos eby listings", () => {
     );
     await Promise.all(
       shopDomain.map(async (shopDomain, i) => {
-        await deleteAllArbispotterProducts(shopDomain);
-        await insertArbispotterProducts(
-          shopDomain,
+        await deleteAllProducts(shopDomain);
+        await insertProducts(
           listings[i].map((l) => {
-            return { ...l, _id: new ObjectId(l._id.$oid) };
+            const id = l._id.$oid;
+            delete l._id;
+            return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
           })
         );
       })
     );
     const shops = await getAllShopsAsArray();
-    const spotter = await getArbispotterDb();
+    const productCol = await getProductsCol();
     await Promise.all(
       shops!.map(async (shop) => {
-        return spotter.collection(shop.d).updateMany(
-          {},
+        return productCol.updateMany(
+          {
+            sdmn: shop.d,
+          },
           {
             $set: {
               availUpdatedAt: sub(new Date(), { days: 2 }).toISOString(),
@@ -58,7 +61,7 @@ describe("pos eby listings", () => {
 
   test("pos eby listings", async () => {
     const logger = new LocalLogger().createLogger("DEALS_ON_EBY");
-    setTaskLogger(logger);
+    setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await dealsOnEby({
       productLimit,

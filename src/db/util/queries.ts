@@ -1,5 +1,5 @@
 import { startOfDay } from "date-fns";
-import { hostname } from "../mongo.js";
+import { hostname, wholeSaleColname } from "../mongo.js";
 import { UTCDate } from "@date-fns/utc";
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { ObjectId } from "mongodb";
@@ -842,6 +842,7 @@ export const countPendingProductsForWholesaleSearchQuery = (
   const query = {
     taskIds: taskId.toString(),
     target: "a",
+    sdmn: wholeSaleColname,
     a_lookup_pending: true,
   };
   return query;
@@ -852,6 +853,7 @@ export const countCompletedProductsForWholesaleSearchQuery = (
   return {
     taskIds: taskId.toString(),
     target: "a",
+    sdmn: wholeSaleColname,
     a_status: { $in: ["complete", "not found"] },
   };
 };
@@ -868,6 +870,7 @@ export const countPendingProductsForWholesaleEbySearchQuery = (
   const query = {
     taskIds: taskId.toString(),
     target: "e",
+    sdmn: wholeSaleColname,
     e_lookup_pending: true,
   };
   return query;
@@ -878,7 +881,8 @@ export const countCompletedProductsForWholesaleEbySearchQuery = (
   return {
     taskIds: taskId.toString(),
     target: "e",
-    a_status: { $in: ["complete", "not found"] },
+    sdmn: wholeSaleColname,
+    e_status: { $in: ["complete", "not found"] },
   };
 };
 

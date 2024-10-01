@@ -1,5 +1,5 @@
 import { getArbispotterDb } from "../db/mongo.js";
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { findProducts } from "../db/util/crudProducts.js";
 import { getActiveShops } from "../db/util/shops.js";
 import { findTask } from "../db/util/tasks.js";
 
@@ -63,7 +63,7 @@ const deleteQueryEansResults = async () => {
     let completed = false;
     while (!completed) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(
+      const products = await findProducts(
         { sdmn: shop.d, ...query },
         batchSize
       );

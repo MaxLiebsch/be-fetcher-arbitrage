@@ -14,10 +14,10 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import {
-  deleteArbispotterProduct,
-  moveArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  moveProduct,
+  updateProductWithQuery,
+} from "../db/util/crudProducts.js";
 import { getEanFromProduct } from "./getEanFromProduct.js";
 import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
 import { log } from "./logger.js";
@@ -48,7 +48,7 @@ export async function handleLookupCategoryProductInfo(
 
     if (hasEan) {
       if (!ean) {
-        const result = await updateArbispotterProductQuery(
+        const result = await updateProductWithQuery(
           productId,
           isWholeSaleEbyTask
             ? wholeSaleNotFoundQuery
@@ -56,7 +56,7 @@ export async function handleLookupCategoryProductInfo(
         );
         log(`No ean: ${collection}-${productId}`, result);
       } else if (formatEan(ean) !== formatEan(exisitingEan)) {
-        const result = await updateArbispotterProductQuery(
+        const result = await updateProductWithQuery(
           productId,
           isWholeSaleEbyTask
             ? wholeSaleNotFoundQuery
@@ -85,7 +85,7 @@ export async function handleLookupCategoryProductInfo(
       );
     }
   } else {
-    const result = await updateArbispotterProductQuery(
+    const result = await updateProductWithQuery(
       productId,
       isWholeSaleEbyTask
         ? wholeSaleNotFoundQuery
@@ -109,7 +109,7 @@ export async function handleLookupCategoryNotFound(
   queue.total++;
 
   if (cause === "exceedsLimit") {
-    const result = await updateArbispotterProductQuery(
+    const result = await updateProductWithQuery(
       productId,
       isWholeSaleEby
         ? wholeSaleNotFoundQuery
@@ -124,11 +124,11 @@ export async function handleLookupCategoryNotFound(
     );
     log(`Exceeds limit: ${collection}-${productId}`, result);
   } else if (cause === "notFound") {
-    const result = await deleteArbispotterProduct(productId);
+    const result = await deleteProduct(productId);
     log(`Deleted: ${collection}-${productId}`, result);
   } else {
     !isWholeSaleEby &&
-      (await moveArbispotterProduct( "grave", productId));
+      (await moveProduct( "grave", productId));
 
     log(`Moved to grave ${collection}-${productId} ${cause}`);
   }
@@ -210,10 +210,10 @@ export const handleCategoryAndUpdate = async (
           $unset: { cat_taskId: "" },
         };
       }
-      const result = await updateArbispotterProductQuery(productId, query);
+      const result = await updateProductWithQuery(productId, query);
       log(`Updated: ${shopDomain}-${productId}`, result);
     } else {
-      const result = await updateArbispotterProductQuery(
+      const result = await updateProductWithQuery(
         productId,
         isWholeSaleEbyTask
           ? wholeSaleNotFoundQuery
@@ -226,7 +226,7 @@ export const handleCategoryAndUpdate = async (
       log(`Category mapping failed: ${shopDomain}-${productId}`, result);
     }
   } else {
-    const result = await updateArbispotterProductQuery(
+    const result = await updateProductWithQuery(
       productId,
       isWholeSaleEbyTask
         ? wholeSaleNotFoundQuery

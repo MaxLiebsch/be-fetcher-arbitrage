@@ -1,5 +1,5 @@
 import { getArbispotterDb } from "../db/mongo.js";
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct.js";
+import { findProducts } from "../db/util/crudProducts.js";
 import { getActiveShops, getAllShopsAsArray } from "../db/util/shops.js";
 import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
 import { countTotal } from "./countProducts.js";
@@ -24,7 +24,7 @@ const migrationMonthlySold = async () => {
     let complete = false;
     while (!complete) {
       const spotterBulkWrites: any = [];
-      const products = await findArbispotterProducts(
+      const products = await findProducts(
         {
           $and: [
             { sdmn: shop.d },

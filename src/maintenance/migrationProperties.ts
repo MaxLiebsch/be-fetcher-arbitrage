@@ -1,8 +1,8 @@
 import { getArbispotterDb } from "../db/mongo.js";
 import {
-  deleteArbispotterProduct,
-  findArbispotterProducts,
-} from "../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  findProducts,
+} from "../db/util/crudProducts.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
 import { DbProductRecord, removeSearchParams } from "@dipmaxtech/clr-pkg";
 import { createHash } from "../util/hash.js";
@@ -27,7 +27,7 @@ const migrationProperties = async () => {
     const batchSize = 1000;
     while (count < total && total > 0) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(query, batchSize, cnt);
+      const products = await findProducts(query, batchSize, cnt);
       if (products.length) {
         await Promise.all(
           products.map(async (product) => {
@@ -55,13 +55,13 @@ const migrationProperties = async () => {
               });
             } else {
               if (findDocuments.length === 2) {
-                await deleteArbispotterProduct(product._id);
+                await deleteProduct(product._id);
               } else {
                 findDocuments.pop();
                 await Promise.all(
                   findDocuments.map(async (doc) => {
                     const { _id } = doc;
-                    await deleteArbispotterProduct(_id);
+                    await deleteProduct(_id);
                   })
                 );
               }

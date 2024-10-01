@@ -4,7 +4,7 @@ import { wholeSaleColname } from "../db/mongo.js";
 
 import { queryEansOnEby } from "./dailySales/queryEansOnEby.js";
 import { lookupCategory } from "./dailySales/lookupCategory.js";
-import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
+import { findProductsNoLimit } from "../db/util/crudProducts.js";
 import { TaskCompletedStatus } from "../status.js";
 
 import { getElapsedTime } from "../util/dates.js";
@@ -104,7 +104,7 @@ export const wholeSaleEby = async (task: WholeSaleEbyTask): TaskReturnType => {
       progress.lookupCategory &&
       progress.lookupCategory.length > 0
     ) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: progress.lookupCategory },
       });
       if (products.length) {

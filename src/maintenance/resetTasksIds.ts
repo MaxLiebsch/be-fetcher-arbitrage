@@ -1,4 +1,4 @@
-import { findArbispotterProducts } from "../db/util/crudArbispotterProduct";
+import { findProducts } from "../db/util/crudProducts";
 import { getTasks } from "../db/util/tasks";
 import { getArbispotterDb } from "../db/mongo";
 import { getAllShopsAsArray } from "../db/util/shops";
@@ -115,7 +115,7 @@ const resetTaskIds = async () => {
     const batchSize = 3000;
     while (count < total) {
       const spotterBulkWrites: any[] = [];
-      const products = await findArbispotterProducts(
+      const products = await findProducts(
         buildQuery(taskIds, shop.d),
         batchSize
       );

@@ -1,13 +1,12 @@
 import { LoggerService, QueueStats } from "@dipmaxtech/clr-pkg";
 import { findShops } from "../db/util/shops.js";
-import { createArbispotterCollection, salesDbName } from "../db/mongo.js";
 import { scrapeProducts } from "./dailySales/scrapeProducts.js";
 import { crawlEans } from "./dailySales/crawlEan.js";
 import { lookupInfo } from "./dailySales/lookupInfo.js";
 import { queryEansOnEby } from "./dailySales/queryEansOnEby.js";
 import { lookupCategory } from "./dailySales/lookupCategory.js";
 import { crawlEbyListings } from "./dailySales/crawlEbyListings.js";
-import { findArbispotterProductsNoLimit } from "../db/util/crudArbispotterProduct.js";
+import { findProductsNoLimit } from "../db/util/crudProducts.js";
 import { TaskCompletedStatus } from "../status.js";
 import {
   COMPLETE_FAILURE_THRESHOLD,
@@ -90,8 +89,6 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
 
     let queueStats: AllQueueStats = {};
 
-    await createArbispotterCollection("sales");
-
     if (
       action === "recover" &&
       Object.keys(progress).some(
@@ -163,7 +160,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
     /* CrawlEan */
     if (progress.crawlEan.length > 0) {
       log(`DailySales: CrawlEan ${progress.crawlEan.length}`);
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.crawlEan },
       });
       if (products.length) {
@@ -188,7 +185,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
     /* Lookup Info */
 
     if (progress.lookupInfo.length > 0) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.lookupInfo },
       });
       if (products.length) {
@@ -213,7 +210,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
 
     /* QueryEansOnEby */
     if (task.progress.queryEansOnEby.length > 0) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.queryEansOnEby },
       });
       if (products.length) {
@@ -238,7 +235,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
 
     /* LookupCategory */
     if (task.progress.lookupCategory.length > 0) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.lookupCategory },
       });
       if (products.length) {
@@ -267,7 +264,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
 
     /* AznListings */
     if (task.progress.aznListings.length > 0) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.aznListings },
       });
       if (products.length) {
@@ -294,7 +291,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
 
     /* EbyListings */
     if (task.progress.ebyListings.length > 0) {
-      const products = await findArbispotterProductsNoLimit({
+      const products = await findProductsNoLimit({
         _id: { $in: task.progress.ebyListings },
       });
       if (products.length) {

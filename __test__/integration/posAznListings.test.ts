@@ -1,16 +1,16 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
-import {
-  deleteAllArbispotterProducts,
-  insertArbispotterProducts,
-} from "../../src/db/util/crudArbispotterProduct";
 import dealOnAzn from "../../src/services/deals/daily/dealsOnAzn";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
-import { getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb } from "../../src/db/mongo";
+import { getActiveShops } from "../../src/db/util/shops";
+import { getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 import { updateProgressDealsOnAznTasks } from "../../src/util/updateProgressInTasks";
+import {
+  deleteAllProducts,
+  insertProducts,
+} from "../../src/db/util/crudProducts";
 
 const shopDomain = ["cyberport.de", "reichelt.de", "alza.de"];
 
@@ -31,23 +31,24 @@ describe("pos azn listign", () => {
     );
     await Promise.all(
       shopDomain.map(async (shopDomain, i) => {
-        await deleteAllArbispotterProducts(shopDomain);
-        await insertArbispotterProducts(
-          shopDomain,
+        await deleteAllProducts(shopDomain);
+        await insertProducts(
           listings[i].map((l) => {
-            return { ...l, _id: new ObjectId(l._id.$oid) };
+            const id = l._id.$oid;
+            delete l._id;
+            return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
           })
         );
       })
     );
-    const shops = await getAllShopsAsArray();
-    //@ts-ignore
-    shops!.push({ d: "sales" });
-    const spotter = await getArbispotterDb();
+    const shops = await getActiveShops();
+    const productCol = await getProductsCol();
     await Promise.all(
       shops!.map(async (shop) => {
-        return spotter.collection(shop.d).updateMany(
-          {},
+        return productCol.updateMany(
+          {
+            sdmn: shop.d,
+          },
           {
             $set: {
               availUpdatedAt: sub(new Date(), { days: 2 }).toISOString(),

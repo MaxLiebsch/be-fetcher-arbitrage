@@ -27,7 +27,7 @@ import { multiQueueInitializer } from "../util/multiQueueInitializer.js";
 import { TaskCompletedStatus } from "../status.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
 import { hostname, wholeSaleColname } from "../db/mongo.js";
-import { updateArbispotterProductQuery } from "../db/util/crudArbispotterProduct.js";
+import { updateProductWithQuery } from "../db/util/crudProducts.js";
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -154,7 +154,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             let reducedCosts = { ...productUpdate.costs };
             delete reducedCosts.azn;
             await upsertAsin(productUpdate.asin, [ean], reducedCosts);
-            const result = await updateArbispotterProductQuery(
+            const result = await updateProductWithQuery(
               productId,
               {
                 $set: {
@@ -181,7 +181,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
               if (error.message === "costs.azn is 0") {
                 infos.missingProperties.costs++;
               }
-              const result = await updateArbispotterProductQuery(
+              const result = await updateProductWithQuery(
                 productId,
                 {
                   $set: {
@@ -202,7 +202,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             }
           }
         } else {
-          const result = await updateArbispotterProductQuery(
+          const result = await updateProductWithQuery(
             productId,
             {
               $set: {
@@ -228,7 +228,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        const result = await updateArbispotterProductQuery(
+        const result = await updateProductWithQuery(
           productId,
           {
             $set: {

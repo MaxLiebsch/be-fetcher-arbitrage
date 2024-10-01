@@ -1,5 +1,5 @@
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { MultiShopTaskTypes } from "../../../util/taskTypes";
+import { MultiShopTaskTypes } from "../../../util/taskTypes.js";
 import {
   recoveryNegMarginAznListingsQuery,
   recoveryCrawlEanQuery,
@@ -8,7 +8,7 @@ import {
   recoveryLookupCategoryQuery,
   recoveryLookupInfoQuery,
   recoveryQueryEansOnEby,
-} from "../queries";
+} from "../queries.js";
 
 export const recoverQueries: {
   [key in MultiShopTaskTypes]: (taskid: ObjectId, shopDomain: string) => {};

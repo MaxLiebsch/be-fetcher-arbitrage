@@ -1,24 +1,25 @@
 import { MongoServerError } from "mongodb";
 import {
   findProductByHash,
-  insertArbispotterProduct,
-  updateArbispotterProductHashQuery,
-} from "./crudArbispotterProduct.js";
+  insertProduct,
+  updateProductWithQuery,
+} from "./crudProducts.js";
 import { DbProductRecord, UpdateResult } from "@dipmaxtech/clr-pkg";
 
-export const createOrUpdateArbispotterProduct = async (
+export const upsertProduct = async (
   procProd: DbProductRecord
 ) => {
   const { s_hash: productHash } = procProd;
   const product = await findProductByHash(productHash);
   try {
     if (product) {
-      return await updateArbispotterProductHashQuery(productHash, {
+      const { _id: productId } = product;
+      return await updateProductWithQuery(productId, {
         $set: procProd,
       });
     } else {
       const newProduct = procProd;
-      return await insertArbispotterProduct(newProduct);
+      return await insertProduct(newProduct);
     }
   } catch (error) {
     if (error instanceof MongoServerError) {

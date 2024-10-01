@@ -20,9 +20,9 @@ import {
 } from "../../constants.js";
 import {
   findProductByHash,
-  insertArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../../db/util/crudArbispotterProduct.js";
+  insertProduct,
+  updateProductWithQuery,
+} from "../../db/util/crudProducts.js";
 import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats.js";
@@ -136,8 +136,10 @@ export const scrapeProducts = async (
                   eby_prop, // query ean on eby
                   cat_prop, // lookup category
                 } = existingProduct;
-                const result = await updateArbispotterProductQuery(productId, {
+                const result = await updateProductWithQuery(productId, {
                   $set: {
+                    sdmn: salesDbName,
+                    shop: shopDomain,
                     availUpdatedAt: transformedProduct["availUpdatedAt"],
                   },
                 });
@@ -214,9 +216,7 @@ export const scrapeProducts = async (
               } else {
                 transformedProduct["sdmn"] = salesDbName;
                 transformedProduct["shop"] = shopDomain;
-                const result = await insertArbispotterProduct(
-                  transformedProduct
-                );
+                const result = await insertProduct(transformedProduct);
                 log(
                   `Product inserted: ${salesDbName}-${result.insertedId}`,
                   result

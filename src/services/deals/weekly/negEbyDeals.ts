@@ -21,9 +21,9 @@ import {
   handleEbyListingProductInfo,
 } from "../../../util/scrapeEbyListingsHelper.js";
 import {
-  deleteArbispotterProduct,
-  updateArbispotterProductQuery,
-} from "../../../db/util/crudArbispotterProduct.js";
+  deleteProduct,
+  updateProductWithQuery,
+} from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
@@ -118,7 +118,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteArbispotterProduct( productId);
+            await deleteProduct( productId);
             //DELETE PRODUCT
           }
         } else {
@@ -174,7 +174,7 @@ export async function scrapeEbyListings(
       infos.total++;
       queue.total++;
       if (cause === "exceedsLimit") {
-        const result = await updateArbispotterProductQuery(
+        const result = await updateProductWithQuery(
           productId,
           {
             $unset: {

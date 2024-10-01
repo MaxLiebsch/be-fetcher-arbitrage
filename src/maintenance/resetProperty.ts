@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { getArbispotterDb } from "../db/mongo";
+import { getArbispotterDb, getProductsCol } from "../db/mongo";
 import {
   getActiveShops,
   getAllShops,
@@ -8,6 +8,7 @@ import {
 
 export const resetProperty = async (query) => {
   const spotter = await getArbispotterDb();
+  const productCol = await getProductsCol();
   const shops = await getActiveShops();
   const activeShops = shops.filter((shop) => shop.active);
   console.log(
@@ -17,16 +18,7 @@ export const resetProperty = async (query) => {
 
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
-    const result = await spotter.collection(shop.d).updateMany(
-      // {
-      //   $or: [
-      //     // { eby_prop: { $in: ["complete"] } },
-      //     { cat_prop: "ean_missmatch" },
-      //   ],
-      // }
-      {},
-      query
-    );
+    const result = await productCol.updateMany({ sdmn: shop.d }, query);
     console.log(shop.d, "result:", result.modifiedCount);
   }
 };

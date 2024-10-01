@@ -3,7 +3,7 @@ import {  MultiShopTaskTypes } from "../../../util/taskTypes.js";
 import { getShopsForService } from "../filteredShops.js";
 import {
   findProducts,
-} from "../crudArbispotterProduct.js";
+} from "../crudProducts.js";
 import { PendingShops } from "../../../types/shops.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
 import { shuffle } from "underscore";

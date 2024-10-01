@@ -21,25 +21,12 @@ export const findProducts = async (
     .toArray();
 };
 
-export const findArbispotterProducts = async (
-  query: Filter<DbProductRecord>,
-  limit = 500,
-  page = 0
-) => {
-  const productCol = await getProductsCol();
-  return productCol
-    .find({ ...query })
-    .limit(limit ?? 500)
-    .skip(page * limit)
-    .toArray();
-};
-
 export const findProductByHash = async (hash: string) => {
   const collection = await getProductsCol();
   return collection.findOne({ s_hash: hash });
 };
 
-export const insertArbispotterProduct = async (product: DbProductRecord) => {
+export const insertProduct = async (product: DbProductRecord) => {
   try {
     const productsCol = await getProductsCol();
     product["createdAt"] = new UTCDate().toISOString();
@@ -54,7 +41,7 @@ export const insertArbispotterProduct = async (product: DbProductRecord) => {
   }
 };
 
-export const updateArbispotterProductQuery = async (
+export const updateProductWithQuery = async (
   id: ObjectId,
   query: Filter<DbProductRecord>
 ) => {
@@ -96,8 +83,8 @@ export const updateArbispotterProductQuery = async (
   }
 };
 
-export const updateArbispotterProductHashQuery = async (
-  link: string,
+export const updateProductHashQuery = async (
+  hash: string,
   query: Filter<DbProductRecord>
 ) => {
   const maxRetries = 3;
@@ -112,14 +99,14 @@ export const updateArbispotterProductHashQuery = async (
         query["$set"] = { updatedAt: new UTCDate().toISOString() };
       }
 
-      return await productCol.updateOne({ lnk: link }, query); // Exit the function if the update is successful
+      return await productCol.updateOne({ s_hash: hash }, query); // Exit the function if the update is successful
     } catch (e) {
       attempt++;
       if (e instanceof MongoError && e.code === 11000) {
         console.error(
           "Duplicate key error:",
           e.message,
-          link,
+          hash,
           JSON.stringify(query)
         );
         break; // Exit the function
@@ -128,7 +115,7 @@ export const updateArbispotterProductHashQuery = async (
           console.error(
             "Error updating product:",
             e?.message,
-            link,
+            hash,
             JSON.stringify(query)
           );
         }
@@ -138,21 +125,19 @@ export const updateArbispotterProductHashQuery = async (
   }
 };
 
-export const countArbispotterProducts = async (
-  query: Filter<DbProductRecord>
-) => {
+export const countProducts = async (query: Filter<DbProductRecord>) => {
   const productsCol = await getProductsCol();
   return productsCol.countDocuments(query);
 };
 
-export const findArbispotterProductsNoLimit = async (
+export const findProductsNoLimit = async (
   query: Filter<DbProductRecord>
 ): Promise<DbProductRecord[]> => {
   const productsCol = await getProductsCol();
   return productsCol.find({ ...query }).toArray();
 };
 
-export const moveArbispotterProduct = async (to: string, id: ObjectId) => {
+export const moveProduct = async (to: string, id: ObjectId) => {
   try {
     const toCollectionName = to;
     const db = await getArbispotterDb();
@@ -178,7 +163,29 @@ export const moveArbispotterProduct = async (to: string, id: ObjectId) => {
   }
 };
 
-export const deleteArbispotterProduct = async (id: ObjectId) => {
+export const deleteProduct = async (id: ObjectId) => {
   const productsCol = await getProductsCol();
   return productsCol.deleteOne({ _id: id });
+};
+
+export const deleteAllProducts = async (domain: string) => {
+  const productsCol = await getProductsCol();
+  return productsCol.deleteMany({ sdmn: domain });
+};
+
+export const insertProducts = async (products: DbProductRecord[]) => {
+  try {
+    const productsCol = await getProductsCol();
+    products.forEach((product) => {
+      product["createdAt"] = new UTCDate().toISOString();
+      product["updatedAt"] = new UTCDate().toISOString();
+    });
+
+    return await productsCol.insertMany(products);
+  } catch (error) {
+    if (error instanceof MongoError) {
+      console.error("Error creating products:", error?.message);
+    }
+    return { acknowledged: false } as InsertOneResult<Document>;
+  }
 };
