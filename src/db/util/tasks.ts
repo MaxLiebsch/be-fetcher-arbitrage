@@ -345,7 +345,7 @@ export const updateTasks = async (
   );
 };
 
-export const addTask = async (task: Tasks, test = false) => {
+export const addTask = async (task: any, test = false) => {
   let collectionName = test
     ? `test_${tasksCollectionName}`
     : tasksCollectionName;

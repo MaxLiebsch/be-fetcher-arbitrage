@@ -95,7 +95,8 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
-            product
+            product,
+            proxyType
           );
           if (isValidProduct) {
             await scrapeEbyListings(

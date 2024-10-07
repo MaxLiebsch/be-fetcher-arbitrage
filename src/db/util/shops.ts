@@ -12,10 +12,10 @@ import {
 } from "../mongo.js";
 import { MatchKeysAndValues } from "mongodb";
 
-export const getAllShops = async (shopDomains = []) => {
+export const getAllShops = async (shopDomains: string[] = []) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlDataDb();
-  const collection = db.collection(collectionName);
+  const collection = db.collection<Shop>(collectionName);
   let query = {};
   if (shopDomains.length) {
     query = { d: { $in: shopDomains } };

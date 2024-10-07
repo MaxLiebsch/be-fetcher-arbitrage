@@ -55,6 +55,54 @@ const testParameters = {
     initialProductPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao",
     nextPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao?currentPage0=2",
   },
+  "mindfactory.de": {
+    countProductPageUrl:
+      "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html",
+    pages: 20,
+    productPageUrl:
+      "https://www.mindfactory.de/product_info.php/Gigabyte-B760-Gaming-X-DDR4-Intel-B760-So--1700-Dual-Channel-DDR4-ATX--_1498196.html",
+    productsPerPage: 60,
+    productsPerPageAfterLoadMore: 20,
+    subCategoriesCount: 46,
+    mainCategoriesCount: 24,
+    initialProductPageUrl:
+      "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html",
+    subCategoryUrl: "https://www.mindfactory.de/Hardware.html",
+    nextPageUrl:
+      "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html/page/2",
+  },
+  "proshop.de": {
+    countProductPageUrl:
+      "https://www.proshop.de/Mappenund-Clipboards",
+    pages: 20,
+    productPageUrl:
+      "https://www.proshop.de/Mappenund-Clipboards/Oxford-Ring-Binder-Polyvision-A4-30mm-Spine-4-rings-translucent-Clear/2818492",
+    productsPerPage: 25,
+    productsPerPageAfterLoadMore: 25,
+    subCategoriesCount: 27,
+    mainCategoriesCount: 17,
+    initialProductPageUrl:
+      "https://www.proshop.de/Mappenund-Clipboards",
+    subCategoryUrl: "https://www.proshop.de/Buero-und-Hobbyartikel",
+    nextPageUrl:
+      "https://www.proshop.de/Mappenund-Clipboards?pn=2",
+  },
+  "digitalo.de": {
+    countProductPageUrl:
+      "https://www.digitalo.de/categories/8179_8190_8293/Batterien-Kabel/Computerkabel-Zubehoer/Computernetzteile.html",
+    pages: 20,
+    productPageUrl:
+      "https://www.digitalo.de/products/515702/LogiLink-CQ3041S-RJ45-Netzwerkkabel-Patchkabel-CAT-6a-S-FTP-1.50m-Weiss-Flammwidrig-mit-Rastnasenschutz-1St..html",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 24,
+    subCategoriesCount: 48,
+    mainCategoriesCount: 17,
+    initialProductPageUrl:
+      "https://www.digitalo.de/categories/8179_8190_8293/Batterien-Kabel/Computerkabel-Zubehoer/Computernetzteile.html",
+    subCategoryUrl: "https://www.digitalo.de/categories/8179/Batterien-Kabel.html",
+    nextPageUrl:
+      "https://www.digitalo.de/categories/8179_8190_8293/Batterien-Kabel/Computerkabel-Zubehoer/Computernetzteile.html?page=2",
+  },
   "fressnapf.de": {
     countProductPageUrl:
       "https://www.fressnapf.de/c/katze/katzenfutter/nassfutter/",

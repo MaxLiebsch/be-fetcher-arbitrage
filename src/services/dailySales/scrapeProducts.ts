@@ -34,7 +34,7 @@ export const scrapeProducts = async (
   task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
-    const { categories, browserConfig, _id: taskId, productLimit } = task;
+    const { categories, browserConfig, _id: taskId, productLimit, proxyType } = task;
     const { d: shopDomain, hasEan, ean } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];
@@ -250,6 +250,7 @@ export const scrapeProducts = async (
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
+        proxyType,
         retriesOnFail: MAX_RETIRES_SCRAPE_SHOP,
         queue: queue,
         retries: 0,

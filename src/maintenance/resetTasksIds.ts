@@ -1,9 +1,8 @@
 import { findProducts } from "../db/util/crudProducts";
 import { getTasks } from "../db/util/tasks";
-import { getArbispotterDb } from "../db/mongo";
+import { getArbispotterDb, getProductsCol } from "../db/mongo";
 import { getAllShopsAsArray } from "../db/util/shops";
 import { ObjectId } from "@dipmaxtech/clr-pkg";
-import { add } from "date-fns";
 
 const taskIdScraperMap = {
   ean_taskId: ["CRAWL_EAN"],
@@ -92,7 +91,7 @@ export const buildQuery = (taskIds: string[], domain: string) => {
 };
 
 const resetTaskIds = async () => {
-  const spotter = await getArbispotterDb();
+  const productCol = await getProductsCol();
   const shops = await getAllShopsAsArray();
   const tasks = await getTasks();
   if (!shops) {
@@ -106,9 +105,7 @@ const resetTaskIds = async () => {
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
 
-    const total = await spotter
-      .collection(shop.d)
-      .countDocuments(buildQuery(taskIds, shop.d));
+    const total = await productCol.countDocuments(buildQuery(taskIds, shop.d));
     console.log("Processing shop:", shop.d);
     let count = 0;
     let cnt = 0;
@@ -219,9 +216,7 @@ const resetTaskIds = async () => {
           }
         });
         if (spotterBulkWrites.length > 0) {
-          const result = await spotter
-            .collection(shop.d)
-            .bulkWrite(spotterBulkWrites);
+          const result = await productCol.bulkWrite(spotterBulkWrites);
           console.log(shop.d, cnt, " Result:", result);
         }
         count += products.length;

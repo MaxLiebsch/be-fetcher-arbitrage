@@ -97,11 +97,13 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           new Date(product.availUpdatedAt || product.updatedAt)
         );
         const ebyLink = "https://www.ebay.de/itm/" + esin;
+        
         if (diffHours > 24) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
-            product
+            product,
+            proxyType
           );
           if (isValidProduct) {
             await scrapeEbyListings(

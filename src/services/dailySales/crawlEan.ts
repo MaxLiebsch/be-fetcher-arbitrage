@@ -33,7 +33,7 @@ export const crawlEans = async (
   task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id: taskId, shopDomain } = task;
+    const { browserConfig, _id: taskId, shopDomain, proxyType } = task;
     const { concurrency, productLimit } = browserConfig.crawlEan;
     let infos: ScrapeEanStats = {
       total: 0,
@@ -125,6 +125,7 @@ export const crawlEans = async (
         addProduct,
         requestId: uuid(),
         s_hash,
+        proxyType,
         targetShop: {
           name: shopDomain,
           prefix: "",

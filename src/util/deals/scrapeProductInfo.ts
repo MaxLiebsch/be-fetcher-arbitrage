@@ -8,6 +8,7 @@ import {
   AddProductInfoProps,
   uuid,
   removeSearchParams,
+  ProxyType,
 } from "@dipmaxtech/clr-pkg";
 import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
 import { defaultQuery, MAX_RETRIES_SCRAPE_INFO } from "../../constants.js";
@@ -16,7 +17,8 @@ import { log } from "../logger.js";
 export async function scrapeProductInfo(
   queue: QueryQueue,
   source: Shop,
-  product: DbProductRecord
+  product: DbProductRecord,
+  proxyType: ProxyType,
 ) {
   return new Promise((res, rej) => {
     let { lnk: productLink, s_hash, _id: productId } = product;
@@ -41,6 +43,7 @@ export async function scrapeProductInfo(
       shop: source,
       requestId: uuid(),
       s_hash,
+      proxyType,
       addProduct,
       targetShop: {
         name: shopDomain,

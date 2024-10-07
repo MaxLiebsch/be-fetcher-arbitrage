@@ -102,7 +102,8 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
             const isValidProduct = await scrapeProductInfo(
               queue,
               source,
-              product
+              product,
+              proxyType
             );
             if (isValidProduct) {
               await scrapeAznListings(

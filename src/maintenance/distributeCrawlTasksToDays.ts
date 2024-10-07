@@ -1,16 +1,15 @@
-import { nextDay } from "date-fns";
-import {
-  findTasks,
-  getTasks,
-  updateTask,
-} from "../db/util/tasks.js";
-import { all } from "axios";
+import { Day, nextDay } from "date-fns";
+import { findTasks, updateTask } from "../db/util/tasks.js";
+import { SplitStats } from "./addNewShop.js";
+import { ScrapeShopTask } from "../types/tasks/Tasks.js";
 
-
-export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
-  const limitPerDay = 26000;
+export const distributeCrawlTasksToDays = async (
+  initalWeekdaysSplit: SplitStats,
+  limitPerDay: number
+) => {
   let total = 0;
-  let weekdays = initalWeekdaysSplit || {
+  limitPerDay = limitPerDay * 1.3;
+  let weekdays: SplitStats = initalWeekdaysSplit || {
     0: {
       total: 0,
       ids: [],
@@ -40,14 +39,17 @@ export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
       ids: [],
     },
   };
-  
-  let ids = [];
-  
+
+  let ids: string[] = [];
+
   Object.values(weekdays).forEach((day) => {
     ids.push(...day.ids);
   });
-  
-  const tasks = await findTasks({ type: "CRAWL_SHOP", id: { $nin: ids } });
+
+  const tasks = (await findTasks({
+    type: "CRAWL_SHOP",
+    id: { $nin: ids },
+  })) as ScrapeShopTask[];
 
   let currentDay = 0;
   let today = new Date();
@@ -55,11 +57,11 @@ export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
   today.setHours(2, 0, 0, 0);
   let allDaysFull = false;
 
-  return Promise.all[
-    tasks.map(async (task) => {
+  return Promise.all(
+    tasks.map(async (task) => { 
       const { productLimit } = task;
       total += productLimit;
-      let weekday = 0;
+      let weekday: Day = 0;
       const currWeekdayTotal = weekdays[currentDay].total;
 
       // reset and start on day one!
@@ -74,11 +76,11 @@ export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
       ) {
         weekdays[currentDay].ids.push(task.id);
         if (task.completedAt === "") {
-          const nextCrawlDay = nextDay(today, currentDay).toISOString();
+          const nextCrawlDay = nextDay(today, currentDay as Day).toISOString();
           task.completedAt = nextCrawlDay;
         }
         weekdays[currentDay].total += productLimit;
-        weekday = nextDay(today, currentDay).getDay();
+        weekday = nextDay(today, currentDay as Day).getDay() as Day;
       } else {
         currentDay += 1;
         if (weekdays[currentDay].total >= limitPerDay && !allDaysFull) {
@@ -94,26 +96,29 @@ export const distributeCrawlTasksToDays = async (initalWeekdaysSplit) => {
           Object.keys(weekdays)
             .reverse()
             .forEach((key) => {
-              if (weekdays[key].total < minTotal) {
+              if (weekdays[Number(key)].total < minTotal) {
                 minDay = parseInt(key);
-                minTotal = weekdays[key].total;
+                minTotal = weekdays[Number(key)].total;
               }
             });
           currentDay = minDay;
         }
         weekdays[currentDay].ids.push(task.id);
         if (task.completedAt === "") {
-          const nextCrawlDay = nextDay(today, currentDay).toISOString();
+          const nextCrawlDay = nextDay(today, currentDay as Day).toISOString();
           task.completedAt = nextCrawlDay;
         }
         weekdays[currentDay].total += productLimit;
-        weekday = nextDay(today, currentDay).getDay();
-   
+        weekday = nextDay(today, currentDay as Day).getDay() as Day;
       }
-      await updateTask(task._id, {
-        weekday,
-        completedAt: task.completedAt,
-      });
+      if(task.weekday === undefined){
+        await updateTask(task._id, {
+          $set: {
+            weekday,
+            completedAt: task.completedAt,
+          },
+        });
+      }
     })
-  ];
+  );
 };

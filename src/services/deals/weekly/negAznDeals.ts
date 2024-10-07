@@ -106,7 +106,8 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
-            product
+            product,
+            proxyType
           );
           if (isValidProduct) {
             await scrapeAznListings(

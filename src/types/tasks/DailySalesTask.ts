@@ -1,5 +1,5 @@
 import { Task } from "./Tasks.js";
-import { DbProductRecord, ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, ICategory, ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
 
 export interface Limit {
   subCategories: number;
@@ -9,8 +9,6 @@ export interface Limit {
 export interface Category {
   name: string;
   link: string;
-  limit: Limit;
-  productLimit: number;
 }
 
 export interface DailySalesTask extends Task {

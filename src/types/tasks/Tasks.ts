@@ -57,6 +57,7 @@ export interface ScrapeShopTask extends ShopSpecificTask {
   categories: Category[];
   weekday: number;
   visitedPages: any[];
+  proxyType: ProxyType;
   executing: boolean;
 }
 

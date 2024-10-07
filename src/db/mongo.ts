@@ -113,6 +113,10 @@ export const getSiteMap = async (domain: string) => {
 export const upsertSiteMap = async (domain: string, stats: SiteMap) => {
   const sitemap = (
     await getCrawlDataCollection(sitemapcollectionName)
-  ).replaceOne({ "sitemap.name": domain }, stats, { upsert: true });
+  ).replaceOne(
+    { "sitemap.name": domain },
+    { dmn: domain, ...stats },
+    { upsert: true }
+  );
   return sitemap;
 };

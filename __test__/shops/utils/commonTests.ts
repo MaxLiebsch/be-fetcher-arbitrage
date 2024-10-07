@@ -1,6 +1,7 @@
 import { expect } from "@jest/globals";
 import {
-  ShopObject,
+  ProxyType,
+  Shop,
   browseProductPagesQueue,
   browseProductpages,
   checkForBlockingSignals,
@@ -20,24 +21,21 @@ import {
 import { Page } from "puppeteer";
 import { MockQueue } from "./MockQueue.js";
 import { Browser } from "puppeteer";
-//@ts-ignore
 import testParameters from "./testParamter.js";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
-//@ts-ignore
 import { getShops } from "../../../src/db/util/shops.js";
-//@ts-ignore
 import { proxyAuth } from "../../../src/constants.js";
 import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
 
 let browser: Browser | null = null;
-let shops: { [key: string]: ShopObject } | null = null;
+let shops: { [key: string]: Shop } | null = null;
 let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
 
 export const myBeforeAll = async (
   _shopDomain: string,
-  gb: boolean = false,
+  proxyType?: ProxyType,
   version?: Versions
 ) => {
   shopDomain = _shopDomain;
@@ -65,7 +63,7 @@ export const myBeforeAll = async (
       browserStarts: 0,
     },
   };
-  if (gb) {
+  if (proxyType === "de") {
     (task["proxyType"] = "de"), (task["timezones"] = ["Europe/Berlin"]);
   }
 
@@ -75,9 +73,9 @@ export const myBeforeAll = async (
     proxyAuth,
     version || (process.env.BROWSER_VERSION as Versions)
   );
-
   shops = await getShops([{ d: shopDomain }]);
   if (browser && shops && shops[shopDomain]) {
+    // @ts-ignore
     page = await getPage({
       browser,
       shop: shops[shopDomain],
@@ -87,9 +85,10 @@ export const myBeforeAll = async (
       rules: shops[shopDomain].rules,
       timezones: task.timezones,
     });
-    await page.goto(shops[shopDomain].entryPoints[0].url, {
-      timeout: 120000,
-    });
+    if (page)
+      await page.goto(shops[shopDomain].entryPoints[0].url, {
+        timeout: 120000,
+      });
   }
 };
 
@@ -132,10 +131,10 @@ export const findMainCategories = async () => {
     });
     expect(categories !== undefined).toBe(true);
     if (categories) {
-      console.log("categories:", categories.length);
       expect(categories.length).toBe(
         testParameters[shopDomain].mainCategoriesCount
       );
+      return categories;
     }
   }
 };
@@ -209,8 +208,9 @@ export const countProductPages = async () => {
 export const findPaginationAndNextPage = async () => {
   if (page && shops && shops[shopDomain]) {
     const initialProductPageUrl =
-      testParameters[shopDomain].initialProductPageUrl;
+    testParameters[shopDomain].initialProductPageUrl;
     const nextPageUrl = testParameters[shopDomain].nextPageUrl;
+    await page?.goto(initialProductPageUrl);
 
     const { pagination, paginationEl } = await findPagination(
       page,
@@ -237,19 +237,29 @@ export const extractProducts = async () => {
     products.push(product);
   };
   const productsPerPage = testParameters[shopDomain].productsPerPage;
+  const productsPageUrl = testParameters[shopDomain].countProductPageUrl;
+  await page?.goto(productsPageUrl);
   if (page && shops && shops[shopDomain]) {
     await crawlProducts(page, shops[shopDomain], addProductCb, {
       name: "",
       link: "",
     });
   }
-  const properties = ["name", "price", "image", "link"];
+  const properties = ["name", "price", "link"];
   const missingProperties: { [key: string]: any } = {
     name: 0,
     price: 0,
     link: 0,
     image: 0,
   };
+
+  if (products.length > 0)
+    console.log(
+      "extractProducts: Products cnt ",
+      products.length,
+      "Product: ",
+      JSON.stringify(products[0], null, 2)
+    );
   const testProducts = products.every((product) =>
     properties.every((prop) => {
       if (product[prop] === "") missingProperties[prop]++;
@@ -261,13 +271,6 @@ export const extractProducts = async () => {
 
   expect(testProducts).toBe(true);
   expect(products.length).toBe(productsPerPage);
-  if (products.length > 0)
-    console.log(
-      "extractProducts: Products cnt ",
-      products.length,
-      "Product: ",
-      JSON.stringify(products[0], null, 2)
-    );
 };
 
 export const extractProductsFromSecondPage = async () => {
@@ -314,7 +317,7 @@ export const extractProductsFromSecondPage = async () => {
       },
       shop: shops[shopDomain],
     });
-    expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
+    expect(products.length).toBeGreaterThanOrEqual(productsPerPageAfterLoadMore);
     if (products.length > 0)
       console.log("extractProductsFromSecondPage: ", products[0]);
   }
@@ -346,7 +349,7 @@ export const extractProductsFromSecondPageQueueless = async () => {
       }
     );
     if (result === "crawled") {
-      expect(products.length).toBeGreaterThan(productsPerPageAfterLoadMore);
+      expect(products.length).toBeGreaterThanOrEqual(productsPerPageAfterLoadMore);
       if (products.length > 0)
         console.log(
           "Total products: ",

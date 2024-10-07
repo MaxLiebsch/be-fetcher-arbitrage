@@ -156,6 +156,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
         requestId: uuid(),
         shop: shop as Shop,
         addProduct,
+        proxyType,
         retriesOnFail: MAX_RETRIES_SCRAPE_EAN,
         targetShop: {
           name: shopDomain,
