@@ -88,7 +88,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
         }) => {
           const { shop, product } = productWithShop;
           const source: Shop = shop as Shop;
-          const { d: shopDomain } = source;
+          const { d: shopDomain} = source;
           const { _id: productId, asin } = product;
 
           const diffHours = differenceInHours(

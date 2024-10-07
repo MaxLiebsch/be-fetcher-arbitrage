@@ -1,10 +1,12 @@
-import { LocalLogger } from "@dipmaxtech/clr-pkg";
+import { LocalLogger, defaultLogDirectory } from "@dipmaxtech/clr-pkg";
 import { monitorAndProcessTasks } from "./util/monitorAndProcessTasks.js";
 import { logGlobal, setTaskLogger } from "./util/logger.js";
 import { hostname } from "./db/mongo.js";
 import { updateAllTasksProgress } from "./db/util/updateAllTasksProgress.js";
 import { scheduleJob } from "node-schedule";
 import { updateAllShopsStats } from "./db/util/updateShopStats.js";
+import pkg from "fs-jetpack";
+const {write } = pkg;
 
 const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
@@ -30,6 +32,12 @@ if (hostname === "clr1") {
     }
   });
 }
+
+scheduleJob("*/2 * * * *", async () => {
+  write(defaultLogDirectory + "/heartbeat.log", new Date().toISOString(), {
+    atomic: true,
+  });
+});
 
 let taskId = "";
 

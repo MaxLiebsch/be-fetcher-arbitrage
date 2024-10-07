@@ -132,13 +132,13 @@ export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
           completed: false,
           createdAt: new Date().toISOString(),
           errored: false,
-          startedAt: new Date().toISOString(),
-          completedAt: new Date().toISOString(),
+          startedAt: "",
+          completedAt: "",
           productLimit: chunk.length * productsPerCategory,
         };
         if (proxyType) {
           task["proxyType"] = proxyType;
-          task["timezones"] = ["Europe/Berlin"];
+          if (proxyType === "de") task["timezones"] = ["Europe/Berlin"];
         }
         return await addTask(task);
       })

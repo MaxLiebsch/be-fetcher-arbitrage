@@ -114,6 +114,8 @@ RUN yarn --cwd /app/proxy link "@dipmaxtech/clr-pkg"
 
 # Set the working directory to /app
 WORKDIR /app
+RUN apt-get update && apt-get install -y cron jq
+
 RUN yarn link "@dipmaxtech/clr-pkg"
 
 RUN mkdir -p /app/data/shop/debug/
@@ -123,5 +125,13 @@ RUN chmod +x /usr/bin/dumb-init
 COPY start.sh /app/start.sh
 
 RUN chmod +x /app/start.sh
+
+# Add health check script
+COPY health-check.sh /app/health-check.sh
+
+RUN chmod +x /app/health-check.sh
+
+COPY app-cron /etc/cron.d/app-cron
+RUN chmod 0644 /etc/cron.d/app-cron
 
 ENTRYPOINT ["/app/start.sh"] 

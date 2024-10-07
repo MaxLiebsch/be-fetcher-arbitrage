@@ -1,4 +1,3 @@
-
 import { hostname } from "../db/mongo.js";
 import { findTask, getNewTask } from "../db/util/tasks.js";
 import { Action } from "../types/tasks/Tasks.js";
@@ -22,7 +21,7 @@ export async function checkForNewTask() {
     maintenance: false,
   });
   if (remainingTask) {
-    logGlobal(`Recovering task ${remainingTask} ${remainingTask.id}`);
+    logGlobal(`Recovering task ${remainingTask.id} ${remainingTask.id}`);
     return { ...remainingTask, action: "recover" as Action };
   }
   const task = await getNewTask();
