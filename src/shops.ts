@@ -2693,6 +2693,487 @@ export const shops: { [key: string]: any } = {
       entryPoint: "load",
     },
   },
+  "notebooksbilliger.de": {
+    action: [],
+    active: true,
+    categories: {
+      exclude: [
+        "lenovo+tech+sale",
+        "aboexpress",
+        "systemhaus",
+        "store+angebote",
+        "studentenprogramm",
+        "finanzierung",
+      ],
+      sel: "aside.sidebar a.sidebar__navigation-entry",
+      type: "href",
+      subCategories: [
+        {
+          sel: "aside.sidebar a.sidebar__navigation-entry",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "notebooksbilliger.de",
+    entryPoints: [
+      {
+        url: "https://www.notebooksbilliger.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "div.header-inner svg.header-inner__logo-svg",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "a.product-listing__more-link",
+        nav: "?page=",
+        calculation: {
+          method: "match_text",
+          textToMatch: "Mehr Produkte anzeigen",
+          dynamic: true,
+          last: "a.product-listing__more-link",
+          sel: "a.product-listing__more-link",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin12",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image",
+      },
+    ],
+    productList: [
+      {
+        sel: "ul[id=product-listing]",
+        productCntSel: ["span.product-listing__products-count"],
+        product: {
+          sel: "li.product-listing__row",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "img",
+              type: "srcset",
+            },
+            {
+              content: "name",
+              sel: "div.product-card__product-heading-title",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.product-price__price-wrapper",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        // "stylesheet",
+        "ping",
+        "image",
+        // "xhr",
+        // "fetch",
+        "imageset",
+        "sub_frame",
+        // "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "notino.de": {
+    action: [],
+    active: true,
+    categories: {
+      exclude: ["inspiration", "premium", "marken", 'loggen sie sich ein', 'angebote'],
+      sel: "div[data-testid=menu-wrapper] a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[id=sidebarWrapper] a[class*=styled__StyledLink]",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "notino.de",
+    entryPoints: [
+      {
+        url: "https://www.notino.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "svg[data-testid=notino-logo-icon]",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[class*=styled__StyledPager]",
+        nav: "?f=<page><apendix>",
+        paginationUrlSchema: {
+          calculation: {
+            method: "find_pagination_apendix",
+            type: "href",
+            replace: [
+              {
+                replace: "<apendix>",
+                search: "-\\d+-\\d+(?:-\\d+)?",
+              },
+            ],
+            sel: "link[rel=next]",
+          },
+        },
+        calculation: {
+          method: "find_highest",
+          last: "div[class*=styled__StyledPager] span[data-testid=page-item]",
+          sel: "div[class*=styled__StyledPager] span[data-testid=page-item]",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin12",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "span[data-testid=pd-price]",
+        parent: "div[data-testid=pd-price-wrapper]",
+        type: "text",
+        content: "price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image",
+      },
+    ],
+    productList: [
+      {
+        sel: "div[id=productListWrapper]",
+        productCntSel: [],
+        product: {
+          sel: "div[data-testid=product-container]",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "img",
+              type: "srcset",
+            },
+            {
+              content: "mnfctr",
+              sel: "h2",
+              type: "text",
+            },
+            {
+              content: "name",
+              sel: "h3",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span[data-testid=price-component]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "flaconi.de": {
+    action: [],
+    active: true,
+    categories: {
+      exclude: ["magazin", "premium", "geschenkgutschein", "marken"],
+      sel: "ul[class*=Navigationstyle__List] li[class*=Navigationstyle__ListItem] > a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[class*=SideNavstyle__DefaultContainer] li[class*=SideNavstyle__Element] a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "flaconi.de",
+    entryPoints: [
+      {
+        url: "https://www.flaconi.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic:
+      "div[id=Mainheader] a[class*=Mainheaderstyle__LogoLink] div[class*=Common__DesktopContainer] svg;",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[class*=Paginationstyle__PaginationWrapper]",
+        nav: "?offset=<page>",
+        paginationUrlSchema: {
+          calculation: {
+            offset: 24,
+            method: "offset",
+          },
+          replace: "attach_end",
+        },
+        calculation: {
+          method: "product_count",
+          productsPerPage: 24,
+          last: "div[class*=Paginationstyle__PaginationWrapper] div[class*=Paginationstyle__Pages]",
+          sel: "div[class*=Paginationstyle__PaginationWrapper] div[class*=Paginationstyle__Pages]",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin12",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers[0].availability",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers[0].price",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+        multiple: true,
+        parent: "html",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image",
+        multiple: true,
+        parent: "html",
+      },
+    ],
+    productList: [
+      {
+        sel: "div[data-qa-block=product-section]",
+        productCntSel: ["span[class*=CatalogCountTitlestyle__CatalogCount]"],
+        product: {
+          sel: "div[data-product-list-id*=list]",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "img",
+              type: "srcset",
+            },
+            {
+              content: "mnfctr",
+              sel: "span[data-qa-block=product-brand]",
+              type: "text",
+            },
+            {
+              content: "name",
+              sel: "span[data-qa-block=product_series]",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span[data-qa-block=product_price]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "imageset",
+        "sub_frame",
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
   "amazon.de": {
     active: true,
     d: "amazon.de",
@@ -4520,8 +5001,8 @@ export const shops: { [key: string]: any } = {
       {
         sel: "h1[id=js_heading]",
         parent: "section[id=main_content]",
-        content: 'name',
-        type: "text"
+        content: "name",
+        type: "text",
       },
       {
         sel: "div[id=buybox_top] img",

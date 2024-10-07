@@ -9,13 +9,8 @@ import { CONCURRENCY } from "./constants";
 import { getSiteMap } from "./db/mongo";
 import { getAllShops } from "./db/util/shops";
 import { addTask } from "./db/util/tasks";
-import { DailySalesTask } from "./types/tasks/DailySalesTask";
-import { ScrapeShopTask } from "./types/tasks/Tasks";
-
 const shopDomains: string[] = ["mindfactory.de"];
 
-const maxProducts = 80000;
-const productsPerCategory = 15000;
 const chunkSize = 2;
 const productPages = 25;
 const productLimitLookup = 500;
@@ -63,6 +58,7 @@ export const createScanMatchTasks = async (
           productLimit: match ? productLimitLookup : 0,
           executing: false,
           lastCrawler: [],
+          proxyType: shop.proxyType,
           test: false,
           maintenance: false,
           recurrent: match ? true : false,

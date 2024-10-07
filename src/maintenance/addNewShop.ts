@@ -4,14 +4,12 @@ import { findTasks } from "../db/util/tasks.js";
 import {
   createCrawlTasks,
   createDailySalesTask,
-  createSingleCrawlAznListingsTask,
-  createSingleMatchTask,
 } from "../tasks.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 import { ScrapeShopTask } from "../types/tasks/Tasks.js";
 import { getArbispotterDb } from "../db/mongo.js";
 
-const newShops: {
+export const newShops: {
   d: string;
   ne: string;
   maxProducts: number;
@@ -23,8 +21,43 @@ const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "digitalo.de",
-    ne: "Digitalo.de",
+    d: "notebooksbilliger.de",
+    ne: "Notebooksbilliger.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "de" as ProxyType,
+    categories: [],
+    dailySalesCategories: [],
+  },
+  {
+    d: "notino.de",
+    ne: "Notino.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "de" as ProxyType,
+    categories: [],
+    dailySalesCategories: [
+      {
+        link: "https://www.notino.de/pflege/ausverkauf/",
+        name: "Sale",
+      },
+      {
+        link: "https://www.notino.de/ausverkauf/",
+        name: "Sale",
+      },
+      {
+        link: "https://www.notino.de/gratis-versand/",
+        name: "Sale",
+      }
+    ],
+  },
+  {
+    d: "flaconi.de",
+    ne: "Flaconi.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
@@ -33,12 +66,8 @@ const newShops: {
     categories: [],
     dailySalesCategories: [
       {
-        name: "Sales",
-        link: "https://www.digitalo.de/categories/8177_8259/Outdoor-Freizeit/Sale.html",
-      },
-      {
-        name: "Sales",
-        link: "https://www.digitalo.de/products/dailydeals.html",
+        link: "https://www.flaconi.de/sale/",
+        name: "Sale",
       },
     ],
   },

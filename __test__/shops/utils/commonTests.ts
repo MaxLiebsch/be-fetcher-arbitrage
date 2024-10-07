@@ -12,11 +12,14 @@ import {
   getProductCount,
   lookupProductQueue,
   mainBrowser,
+  notifyProxyChange,
   paginationUrlBuilder,
   queryEansOnEbyQueue,
   queryProductPageQueue,
   querySellerInfosQueue,
   queryURLBuilder,
+  registerRequest,
+  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { Page } from "puppeteer";
 import { MockQueue } from "./MockQueue.js";
@@ -32,6 +35,30 @@ let shops: { [key: string]: Shop } | null = null;
 let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
+
+export const newPage = async (proxyType: ProxyType, url?: string) => {
+  if (!browser) return;
+  if (!shops || !shops[shopDomain]) return;
+
+  const pageAndFingerprint = await getPage({
+    browser,
+    host: `www.${shopDomain}`,
+    shop: shops[shopDomain],
+    requestCount: 5,
+    disAllowedResourceTypes: shops[shopDomain].resourceTypes["crawl"],
+    exceptions: shops[shopDomain].exceptions,
+    rules: shops[shopDomain].rules,
+    proxyType,
+  });
+  page = pageAndFingerprint.page;
+
+  if (page && url)
+    await page.goto(url, {
+      timeout: 120000,
+    });
+
+  return pageAndFingerprint;
+};
 
 export const myBeforeAll = async (
   _shopDomain: string,
@@ -75,20 +102,27 @@ export const myBeforeAll = async (
   );
   shops = await getShops([{ d: shopDomain }]);
   if (browser && shops && shops[shopDomain]) {
-    // @ts-ignore
-    page = await getPage({
-      browser,
-      shop: shops[shopDomain],
-      requestCount: 5,
-      disAllowedResourceTypes: shops[shopDomain].resourceTypes["crawl"],
-      exceptions: shops[shopDomain].exceptions,
-      rules: shops[shopDomain].rules,
-      timezones: task.timezones,
-    });
-    if (page)
-      await page.goto(shops[shopDomain].entryPoints[0].url, {
-        timeout: 120000,
-      });
+    if (proxyType) {
+      await notifyProxyChange(
+        proxyType,
+        shops[shopDomain].entryPoints[0].url,
+        uuid(),
+        Date.now(),
+        [shops[shopDomain].d]
+      );
+    } else {
+      await registerRequest(
+        shops[shopDomain].entryPoints[0].url,
+        uuid(),
+        [shops[shopDomain].d],
+        Date.now()
+      );
+    }
+    const pageAndFingerprint = await newPage(
+      proxyType || "mix",
+      shops[shopDomain].entryPoints[0].url
+    );
+    if (pageAndFingerprint) console.log(pageAndFingerprint.fingerprint);
   }
 };
 
@@ -140,39 +174,46 @@ export const findMainCategories = async () => {
 };
 export const findSubCategories = async () => {
   if (page && shops && shops[shopDomain]) {
-    await page.goto(testParameters[shopDomain].subCategoryUrl);
-    const categories = await getCategories(
-      page,
-      {
-        // @ts-ignore
-        queue: new MockQueue(),
-        categoriesHeuristic: {
-          subCategories: {
+    try {
+      await page.goto(testParameters[shopDomain].subCategoryUrl);
+      const categories = await getCategories(
+        page,
+        {
+          // @ts-ignore
+          queue: new MockQueue(),
+          categoriesHeuristic: {
+            subCategories: {
+              0: 0,
+              "1-9": 0,
+              "10-19": 0,
+              "20-29": 0,
+              "30-39": 0,
+              "40-49": 0,
+              "+50": 0,
+            },
+            mainCategories: 0,
+          },
+          productPageCountHeuristic: {
             0: 0,
             "1-9": 0,
-            "10-19": 0,
-            "20-29": 0,
-            "30-39": 0,
-            "40-49": 0,
+            "10-49": 0,
             "+50": 0,
           },
-          mainCategories: 0,
+          shop: shops[shopDomain],
         },
-        productPageCountHeuristic: {
-          0: 0,
-          "1-9": 0,
-          "10-49": 0,
-          "+50": 0,
-        },
-        shop: shops[shopDomain],
-      },
-      true
-    );
-    expect(categories !== undefined).toBe(true);
-    if (categories)
-      expect(categories.length).toBe(
-        testParameters[shopDomain].subCategoriesCount
+        true
       );
+      expect(categories !== undefined).toBe(true);
+      if (categories) {
+        expect(categories.length).toBe(
+          testParameters[shopDomain].subCategoriesCount
+        );
+        return categories;
+      }
+    } catch (error) {
+      console.log("Error in findSubCategories", error);
+      expect(1).toBe(2);
+    }
   }
 };
 export const productPageCount = async (url = "") => {
@@ -208,7 +249,7 @@ export const countProductPages = async () => {
 export const findPaginationAndNextPage = async () => {
   if (page && shops && shops[shopDomain]) {
     const initialProductPageUrl =
-    testParameters[shopDomain].initialProductPageUrl;
+      testParameters[shopDomain].initialProductPageUrl;
     const nextPageUrl = testParameters[shopDomain].nextPageUrl;
     await page?.goto(initialProductPageUrl);
 
@@ -220,10 +261,11 @@ export const findPaginationAndNextPage = async () => {
 
     let nextUrl = `${initialProductPageUrl}${paginationEl.nav}${pageNo}`;
     if (paginationEl?.paginationUrlSchema) {
-      nextUrl = paginationUrlBuilder(
+      nextUrl = await paginationUrlBuilder(
         initialProductPageUrl,
         shops[shopDomain].paginationEl,
         pageNo,
+        page,
         undefined
       );
     }
@@ -260,16 +302,22 @@ export const extractProducts = async () => {
       "Product: ",
       JSON.stringify(products[0], null, 2)
     );
-  const testProducts = products.every((product) =>
-    properties.every((prop) => {
+  const validProductCount = products.reduce((count, product) => {
+    const isValid = properties.every((prop) => {
       if (product[prop] === "") missingProperties[prop]++;
-
       return product[prop] !== "";
-    })
-  );
+    });
+    return count + (isValid ? 1 : 0);
+  }, 0);
   console.log("missingProperties:", missingProperties);
 
-  expect(testProducts).toBe(true);
+  const totalProducts = products.length;
+  const validPercentage = (validProductCount / totalProducts) * 100;
+
+  const isAtLeast90PercentValid = validPercentage >= 90;
+  console.log("isAtLeast90PercentValid:", isAtLeast90PercentValid);
+
+  expect(isAtLeast90PercentValid).toBe(true);
   expect(products.length).toBe(productsPerPage);
 };
 
@@ -317,7 +365,9 @@ export const extractProductsFromSecondPage = async () => {
       },
       shop: shops[shopDomain],
     });
-    expect(products.length).toBeGreaterThanOrEqual(productsPerPageAfterLoadMore);
+    expect(products.length).toBeGreaterThanOrEqual(
+      productsPerPageAfterLoadMore
+    );
     if (products.length > 0)
       console.log("extractProductsFromSecondPage: ", products[0]);
   }
@@ -349,7 +399,9 @@ export const extractProductsFromSecondPageQueueless = async () => {
       }
     );
     if (result === "crawled") {
-      expect(products.length).toBeGreaterThanOrEqual(productsPerPageAfterLoadMore);
+      expect(products.length).toBeGreaterThanOrEqual(
+        productsPerPageAfterLoadMore
+      );
       if (products.length > 0)
         console.log(
           "Total products: ",

@@ -71,6 +71,54 @@ const testParameters = {
     nextPageUrl:
       "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html/page/2",
   },
+  "notebooksbilliger.de": {
+    countProductPageUrl:
+      "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware",
+    pages: 20,
+    productPageUrl:
+      "https://www.notebooksbilliger.de/lexar+ares+rgb+32gb+kit+2x16gb+ddr5+6000+schwarz+856307",
+    productsPerPage: 41,
+    productsPerPageAfterLoadMore: 20,
+    subCategoriesCount: 15,
+    mainCategoriesCount: 21,
+    initialProductPageUrl:
+      "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware",
+    subCategoryUrl: "https://www.notebooksbilliger.de/pc+hardware",
+    nextPageUrl:
+      "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware?page=2",
+  },
+  "notino.de": {
+    countProductPageUrl:
+      "https://www.notino.de/gesundheit/",
+    pages: 20,
+    productPageUrl:
+      "https://www.notino.de/uriage/xemose-beruhigendes-reinigungsoel-fuer-gesicht-und-koerper/",
+    productsPerPage: 29,
+    productsPerPageAfterLoadMore: 25,
+    subCategoriesCount: 5,
+    mainCategoriesCount: 16,
+    initialProductPageUrl:
+      "https://www.notino.de/gesundheit/",
+    subCategoryUrl: "https://www.notino.de/gesundheit/",
+    nextPageUrl:
+      "https://www.notino.de/gesundheit/?f=2-1-58633",
+  },
+  "flaconi.de": {
+    countProductPageUrl:
+      "https://www.flaconi.de/parfum/",
+    pages: 20,
+    productPageUrl:
+      "https://www.flaconi.de/pflege/lancaster/sun-beauty/lancaster-sun-beauty-velvet-milk-sublime-tan-spf-30-sonnenlotion.html?variant=80002416-400",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 25,
+    subCategoriesCount: 10,
+    mainCategoriesCount: 9,
+    initialProductPageUrl:
+      "https://www.flaconi.de/parfum/",
+    subCategoryUrl: "https://www.flaconi.de/parfum/",
+    nextPageUrl:
+      "https://www.flaconi.de/parfum/?offset=24",
+  },
   "proshop.de": {
     countProductPageUrl:
       "https://www.proshop.de/Mappenund-Clipboards",
