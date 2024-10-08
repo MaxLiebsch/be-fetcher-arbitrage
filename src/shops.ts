@@ -1551,7 +1551,8 @@ export const shops: { [key: string]: any } = {
         sel: "aside.pagination-block",
         nav: "?page=",
         calculation: {
-          method: "count",
+          method: "product_count",
+          productsPerPage: 30,
           last: "aside.pagination-block li a",
           sel: "aside.pagination-block li a",
         },
@@ -1723,11 +1724,7 @@ export const shops: { [key: string]: any } = {
       ],
     },
     crawlActions: [
-      {
-        type: "scroll",
-        sel: "none",
-        action: "scroll",
-      },
+
     ],
     d: "coolshop.de",
     entryPoints: [
@@ -1746,7 +1743,7 @@ export const shops: { [key: string]: any } = {
         wait: false,
         nav: '?page=',
         calculation: {
-          method: "match_text",
+          method: "estimate",
           textToMatch: "Mehr anzeigen",
           dynamic: true,
           last: "button[id=searchLoadMoreButton]",

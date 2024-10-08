@@ -119,6 +119,54 @@ const testParameters = {
     nextPageUrl:
       "https://www.flaconi.de/parfum/?offset=24",
   },
+  "babymarkt.de": {
+    countProductPageUrl:
+      "https://www.babymarkt.de/kindersitze/",
+    pages: 20,
+    productPageUrl:
+      "https://www.babymarkt.de/kindsgard-waschtuecher-vaskedag-12er-pack-oliv-a453313.html?intc=be/cat-A453313",
+    productsPerPage:33,
+    productsPerPageAfterLoadMore: 33,
+    subCategoriesCount: 14,
+    mainCategoriesCount: 8,
+    initialProductPageUrl:
+      "https://www.babymarkt.de/kindersitze/",
+    subCategoryUrl: "https://www.babymarkt.de/kindersitze/",
+    nextPageUrl:
+      "https://www.babymarkt.de/kindersitze/?page=2",
+  },
+  "conrad.de": {
+    countProductPageUrl:
+      "https://www.conrad.de/de/o/preisauszeichner-etiketten-2750010.html",
+    pages: 20,
+    productPageUrl:
+      "https://www.conrad.de/de/p/logitech-wireless-k400-plus-funk-tastatur-deutsch-qwertz-schwarz-integriertes-touchpad-maustasten-1396292.html",
+    productsPerPage:30,
+    productsPerPageAfterLoadMore: 30,
+    subCategoriesCount: 14,
+    mainCategoriesCount: 12,
+    initialProductPageUrl:
+      "https://www.conrad.de/de/o/preisauszeichner-etiketten-2750010.html",
+    subCategoryUrl: "https://www.conrad.de/de/t/computer-buero-01.html",
+    nextPageUrl:
+      "https://www.conrad.de/de/o/preisauszeichner-etiketten-2750010.html?page=2",
+  },
+  "coolshop.de": {
+    countProductPageUrl:
+      "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
+    pages: 20,
+    productPageUrl:
+      "https://www.coolshop.de/produkt/ea-sports-fc-25-nordic/23N57J/",
+    productsPerPage:21,
+    productsPerPageAfterLoadMore: 30,
+    subCategoriesCount: 21,
+    mainCategoriesCount: 15,
+    initialProductPageUrl:
+      "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
+    subCategoryUrl: "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
+    nextPageUrl:
+      "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/?page=2",
+  },
   "proshop.de": {
     countProductPageUrl:
       "https://www.proshop.de/Mappenund-Clipboards",

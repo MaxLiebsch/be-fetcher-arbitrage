@@ -1,10 +1,7 @@
 import { ICategory, ProxyType } from "@dipmaxtech/clr-pkg";
 import { getShop, updateShopWithQuery } from "../db/util/shops.js";
 import { findTasks } from "../db/util/tasks.js";
-import {
-  createCrawlTasks,
-  createDailySalesTask,
-} from "../tasks.js";
+import { createCrawlTasks, createDailySalesTask } from "../tasks.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 import { ScrapeShopTask } from "../types/tasks/Tasks.js";
 import { getArbispotterDb } from "../db/mongo.js";
@@ -21,43 +18,8 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "notebooksbilliger.de",
-    ne: "Notebooksbilliger.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "de" as ProxyType,
-    categories: [],
-    dailySalesCategories: [],
-  },
-  {
-    d: "notino.de",
-    ne: "Notino.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "de" as ProxyType,
-    categories: [],
-    dailySalesCategories: [
-      {
-        link: "https://www.notino.de/pflege/ausverkauf/",
-        name: "Sale",
-      },
-      {
-        link: "https://www.notino.de/ausverkauf/",
-        name: "Sale",
-      },
-      {
-        link: "https://www.notino.de/gratis-versand/",
-        name: "Sale",
-      }
-    ],
-  },
-  {
-    d: "flaconi.de",
-    ne: "Flaconi.de",
+    d: "babymarkt.de",
+    ne: "Babymarkt.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
@@ -65,12 +27,38 @@ export const newShops: {
     proxyType: "mix" as ProxyType,
     categories: [],
     dailySalesCategories: [
-      {
-        link: "https://www.flaconi.de/sale/",
-        name: "Sale",
-      },
+      { link: "https://www.babymarkt.de/sale/", name: "Sale" },
     ],
   },
+  {
+    d: "conrad.de",
+    ne: "Conrad.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "mix" as ProxyType,
+    categories: [],
+    dailySalesCategories: [
+      { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
+    ],
+  },
+  // {
+  //   d: "coolshop.de",
+  //   ne: "Coolshop.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   hasEan: true,
+  //   proxyType: "mix" as ProxyType,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     {
+  //       link: "https://www.coolshop.de/sale/",
+  //       name: "Sale",
+  //     },
+  //   ],
+  // },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };

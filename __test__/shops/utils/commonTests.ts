@@ -39,15 +39,16 @@ let shopDomain = "";
 export const newPage = async (proxyType: ProxyType, url?: string) => {
   if (!browser) return;
   if (!shops || !shops[shopDomain]) return;
+  const shop = shops[shopDomain];
 
   const pageAndFingerprint = await getPage({
     browser,
     host: `www.${shopDomain}`,
-    shop: shops[shopDomain],
+    shop: shop,
     requestCount: 5,
-    disAllowedResourceTypes: shops[shopDomain].resourceTypes["crawl"],
-    exceptions: shops[shopDomain].exceptions,
-    rules: shops[shopDomain].rules,
+    disAllowedResourceTypes: shop.resourceTypes["crawl"],
+    exceptions: shop.exceptions,
+    rules: shop.rules,
     proxyType,
   });
   page = pageAndFingerprint.page;
@@ -101,26 +102,27 @@ export const myBeforeAll = async (
     version || (process.env.BROWSER_VERSION as Versions)
   );
   shops = await getShops([{ d: shopDomain }]);
-  if (browser && shops && shops[shopDomain]) {
+  const shop = shops && shops[shopDomain];
+  if (browser && shops && shop) {
     if (proxyType) {
       await notifyProxyChange(
         proxyType,
-        shops[shopDomain].entryPoints[0].url,
+        shop.entryPoints[0].url,
         uuid(),
         Date.now(),
-        [shops[shopDomain].d]
+        shop.allowedHosts || []
       );
     } else {
       await registerRequest(
-        shops[shopDomain].entryPoints[0].url,
+        shop.entryPoints[0].url,
         uuid(),
-        [shops[shopDomain].d],
+        shop.allowedHosts || [],
         Date.now()
       );
     }
     const pageAndFingerprint = await newPage(
       proxyType || "mix",
-      shops[shopDomain].entryPoints[0].url
+      shop.entryPoints[0].url
     );
     if (pageAndFingerprint) console.log(pageAndFingerprint.fingerprint);
   }
@@ -373,7 +375,7 @@ export const extractProductsFromSecondPage = async () => {
   }
 };
 
-export const extractProductsFromSecondPageQueueless = async () => {
+export const extractProductsFromSecondPageQueueless = async (pages= 5) => {
   const initialProductPageUrl =
     testParameters[shopDomain].initialProductPageUrl;
   const productsPerPageAfterLoadMore =
@@ -393,12 +395,13 @@ export const extractProductsFromSecondPageQueueless = async () => {
         link: "",
       },
       {
-        pages: 5,
+        pages,
         mainCategory: 0,
         subCategory: 0,
       }
     );
     if (result === "crawled") {
+      console.log('Loaded more products:', products.length)
       expect(products.length).toBeGreaterThanOrEqual(
         productsPerPageAfterLoadMore
       );
@@ -409,6 +412,8 @@ export const extractProductsFromSecondPageQueueless = async () => {
           "extractProductsFromSecondPageQueueless: ",
           products[0]
         );
+    }else{ 
+      expect(1).toBe(2);
     }
   }
 };

@@ -14,7 +14,7 @@ import {
   productPageCount,
 } from "./utils/commonTests.js";
 
-const shopDomain = "flaconi.de";
+const shopDomain = "conrad.de";
 const proxyType = 'mix';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
@@ -55,7 +55,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         console.log("productInfo:", productInfo);
         const ean = productInfo.find((info) => info.key === "ean");
-        expect(ean.value).toBe("3607343192002");
+        expect(ean.value).toBe("5099206059252");
       } else {
         expect(1).toBe(2);
       }
