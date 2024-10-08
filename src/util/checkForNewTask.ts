@@ -1,5 +1,6 @@
 import { hostname } from "../db/mongo.js";
-import { findTask, getNewTask } from "../db/util/tasks.js";
+import { getNewTask } from "../db/util/getNewTask.js";
+import { findTask } from "../db/util/tasks.js";
 import { Action } from "../types/tasks/Tasks.js";
 import { logGlobal } from "./logger.js";
 

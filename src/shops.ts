@@ -1205,6 +1205,7 @@ export const shops: { [key: string]: any } = {
         "newsletter",
         "digitales-lernen",
         "kaufberatung",
+        "software",
         "gutscheine",
         "abo",
         "zurueck",
