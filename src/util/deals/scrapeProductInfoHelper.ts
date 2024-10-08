@@ -3,8 +3,10 @@ import {
   DbProductRecord,
   deliveryTime,
   detectCurrency,
+  prefixLink,
   roundToTwoDecimals,
   safeParsePrice,
+  Shop,
 } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { updateProductWithQuery } from "../../db/util/crudProducts.js";
@@ -13,7 +15,8 @@ import { log } from "../logger.js";
 export async function handleDealsProductInfo(
   collection: string,
   { productInfo, url }: AddProductInfoProps,
-  product: DbProductRecord
+  product: DbProductRecord,
+  source: Shop
 ) {
   const { _id: productId, qty: buyQty } = product;
   if (productInfo) {
@@ -34,12 +37,12 @@ export async function handleDealsProductInfo(
       ...(parsedDeliveryTime && { a: parsedDeliveryTime }),
       ...(currency && { cur: currency }),
       ...(prc && { prc, uprc: roundToTwoDecimals(prc / buyQty) }),
-      ...(image && { img: image }),
+      ...(image && { img: prefixLink(image, source.d) }),
       ...(sku && { sku }),
       ...(mku && { mku }),
     };
 
-    const result = await updateProductWithQuery( productId, {
+    const result = await updateProductWithQuery(productId, {
       $set: productUpdate,
     });
     log(`Updated product info: ${collection}-${productId.toString()}`, result);

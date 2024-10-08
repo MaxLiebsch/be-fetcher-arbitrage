@@ -16,7 +16,7 @@ const shopDomain = "digitalo.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, "mix");
+    await myBeforeAll(shopDomain, "de");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -29,7 +29,8 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   // }, 1000000);
 
   test("Find subCategories", async () => {
-    await findSubCategories();
+    const result =await findSubCategories();
+    console.log("sub categories", result);
   }, 1000000);
 
   // test("Find product in category count", async () => {

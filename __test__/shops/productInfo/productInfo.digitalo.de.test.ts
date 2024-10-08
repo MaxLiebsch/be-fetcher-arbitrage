@@ -9,7 +9,7 @@ const shopDomain = "digitalo.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, "mix", "128.0.6613.119");
+    await myBeforeAll(shopDomain, "mix", "129.0.6668.89");
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

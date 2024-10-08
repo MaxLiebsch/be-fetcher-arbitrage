@@ -4857,6 +4857,7 @@ export const shops: { [key: string]: any } = {
         {
           sel: "section[id=main_content] div.grid_container a.category__box__panel__list__item",
           type: "href",
+          visible: false,
         },
       ],
     },

@@ -5,7 +5,7 @@ import scrapeShop from "../../src/services/scrapeShop";
 import { sub } from "date-fns";
 import { ScrapeShopTask } from "../../src/types/tasks/Tasks";
 
-const shopDomain = "reichelt.de";
+const shopDomain = "digitalo.de";
 
 const today = new Date();
 const productLimit = 150;
@@ -25,13 +25,17 @@ const task = {
   },
   categories: [
     {
-      name: "Strom- versorgung",
-      link: "https://www.reichelt.de/de/de/stromversorgung-c1012.html?&nbc=1",
+      "name": "Outdoor & Freizeit",
+      "link": "https://www.digitalo.de/categories/8177/Outdoor-Freizeit.html"
     },
     {
-      name: "Messtechnik",
-      link: "https://www.reichelt.de/de/de/messtechnik-c5868.html?&nbc=1",
+      "name": "Baumarkt",
+      "link": "https://www.digitalo.de/categories/8178/Baumarkt.html"
     },
+    {
+      "name": "Batterie & Kabel",
+      "link": "https://www.digitalo.de/categories/8179/Batterien-Kabel.html"
+    } 
   ],
   recurrent: true,
   executing: false,

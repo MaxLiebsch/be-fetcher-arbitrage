@@ -30,7 +30,7 @@ export async function scrapeProductInfo(
       url,
     }: AddProductInfoProps) => {
       res(
-        await handleDealsProductInfo(shopDomain, { productInfo, url }, product)
+        await handleDealsProductInfo(shopDomain, { productInfo, url }, product, source)
       );
     };
     const handleNotFound = async (cause: NotFoundCause) => {
