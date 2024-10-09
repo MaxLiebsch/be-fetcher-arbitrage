@@ -1,6 +1,7 @@
 import { expect } from "@jest/globals";
 import {
   ProxyType,
+  ResourceTypes,
   Shop,
   browseProductPagesQueue,
   browseProductpages,
@@ -36,7 +37,11 @@ let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
 
-export const newPage = async (proxyType: ProxyType, url?: string) => {
+export const newPage = async (
+  proxyType: ProxyType,
+  url?: string,
+  disAllowedResourceTypes?: ResourceTypes[]
+) => {
   if (!browser) return;
   if (!shops || !shops[shopDomain]) return;
   const shop = shops[shopDomain];
@@ -46,7 +51,9 @@ export const newPage = async (proxyType: ProxyType, url?: string) => {
     host: `www.${shopDomain}`,
     shop: shop,
     requestCount: 5,
-    disAllowedResourceTypes: shop.resourceTypes["crawl"],
+    disAllowedResourceTypes: disAllowedResourceTypes
+      ? disAllowedResourceTypes
+      : shop.resourceTypes["crawl"],
     exceptions: shop.exceptions,
     rules: shop.rules,
     proxyType,
@@ -381,7 +388,10 @@ export const extractProductsFromSecondPage = async () => {
   }
 };
 
-export const extractProductsFromSecondPageQueueless = async (pages = 5) => {
+export const extractProductsFromSecondPageQueueless = async (
+  pages = 5,
+  url?: string
+) => {
   const initialProductPageUrl =
     testParameters[shopDomain].initialProductPageUrl;
   const productsPerPageAfterLoadMore =
@@ -391,7 +401,7 @@ export const extractProductsFromSecondPageQueueless = async (pages = 5) => {
     products.push(product);
   };
   if (page && shops && shops[shopDomain]) {
-    await page.goto(initialProductPageUrl);
+    await page.goto(url ? url : initialProductPageUrl);
     const result = await browseProductpages(
       page,
       shops[shopDomain],

@@ -74,6 +74,23 @@ const testParameters = {
     nextPageUrl:
       "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html/page/2",
   },
+  "euronics.de": {
+    salesUrl: "https://www.euronics.de/angebote",
+    countProductPageUrl:
+      "https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets",
+    pages: 20,
+    productPageUrl:
+      "https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets/ipad-air-11-128gb-wifi-2024-polarstern-4065327946451",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 20,
+    subCategoriesCount: 14,
+    mainCategoriesCount: 6,
+    initialProductPageUrl:
+      "https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets",
+    subCategoryUrl: "https://www.euronics.de/computer-und-buero/",
+    nextPageUrl:
+      "https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets?p=2",
+  },
   "notebooksbilliger.de": {
     countProductPageUrl:
       "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware",

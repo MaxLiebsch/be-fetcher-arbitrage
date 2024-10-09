@@ -17,32 +17,32 @@ export const newShops: {
   categories: ICategory[];
   dailySalesCategories: ICategory[];
 }[] = [
-  // {
-  //   d: "babymarkt.de",
-  //   ne: "Babymarkt.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   hasEan: true,
-  //   proxyType: "mix" as ProxyType,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     { link: "https://www.babymarkt.de/sale/", name: "Sale" },
-  //   ],
-  // },
-  // {
-  //   d: "conrad.de",
-  //   ne: "Conrad.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   hasEan: true,
-  //   proxyType: "mix" as ProxyType,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
-  //   ],
-  // },
+  {
+    d: "euronics.de",
+    ne: "Euronics.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "de" as ProxyType,
+    categories: [],
+    dailySalesCategories: [
+      { link: "https://www.euronics.de/angebote", name: "Sale" },
+    ],
+  },
+  {
+    d: "conrad.de",
+    ne: "Conrad.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "mix" as ProxyType,
+    categories: [],
+    dailySalesCategories: [
+      { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
+    ],
+  },
   {
     d: "coolshop.de",
     ne: "Coolshop.de",

@@ -1,8 +1,7 @@
 import { findProducts } from "../db/util/crudProducts";
 import { getTasks } from "../db/util/tasks";
-import { getArbispotterDb, getProductsCol } from "../db/mongo";
-import { getAllShopsAsArray } from "../db/util/shops";
-import { ObjectId } from "@dipmaxtech/clr-pkg";
+import { getProductsCol } from "../db/mongo";
+import { getActiveShops } from "../db/util/shops";
 
 const taskIdScraperMap = {
   ean_taskId: ["CRAWL_EAN"],
@@ -92,18 +91,15 @@ export const buildQuery = (taskIds: string[], domain: string) => {
 
 const resetTaskIds = async () => {
   const productCol = await getProductsCol();
-  const shops = await getAllShopsAsArray();
+  const shops = await getActiveShops();
   const tasks = await getTasks();
   if (!shops) {
     console.log("No tasks found");
     return;
   }
 
-  const activeShops = shops.filter((shop) => shop.active);
-  //@ts-ignore
-  activeShops.push({ d: "sales", _id: new ObjectId() });
-  for (let index = 0; index < activeShops.length; index++) {
-    const shop = activeShops[index];
+  for (let index = 0; index < shops.length; index++) {
+    const shop = shops[index];
 
     const total = await productCol.countDocuments(buildQuery(taskIds, shop.d));
     console.log("Processing shop:", shop.d);

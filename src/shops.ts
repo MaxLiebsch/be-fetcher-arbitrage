@@ -277,23 +277,11 @@ export const shops: { [key: string]: any } = {
         "ping",
         "image",
         "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "script",
-        "other",
-      ],
-      query: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
         "imageset",
         "sub_frame",
         "other",
       ],
+
     },
     rules: [
       {
@@ -2101,6 +2089,183 @@ export const shops: { [key: string]: any } = {
       entryPoint: "load",
     },
   },
+  "euronics.de": {
+    action: [],
+    active: true,
+    allowedHosts: ['cdn.euronics.de'],
+    ean: "-[0-9]{12,13}",
+    categories: {
+      exclude: ["marken"],
+      sel: "ul.main-categories li a",
+      visible: false,
+      type: "href",
+      subCategories: [
+        {
+          sel: "ul.sidebar--navigation li.navigation--entry a.navigation--link.link--go-forward:first-child",
+          visible: false,
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "euronics.de",
+    entryPoints: [
+      {
+        url: "https://www.euronics.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    manualCategories: [],
+    mimic: "div.logo--shop picture",
+    paginationEl: [
+      {
+        type: "pagination",
+        nav: "?p=",
+        wait: false,
+        sel: 'div[class=listing][data-pages]',
+        calculation:{ 
+          method: 'element_attribute',
+          attribute: 'data-pages',
+        }
+      },
+      {
+        type: "pagination",
+        sel: "div.listing--paging",
+        nav: "?p=",
+        wait: false,
+        calculation: {
+          method: "find_highest",
+          dynamic: true,
+          last: "div.listing--paging span.paging--display",
+          sel: "div.listing--paging span.paging--display",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 1000,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+        multiple: true,
+        parent: "body",
+      },
+    ],
+    productList: [
+      {
+        sel: "div.listing--container",
+        productCntSel: [],
+        awaitProductCntSel: true,
+        product: {
+          sel: "div.product--info",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.product--title",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "a.product--image img",
+              type: "srcset",
+            },
+            {
+              content: "name",
+              sel: "a.product--title",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span[data-track-id]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      product: [
+        "media",
+        "font",
+        // "stylesheet",
+        "ping",
+        "image",
+        // "xhr",
+        // "fetch",
+        // "script",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "script",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  }, 
   "fressnapf.de": {
     action: [],
     active: true,
@@ -2250,6 +2415,182 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "galaxus.de": {
+    action: [],
+    active: true,
+    ean: "-[0-9]{12,13}",
+    categories: {
+      exclude: [],
+      sel: "ul.main-categories li a",
+      visible: false,
+      type: "href",
+      subCategories: [
+        {
+          sel: "ul.sidebar--navigation li.navigation--entry a.navigation--link.link--go-forward:first-child",
+          visible: false,
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "galaxus.de",
+    entryPoints: [
+      {
+        url: "https://www.galaxus.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    manualCategories: [],
+    mimic: "div.logo--shop picture",
+    paginationEl: [
+      {
+        type: "pagination",
+        nav: "?p=",
+        wait: false,
+        sel: 'div[class=listing][data-pages]',
+        calculation:{ 
+          method: 'element_attribute',
+          attribute: 'data-pages',
+        }
+      },
+      {
+        type: "pagination",
+        sel: "div.listing--paging",
+        nav: "?p=",
+        wait: false,
+        calculation: {
+          method: "find_highest",
+          dynamic: true,
+          last: "div.listing--paging span.paging--display",
+          sel: "div.listing--paging span.paging--display",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 1000,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+        multiple: true,
+        parent: "body",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+        multiple: true,
+        parent: "body",
+      },
+    ],
+    productList: [
+      {
+        sel: "div.listing--container",
+        productCntSel: [],
+        awaitProductCntSel: true,
+        product: {
+          sel: "div.product--info",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.product--title",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "a.product--image img",
+              type: "srcset",
+            },
+            {
+              content: "name",
+              sel: "a.product--title",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "span[data-track-id]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      product: [
+        "media",
+        "font",
+        // "stylesheet",
+        "ping",
+        "image",
+        // "xhr",
+        // "fetch",
+        // "script",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+        "script",
         "imageset",
         "sub_frame",
         "other",
@@ -3470,13 +3811,13 @@ export const shops: { [key: string]: any } = {
           calculation: {
             method: "find_pagination_apendix",
             type: "href",
+            sel: "link[rel='next']",
             replace: [
               {
                 replace: "<apendix>",
-                search: "-\\d+-\\d+(?:-\\d+)?",
+                search: "-\\d+(?:-\\d+)*$",
               },
             ],
-            sel: "link[rel=next]",
           },
         },
         calculation: {
@@ -3488,8 +3829,8 @@ export const shops: { [key: string]: any } = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 700,
-      max: 900,
+      min: 900,
+      max: 1000,
     },
     product: [
       {
@@ -3887,7 +4228,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     resourceTypes: {
-      query: [
+      crawl: [
         "media",
         "font",
         "stylesheet",
@@ -4093,7 +4434,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     resourceTypes: {
-      query: [
+      crawl: [
         "media",
         "font",
         // "stylesheet",
@@ -4221,7 +4562,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     resourceTypes: {
-      query: [
+       crawl: [
         "media",
         "font",
         "stylesheet",

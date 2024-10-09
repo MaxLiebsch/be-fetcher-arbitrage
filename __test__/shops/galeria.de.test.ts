@@ -1,6 +1,7 @@
 import { describe, test, beforeAll } from "@jest/globals";
 import testParameters from "./utils/testParamter.js";
 import {
+  extractProductInfos,
   extractProducts,
   extractProductsFromSecondPageQueueless,
   findMainCategories,
@@ -13,8 +14,8 @@ import {
   productPageCount,
 } from "./utils/commonTests.js";
 
-const shopDomain = "mindfactory.de";
-const proxyType = "de";
+const shopDomain = "galaxus.de";
+const proxyType = 'mix';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
@@ -25,13 +26,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await mimicTest();
   }, 1000000);
 
-  test("Find mainCategories", async () => {
-    const result = await findMainCategories();
-    console.log("result:", result);
-  }, 1000000);
-
   test("Find subCategories", async () => {
-    await findSubCategories();
+    const result = await findSubCategories();
+    console.log("sub categories", result);
   }, 1000000);
 
   test("Find product in category count", async () => {
@@ -42,16 +39,32 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await findPaginationAndNextPage();
   }, 1000000);
 
+  test("Extract product Infos", async () => {
+    const addProductInfo = async ({
+      productInfo,
+      url,
+    }: {
+      productInfo: any[] | null;
+      url: string;
+    }) => {
+      if (productInfo) {
+        console.log("productInfo:", productInfo);
+        const ean = productInfo.find((info) => info.key === "ean");
+        expect(ean.value).toBe("5030945125372");
+      } else {
+        expect(1).toBe(2);
+      }
+    };
+    await extractProductInfos(addProductInfo);
+  }, 60000);
+
   test("Extract Products from Product page", async () => {
+    await newPage(proxyType);
     await extractProducts();
   }, 1000000);
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
-    await extractProductsFromSecondPageQueueless();
-  }, 1000000);
-
-  test("Extract Products from Sales page", async () => {
-    await extractProducts(testParameters[shopDomain].salesUrl);
+    await extractProductsFromSecondPageQueueless(10);
   }, 1000000);
 
   afterAll(async () => {

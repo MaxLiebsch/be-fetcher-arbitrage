@@ -5,10 +5,10 @@ import scrapeShop from "../../src/services/scrapeShop";
 import { sub } from "date-fns";
 import { ScrapeShopTask } from "../../src/types/tasks/Tasks";
 
-const shopDomain = "digitalo.de";
+const shopDomain = "notino.de";
 
 const today = new Date();
-const productLimit = 150;
+const productLimit = 500;
 const yesterday = sub(today, { days: 1 });
 
 const task = {
@@ -25,16 +25,16 @@ const task = {
   },
   categories: [
     {
-      "name": "Outdoor & Freizeit",
-      "link": "https://www.digitalo.de/categories/8177/Outdoor-Freizeit.html"
+      "name": "Raumdüfte",
+      "link": "https://www.notino.de/raumerfrischer/"
     },
     {
-      "name": "Baumarkt",
-      "link": "https://www.digitalo.de/categories/8178/Baumarkt.html"
+      "name": "Elektro",
+      "link": "https://www.notino.de/elektronik/"
     },
     {
-      "name": "Batterie & Kabel",
-      "link": "https://www.digitalo.de/categories/8179/Batterien-Kabel.html"
+      "name": "Gesundheit",
+      "link": "https://www.notino.de/gesundheit/"
     } 
   ],
   recurrent: true,

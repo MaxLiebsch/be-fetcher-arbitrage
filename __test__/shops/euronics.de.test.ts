@@ -1,6 +1,7 @@
 import { describe, test, beforeAll } from "@jest/globals";
 import testParameters from "./utils/testParamter.js";
 import {
+  extractProductInfos,
   extractProducts,
   extractProductsFromSecondPageQueueless,
   findMainCategories,
@@ -12,8 +13,9 @@ import {
   newPage,
   productPageCount,
 } from "./utils/commonTests.js";
+import { getShop } from "../../src/db/util/shops.js";
 
-const shopDomain = "mindfactory.de";
+const shopDomain = "euronics.de";
 const proxyType = "de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
@@ -25,33 +27,59 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await mimicTest();
   }, 1000000);
 
-  test("Find mainCategories", async () => {
-    const result = await findMainCategories();
-    console.log("result:", result);
-  }, 1000000);
-
   test("Find subCategories", async () => {
-    await findSubCategories();
-  }, 1000000);
-
-  test("Find product in category count", async () => {
-    await productPageCount();
+    const result = await findSubCategories();
+    console.log("sub categories", result);
   }, 1000000);
 
   test("Find Pagination and generate page 2 link", async () => {
     await findPaginationAndNextPage();
   }, 1000000);
 
+  test("Extract product Infos", async () => {
+    const addProductInfo = async ({
+      productInfo,
+      url,
+    }: {
+      productInfo: any[] | null;
+      url: string;
+    }) => {
+      if (productInfo) {
+        console.log("productInfo:", productInfo);
+        const ean = productInfo.find((info) => info.key === "ean");
+        expect(ean.value).toBe("0195949188695");
+      } else {
+        expect(1).toBe(2);
+      }
+    };
+    const shop = await getShop(shopDomain);
+    if (shop) {
+      await newPage(proxyType, undefined, shop.resourceTypes["product"]);
+      await extractProductInfos(addProductInfo);
+    } else {
+      expect(1).toBe(2);
+    }
+  }, 60000);
+
   test("Extract Products from Product page", async () => {
+    await newPage(proxyType);
     await extractProducts();
   }, 1000000);
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
-    await extractProductsFromSecondPageQueueless();
+    await extractProductsFromSecondPageQueueless(5);
   }, 1000000);
 
   test("Extract Products from Sales page", async () => {
-    await extractProducts(testParameters[shopDomain].salesUrl);
+    const shop = await getShop(shopDomain);
+    if (shop) {
+      await extractProductsFromSecondPageQueueless(
+        5,
+        testParameters[shopDomain].salesUrl
+      );
+    } else {
+      expect(1).toBe(2);
+    }
   }, 1000000);
 
   afterAll(async () => {
