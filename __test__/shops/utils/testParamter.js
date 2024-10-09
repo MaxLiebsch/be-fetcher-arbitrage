@@ -2,7 +2,8 @@ import { sub } from "date-fns";
 
 const testParameters = {
   "amazon.de": {
-    productPageUrl: "https://www.amazon.de/dp/product/B0BZ9NMMW4?language=de_DE"
+    productPageUrl:
+      "https://www.amazon.de/dp/product/B0BZ9NMMW4?language=de_DE",
   },
   "ebay.de": {
     productPageUrl: "https://www.ebay.de/itm/256420198915",
@@ -47,7 +48,8 @@ const testParameters = {
     nextPageUrl: "https://www.weltbild.de/buecher/dystopie?seite=2",
   },
   "dm.de": {
-    productPageUrl: "https://www.dm.de/nutrisse-haarfarbe-6n-nude-natuerliches-dunkelblond-p3600541901643.html",
+    productPageUrl:
+      "https://www.dm.de/nutrisse-haarfarbe-6n-nude-natuerliches-dunkelblond-p3600541901643.html",
     productsPerPage: 30,
     productsPerPageAfterLoadMore: 150,
     subCategoriesCount: 3,
@@ -56,6 +58,7 @@ const testParameters = {
     nextPageUrl: "https://www.dm.de/ernaehrung/kaffee-tee-kakao?currentPage0=2",
   },
   "mindfactory.de": {
+    salesUrl: "https://www.mindfactory.de/DAMN",
     countProductPageUrl:
       "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html",
     pages: 20,
@@ -88,24 +91,20 @@ const testParameters = {
       "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware?page=2",
   },
   "notino.de": {
-    countProductPageUrl:
-      "https://www.notino.de/gesundheit/",
+    countProductPageUrl: "https://www.notino.de/gesundheit/",
     pages: 20,
     productPageUrl:
       "https://www.notino.de/uriage/xemose-beruhigendes-reinigungsoel-fuer-gesicht-und-koerper/",
-    productsPerPage: 29,
+    productsPerPage: 25,
     productsPerPageAfterLoadMore: 25,
     subCategoriesCount: 5,
-    mainCategoriesCount: 16,
-    initialProductPageUrl:
-      "https://www.notino.de/gesundheit/",
+    mainCategoriesCount: 13,
+    initialProductPageUrl: "https://www.notino.de/gesundheit/",
     subCategoryUrl: "https://www.notino.de/gesundheit/",
-    nextPageUrl:
-      "https://www.notino.de/gesundheit/?f=2-1-58633",
+    nextPageUrl: "https://www.notino.de/gesundheit/?f=2-1-58633",
   },
   "flaconi.de": {
-    countProductPageUrl:
-      "https://www.flaconi.de/parfum/",
+    countProductPageUrl: "https://www.flaconi.de/parfum/",
     pages: 20,
     productPageUrl:
       "https://www.flaconi.de/pflege/lancaster/sun-beauty/lancaster-sun-beauty-velvet-milk-sublime-tan-spf-30-sonnenlotion.html?variant=80002416-400",
@@ -113,27 +112,22 @@ const testParameters = {
     productsPerPageAfterLoadMore: 25,
     subCategoriesCount: 10,
     mainCategoriesCount: 9,
-    initialProductPageUrl:
-      "https://www.flaconi.de/parfum/",
+    initialProductPageUrl: "https://www.flaconi.de/parfum/",
     subCategoryUrl: "https://www.flaconi.de/parfum/",
-    nextPageUrl:
-      "https://www.flaconi.de/parfum/?offset=24",
+    nextPageUrl: "https://www.flaconi.de/parfum/?offset=24",
   },
   "babymarkt.de": {
-    countProductPageUrl:
-      "https://www.babymarkt.de/kindersitze/",
+    countProductPageUrl: "https://www.babymarkt.de/kindersitze/",
     pages: 20,
     productPageUrl:
       "https://www.babymarkt.de/kindsgard-waschtuecher-vaskedag-12er-pack-oliv-a453313.html?intc=be/cat-A453313",
-    productsPerPage:33,
+    productsPerPage: 33,
     productsPerPageAfterLoadMore: 33,
     subCategoriesCount: 14,
     mainCategoriesCount: 8,
-    initialProductPageUrl:
-      "https://www.babymarkt.de/kindersitze/",
+    initialProductPageUrl: "https://www.babymarkt.de/kindersitze/",
     subCategoryUrl: "https://www.babymarkt.de/kindersitze/",
-    nextPageUrl:
-      "https://www.babymarkt.de/kindersitze/?page=2",
+    nextPageUrl: "https://www.babymarkt.de/kindersitze/?page=2",
   },
   "conrad.de": {
     countProductPageUrl:
@@ -141,7 +135,7 @@ const testParameters = {
     pages: 20,
     productPageUrl:
       "https://www.conrad.de/de/p/logitech-wireless-k400-plus-funk-tastatur-deutsch-qwertz-schwarz-integriertes-touchpad-maustasten-1396292.html",
-    productsPerPage:30,
+    productsPerPage: 30,
     productsPerPageAfterLoadMore: 30,
     subCategoriesCount: 14,
     mainCategoriesCount: 12,
@@ -157,19 +151,19 @@ const testParameters = {
     pages: 20,
     productPageUrl:
       "https://www.coolshop.de/produkt/ea-sports-fc-25-nordic/23N57J/",
-    productsPerPage:21,
+    productsPerPage: 21,
     productsPerPageAfterLoadMore: 30,
     subCategoriesCount: 21,
     mainCategoriesCount: 15,
     initialProductPageUrl:
       "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
-    subCategoryUrl: "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
+    subCategoryUrl:
+      "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/",
     nextPageUrl:
       "https://www.coolshop.de/videospiele-und-konsolen/playstation-4/games/?page=2",
   },
   "proshop.de": {
-    countProductPageUrl:
-      "https://www.proshop.de/Mappenund-Clipboards",
+    countProductPageUrl: "https://www.proshop.de/Mappenund-Clipboards",
     pages: 20,
     productPageUrl:
       "https://www.proshop.de/Mappenund-Clipboards/Oxford-Ring-Binder-Polyvision-A4-30mm-Spine-4-rings-translucent-Clear/2818492",
@@ -177,11 +171,9 @@ const testParameters = {
     productsPerPageAfterLoadMore: 25,
     subCategoriesCount: 27,
     mainCategoriesCount: 17,
-    initialProductPageUrl:
-      "https://www.proshop.de/Mappenund-Clipboards",
+    initialProductPageUrl: "https://www.proshop.de/Mappenund-Clipboards",
     subCategoryUrl: "https://www.proshop.de/Buero-und-Hobbyartikel",
-    nextPageUrl:
-      "https://www.proshop.de/Mappenund-Clipboards?pn=2",
+    nextPageUrl: "https://www.proshop.de/Mappenund-Clipboards?pn=2",
   },
   "digitalo.de": {
     countProductPageUrl:
@@ -195,7 +187,8 @@ const testParameters = {
     mainCategoriesCount: 17,
     initialProductPageUrl:
       "https://www.digitalo.de/categories/8179_8190_8293/Batterien-Kabel/Computerkabel-Zubehoer/Computernetzteile.html",
-    subCategoryUrl: "https://www.digitalo.de/categories/8179/Batterien-Kabel.html",
+    subCategoryUrl:
+      "https://www.digitalo.de/categories/8179/Batterien-Kabel.html",
     nextPageUrl:
       "https://www.digitalo.de/categories/8179_8190_8293/Batterien-Kabel/Computerkabel-Zubehoer/Computernetzteile.html?page=2",
   },

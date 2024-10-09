@@ -33,7 +33,10 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
   test("Find subCategories", async () => {
     const result = await findSubCategories();
-    console.log("sub categories", result);
+    console.log('result: subcategories', result)
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
   }, 1000000);
 
   test("Find Pagination and generate page 2 link", async () => {

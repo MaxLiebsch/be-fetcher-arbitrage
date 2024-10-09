@@ -17,35 +17,9 @@ export const newShops: {
   categories: ICategory[];
   dailySalesCategories: ICategory[];
 }[] = [
-  {
-    d: "babymarkt.de",
-    ne: "Babymarkt.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "mix" as ProxyType,
-    categories: [],
-    dailySalesCategories: [
-      { link: "https://www.babymarkt.de/sale/", name: "Sale" },
-    ],
-  },
-  {
-    d: "conrad.de",
-    ne: "Conrad.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "mix" as ProxyType,
-    categories: [],
-    dailySalesCategories: [
-      { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
-    ],
-  },
   // {
-  //   d: "coolshop.de",
-  //   ne: "Coolshop.de",
+  //   d: "babymarkt.de",
+  //   ne: "Babymarkt.de",
   //   maxProducts: 80000,
   //   productLimit: 500,
   //   salesProductLimit: 4000,
@@ -53,12 +27,38 @@ export const newShops: {
   //   proxyType: "mix" as ProxyType,
   //   categories: [],
   //   dailySalesCategories: [
-  //     {
-  //       link: "https://www.coolshop.de/sale/",
-  //       name: "Sale",
-  //     },
+  //     { link: "https://www.babymarkt.de/sale/", name: "Sale" },
   //   ],
   // },
+  // {
+  //   d: "conrad.de",
+  //   ne: "Conrad.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   hasEan: true,
+  //   proxyType: "mix" as ProxyType,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
+  //   ],
+  // },
+  {
+    d: "coolshop.de",
+    ne: "Coolshop.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    hasEan: true,
+    proxyType: "mix" as ProxyType,
+    categories: [],
+    dailySalesCategories: [
+      {
+        link: "https://www.coolshop.de/sale/",
+        name: "Sale",
+      },
+    ],
+  },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };

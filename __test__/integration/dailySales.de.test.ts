@@ -5,7 +5,7 @@ import { setTaskLogger } from "../../src/util/logger";
 import { describe, test } from "@jest/globals";
 import { deleteAllProducts } from "../../src/db/util/crudProducts";
 
-const shopDomain = "proshop.de";
+const shopDomain = "mindfactory.de";
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),
   type: "DAILY_SALES",
@@ -13,13 +13,17 @@ const task = {
   id: "daily_sales_" + shopDomain,
   shopDomain,
   executing: false,
-  productLimit: 50,
+  productLimit: 200,
   lastCrawler: [],
   categories: [
     {
-      name: "Sales",
-      link: "https://www.proshop.de/DEALS",
+      "name": "Sales",
+      "link": "https://www.mindfactory.de/DAMN"
     },
+    {
+      "name": "Sales",
+      "link": "https://www.mindfactory.de/SchnaeppShop.html"
+    }
   ],
   test: false,
   maintenance: false,

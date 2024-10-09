@@ -11,6 +11,7 @@ import { TaskCompletedStatus } from "../status.js";
 import {
   COMPLETE_FAILURE_THRESHOLD,
   MAX_TASK_RETRIES,
+  MIN_DAILY_SALES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
 import { scrapeAznListings } from "./dailySales/scrapeAznListings.js";
@@ -134,7 +135,8 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         }
         if (retry === MAX_TASK_RETRIES && infos.total > 1) {
           log(`Limit reached after ${retry} retries. Continuing....`);
-          task.productLimit = infos.total;
+          task.productLimit =
+            infos.total < MIN_DAILY_SALES ? MIN_DAILY_SALES : infos.total;
           await updateTask(task._id, { $set: { ...task } });
           done = true;
           queueStats.crawlProducts = crawledProductsInfo.queueStats;

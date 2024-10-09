@@ -1710,7 +1710,7 @@ export const shops: { [key: string]: any } = {
   },
   "coolshop.de": {
     action: [],
-    allowedHosts: ['webshop.coolshop-cdn.com'],
+    allowedHosts: ["webshop.coolshop-cdn.com"],
     active: true,
     categories: {
       exclude: ["software"],
@@ -1723,9 +1723,7 @@ export const shops: { [key: string]: any } = {
         },
       ],
     },
-    crawlActions: [
-
-    ],
+    crawlActions: [],
     d: "coolshop.de",
     entryPoints: [
       {
@@ -1734,14 +1732,71 @@ export const shops: { [key: string]: any } = {
       },
     ],
     hasEan: true,
-    manualCategories: [],
+    manualCategories: [
+      {
+        link: "https://www.coolshop.de/videospiele-und-konsolen/",
+        name: "Spiele und Konsolen",
+      },
+      {
+        link: "https://www.coolshop.de/spielzeug/",
+        name: "Spielzeug",
+      },
+      {
+        link: "https://www.coolshop.de/schoenheit/",
+        name: "Schönheit",
+      },
+      {
+        link: "https://www.coolshop.de/haustier-zubehoer/",
+        name: "Haustier Zubehör",
+      },
+      {
+        link: "https://www.coolshop.de/haushalt-und-kuche/",
+        name: "Haushalt und Küche",
+      },
+      {
+        link: "https://www.coolshop.de/elektronikteile/",
+        name: "Elektronikteile",
+      },
+      {
+        link: "https://www.coolshop.de/computer/",
+        name: "Computer",
+      },
+      {
+        link: "https://www.coolshop.de/werkzeuge-und-wohnraumverbesserungen/",
+        name: "Werkzeuge",
+      },
+      {
+        link: "https://www.coolshop.de/babys-und-kinder/",
+        name: "Babys und Kinder",
+      },
+      {
+        link: "https://www.coolshop.de/gesundheit-und-koerperpflege/",
+        name: "Gesundheit und Körperpflege",
+      },
+      {
+        link: "https://www.coolshop.de/gadgets/",
+        name: "Gadgets",
+      },
+      {
+        link: "https://www.coolshop.de/fan-shop-und-fanartikel/",
+        name: "Fan-Shop und Fanartikel",
+      },
+      {
+        link: "https://www.coolshop.de/sport-und-outdoor/",
+        name: "Sport und outdoor",
+      },
+      {
+        link: "https://www.coolshop.de/garten-hof-und-aussenbereich/",
+        name: "Garten",
+      },
+    ],
     mimic: "div.header-logo picture",
     paginationEl: [
       {
         type: "scroll-and-click",
         sel: "button[id=searchLoadMoreButton]",
         wait: false,
-        nav: '?page=',
+        nav: "?page=",
         calculation: {
           method: "estimate",
           textToMatch: "Mehr anzeigen",
@@ -1811,7 +1866,6 @@ export const shops: { [key: string]: any } = {
         content: "image",
         path: "hasVariant[0].image",
         multiple: true,
-
       },
     ],
     productList: [
@@ -3387,8 +3441,10 @@ export const shops: { [key: string]: any } = {
       ],
       sel: "div[data-testid=menu-wrapper] a",
       type: "href",
+      visible: false,
       subCategories: [
         {
+          visible: false,
           sel: "div[id=sidebarWrapper] a[class*=styled__StyledLink]",
           type: "href",
         },
@@ -5320,7 +5376,7 @@ export const shops: { [key: string]: any } = {
             },
             {
               content: "name",
-              sel: "div.damn-product span.data-minddeal-name",
+              sel: "div.damn-product span[data-minddeal-name]",
               type: "text",
             },
             {
