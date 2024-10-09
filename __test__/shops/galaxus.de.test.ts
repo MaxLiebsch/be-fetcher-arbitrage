@@ -13,6 +13,7 @@ import {
   newPage,
   productPageCount,
 } from "./utils/commonTests.js";
+import { getShop } from "../../src/db/util/shops.js";
 
 const shopDomain = "galaxus.de";
 const proxyType = 'mix';
@@ -25,10 +26,20 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   test("Mimic for block detection is working", async () => {
     await mimicTest();
   }, 1000000);
-
+  
+  test("Find mainCategories", async () => {
+    const result = await findMainCategories();
+    console.log("result:", result);
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
+  }, 1000000);
   test("Find subCategories", async () => {
     const result = await findSubCategories();
     console.log("sub categories", result);
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
   }, 1000000);
 
   test("Find product in category count", async () => {
@@ -50,7 +61,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         console.log("productInfo:", productInfo);
         const ean = productInfo.find((info) => info.key === "ean");
-        expect(ean.value).toBe("5030945125372");
+        expect(ean.value).toBe("3253922130387");
       } else {
         expect(1).toBe(2);
       }
@@ -65,6 +76,19 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
     await extractProductsFromSecondPageQueueless(10);
+  }, 1000000);
+
+  test("Extract Products from Sales page", async () => {
+    const shop = await getShop(shopDomain);
+    await newPage(proxyType);
+    if (shop) {
+      await extractProductsFromSecondPageQueueless(
+        5,
+        testParameters[shopDomain].salesUrl
+      );
+    } else {
+      expect(1).toBe(2);
+    }
   }, 1000000);
 
   afterAll(async () => {

@@ -281,7 +281,6 @@ export const shops: { [key: string]: any } = {
         "sub_frame",
         "other",
       ],
-
     },
     rules: [
       {
@@ -2092,7 +2091,7 @@ export const shops: { [key: string]: any } = {
   "euronics.de": {
     action: [],
     active: true,
-    allowedHosts: ['cdn.euronics.de'],
+    allowedHosts: ["cdn.euronics.de"],
     ean: "-[0-9]{12,13}",
     categories: {
       exclude: ["marken"],
@@ -2123,11 +2122,11 @@ export const shops: { [key: string]: any } = {
         type: "pagination",
         nav: "?p=",
         wait: false,
-        sel: 'div[class=listing][data-pages]',
-        calculation:{ 
-          method: 'element_attribute',
-          attribute: 'data-pages',
-        }
+        sel: "div[class=listing][data-pages]",
+        calculation: {
+          method: "element_attribute",
+          attribute: "data-pages",
+        },
       },
       {
         type: "pagination",
@@ -2265,7 +2264,7 @@ export const shops: { [key: string]: any } = {
       product: "load",
       entryPoint: "load",
     },
-  }, 
+  },
   "fressnapf.de": {
     action: [],
     active: true,
@@ -2428,59 +2427,79 @@ export const shops: { [key: string]: any } = {
   "galaxus.de": {
     action: [],
     active: true,
-    ean: "-[0-9]{12,13}",
-    categories: {
-      exclude: [],
-      sel: "ul.main-categories li a",
+    categories: { 
+      exclude: ['voucher',"community", "magazin", "gutscheine", "gebraucht"],
+      sel: "nav[id=mainNavigation] ul li a",
       visible: false,
       type: "href",
       subCategories: [
         {
-          sel: "ul.sidebar--navigation li.navigation--entry a.navigation--link.link--go-forward:first-child",
+          sel: "nav[id=mainNavigation] ul li a",
           visible: false,
           type: "href",
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+      {
+        type: "scroll",
+        sel: "none",
+        action: "scroll",
+      },
+    ],
     d: "galaxus.de",
     entryPoints: [
       {
-        url: "https://www.galaxus.de",
+        url: "https://www.galaxus.de/de",
         category: "default",
       },
     ],
-    hasEan: false,
+    hasEan: true,
     manualCategories: [],
-    mimic: "div.logo--shop picture",
+    mimic: "div[id=logo]",
+    javascript: {
+      webWorker: "enabled",
+    },
     paginationEl: [
       {
         type: "pagination",
-        nav: "?p=",
-        wait: false,
-        sel: 'div[class=listing][data-pages]',
-        calculation:{ 
-          method: 'element_attribute',
-          attribute: 'data-pages',
-        }
+        nav: "?take=<page>",
+        sel: "span[id=product-list] ~ div h2",
+        paginationUrlSchema: {
+          replace: "attach_end",
+          calculation: {
+            offset: 60,
+            startOffset: 48,
+            method: "offset",
+          },
+        },
+        calculation: {
+          method: "product_count",
+          productsPerPage: 60,
+        },
       },
       {
         type: "pagination",
-        sel: "div.listing--paging",
-        nav: "?p=",
-        wait: false,
+        nav: "?take=<page>",
+        sel: "span[id=product-list] ~ h2",
+        paginationUrlSchema: {
+          replace: "attach_end",
+          calculation: {
+            offset: 60,
+            startOffset: 48,
+            method: "offset",
+          },
+        },
         calculation: {
-          method: "find_highest",
-          dynamic: true,
-          last: "div.listing--paging span.paging--display",
-          sel: "div.listing--paging span.paging--display",
+          method: "product_count",
+          productsPerPage: 60,
         },
       },
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 800,
-      max: 1000,
+      min: 1200,
+      max: 1500,
     },
     product: [
       {
@@ -2489,7 +2508,7 @@ export const shops: { [key: string]: any } = {
         content: "price",
         path: "offers.price",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
       {
         sel: "script[type='application/ld+json']",
@@ -2497,7 +2516,7 @@ export const shops: { [key: string]: any } = {
         content: "instock",
         path: "offers.availability",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
       {
         sel: "script[type='application/ld+json']",
@@ -2505,71 +2524,113 @@ export const shops: { [key: string]: any } = {
         content: "ean",
         path: "gtin",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "image",
-        path: "image",
+        path: "image[0]",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "name",
-        path: "name",
+        content: "mnfctr",
+        path: "brand.name",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
+      // {
+      //   sel: "script[type='application/ld+json']",
+      //   type: "parse_json_element",
+      //   content: "name",
+      //   path: "name",
+      //   multiple: true,
+      //   parent: "head",
+      // },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
         content: "sku",
         path: "sku",
         multiple: true,
-        parent: "body",
+        parent: "head",
       },
     ],
     productList: [
       {
-        sel: "div.listing--container",
-        productCntSel: [],
+        sel: "main[id=pageContent]",
+        productCntSel: ["span[id=product-list] ~ div h2", "span[id=product-list] ~ h2"],
         awaitProductCntSel: true,
+        waitProductCntSel: 1000,
         product: {
-          sel: "div.product--info",
+          sel: "article",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "a.product--title",
+              sel: "a",
+              type: "href",
+            },
+            {
+              content: "name",
+              sel: "img",
+              type: "alt",
+            },
+            {
+              content: "image",
+              sel: "img",
+              type: "srcset",
+            },
+            {
+              content: "price",
+              sel: "div:nth-child(5)",
+              fallback: "div:nth-child(4)",
+              type: "text",
+            },
+          ],
+        },
+      },
+         {
+        sel: "main[id=pageContent]",
+        productCntSel: ["span[id=product-list] ~ div h2", "span[id=product-list] ~ h2"],
+        awaitProductCntSel: true,
+        waitProductCntSel: 1000,
+        product: {
+          sel: "article",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a",
               type: "href",
             },
             {
               content: "image",
-              sel: "a.product--image img",
+              sel: "img",
               type: "srcset",
             },
             {
               content: "name",
-              sel: "a.product--title",
-              type: "text",
+              sel: "img",
+              type: "alt",
             },
             {
               content: "price",
-              sel: "span[data-track-id]",
+              sel: "div:nth-child(5)",
               type: "text",
             },
           ],
         },
       },
     ],
-    proxyType: "de",
+    proxyType: "mix",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      product: [
+      crawl: [
         "media",
         "font",
         // "stylesheet",
@@ -2578,19 +2639,6 @@ export const shops: { [key: string]: any } = {
         // "xhr",
         // "fetch",
         // "script",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "script",
         "imageset",
         "sub_frame",
         "other",
@@ -4562,7 +4610,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     resourceTypes: {
-       crawl: [
+      crawl: [
         "media",
         "font",
         "stylesheet",

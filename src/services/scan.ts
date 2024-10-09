@@ -17,7 +17,7 @@ import { log } from "../util/logger.js";
 
 export default async function scan(task: ScanTask): TaskReturnType {
   return new Promise(async (res, reject) => {
-    const { shopDomain, productLimit } = task;
+    const { shopDomain, productLimit, proxyType } = task; 
     const shops = await getShops([{ d: shopDomain }]);
 
     let infos: ScanShopStats = {
@@ -98,6 +98,7 @@ export default async function scan(task: ScanTask): TaskReturnType {
       requestId: uuid(),
       shop: shops[shopDomain],
       infos,
+      proxyType,
       categoriesHeuristic: infos.categoriesHeuristic,
       productPageCountHeuristic: infos.productPageCountHeuristic,
       queue,

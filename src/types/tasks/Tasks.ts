@@ -140,6 +140,7 @@ export interface WholeSaleEbyTask extends Task {
 
 export interface ScanTask extends ShopSpecificTask {
   concurrency: number;
+  proxyType: ProxyType;
 }
 
 export type Tasks =

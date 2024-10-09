@@ -398,7 +398,7 @@ export const extractProductsFromSecondPageQueueless = async (
     testParameters[shopDomain].productsPerPageAfterLoadMore;
   const products: any[] = [];
   const addProductCb = async (product: any) => {
-    products.push(product);
+    if (!products.find((p) => p.link === product.link)) products.push(product);
   };
   if (page && shops && shops[shopDomain]) {
     await page.goto(url ? url : initialProductPageUrl);

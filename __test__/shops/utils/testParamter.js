@@ -91,6 +91,23 @@ const testParameters = {
     nextPageUrl:
       "https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets?p=2",
   },
+  "galaxus.de": {
+    salesUrl: "https://www.galaxus.de/de/sale",
+    countProductPageUrl:
+      "https://www.galaxus.de/de/s2/producttype/abfalleimer-348",
+    pages: 20,
+    productPageUrl:
+      "https://www.galaxus.de/de/s2/product/curver-decobin-abfalleimer-40l-mit-druecker-silber-metallic-40-l-abfalleimer-23740383",
+    productsPerPage: 98,
+    productsPerPageAfterLoadMore: 49,
+    subCategoriesCount: 28,
+    mainCategoriesCount: 20,
+    initialProductPageUrl:
+      "https://www.galaxus.de/de/s2/producttype/abfalleimer-348",
+    subCategoryUrl: "https://www.galaxus.de/de/s2/sector/haushalt-2",
+    nextPageUrl:
+      "https://www.galaxus.de/de/s2/producttype/abfalleimer-348?take=108",
+  },
   "notebooksbilliger.de": {
     countProductPageUrl:
       "https://www.notebooksbilliger.de/pc+hardware/arbeitsspeicher+pc+hardware",

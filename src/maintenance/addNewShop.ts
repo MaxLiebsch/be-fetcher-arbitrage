@@ -31,8 +31,8 @@ export const newShops: {
     ],
   },
   {
-    d: "conrad.de",
-    ne: "Conrad.de",
+    d: "galaxus.de",
+    ne: "Galaxus.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
@@ -40,25 +40,25 @@ export const newShops: {
     proxyType: "mix" as ProxyType,
     categories: [],
     dailySalesCategories: [
-      { link: "https://www.conrad.de/de/aktionen/b2bsale.html", name: "Sale" },
+      { link: "https://www.galaxus.de/de/sale", name: "Sale" },
     ],
   },
-  {
-    d: "coolshop.de",
-    ne: "Coolshop.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "mix" as ProxyType,
-    categories: [],
-    dailySalesCategories: [
-      {
-        link: "https://www.coolshop.de/sale/",
-        name: "Sale",
-      },
-    ],
-  },
+  // {
+  //   d: "coolshop.de",
+  //   ne: "Coolshop.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   hasEan: true,
+  //   proxyType: "mix" as ProxyType,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     {
+  //       link: "https://www.coolshop.de/sale/",
+  //       name: "Sale",
+  //     },
+  //   ],
+  // },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };
