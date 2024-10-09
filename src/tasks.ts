@@ -232,7 +232,7 @@ export const createDailySalesTask = async (
     recurrent: true,
     completed: false,
     errored: false,
-    acutalProductLimit: productLimit,
+    actualProductLimit: productLimit,
     startedAt: new Date().toISOString(),
     completedAt: new Date().toISOString(),
     progress: {

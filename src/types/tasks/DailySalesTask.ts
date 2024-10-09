@@ -16,7 +16,7 @@ export interface DailySalesTask extends Task {
   executing: boolean;
   shopDomain: string;
   proxyType: ProxyType;
-  acutalProductLimit: number;
+  actualProductLimit: number;
   crawlEan: DbProductRecord[];
   lookupInfo: DbProductRecord[];
   queryEansOnEby: DbProductRecord[];
