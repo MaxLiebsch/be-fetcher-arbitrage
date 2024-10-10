@@ -103,7 +103,7 @@ export const insertShop = async (shop: Shop) => {
 
 export const updateShopStats = async (domain: string) => {
   const productCol = await getProductsCol();
-  const db = await getCrawlDataDb();
+  const spotterDb = await getArbispotterDb();
   if (!productCol) return;
 
   const productsPerCategoryAzn = await productCol
@@ -129,7 +129,7 @@ export const updateShopStats = async (domain: string) => {
     };
   }, {});
 
-  const total = await productCol.countDocuments();
+  const total = await productCol.countDocuments({ sdmn: domain });
   const a_fat_total = await productCol.countDocuments({
     sdmn: domain,
     a_mrgn_pct: { $gt: 0 },
@@ -138,7 +138,7 @@ export const updateShopStats = async (domain: string) => {
     sdmn: domain,
     e_mrgn_pct: { $gt: 0 },
   });
-  const shopsCollection = db.collection<Shop>(shopCollectionName);
+  const shopsCollection = spotterDb.collection(shopCollectionName);
   if (!shopsCollection) return;
 
   return await shopsCollection.updateOne(

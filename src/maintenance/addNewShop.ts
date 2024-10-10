@@ -18,31 +18,29 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "euronics.de",
-    ne: "Euronics.de",
+    d: "notebooksbilliger.de",
+    ne: "Notebooksbilliger.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
     hasEan: true,
     proxyType: "de" as ProxyType,
     categories: [],
-    dailySalesCategories: [
-      { link: "https://www.euronics.de/angebote", name: "Sale" },
-    ],
+    dailySalesCategories: [],
   },
-  {
-    d: "galaxus.de",
-    ne: "Galaxus.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "mix" as ProxyType,
-    categories: [],
-    dailySalesCategories: [
-      { link: "https://www.galaxus.de/de/sale", name: "Sale" },
-    ],
-  },
+  // {
+  //   d: "galaxus.de",
+  //   ne: "Galaxus.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   hasEan: true,
+  //   proxyType: "mix" as ProxyType,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     { link: "https://www.galaxus.de/de/sale", name: "Sale" },
+  //   ],
+  // },
   // {
   //   d: "coolshop.de",
   //   ne: "Coolshop.de",
@@ -160,13 +158,15 @@ const main = async () => {
         return;
       }
       const task = tasks.find((task) => task.shopDomain === shop.d);
-      if (!task && shop.dailySalesCategories.length > 0) {
-        await createDailySalesTask(
-          shop.d,
-          shop.dailySalesCategories,
-          shop.salesProductLimit,
-          shop.proxyType
-        );
+      if (!task) {
+        if(shop.dailySalesCategories.length > 0) {
+          await createDailySalesTask(
+            shop.d,
+            shop.dailySalesCategories,
+            shop.salesProductLimit,
+            shop.proxyType
+          );
+        }
         return createCrawlTasks(_shop, shop.maxProducts);
       } else {
         console.log(`Tasks for ${shop.d} already exists!`);
