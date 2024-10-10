@@ -74,6 +74,23 @@ const testParameters = {
     nextPageUrl:
       "https://www.mindfactory.de/Hardware/Arbeitsspeicher+(RAM).html/page/2",
   },
+  "galeria.de": {
+    salesUrl: "https://www.galeria.de/sale",
+    countProductPageUrl:
+      "https://www.galeria.de/beauty/duefte",
+    pages: 20,
+    productPageUrl:
+      "https://www.galeria.de/produkt/jean-paul-gaultier-gaultier-divine-le-parfum-eau-de-parfum-intense-refill-8435415091787",
+    productsPerPage: 48,
+    productsPerPageAfterLoadMore: 240,
+    subCategoriesCount: 13,
+    mainCategoriesCount: 7,
+    initialProductPageUrl:
+      "https://www.galeria.de/beauty/duefte",
+    subCategoryUrl: "https://www.galeria.de/beauty",
+    nextPageUrl:
+      "https://www.galeria.de/beauty/duefte?page=2",
+  },
   "euronics.de": {
     salesUrl: "https://www.euronics.de/angebote",
     countProductPageUrl:

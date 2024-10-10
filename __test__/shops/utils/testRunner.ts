@@ -11,10 +11,10 @@ async function runTests(retries = 0) {
   const result = await runCLI(
     //@ts-ignore
     {
-      testMatch: ["**/galaxus.de.test.ts"],
+      testMatch: ["**/galeria.de.test.ts"],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
-      verbose: true,
+      verbose: true
     },
     [process.cwd()]
   );

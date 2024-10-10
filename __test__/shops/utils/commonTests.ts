@@ -11,6 +11,7 @@ import {
   getPage,
   getPageNumberFromPagination,
   getProductCount,
+  initFingerPrintForHost,
   lookupProductQueue,
   mainBrowser,
   notifyProxyChange,
@@ -45,12 +46,13 @@ export const newPage = async (
   if (!browser) return;
   if (!shops || !shops[shopDomain]) return;
   const shop = shops[shopDomain];
+  initFingerPrintForHost(`www.${shopDomain}`, true, proxyType);
 
   const pageAndFingerprint = await getPage({
     browser,
     host: `www.${shopDomain}`,
     shop: shop,
-    requestCount: 5,
+    requestCount: Math.floor(Math.random() * 1000) * 11,
     disAllowedResourceTypes: disAllowedResourceTypes
       ? disAllowedResourceTypes
       : shop.resourceTypes["crawl"],
@@ -98,9 +100,9 @@ export const myBeforeAll = async (
       browserStarts: 0,
     },
   };
-  if (proxyType === "de") {
-    (task["proxyType"] = "de"), (task["timezones"] = ["Europe/Berlin"]);
-  }
+  // if (proxyType === "de") {
+  //   (task["proxyType"] = "de"), (task["timezones"] = ["Europe/Berlin"]);
+  // }
 
   browser = await mainBrowser(
     //@ts-ignore
@@ -289,18 +291,26 @@ export const findPaginationAndNextPage = async () => {
 export const extractProducts = async (url?: string) => {
   const products: any[] = [];
   const _shopParameters = testParameters[shopDomain];
-  const shop = shops && shops[shopDomain];
+  const shop = shops ? shops[shopDomain] : null;
+  if (!shop) return;
+
   const addProductCb = async (product: any) => {
     products.push(product);
   };
   const productsPerPage = _shopParameters.productsPerPage;
   const productsPageUrl = _shopParameters.countProductPageUrl;
   await page?.goto(url || productsPageUrl);
-  if (page && shops) {
-    await crawlProducts(page, shop, addProductCb, {
-      name: "",
-      link: "",
-    });
+  if (page) {
+    await crawlProducts(
+      page,
+      shop,
+      addProductCb,
+      {
+        name: "",
+        link: "",
+      },
+      2
+    );
   }
   const properties = ["name", "price", "link"];
   const missingProperties: { [key: string]: any } = {
@@ -315,7 +325,11 @@ export const extractProducts = async (url?: string) => {
       "extractProducts: Products cnt ",
       products.length,
       "Product: ",
-      JSON.stringify(products[0], null, 2)
+      JSON.stringify(
+        products[Math.floor(Math.random() * products.length - 1)],
+        null,
+        2
+      )
     );
   const validProductCount = products.reduce((count, product) => {
     const isValid = properties.every((prop) => {
@@ -426,7 +440,7 @@ export const extractProductsFromSecondPageQueueless = async (
           "Total products: ",
           products.length,
           "extractProductsFromSecondPageQueueless: ",
-          products[0]
+          products[Math.floor(Math.random() * products.length - 1)]
         );
     } else {
       expect(1).toBe(2);

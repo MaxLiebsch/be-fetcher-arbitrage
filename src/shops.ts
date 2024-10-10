@@ -2427,8 +2427,8 @@ export const shops: { [key: string]: any } = {
   "galaxus.de": {
     action: [],
     active: true,
-    categories: { 
-      exclude: ['voucher',"community", "magazin", "gutscheine", "gebraucht"],
+    categories: {
+      exclude: ["voucher", "community", "magazin", "gutscheine", "gebraucht"],
       sel: "nav[id=mainNavigation] ul li a",
       visible: false,
       type: "href",
@@ -2562,7 +2562,10 @@ export const shops: { [key: string]: any } = {
     productList: [
       {
         sel: "main[id=pageContent]",
-        productCntSel: ["span[id=product-list] ~ div h2", "span[id=product-list] ~ h2"],
+        productCntSel: [
+          "span[id=product-list] ~ div h2",
+          "span[id=product-list] ~ h2",
+        ],
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
         product: {
@@ -2593,9 +2596,12 @@ export const shops: { [key: string]: any } = {
           ],
         },
       },
-         {
+      {
         sel: "main[id=pageContent]",
-        productCntSel: ["span[id=product-list] ~ div h2", "span[id=product-list] ~ h2"],
+        productCntSel: [
+          "span[id=product-list] ~ div h2",
+          "span[id=product-list] ~ h2",
+        ],
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
         product: {
@@ -2634,6 +2640,180 @@ export const shops: { [key: string]: any } = {
         "media",
         "font",
         // "stylesheet",
+        "ping",
+        "image",
+        // "xhr",
+        // "fetch",
+        // "script",
+        "imageset",
+        "sub_frame",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "galeria.de": {
+    action: [],
+    active: true,
+    ean: "-[0-9]{12,13}",
+    categories: {
+      exclude: [
+        "kleidung",
+        "top 10",
+        "magazin",
+        "geschenksets",
+        "marken",
+        "herren",
+        "damen",
+        "kinder",
+        "sport",
+        "reisen",
+      ],
+      sel: "nav[data-testId=mainNavigation] > div > div > a",
+      visible: false,
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[media=headerNav] a",
+          visible: false,
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [
+      {
+        type: "scroll",
+        sel: "none",
+        action: "scroll",
+      },
+    ],
+    d: "galeria.de",
+    entryPoints: [
+      {
+        url: "https://www.galeria.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    manualCategories: [],
+    mimic: "a[data-testid='headerLogo-default'] svg",
+    paginationEl: [
+      {
+        type: "pagination",
+        nav: "?page=",
+        sel: "div[data-testid='pagination']",
+        calculation: {
+          method: "find_highest",
+          sel: "div[data-testid='pagination'] a",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "sku",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0]",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "mnfctr",
+        path: "brand.name",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+        multiple: true,
+        parent: "head",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+        multiple: true,
+        parent: "head",
+      },
+    ],
+    productList: [
+      {
+        sel: "div:is([id=productList], [id=productList-rest])",
+        productCntSel: [],
+        product: {
+          sel: "div:is([id=productList], [id=productList-rest]) a",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "div[data-testid=product] div[role=img] img",
+              type: "srcset",
+            },
+            {
+              content: "price",
+              sel: "div[data-testid=product] span.productPrice",
+              type: "text",
+            },
+            {
+              content: "mnfctr",
+              sel: "div[data-testid=product] p.productTitle",
+              type: "text",
+            },
+            {
+              content: "name",
+              sel: "div[data-testid=product] p.productInfoLine:nth-of-type(1)",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "de",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
         "ping",
         "image",
         // "xhr",

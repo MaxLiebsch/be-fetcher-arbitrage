@@ -16,8 +16,8 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "notebooksbilliger.de",
-    ne: "Notebooksbilliger.de",
+    d: "galeria.de",
+    ne: "Galeria.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
