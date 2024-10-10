@@ -23,17 +23,21 @@ const secureMode = async () => {
     proxyAuth,
     "127.0.6533.119"
   );
+  const shopDomain = "dm.de";
 
-  const shop = await getShop("dm.de");
+  const shop = await getShop(shopDomain);
+  if (!shop) return;
+
   const { exceptions } = shop;
   // const lnk = "https://www.browserleaks.com/ip";
   const lnk =
     "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
   const requestId = uuid();
   const proxyType = "de";
-  const page = await getPage({
+  const { page } = await getPage({
     browser,
     shop,
+    host: shopDomain,
     requestCount: 1,
     disAllowedResourceTypes: [],
     exceptions,
@@ -41,7 +45,6 @@ const secureMode = async () => {
 
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
-    console.log("Before: ", url, new Date().toISOString());
     await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
     if (proxyType === "de") {
       await notifyProxyChange(
@@ -54,13 +57,14 @@ const secureMode = async () => {
     }
     return originalGoto.apply(this, [url, options]);
   };
+  await page.goto('https://bot-detector.rebrowser.net/')
   // const page = await browser.newPage();
-  const result = await page.goto(lnk);
-  const status = result?.status();
-  if (status !== 200) {
-    const response = await page.reload();
-    const newStatus = response?.status();
-  }
+  // const result = await page.goto(lnk);
+  // const status = result?.status();
+  // if (status !== 200) {
+  //   const response = await page.reload();
+  //   const newStatus = response?.status();
+  // }
   // await browser.close()
 };
 
