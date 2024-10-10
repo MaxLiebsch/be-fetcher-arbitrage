@@ -4,10 +4,11 @@ import {
   Shop,
 } from "@dipmaxtech/clr-pkg";
 import { salesDbName } from "../mongo.js";
+import { ShopPick } from "../../types/shops.js";
 
 export function getProductsWithShop(
   products: DbProductRecord[],
-  shop: Pick<Shop, "d" | "hasEan" | "ean">,
+  shop: ShopPick,
   shops: Shop[]
 ) {
   const { d: shopDomain } = shop;

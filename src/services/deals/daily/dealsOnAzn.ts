@@ -15,18 +15,18 @@ import { MissingShopError } from "../../../errors.js";
 import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/findPendingProductsForTask.js";
+import { ShopPick } from "../../../types/shops.js";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, proxyType, concurrency, type } = task;
+  const { _id: taskId, action,  concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await findPendingProductsForTask(
         "DEALS_ON_AZN",
         taskId,
         action || "none",
-        productLimit,
-        proxyType
+        productLimit
       );
 
     if (action === "recover") {
@@ -75,7 +75,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
     task.actualProductLimit = _productLimit;
     infos.locked = productsWithShop.length;
 
-    await updateProgressDealsOnAznTasks(proxyType);
+    await updateProgressDealsOnAznTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
@@ -83,12 +83,12 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
     await Promise.all(
       productsWithShop.map(
         async (productWithShop: {
-          shop: Pick<Shop, "d" | "hasEan" | "ean">;
+          shop: ShopPick;
           product: DbProductRecord;
         }) => {
           const { shop, product } = productWithShop;
           const source: Shop = shop as Shop;
-          const { d: shopDomain} = source;
+          const { d: shopDomain } = source;
           const { _id: productId, asin } = product;
 
           const diffHours = differenceInHours(
@@ -103,7 +103,6 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               queue,
               source,
               product,
-              proxyType
             );
             if (isValidProduct) {
               await scrapeAznListings(
@@ -120,7 +119,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               );
             } else {
               infos.total++;
-              await deleteProduct( productId);
+              await deleteProduct(productId);
               log(`Deleted: ${shopDomain}-${productId}`);
               //DELETE PRODUCT
             }

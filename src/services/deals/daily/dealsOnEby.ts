@@ -18,13 +18,12 @@ import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUti
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, proxyType, concurrency, type } = task;
+  const { _id: taskId, action, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await findPendingProductsWithAggForTask(
         "DEALS_ON_EBY",
         taskId,
-        proxyType,
         action || "none",
         productLimit
       );
@@ -73,7 +72,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
     task.actualProductLimit = _productLimit;
     infos.locked = productsWithShop.length;
 
-    await updateProgressDealsOnEbyTasks(proxyType);
+    await updateProgressDealsOnEbyTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
@@ -96,7 +95,6 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
             queue,
             source,
             product,
-            proxyType
           );
           if (isValidProduct) {
             await scrapeEbyListings(

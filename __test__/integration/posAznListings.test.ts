@@ -58,7 +58,7 @@ describe("pos azn listign", () => {
         );
       })
     );
-    await updateProgressDealsOnAznTasks("mix");
+    await updateProgressDealsOnAznTasks();
   }, 100000);
 
   test("pos azn listign", async () => {
@@ -70,7 +70,6 @@ describe("pos azn listign", () => {
       type: "DEALS_ON_AZN",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "none",
-      proxyType: "mix",
       concurrency: 4,
     });
     console.log("infos:", infos);

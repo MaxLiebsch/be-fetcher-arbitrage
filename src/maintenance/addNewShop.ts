@@ -1,4 +1,4 @@
-import { ICategory, ProxyType } from "@dipmaxtech/clr-pkg";
+import { ICategory} from "@dipmaxtech/clr-pkg";
 import { getShop, updateShopWithQuery } from "../db/util/shops.js";
 import { findTasks } from "../db/util/tasks.js";
 import { createCrawlTasks, createDailySalesTask } from "../tasks.js";
@@ -12,8 +12,6 @@ export const newShops: {
   maxProducts: number;
   productLimit: number;
   salesProductLimit: number;
-  hasEan: boolean;
-  proxyType: ProxyType;
   categories: ICategory[];
   dailySalesCategories: ICategory[];
 }[] = [
@@ -23,8 +21,6 @@ export const newShops: {
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
-    hasEan: true,
-    proxyType: "de" as ProxyType,
     categories: [],
     dailySalesCategories: [],
   },
@@ -34,8 +30,6 @@ export const newShops: {
   //   maxProducts: 80000,
   //   productLimit: 500,
   //   salesProductLimit: 4000,
-  //   hasEan: true,
-  //   proxyType: "mix" as ProxyType,
   //   categories: [],
   //   dailySalesCategories: [
   //     { link: "https://www.galaxus.de/de/sale", name: "Sale" },
@@ -47,8 +41,6 @@ export const newShops: {
   //   maxProducts: 80000,
   //   productLimit: 500,
   //   salesProductLimit: 4000,
-  //   hasEan: true,
-  //   proxyType: "mix" as ProxyType,
   //   categories: [],
   //   dailySalesCategories: [
   //     {
@@ -159,12 +151,11 @@ const main = async () => {
       }
       const task = tasks.find((task) => task.shopDomain === shop.d);
       if (!task) {
-        if(shop.dailySalesCategories.length > 0) {
+        if (shop.dailySalesCategories.length > 0) {
           await createDailySalesTask(
             shop.d,
             shop.dailySalesCategories,
-            shop.salesProductLimit,
-            shop.proxyType
+            shop.salesProductLimit
           );
         }
         return createCrawlTasks(_shop, shop.maxProducts);
@@ -176,10 +167,7 @@ const main = async () => {
 
   await Promise.all(
     newShops.map(async (shop) => {
-      await updateShopWithQuery(
-        { d: shop.d },
-        { active: true, hasEan: shop.hasEan, proxyType: shop.proxyType }
-      );
+      await updateShopWithQuery({ d: shop.d }, { active: true });
     })
   );
 

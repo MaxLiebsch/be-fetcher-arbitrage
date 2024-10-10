@@ -1,4 +1,4 @@
-import { LoggerService, ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
+import { ProcessTimeTracker } from "@dipmaxtech/clr-pkg";
 import { UTCDate } from "@date-fns/utc";
 import { executeTask } from "./executeTask.js";
 import { handleTask } from "./taskHandler.js";
@@ -11,10 +11,6 @@ import { COOLDOWN, NEW_TASK_CHECK_INTERVAL } from "../constants.js";
 
 import { hostname } from "../db/mongo.js";
 import clientPool from "../db/mongoPool.js";
-import {
-  updateProgressDealTasks,
-  updateProgressNegDealTasks,
-} from "./updateProgressInTasks.js";
 import { TASK_TYPES } from "./taskTypes.js";
 import { Task } from "../types/tasks/Tasks.js";
 import { logGlobal } from "./logger.js";
@@ -49,7 +45,9 @@ export async function monitorAndProcessTasks() {
       const taskResult = await executeTask(task);
       const endTime = Date.now();
       logGlobal(
-        `Task ${id} ${type} executed, took ${(endTime - startTime) / 1000/ 1000} min.`
+        `Task ${id} ${type} executed, took ${
+          (endTime - startTime) / 1000 / 1000
+        } min.`
       );
       timeTracker.markInactive();
 
@@ -65,9 +63,6 @@ export async function monitorAndProcessTasks() {
         return;
       }
       if (taskResult instanceof TaskCompletedStatus) {
-        await updateProgressDealTasks("mix");
-        await updateProgressNegDealTasks("mix");
-
         const { priority, subject, htmlBody } = await handleTask(
           taskResult,
           task

@@ -8,7 +8,7 @@ import dealsOnEby from "../../src/services/deals/daily/dealsOnEby";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
 import { getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb, getProductsCol } from "../../src/db/mongo";
+import {  getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 
 const shopDomain = ["alternate.de", "idealo.de", "alza.de"];
@@ -68,7 +68,6 @@ describe("pos eby listings", () => {
       type: "DEALS_ON_EBY",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "none",
-      proxyType: "mix",
       concurrency: 4,
     });
     console.log("infos:", infos);

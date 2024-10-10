@@ -1,5 +1,5 @@
 import { Task } from "./Tasks.js";
-import { DbProductRecord, ICategory, ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
 
 export interface Limit {
   subCategories: number;
@@ -15,7 +15,6 @@ export interface DailySalesTask extends Task {
   categories: Category[];
   executing: boolean;
   shopDomain: string;
-  proxyType: ProxyType;
   actualProductLimit: number;
   crawlEan: DbProductRecord[];
   lookupInfo: DbProductRecord[];

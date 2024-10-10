@@ -1,4 +1,4 @@
-import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { getRecoveryProducts } from "./getRecoveryProducts.js";
@@ -13,7 +13,6 @@ import { lockProductsWithAgg } from "./lockProducts.js";
 export async function findPendingProductsWithAggForTask(
   taskType: MultiShopTaskTypesWithAgg,
   taskId: ObjectId,
-  proxyType: ProxyType,
   action: Action,
   productLimit: number
 ) {
@@ -21,8 +20,7 @@ export async function findPendingProductsWithAggForTask(
     const recoveryProducts = await getRecoveryProducts(
       taskType,
       taskId,
-      productLimit,
-      proxyType
+      productLimit
     );
     log(
       `${taskType}: ${recoveryProducts.shops
@@ -31,10 +29,7 @@ export async function findPendingProductsWithAggForTask(
     );
     return recoveryProducts;
   } else {
-    const { pendingShops, shops } = await findPendingShopsWithAgg(
-      taskType,
-      proxyType
-    );
+    const { pendingShops, shops } = await findPendingShopsWithAgg(taskType);
     const stats = pendingShops.reduce<PendingShopsWithBatch>(
       (acc, { pending, shop }) => {
         acc[shop.d] = { shop, pending, batch: 0 };

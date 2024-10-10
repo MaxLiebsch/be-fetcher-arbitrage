@@ -2,9 +2,8 @@ import { describe, expect, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
 
 import negEbyDeals from "../../src/services/deals/weekly/negEbyDeals";
-import { getActiveShops, getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb, getProductsCol } from "../../src/db/mongo";
-import { shopProxyTypeFilter } from "../../src/db/util/filter";
+import { getActiveShops} from "../../src/db/util/shops";
+import {  getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
@@ -12,9 +11,9 @@ import {
   deleteAllProducts,
   insertProducts,
 } from "../../src/db/util/crudProducts";
+import { shopFilter } from "../../src/db/util/filter";
 
 const shopDomain = "alternate.de";
-const proxyType = "mix";
 
 describe("crawl eby listings", () => {
   let productLimit = 10;
@@ -43,7 +42,7 @@ describe("crawl eby listings", () => {
     const shops = await getActiveShops();
     const productCol = await getProductsCol();
     const filteredShops = shops!.filter((shop) =>
-      shopProxyTypeFilter(shop, proxyType)
+      shopFilter(shop)
     );
     await Promise.all(
       filteredShops.map(async (shop) => {
@@ -67,7 +66,6 @@ describe("crawl eby listings", () => {
     setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await negEbyDeals({
-      proxyType,
       productLimit,
       type: "CRAWL_EBY_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),

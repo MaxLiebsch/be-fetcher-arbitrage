@@ -1,8 +1,8 @@
 import { describe, test, beforeAll } from "@jest/globals";
 import { path, read } from "fs-jetpack";
 import negAznDeals from "../../src/services/deals/weekly/negAznDeals";
-import { getActiveShops, getAllShopsAsArray } from "../../src/db/util/shops";
-import { getArbispotterDb, getProductsCol } from "../../src/db/mongo";
+import { getActiveShops, } from "../../src/db/util/shops";
+import {  getProductsCol } from "../../src/db/mongo";
 import { sub } from "date-fns";
 import { LocalLogger, ObjectId } from "@dipmaxtech/clr-pkg";
 import { setTaskLogger } from "../../src/util/logger";
@@ -11,7 +11,6 @@ import {
   deleteAllProducts,
   insertProducts,
 } from "../../src/db/util/crudProducts";
-const proxyType = "mix";
 
 const shopDomain = "gamestop.de";
 
@@ -46,7 +45,7 @@ describe("crawl azn listings", () => {
         );
       })
     );
-    await updateProgressNegDealAznTasks("mix");
+    await updateProgressNegDealAznTasks();
     await insertProducts(
       aznListings.map((l) => {
         const id = l._id.$oid;
@@ -61,7 +60,6 @@ describe("crawl azn listings", () => {
     setTaskLogger(logger, "TASK_LOGGER");
     //@ts-ignore
     const infos = await negAznDeals({
-      proxyType: "mix",
       productLimit,
       type: "CRAWL_AZN_LISTINGS",
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),

@@ -26,7 +26,7 @@ describe("crawl eans", () => {
     await deleteAllProducts(shopDomain);
     await insertProducts(
       products.map((l) => {
-        const id = l._id.$oid
+        const id = l._id.$oid;
         delete l._id;
         return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
@@ -50,7 +50,6 @@ describe("crawl eans", () => {
     const infos = await crawlEan({
       concurrency: 4,
       type: "CRAWL_EAN",
-      proxyType: "mix",
       productLimit,
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "none",

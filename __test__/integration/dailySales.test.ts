@@ -9,7 +9,6 @@ const shopDomain = "voelkner.de";
 const task = {
   _id: new ObjectId("66b9b8d3e1eb3dcedd11e0eb"),
   type: "DAILY_SALES",
-  proxyType: "mix",
   id: "daily_sales_" + shopDomain,
   shopDomain,
   executing: false,

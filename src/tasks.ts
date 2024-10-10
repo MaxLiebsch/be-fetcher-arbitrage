@@ -1,8 +1,6 @@
 import {
   ICategory,
-  ProxyType,
   Shop,
-  SubCategories,
   SubCategory,
 } from "@dipmaxtech/clr-pkg";
 import { CONCURRENCY } from "./constants";
@@ -58,7 +56,6 @@ export const createScanMatchTasks = async (
           productLimit: match ? productLimitLookup : 0,
           executing: false,
           lastCrawler: [],
-          proxyType: shop.proxyType,
           test: false,
           maintenance: false,
           recurrent: match ? true : false,
@@ -92,7 +89,7 @@ export const createLookupTasks = async (additional = {}) => {
 };
 
 export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
-  const { d: shopDomain, proxyType } = shop;
+  const { d: shopDomain } = shop;
   const siteMap = await getSiteMap(shopDomain);
   if (siteMap) {
     const categories = Object.entries(
@@ -132,10 +129,6 @@ export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
           completedAt: "",
           productLimit: chunk.length * productsPerCategory,
         };
-        if (proxyType) {
-          task["proxyType"] = proxyType;
-          if (proxyType === "de") task["timezones"] = ["Europe/Berlin"];
-        }
         return await addTask(task);
       })
     );
@@ -215,12 +208,10 @@ export const createDailySalesTask = async (
   shopDomain: string,
   categories: ICategory[],
   productLimit: number,
-  proxyType: ProxyType
 ) => {
   const task: any = {
     // DailySalesTask
     type: "DAILY_SALES",
-    proxyType,
     id: `daily_sales_${shopDomain}`,
     shopDomain,
     executing: false,

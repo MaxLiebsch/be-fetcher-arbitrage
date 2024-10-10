@@ -36,7 +36,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       limit,
       recurrent,
       categories,
-      proxyType: taskProxyType,
       concurrency,
     } = task;
     log(`Scrape categories ${shopDomain}`);
@@ -104,7 +103,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       if (check instanceof TaskCompletedStatus) {
         log(`Task completed with ${uniqueLinks.length} products.`);
         clearInterval(interval);
-        await updateProgressInCrawlEanTask(proxyType);
+        await updateProgressInCrawlEanTask();
         await updateMatchProgress(shopDomain, hasEan);
         resolve(check);
       }
@@ -168,7 +167,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           requestId: uuid(),
           shop,
           addProduct,
-          proxyType: taskProxyType,
+          proxyType,
           categoriesHeuristic: infos.categoriesHeuristic,
           productPageCountHeuristic: infos.productPageCountHeuristic,
           limit,
@@ -190,7 +189,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
-        proxyType: taskProxyType,
+        proxyType,
         queue,
         retries: 0,
         prio: 0,

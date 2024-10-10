@@ -1,7 +1,7 @@
 import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
 import { updateTaskWithQuery } from "../db/util/tasks.js";
 import { MultiStageTaskTypes, TASK_TYPES } from "./taskTypes.js";
-import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { PendingShops } from "../types/shops.js";
 import { findPendingShops } from "../db/util/multiShopUtilities/findPendingShops.js";
 import { getTaskProgress } from "../db/util/multiShopUtilities/getTaskProgress.js";
@@ -20,110 +20,86 @@ export const updateMatchProgress = async (
   return progress;
 };
 
-export const updateProgressDealsOnAznTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await findPendingShops(
-    "DEALS_ON_AZN",
-    proxyType
-  );
+export const updateProgressDealsOnAznTasks = async () => {
+  const { pendingShops: aprogress } = await findPendingShops("DEALS_ON_AZN");
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.DEALS_ON_AZN,
-      proxyType: proxyType,
     },
     { progress: aprogress }
   );
 };
 
-export const updateProgressDealsOnEbyTasks = async (proxyType: ProxyType) => {
+export const updateProgressDealsOnEbyTasks = async () => {
   const { pendingShops: eprogress } = await findPendingShopsWithAgg(
-    "DEALS_ON_EBY",
-    proxyType
+    "DEALS_ON_EBY"
   );
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.DEALS_ON_EBY,
-      proxyType: proxyType,
     },
     { progress: eprogress }
   );
 };
 
-export const updateProgressDealTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await findPendingShops(
-    "DEALS_ON_AZN",
-    proxyType
-  );
+export const updateProgressDealTasks = async () => {
+  const { pendingShops: aprogress } = await findPendingShops("DEALS_ON_AZN");
   const { pendingShops: eprogress } = await findPendingShopsWithAgg(
-    "DEALS_ON_EBY",
-    proxyType
+    "DEALS_ON_EBY"
   );
   return await Promise.all([
     await updateTaskWithQuery(
       {
         type: TASK_TYPES.DEALS_ON_AZN,
-        proxyType: proxyType,
       },
       { progress: aprogress }
     ),
     await updateTaskWithQuery(
       {
         type: TASK_TYPES.DEALS_ON_EBY,
-        proxyType: proxyType,
       },
       { progress: eprogress }
     ),
   ]);
 };
 
-export const updateProgressNegDealAznTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await findPendingShops(
-    "NEG_AZN_DEALS",
-    proxyType
-  );
+export const updateProgressNegDealAznTasks = async () => {
+  const { pendingShops: aprogress } = await findPendingShops("NEG_AZN_DEALS");
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.NEG_AZN_DEALS,
-      proxyType: proxyType,
     },
     { progress: aprogress }
   );
 };
 
-export const updateProgressNegDealEbyTasks = async (proxyType: ProxyType) => {
+export const updateProgressNegDealEbyTasks = async () => {
   const { pendingShops: eprogress } = await findPendingShopsWithAgg(
-    "NEG_EBY_DEALS",
-    proxyType
+    "NEG_EBY_DEALS"
   );
   return await updateTaskWithQuery(
     {
       type: TASK_TYPES.NEG_EBY_DEALS,
-      proxyType: proxyType,
     },
     { progress: eprogress }
   );
 };
 
-export const updateProgressNegDealTasks = async (proxyType: ProxyType) => {
-  const { pendingShops: aprogress } = await findPendingShops(
-    "NEG_AZN_DEALS",
-    proxyType
-  );
+export const updateProgressNegDealTasks = async () => {
+  const { pendingShops: aprogress } = await findPendingShops("NEG_AZN_DEALS");
   const { pendingShops: eprogress } = await findPendingShopsWithAgg(
-    "NEG_EBY_DEALS",
-    proxyType
+    "NEG_EBY_DEALS"
   );
   return await Promise.all([
     await updateTaskWithQuery(
       {
         type: TASK_TYPES.NEG_AZN_DEALS,
-        proxyType: proxyType,
       },
       { progress: aprogress }
     ),
     await updateTaskWithQuery(
       {
         type: TASK_TYPES.NEG_EBY_DEALS,
-        proxyType: proxyType,
       },
       { progress: eprogress }
     ),
@@ -146,11 +122,8 @@ export const updateProgressInQueryEansOnEbyTask = async () => {
   return progress;
 };
 
-export const updateProgressInCrawlEanTask = async (proxyType: ProxyType) => {
-  const { pendingShops, shops } = await findPendingShops(
-    "CRAWL_EAN",
-    proxyType
-  );
+export const updateProgressInCrawlEanTask = async () => {
+  const { pendingShops, shops } = await findPendingShops("CRAWL_EAN");
   const progress = pendingShops.reduce<PendingShops>(
     (acc, { shop, pending }) => {
       acc.push({
@@ -161,7 +134,7 @@ export const updateProgressInCrawlEanTask = async (proxyType: ProxyType) => {
     },
     []
   );
-  await updateTaskWithQuery({ id: "crawl_ean", proxyType }, { progress });
+  await updateTaskWithQuery({ id: "crawl_ean" }, { progress });
   return progress;
 };
 

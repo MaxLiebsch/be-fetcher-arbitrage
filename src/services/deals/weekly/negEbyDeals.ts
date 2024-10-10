@@ -39,12 +39,11 @@ import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUti
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, concurrency, proxyType, type } = task;
+  const { _id: taskId, action, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await findPendingProductsWithAggForTask(
       'NEG_EBY_DEALS',
       taskId,
-      proxyType,
       action || "none",
       productLimit
     );
@@ -80,7 +79,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
     log(`Product limit: ${_productLimit}`);
     task.actualProductLimit = _productLimit;
     infos.locked = products.length;
-    await updateProgressNegDealEbyTasks(proxyType);
+    await updateProgressNegDealEbyTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
@@ -103,7 +102,6 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
             queue,
             source,
             product,
-            proxyType
           );
           if (isValidProduct) {
             await scrapeEbyListings(

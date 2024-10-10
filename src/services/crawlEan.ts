@@ -5,7 +5,6 @@ import {
   QueryQueue,
   Shop,
   queryProductPageQueue,
-  sleep,
   uuid,
   removeSearchParams,
 } from "@dipmaxtech/clr-pkg";
@@ -42,7 +41,7 @@ import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPe
 
 export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
-    const { productLimit, _id: taskId, action, proxyType, type } = task;
+    const { productLimit, _id: taskId, action, type } = task;
 
     let infos: ScrapeEanStats = {
       total: 0,
@@ -58,7 +57,6 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       taskId,
       action || "none",
       productLimit,
-      proxyType
     );
 
     if (action === "recover") {
@@ -85,7 +83,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
     infos.locked = products.length;
 
     //Update task progress
-    await updateProgressInCrawlEanTask(proxyType); // update crawl ean task
+    await updateProgressInCrawlEanTask(); // update crawl ean task
 
     const startTime = Date.now();
 
@@ -107,7 +105,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       });
       if (check instanceof TaskCompletedStatus) {
         await Promise.all([
-          updateProgressInCrawlEanTask(proxyType), // update crawl ean task
+          updateProgressInCrawlEanTask(), // update crawl ean task
           updateProgressInMatchTasks(shops), // update matching tasks
           updateProgressInLookupInfoTask(), // update lookup info task
           updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
@@ -121,9 +119,9 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
       let { lnk: productLink, _id: productId, s_hash } = product;
+      const {d: shopDomain, proxyType} = shop
       productLink = removeSearchParams(productLink);
 
-      const shopDomain = shop.d;
 
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async ({

@@ -1,7 +1,7 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
-import { ObjectId, ProxyType } from "@dipmaxtech/clr-pkg";
+import { ObjectId} from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 import { log } from "../../../util/logger.js";
@@ -15,14 +15,12 @@ export async function findPendingProductsForTask(
   taskId: ObjectId,
   action: Action,
   productLimit: number,
-  proxyType?: ProxyType
 ) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryProducts(
       taskType,
       taskId,
       productLimit,
-      proxyType
     );
     log(
       `Missing ${taskType}: ${recoveryProducts.shops
@@ -31,7 +29,7 @@ export async function findPendingProductsForTask(
     );
     return recoveryProducts;
   } else {
-    const { pendingShops, shops } = await findPendingShops(taskType, proxyType);
+    const { pendingShops, shops } = await findPendingShops(taskType);
     const stats = pendingShops.reduce<PendingShopsWithBatch>(
       (acc, { pending, shop }) => {
         acc[shop.d] = { shop, pending, batch: 0 };

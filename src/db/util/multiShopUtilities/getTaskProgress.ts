@@ -28,7 +28,7 @@ export const getTaskProgress = async (
   hasEan?: boolean
 ) => {
   const pending = await countPendingProducts(domain, multiShopTask, hasEan);
-  const total = await countTotalProducts(domain, multiShopTask);
+  const total = await countTotalProducts(domain, multiShopTask, hasEan);
 
   return {
     percentage: `${(((total - pending) / total) * 100).toFixed(2)} %`,

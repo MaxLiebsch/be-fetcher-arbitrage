@@ -16,7 +16,6 @@ const task = {
   type: "CRAWL_SHOP",
   id: `crawl_shop_${shopDomain}_1_of_4`,
   shopDomain,
-  proxyType: "de",
   visitedPages: [],
   limit: {
     mainCategory: 9,

@@ -2114,7 +2114,7 @@ export const shops: { [key: string]: any } = {
         category: "default",
       },
     ],
-    hasEan: false,
+    hasEan: true,
     manualCategories: [],
     mimic: "div.logo--shop picture",
     paginationEl: [
@@ -5677,7 +5677,7 @@ export const shops: { [key: string]: any } = {
   },
   "mindfactory.de": {
     action: [],
-    active: false,
+    active: true,
     categories: {
       exclude: ["mindstart", "actionen", "highlights", "software"],
       sel: "div[id=cMaincat] ul:nth-of-type(2) a",
@@ -5778,6 +5778,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     proxyType: "de",
+    hasEan: true,
     product: [
       {
         sel: "div.pshipping a",
@@ -5829,7 +5830,7 @@ export const shops: { [key: string]: any } = {
   },
   "digitalo.de": {
     action: [],
-    active: false,
+    active: true,
     categories: {
       exclude: [],
       sel: "div[id=cMaincat] ul:nth-of-type(2) a",
@@ -5961,6 +5962,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     proxyType: "de",
+    hasEan: true,
     product: [
       {
         sel: "div.product__shipping__availability",

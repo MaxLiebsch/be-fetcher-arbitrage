@@ -301,7 +301,6 @@ export const countPendingProductsLookupInfoQuery = (
                 {
                   $or: eanExistsQuery,
                 },
-
                 { asin: { $exists: true, $ne: "" } },
               ],
             }

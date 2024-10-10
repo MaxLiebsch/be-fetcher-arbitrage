@@ -1,7 +1,6 @@
 import {
   DbProductRecord,
   ObjectId,
-  ProxyType,
   QueueStats,
   TaskTypes,
 } from "@dipmaxtech/clr-pkg";
@@ -57,7 +56,6 @@ export interface ScrapeShopTask extends ShopSpecificTask {
   categories: Category[];
   weekday: number;
   visitedPages: any[];
-  proxyType: ProxyType;
   executing: boolean;
 }
 
@@ -90,13 +88,11 @@ export interface MultiShopMultiQueueTask extends MultipleShopTask {
 }
 
 export interface ScrapeEansTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 export interface LookupInfoTask extends MultiShopMultiQueueTask {}
 
 export interface LookupCategoryTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 
@@ -105,22 +101,18 @@ export interface QueryEansOnEbyTask extends MultipleShopTask {
 }
 
 export interface DealOnAznTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 
 export interface DealOnEbyTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 
 export interface NegAznDealTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 
 export interface NegEbyDealTask extends MultipleShopTask {
-  proxyType: ProxyType;
   concurrency: number;
 }
 
@@ -140,7 +132,6 @@ export interface WholeSaleEbyTask extends Task {
 
 export interface ScanTask extends ShopSpecificTask {
   concurrency: number;
-  proxyType: ProxyType;
 }
 
 export type Tasks =

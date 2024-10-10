@@ -1,6 +1,5 @@
 import {
   AddProductInfoProps,
-  DbProduct,
   DbProductRecord,
   NotFoundCause,
   ProductRecord,
@@ -39,14 +38,13 @@ import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/
 
 const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action, concurrency, proxyType, type } = task;
+  const { _id: taskId, action, concurrency, type } = task;
   return new Promise<TaskCompletedStatus | TaskErrors>(async (res, rej) => {
     const { products, shops } = await findPendingProductsForTask(
       "NEG_AZN_DEALS",
       taskId,
       action || "none",
       productLimit,
-      proxyType
     );
 
     if (action === "recover") {
@@ -84,7 +82,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
     task.actualProductLimit = _productLimit;
     infos.locked = products.length;
 
-    await updateProgressNegDealAznTasks(proxyType);
+    await updateProgressNegDealAznTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     await queue.connect();
@@ -107,7 +105,6 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
             queue,
             source,
             product,
-            proxyType
           );
           if (isValidProduct) {
             await scrapeAznListings(

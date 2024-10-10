@@ -16,3 +16,5 @@ In daily deals and crawl shop
 - [x] revert mongouri in dev file
 
 
+- [] remove proxyType from scrape task, daily_sales task, deals tasks, crawl ean,
+
