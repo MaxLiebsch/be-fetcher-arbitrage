@@ -31,6 +31,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Add all server fingerprints to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          # Convert the comma-separated list into space-separated
+          SERVERS=$(echo "${{ vars.HOSTS }}" | tr ',' ' ')
+          # Add fingerprints for all hosts dynamically
+          for host in $SERVERS; do
+            ssh-keyscan -H $host >> ~/.ssh/known_hosts
+          done
+        shell: bash
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
