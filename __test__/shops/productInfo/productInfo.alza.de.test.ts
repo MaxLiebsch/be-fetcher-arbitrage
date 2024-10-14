@@ -13,7 +13,7 @@ const shopDomain = "alza.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "127.0.6533.119");
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

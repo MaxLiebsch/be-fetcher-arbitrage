@@ -9,6 +9,9 @@ const updateShops = async (shops: { [key: string]: any }) => {
   );
 };
 
-updateShops(shops).then(() => {
+updateShops(shops).then((r) => {
+  const completed = r.every(v=> v.acknowledged)
+  if(!completed) process.exit(1);
+
   process.exit(0);
 });

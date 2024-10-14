@@ -16,7 +16,7 @@ const shopDomain = "proshop.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, "de");
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

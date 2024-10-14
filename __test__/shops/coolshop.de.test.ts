@@ -15,11 +15,10 @@ import {
 } from "./utils/commonTests.js";
 
 const shopDomain = "coolshop.de";
-const proxyType = 'de';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, proxyType);
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -59,7 +58,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 60000);
 
   test("Extract Products from Product page", async () => {
-    await newPage(proxyType);
+    await newPage();
     await extractProducts();
   }, 1000000);
 

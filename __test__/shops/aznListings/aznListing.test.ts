@@ -17,7 +17,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     "https://www.amazon.de/dp/B07R1D55ZN/?smid=A16QUKM5NDJ651&tag=idealode-mp-pk-21&linkCode=asn&creative=6742&camp=1638&creativeASIN=B07R1D55ZN&ascsubtag=2024-06-20_f7661882e998e7beb1246d5728428873b784e672e0e3c994f20e44975a88b462&th=1&psc=1&language=de_DE",
   ];
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, '124.0.6367.207');
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

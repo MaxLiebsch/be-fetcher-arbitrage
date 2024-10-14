@@ -16,11 +16,10 @@ import {
 import { getShop } from "../../src/db/util/shops.js";
 
 const shopDomain = "galaxus.de";
-const proxyType = 'mix';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, proxyType);
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -70,7 +69,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 60000);
 
   test("Extract Products from Product page", async () => {
-    await newPage(proxyType);
+    await newPage();
     await extractProducts();
   }, 1000000);
 
@@ -80,7 +79,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
   test("Extract Products from Sales page", async () => {
     const shop = await getShop(shopDomain);
-    await newPage(proxyType);
+    await newPage();
     if (shop) {
       await extractProductsFromSecondPageQueueless(
         5,

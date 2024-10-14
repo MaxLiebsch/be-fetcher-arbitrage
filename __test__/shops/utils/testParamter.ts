@@ -321,6 +321,52 @@ const testParameters = {
     nextPageUrl:
       "https://www.idealo.de/preisvergleich/ProductCategory/10832I16-15.html",
   },
+  "hornbach.de": {
+    salesUrl: "",
+    ean: "8712793561874",
+    productPageUrl:
+      "https://www.hornbach.de/p/differnz-waschtischarmatur-schwarz-matt-30-414-00/10289624/",
+    productsPerPage: 72,
+    productsPerPageAfterLoadMore: 50,
+    subCategoriesCount: 5,
+    mainCategoriesCount: 17,
+    initialProductPageUrl:
+      "https://www.hornbach.de/c/bad-sanitaer/badarmaturen/waschtischarmaturen/einhebel-waschtischarmatur/S32216/",
+    subCategoryUrl:
+      "https://www.hornbach.de/c/bad-sanitaer/badarmaturen/waschtischarmaturen/S3584/",
+    nextPageUrl:
+      "https://www.hornbach.de/c/bad-sanitaer/badarmaturen/waschtischarmaturen/einhebel-waschtischarmatur/S32216/?page=2",
+  },
+  "pieper.de": {
+    salesUrl: "",
+    ean: "4052136261660",
+    productPageUrl:"https://www.pieper.de/artdeco-lippen-makeup-couture-lipstick-refill-1114468.html",
+    productsPerPage: 60,
+    productsPerPageAfterLoadMore: 50,
+    subCategoriesCount: 14,
+    mainCategoriesCount: 9,
+    initialProductPageUrl:
+      "https://www.pieper.de/make-up/",
+    subCategoryUrl:
+      "https://www.pieper.de/make-up/",
+    nextPageUrl:
+      "https://www.pieper.de/make-up/?p=2",
+  },
+  "rossmann.de": {
+    salesUrl: "",
+    ean: "5902751463774",
+    productPageUrl:"https://www.rossmann.de/de/make-up-semilac-mineral-strong-base-coat-xxl/p/5902751463774",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 50,
+    subCategoriesCount: 19,
+    mainCategoriesCount: 9,
+    initialProductPageUrl:
+      "https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036",
+    subCategoryUrl:
+      "https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036",
+    nextPageUrl:
+      "https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036?q=%3Arelevance%3A&page=1&pageSize=24#",
+  },
 };
 
 export default testParameters;

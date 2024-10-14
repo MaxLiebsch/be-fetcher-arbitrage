@@ -67,7 +67,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   // }, 60000);
 
   // test("Extract Products from Product page", async () => {
-  //   await newPage(proxyType);
+  //   await newPage();
   //   await extractProducts();
   // }, 1000000);
 

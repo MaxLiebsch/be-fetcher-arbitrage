@@ -1,5 +1,6 @@
 import { expect } from "@jest/globals";
 import {
+  CHROME_VERSIONS,
   ProxyType,
   ResourceTypes,
   Shop,
@@ -85,14 +86,14 @@ export const createPage = async (browser: Browser, shop: Shop) => {
 };
 
 export const newPage = async (
-  proxyType: ProxyType,
   url?: string,
   disAllowedResourceTypes?: ResourceTypes[]
 ) => {
   if (!browser) return;
   if (!shops || !shops[shopDomain]) return;
   const shop = shops[shopDomain];
-  initFingerPrintForHost(`www.${shopDomain}`, true, proxyType);
+  if (!shop) return;
+  initFingerPrintForHost(`www.${shopDomain}`, true, shop.proxyType);
 
   const pageAndFingerprint = await getPage({
     browser,
@@ -104,7 +105,7 @@ export const newPage = async (
       : shop.resourceTypes["crawl"],
     exceptions: shop.exceptions,
     rules: shop.rules,
-    proxyType,
+    proxyType: shop.proxyType,
   });
   page = pageAndFingerprint.page;
 
@@ -116,18 +117,13 @@ export const newPage = async (
   return pageAndFingerprint;
 };
 
-export const myBeforeAll = async (
-  _shopDomain: string,
-  proxyType?: ProxyType,
-  version?: Versions
-) => {
+export const myBeforeAll = async (_shopDomain: string) => {
   shopDomain = _shopDomain;
-  browser = await mainBrowser(
-    proxyAuth,
-    version || (process.env.BROWSER_VERSION as Versions)
-  );
+  browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
   shops = await getShops([{ d: shopDomain }]);
   const shop = shops && shops[shopDomain];
+  if (!shop) return;
+  const { proxyType } = shop;
   if (browser && shops && shop) {
     if (proxyType) {
       await notifyProxyChange(
@@ -145,10 +141,7 @@ export const myBeforeAll = async (
         Date.now()
       );
     }
-    const pageAndFingerprint = await newPage(
-      proxyType || "mix",
-      shop.entryPoints[0].url
-    );
+    const pageAndFingerprint = await newPage(shop.entryPoints[0].url);
     if (pageAndFingerprint) console.log(pageAndFingerprint.fingerprint);
   }
 };
@@ -270,7 +263,7 @@ export const countProductPages = async () => {
       page,
       shops[shopDomain],
       shops[shopDomain].paginationEl[0],
-      count
+      count || 0
     );
     expect(pageNumberCount).toBeGreaterThan(testParameters[shopDomain].pages);
   }
@@ -294,7 +287,6 @@ export const findPaginationAndNextPage = async () => {
         initialProductPageUrl,
         shops[shopDomain].paginationEl,
         pageNo,
-        page,
         undefined
       );
     }
@@ -568,7 +560,7 @@ export const queryEansOnEby = async (
       },
     };
     await page.goto(
-      queryURLBuilder(shops[shopDomain].queryUrlSchema, query).url
+      queryURLBuilder(shops[shopDomain].queryUrlSchema || [], query).url
     );
     return await queryEansOnEbyQueue(page, {
       shop: shops[shopDomain],

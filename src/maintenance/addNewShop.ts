@@ -16,41 +16,40 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "galeria.de",
-    ne: "Galeria.de",
+    d: "hornbach.de",
+    ne: "Hornbach.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
     categories: [],
     dailySalesCategories: [
-      { link: "https://www.galeria.de/sale", name: "Sale" },
     ],
   },
-  // {
-  //   d: "galaxus.de",
-  //   ne: "Galaxus.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     { link: "https://www.galaxus.de/de/sale", name: "Sale" },
-  //   ],
-  // },
-  // {
-  //   d: "coolshop.de",
-  //   ne: "Coolshop.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     {
-  //       link: "https://www.coolshop.de/sale/",
-  //       name: "Sale",
-  //     },
-  //   ],
-  // },
+  {
+    d: "pieper.de",
+    ne: "Pieper.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    categories: [],
+    dailySalesCategories: [
+      { link: "https://www.pieper.de/sale", name: "Sale" },
+    ],
+  },
+  {
+    d: "rossmann.de",
+    ne: "Rossmann.de",
+    maxProducts: 80000,
+    productLimit: 500,
+    salesProductLimit: 4000,
+    categories: [],
+    dailySalesCategories: [
+      {
+        link: "https://www.rossmann.de/de/angebote/m/angebote",
+        name: "Sale",
+      },
+    ],
+  },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };

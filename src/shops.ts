@@ -3910,6 +3910,145 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: "domcontentloaded",
     },
   },
+  "hornbach.de": {
+    actions: [],
+    active: true,
+    categories: {
+      exclude: ["wohntrends", 'sortiment'],
+      sel: "ul.hbhd-main-nav__level1 > li.hbhd-main-nav__item:nth-child(2) a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div[data-hb-namespace='listing-nav-categories'] a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "hornbach.de",
+    entryPoints: [
+      {
+        url: "https://www.hornbach.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic:
+      "header[data-hb-namespace='page-header'] a.hbhd-topline__hornbach-logo",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[data-testid=pagination-bar",
+        nav: "?page=",
+        calculation: {
+          method: "find_highest",
+          sel: "div[data-testid=pagination-bar] span",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin12",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers[0].availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers[0].price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0].url",
+      },
+    ],
+    productList: [
+      {
+        sel: "div[data-testid=item-list]",
+        productCntSel: ["div[class*=al-ui-resultCount]"],
+        product: {
+          sel: "div[data-testid=article-card]",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div[class*=al-ui-cardImgWrapper] img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "a[class*=al-ui-product_name]",
+              type: "title",
+            },
+            {
+              content: "price",
+              sel: "div[class*=al-ui-cardInfoInnerWrapper] span[class*=al-ui-UnstyledDisplayPrice]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "other",
+        "script",
+        "fetch",
+        "xhr",
+        "stylesheet",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
   "mueller.de": {
     actions: [],
     active: true,
@@ -4749,6 +4888,8 @@ export const shops: { [key: string]: Shop } = {
     categories: {
       exclude: [
         "mindstart",
+        "promo-list",
+        "specials",
         "actionen",
         "fotoparadies.de",
         "brand",
@@ -5340,6 +5481,142 @@ export const shops: { [key: string]: Shop } = {
         "fetch",
         "script",
         "other",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
+  "rossmann.de": {
+    actions: [],
+    active: true,
+    categories: {
+      exclude: ["marken", "ideenwelt"],
+      sel: "div.rm-navigation__group--main li.rm-navigation__item div.rm-navigation__item-wrap > span> a.rm-cms__link",
+      type: "href",
+      subCategories: [
+        {
+          visible: false,
+          sel: "div.rm-category-nav__list div.rm-category-nav__item a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "rossmann.de",
+    entryPoints: [
+      {
+        url: "https://www.rossmann.de",
+        category: "default",
+      },
+    ],
+    hasEan: false,
+    ean: "p/[0-9]{12,13}",
+    manualCategories: [],
+    mimic: "div[class*=rm-icon__signet--desktop] img.rm-icon-signet",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div.rm-pagination a",
+        nav: "?q=%3Arelevance%3A&page=<page>&pageSize=24#",
+        paginationUrlSchema: {
+          replace: 'attach_end',
+          calculation: {
+            method: "offset",
+            offset: 1,
+          },
+        },
+        calculation: {
+          method: "find_highest",
+          last: "div.rm-pagination a",
+          sel: "div.rm-pagination a",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "meta[itemprop=price]",
+        parent: "section.rm-productdetail",
+        type: "content",
+        content: "price",
+      },
+      {
+        sel: "span[itemprop=sku]",
+        parent: "section.rm-productdetail",
+        type: "content",
+        content: "ean",
+      },
+      {
+        sel: "span[itemprop=brand] meta[itemprop=name]",
+        parent: "section.rm-productdetail",
+        type: "content",
+        content: "mnfctr",
+      },
+      {
+        sel: "div.rm-product__card div.rm-product__title",
+        parent: "section.rm-productdetail",
+        type: "text",
+        content: "name",
+      },
+      
+    ],
+    productList: [
+      {
+        sel: "div.rm-category__products",
+        productCntSel: [],
+        product: {
+          sel: "div.rm-category__products div.rm-grid__content",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.rm-tile-product__image",
+              type: "href",
+            },
+            {
+              content: "mnfctr",
+              sel: "div.rm-product__brand",
+              type: "text",
+            },
+            {
+              content: "image",
+              sel: "picture.rm-tile-product__image img",
+              type: "data-src",
+            },
+            {
+              content: "name",
+              sel: "div.rm-product__title",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.rm-price div.rm-price__current",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "other",
+        "script",
+        "fetch",
+        "xhr",
+        "stylesheet",
       ],
     },
     waitUntil: {
@@ -6078,6 +6355,161 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: "load",
     },
   },
+  "pieper.de": {
+    actions: [],
+    active: true,
+    categories: {
+      exclude: ["wohntrends", 'marken'],
+      sel: "div.navigation--list-wrapper ul li a",
+      type: "href",
+      subCategories: [
+        {
+          visible: false,
+          sel: "li.navigation--entry.is--active ul.sidebar--navigation li a.navigation--link.link--go-forward",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [
+      {
+        type: "scroll",
+        name: "scroll",
+        action: "scroll",
+        sel: "",
+      },
+    ],
+    d: "pieper.de",
+    entryPoints: [
+      {
+        url: "https://www.pieper.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "div.logo--shop a picture",
+    paginationEl: [
+      {
+        type: "scroll-and-click",
+        sel: "a.js--load-more",
+        wait: false,
+        nav: "?p=",
+        calculation: {
+          method: "estimate",
+          textToMatch: "Mehr anzeigen",
+          dynamic: true,
+          last: "a.js--load-more",
+          sel: "a.js--load-more",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "mnfctr",
+        path: "brand.name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0].url",
+      },
+    ],
+    productList: [
+      {
+        sel: "div.listing--container",
+        productCntSel: ["span.category--headline-text"],
+        product: {
+          sel: "div.product--box",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.product--image",
+              type: "href",
+            },
+            {
+              content: "mnfctr",
+              sel: "span.product--manufacturer",
+              type: "text",
+            },
+            {
+              content: "image",
+              sel: "img",
+              type: "srcset",
+            },
+            {
+              content: "name",
+              sel: "a.product--image",
+              type: "title",
+            },
+            {
+              content: "price",
+              sel: "span.price--default",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "other",
+        // "script",
+        // "fetch",
+        // "xhr",
+        // "stylesheet",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
   "quelle.de": {
     actions: [],
     active: false,
@@ -6201,7 +6633,6 @@ export const shops: { [key: string]: Shop } = {
         "image",
         "xhr",
         "fetch",
-
         "script",
         "other",
       ],
