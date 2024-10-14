@@ -6,6 +6,7 @@ import {
   matchTargetShopProdsWithRawProd,
   replaceAllHiddenCharacters,
   DbProductRecord,
+  ProductRecord,
 } from "@dipmaxtech/clr-pkg";
 import { shuffle } from "underscore";
 import { handleResult } from "../handleResult.js";
@@ -212,8 +213,8 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       };
 
       const prodInfo = {
-        procProd: product,
-        rawProd: product,
+        procProd: product as unknown as DbProductRecord,
+        rawProd: product as unknown as ProductRecord,
         dscrptnSegments: [],
         nmSubSegments: [],
       };
@@ -221,7 +222,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       const _shops = await queryTargetShops(
         startShops ? startShops : targetShops,
         queue,
-        shops,
+        shops,  
         query,
         task,
         prodInfo,

@@ -9,24 +9,36 @@ const testParameters = {
     productPageUrl: "https://www.ebay.de/itm/256420198915",
   },
   "bergfreunde.de": {
+    initialProductPageUrl: "https://www.bergfreunde.de/kletterschuhe/",
     productPageUrl:
       "https://www.bergfreunde.de/hunter-collar-convenience-hundehalsband/?cnid=7213b99a7a48b405e9410053d1d0f8b3",
+    nextPageUrl: "https://www.bergfreunde.de/kletterschuhe/2",
   },
   "mueller.de": {
+    initialProductPageUrl: "https://www.mueller.de/parfuemerie/duefte-fuer-sie/duftsets/",
     productPageUrl:
       "https://www.mueller.de/p/mjamjam-katzennassfutter-quetschie-insekt-mit-saftigem-huehnchen-IPN2912009/",
+    nextPageUrl: "https://www.mueller.de/parfuemerie/duefte-fuer-sie/duftsets/?p=2",
   },
   "reichelt.de": {
+    initialProductPageUrl:
+      "https://www.reichelt.de/motorrad-rollerzubeh-r-c9921.html",
     productPageUrl:
       "https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html",
+    nextPageUrl:
+      "https://www.reichelt.de/motorrad-rollerzubeh-r-c9921.html?ACTION=2&GROUPID=9921&START=30&OFFSET=30&nbc=1",
   },
   "voelkner.de": {
+    initialProductPageUrl: "https://www.voelkner.de/categories/13141_13250_13745/Multimedia/TV-Video/Fernseher.html",
     productPageUrl:
       "https://www.voelkner.de/products/1320099/Digitus-2-Port-Serielle-Steckkarte-Seriell-9pol.-PCI.html?offer=92b13922a56b1ef0318dab1bad8b94b8",
+      nextPageUrl: "https://www.voelkner.de/categories/13141_13250_13745/Multimedia/TV-Video/Fernseher.html?page=2"
   },
   "alternate.de": {
+    initialProductPageUrl: "https://www.alternate.de/Alle-Fernseher/4K-Fernseher",
     productPageUrl:
       "https://www.alternate.de/Duracell/AAAA-Ultra-M3-MN-2500-1-5V-Batterie/html/product/1219348",
+      nextPageUrl: "https://www.alternate.de/Alle-Fernseher/4K-Fernseher?page=2"
   },
   "cyberport.de": {
     productsPerPage: 15,
@@ -39,7 +51,7 @@ const testParameters = {
     nextPageUrl:
       "https://www.cyberport.de/notebook-und-tablet/tablets.html?p=2",
   },
-  "weltbild.de": {
+  "thalia.de": {
     productsPerPage: 30,
     subCategoriesCount: 42,
     mainCategoriesCount: 18,
@@ -76,8 +88,7 @@ const testParameters = {
   },
   "galeria.de": {
     salesUrl: "https://www.galeria.de/sale",
-    countProductPageUrl:
-      "https://www.galeria.de/beauty/duefte",
+    countProductPageUrl: "https://www.galeria.de/beauty/duefte",
     pages: 20,
     productPageUrl:
       "https://www.galeria.de/produkt/jean-paul-gaultier-gaultier-divine-le-parfum-eau-de-parfum-intense-refill-8435415091787",
@@ -85,11 +96,9 @@ const testParameters = {
     productsPerPageAfterLoadMore: 240,
     subCategoriesCount: 13,
     mainCategoriesCount: 7,
-    initialProductPageUrl:
-      "https://www.galeria.de/beauty/duefte",
+    initialProductPageUrl: "https://www.galeria.de/beauty/duefte",
     subCategoryUrl: "https://www.galeria.de/beauty",
-    nextPageUrl:
-      "https://www.galeria.de/beauty/duefte?page=2",
+    nextPageUrl: "https://www.galeria.de/beauty/duefte?page=2",
   },
   "euronics.de": {
     salesUrl: "https://www.euronics.de/angebote",
@@ -254,10 +263,10 @@ const testParameters = {
     subCategoriesCount: 6,
     mainCategoriesCount: 9,
     initialProductPageUrl:
-      "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/",
+      "https://www.fressnapf.de/c/vogel/vogelfutter/",
     subCategoryUrl: "https://www.fressnapf.de/c/kleintier/",
     nextPageUrl:
-      "https://www.fressnapf.de/c/kleintier/kleintierheim/streu-stroh/?currentPage=2",
+      "https://www.fressnapf.de/c/vogel/vogelfutter/?currentPage=2",
   },
   "saturn.de": {
     productPageUrl:
@@ -296,7 +305,7 @@ const testParameters = {
       "https://www.gamestop.de/SearchResult/QuickSearch?variantType=1&shippingMethod=2",
     subCategoryUrl: "https://www.gamestop.de/XboxOne/Index",
     nextPageUrl:
-      "https://www.gamestop.de/SearchResult/QuickSearch?platform=90?currentPage0=2",
+      "https://www.gamestop.de/SearchResult/QuicksearchAjax?variantType=1&shippingMethod=2&typesorting=0&sdirection=ascending&skippos=48&takenum=24",
   },
   "idealo.de": {
     productPageUrl:

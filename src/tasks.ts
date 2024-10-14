@@ -1,12 +1,9 @@
-import {
-  ICategory,
-  Shop,
-  SubCategory,
-} from "@dipmaxtech/clr-pkg";
+import { ICategory, Shop, SubCategory } from "@dipmaxtech/clr-pkg";
 import { CONCURRENCY } from "./constants";
 import { getSiteMap } from "./db/mongo";
 import { getAllShops } from "./db/util/shops";
 import { addTask } from "./db/util/tasks";
+import { sub } from "date-fns";
 const shopDomains: string[] = ["mindfactory.de"];
 
 const chunkSize = 2;
@@ -207,7 +204,7 @@ export const createSingleMatchTask = async (shopDomain: string) => {
 export const createDailySalesTask = async (
   shopDomain: string,
   categories: ICategory[],
-  productLimit: number,
+  productLimit: number
 ) => {
   const task: any = {
     // DailySalesTask
@@ -224,8 +221,8 @@ export const createDailySalesTask = async (
     completed: false,
     errored: false,
     actualProductLimit: productLimit,
-    startedAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
+    startedAt: sub(new Date(), { days: 1 }).toISOString(),
+    completedAt: sub(new Date(), { days: 1 }).toISOString(),
     progress: {
       crawlEan: [],
       lookupInfo: [],

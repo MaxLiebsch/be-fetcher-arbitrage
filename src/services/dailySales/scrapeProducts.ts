@@ -236,7 +236,7 @@ export const scrapeProducts = async (
               keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
             > = ["nm", "prc", "lnk", "img"];
             properties.forEach((prop) => {
-              if (!(product as DbProductRecord)[prop]) {
+              if (!(product as unknown as DbProductRecord)[prop]) {
                 infos.missingProperties[prop]++;
               }
             });

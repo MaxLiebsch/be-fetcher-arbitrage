@@ -1,6 +1,6 @@
-import { insertShop } from "./db/util/shops.js";
+import { Shop } from "@dipmaxtech/clr-pkg";
 
-export const shops: { [key: string]: any } = {
+export const shops: { [key: string]: Shop } = {
   "idealo.de": {
     actions: [
       {
@@ -8,6 +8,7 @@ export const shops: { [key: string]: any } = {
         sel: "button.productOffers-listLoadMore",
         action: "click",
         waitDuration: 600,
+        name: "load more",
         wait: false,
       },
     ],
@@ -17,7 +18,6 @@ export const shops: { [key: string]: any } = {
       exclude: ["flug", "flüge", "hotel"],
       sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
       type: "href",
-      basepath: true,
       subCategories: [
         {
           sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
@@ -30,6 +30,7 @@ export const shops: { [key: string]: any } = {
         type: "button",
         sel: "a.productVariants-listItemWrapper",
         action: "click",
+        name: "click on variant",
         wait: true,
       },
     ],
@@ -55,7 +56,7 @@ export const shops: { [key: string]: any } = {
         sel: "div[class*=sr-pagination__numbers]",
         nav: "I16-<page>.html",
         paginationUrlSchema: {
-          replace: "\\.html",
+          replaceRegexp: "\\.html",
           withQuery: false,
           calculation: {
             method: "offset",
@@ -73,7 +74,7 @@ export const shops: { [key: string]: any } = {
         sel: "ul.pagination",
         nav: "/100I16-<page>.html?q=<query>",
         paginationUrlSchema: {
-          replace: "\\.html\\?q=\\S*",
+          replaceRegexp: "\\.html\\?q=\\S*",
           withQuery: true,
           calculation: {
             method: "offset",
@@ -162,7 +163,6 @@ export const shops: { [key: string]: any } = {
       {
         sel: "div[id=offerList]",
         timeout: 100,
-        type: "shopcomparison",
         productCntSel: [
           "span[class*=offerList-count]",
           "span[class*=sr-resultTitle__resultCount]",
@@ -238,7 +238,7 @@ export const shops: { [key: string]: any } = {
               sel: "div[class*=sr-resultItemTile__imageSection] noscript",
               type: "text",
               extractPart: 0,
-              regexp: "(www|http:|https:)+[^\\s]+[\\w]",
+              regex: "(www|http:|https:)+[^\\s]+[\\w]",
             },
             {
               content: "name",
@@ -270,17 +270,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "xhr",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
+      crawl: ["media", "font", "stylesheet", "ping", "image", "xhr", "other"],
     },
     rules: [
       {
@@ -320,13 +310,12 @@ export const shops: { [key: string]: any } = {
     },
   },
   "alternate.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["generalüberholt"],
       sel: "div[id=navigation-tree] a",
       type: "href",
-      basepath: false,
       subCategories: [
         {
           sel: "div[id=category] div.accordion a",
@@ -358,6 +347,7 @@ export const shops: { [key: string]: any } = {
         nav: "?page=",
         calculation: {
           method: "count",
+          last: "",
           sel: "div.d-flex.justify-content-center.align-items-baseline a",
         },
       },
@@ -409,7 +399,6 @@ export const shops: { [key: string]: any } = {
     productList: [
       {
         sel: "div[id=dailyDeals]",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -446,7 +435,6 @@ export const shops: { [key: string]: any } = {
       },
       {
         sel: "div.grid-container.listing-mosaic",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -478,7 +466,6 @@ export const shops: { [key: string]: any } = {
       },
       {
         sel: "div.grid-container.listing",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -520,7 +507,6 @@ export const shops: { [key: string]: any } = {
       },
       {
         sel: "div[id=highlights-inner-container]",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -537,7 +523,7 @@ export const shops: { [key: string]: any } = {
               type: "text",
             },
             {
-              content: "manufacturer",
+              content: "mnfctr",
               sel: "div.manufacturer",
               type: "text",
             },
@@ -562,7 +548,6 @@ export const shops: { [key: string]: any } = {
       },
       {
         sel: "div[id=epoq-widget-entrypage]",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -579,7 +564,7 @@ export const shops: { [key: string]: any } = {
               type: "text",
             },
             {
-              content: "manufacturer",
+              content: "mnfctr",
               sel: "div.manufacturer",
               type: "text",
             },
@@ -604,7 +589,6 @@ export const shops: { [key: string]: any } = {
       },
       {
         sel: "div:is(.product-carousel,[id=epoq-widget-categorypage])",
-        type: "container",
         productCntSel: ["div.col-12.col-lg-6.my-2.my-lg-0 > div > div"],
         product: {
           sel: "a.card",
@@ -648,8 +632,6 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
         "script",
         "other",
       ],
@@ -660,7 +642,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "babymarkt.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["mode", "beratung"],
@@ -788,10 +770,10 @@ export const shops: { [key: string]: any } = {
             {
               content: "image",
               sel: "article.product img",
-              type: "datasrc",
+              type: "data-src",
             },
             {
-              content: "mnftcr",
+              content: "mnfctr",
               sel: "article.product div.product__brand",
               type: "text",
             },
@@ -821,8 +803,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "other",
       ],
     },
@@ -832,7 +813,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "gamestop.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       visible: false,
@@ -1060,7 +1041,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "alza.de": {
-    action: [],
+    actions: [],
     active: true,
     allowedHosts: ["cdn.alza.cz", "1603811301.rsc.cdn77.org"],
     categories: {
@@ -1196,7 +1177,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
-    proxyType: "mix",
+    proxyType: "de",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
@@ -1209,7 +1190,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "bergfreunde.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["anzeigen"],
@@ -1241,7 +1222,7 @@ export const shops: { [key: string]: any } = {
       {
         type: "pagination",
         sel: "div.paging",
-        nav: "/",
+        nav: "",
         calculation: {
           method: "count",
           last: "div.paging a",
@@ -1307,7 +1288,7 @@ export const shops: { [key: string]: any } = {
               sel: "img.product-image",
               baseUrl:
                 "https://www.bfgcdn.com/out/pictures/generated/product/1/",
-              regexp: "(\\d+)_215_90\\/(.*?)\\s",
+              regex: "(\\d+)_215_90\\/(.*?)\\s",
               type: "srcset",
             },
             {
@@ -1334,17 +1315,7 @@ export const shops: { [key: string]: any } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
+      crawl: ["media", "font", "ping", "image", "xhr", "fetch", "other"],
     },
     waitUntil: {
       product: "load",
@@ -1352,7 +1323,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "cyberport.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: [
@@ -1379,7 +1350,6 @@ export const shops: { [key: string]: any } = {
       ],
       sel: "#top > header > div.mainNavigation > div > div:nth-child(1) > div > div > nav > ul > li.nav-main-primary.nav-main-md-plus-devices > ul > li > a",
       type: "href",
-      basepath: true,
       subCategories: [
         {
           visible: false,
@@ -1475,7 +1445,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
-    proxyType: "mix",
+    proxyType: "de",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
@@ -1488,8 +1458,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -1500,7 +1469,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "conrad.de": {
-    action: [],
+    actions: [],
     allowedHosts: ["api.conrad.de", "api-cdn.conrad.com"],
     active: true,
     categories: {
@@ -1679,14 +1648,8 @@ export const shops: { [key: string]: any } = {
       crawl: [
         "media",
         "font",
-        // "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
         "other",
       ],
     },
@@ -1696,7 +1659,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "coolshop.de": {
-    action: [],
+    actions: [],
     allowedHosts: ["webshop.coolshop-cdn.com"],
     active: true,
     categories: {
@@ -1894,14 +1857,8 @@ export const shops: { [key: string]: any } = {
       crawl: [
         "media",
         "font",
-        // "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
         "other",
       ],
     },
@@ -1911,7 +1868,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "dm.de": {
-    action: [],
+    actions: [],
     active: true,
     allowedHosts: [
       "product-search.services.dmtech.com",
@@ -2078,8 +2035,7 @@ export const shops: { [key: string]: any } = {
         "ping",
         "image",
         // "fetch",
-        "imageset",
-        "sub_frame",
+
         "other",
       ],
     },
@@ -2089,7 +2045,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "euronics.de": {
-    action: [],
+    actions: [],
     active: true,
     allowedHosts: ["cdn.euronics.de"],
     ean: "-[0-9]{12,13}",
@@ -2236,14 +2192,8 @@ export const shops: { [key: string]: any } = {
       product: [
         "media",
         "font",
-        // "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        // "script",
-        "imageset",
-        "sub_frame",
         "other",
       ],
       crawl: [
@@ -2255,8 +2205,6 @@ export const shops: { [key: string]: any } = {
         "xhr",
         "fetch",
         "script",
-        "imageset",
-        "sub_frame",
         "other",
       ],
     },
@@ -2266,7 +2214,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "fressnapf.de": {
-    action: [],
+    actions: [],
     active: true,
     allowedHosts: ["fressnapf.app.baqend.com"],
     categories: {
@@ -2414,8 +2362,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "other",
       ],
     },
@@ -2425,7 +2372,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "galaxus.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["voucher", "community", "magazin", "gutscheine", "gebraucht"],
@@ -2443,7 +2390,9 @@ export const shops: { [key: string]: any } = {
     crawlActions: [
       {
         type: "scroll",
-        sel: "none",
+        sel: "none"
+        ,
+        name: 'Scroll to bottom',
         action: "scroll",
       },
     ],
@@ -2458,7 +2407,9 @@ export const shops: { [key: string]: any } = {
     manualCategories: [],
     mimic: "div[id=logo]",
     javascript: {
+      serviceWorker: 'disabled',
       webWorker: "enabled",
+      sharedWorker: "disabled",
     },
     paginationEl: [
       {
@@ -2476,6 +2427,8 @@ export const shops: { [key: string]: any } = {
         calculation: {
           method: "product_count",
           productsPerPage: 60,
+          last: "",
+          sel: "",
         },
       },
       {
@@ -2493,6 +2446,8 @@ export const shops: { [key: string]: any } = {
         calculation: {
           method: "product_count",
           productsPerPage: 60,
+          sel: "",
+          last: "",
         },
       },
     ],
@@ -2639,14 +2594,8 @@ export const shops: { [key: string]: any } = {
       crawl: [
         "media",
         "font",
-        // "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        // "script",
-        "imageset",
-        "sub_frame",
         "other",
       ],
     },
@@ -2656,14 +2605,20 @@ export const shops: { [key: string]: any } = {
     },
   },
   "galeria.de": {
-    action: [],
+    actions: [],
     active: true,
     ean: "-[0-9]{12,13}",
     categories: {
       exclude: [
         "kleidung",
         "top 10",
+        "mode",
+        "waesche",
+        "schuhe",
+        "socken",
+        "aktionen",
         "magazin",
+        "gutscheine",
         "geschenksets",
         "marken",
         "herren",
@@ -2687,6 +2642,7 @@ export const shops: { [key: string]: any } = {
       {
         type: "scroll",
         sel: "none",
+        name: "Scroll to bottom",
         action: "scroll",
       },
     ],
@@ -2816,11 +2772,6 @@ export const shops: { [key: string]: any } = {
         "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        // "script",
-        "imageset",
-        "sub_frame",
         "other",
       ],
     },
@@ -2830,7 +2781,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "mueller.de": {
-    action: [],
+    actions: [],
     active: true,
     allowedHosts: ["static.mueller.de"],
     categories: {
@@ -2959,17 +2910,7 @@ export const shops: { [key: string]: any } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "ping",
-        "image",
-        "xhr",
-        "fetch",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
+      crawl: ["media", "font", "ping", "image", "xhr", "fetch", "other"],
     },
     waitUntil: {
       product: "load",
@@ -2977,7 +2918,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "reichelt.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       categoryNameSegmentPos: 0,
@@ -3026,7 +2967,7 @@ export const shops: { [key: string]: any } = {
         sel: "div.PageLinksNavi",
         nav: ".html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1",
         paginationUrlSchema: {
-          replace: "\\.html",
+          replaceRegexp: "\\.html",          
           parseAndReplace: {
             regexp: "\\d+",
             replace: "<groupid>",
@@ -3194,9 +3135,6 @@ export const shops: { [key: string]: any } = {
     ],
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
-    query: {
-      content: "van",
-    },
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -3208,8 +3146,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "other",
       ],
     },
@@ -3219,7 +3156,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "saturn.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: [
@@ -3250,6 +3187,7 @@ export const shops: { [key: string]: any } = {
     crawlActions: [
       {
         type: "element",
+        name: "Cookie Consent",
         sel: "div[id=mms-consent-portal-container]",
         action: "delete",
         interval: 100,
@@ -3257,6 +3195,7 @@ export const shops: { [key: string]: any } = {
       {
         type: "scroll",
         sel: "none",
+        name: "Scroll to bottom",
         action: "scroll",
       },
     ],
@@ -3472,16 +3411,7 @@ export const shops: { [key: string]: any } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "ping",
-        "image",
-        "xhr",
-        "imageset",
-        "sub_frame",
-        "other",
-      ],
+      crawl: ["media", "font", "ping", "image", "xhr", "other"],
     },
     waitUntil: {
       product: "load",
@@ -3489,7 +3419,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "voelkner.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["#", "voelkner-finds"],
@@ -3503,19 +3433,6 @@ export const shops: { [key: string]: any } = {
       ],
     },
     crawlActions: [
-      // {
-      //   type: "button",
-      //   sel: "div[id=js_reveal_cookie_content] button",
-      //   btn_sel: "button",
-      //   action: "click",
-      //   step: 1,
-      //   wait: false,
-      // },
-      // {
-      //   type: "scroll",
-      //   sel: "none",
-      //   action: "scroll",
-      // },
     ],
     d: "voelkner.de",
     entryPoints: [
@@ -3684,8 +3601,6 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
         "script",
         "other",
       ],
@@ -3696,7 +3611,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "proshop.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["outlet", "bücher", "buecher", "software"],
@@ -3709,6 +3624,7 @@ export const shops: { [key: string]: any } = {
         },
         {
           sel: "div.Categorie-Grid a",
+          type: 'href'
         },
       ],
     },
@@ -3835,8 +3751,6 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
         "script",
         "other",
       ],
@@ -3847,7 +3761,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "notebooksbilliger.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: [
@@ -3981,14 +3895,8 @@ export const shops: { [key: string]: any } = {
       crawl: [
         "media",
         "font",
-        // "stylesheet",
         "ping",
         "image",
-        // "xhr",
-        // "fetch",
-        "imageset",
-        "sub_frame",
-        // "script",
         "other",
       ],
     },
@@ -3998,7 +3906,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "notino.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: [
@@ -4154,8 +4062,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -4166,7 +4073,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "flaconi.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["magazin", "premium", "geschenkgutschein", "marken"],
@@ -4324,8 +4231,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -4346,6 +4252,7 @@ export const shops: { [key: string]: any } = {
     ],
     mimic: "a[id=nav-logo-sprites]",
     paginationEl: [],
+    crawlActions: [],
     pauseOnProductPage: {
       pause: true,
       min: 800,
@@ -4405,10 +4312,17 @@ export const shops: { [key: string]: any } = {
         content: "a_prc",
       },
     ],
+    categories: {
+      sel: "",
+      type: "",
+      exclude: [],
+      subCategories: [],
+    },
+    hasEan: true,
     productList: [
       {
         sel: "span[data-component-type=s-search-results]",
-        type: "container",
+        productCntSel: [],
         product: {
           sel: "div[data-component-type=s-search-result]",
           type: "container",
@@ -4465,8 +4379,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
       ],
     },
@@ -4486,6 +4399,12 @@ export const shops: { [key: string]: any } = {
     ],
     allowedHosts: ["d29zc3pk4tzg0k.cloudfront.net"],
     mimic: "div[id=a-page]",
+    categories: {
+      sel: "",
+      type: "",
+      exclude: [],
+      subCategories: [],
+    },
     crawlActions: [],
     actions: [],
     paginationEl: [],
@@ -4594,6 +4513,7 @@ export const shops: { [key: string]: any } = {
         step: 2,
       },
     ],
+    hasEan: false,
     leaveDomainAsIs: true,
     proxyType: "mix",
     queryActions: [
@@ -4602,6 +4522,7 @@ export const shops: { [key: string]: any } = {
         sel: "kat-button[label='Als Gast fortfahren']",
         btn_sel: "button",
         action: "click",
+        name:  "continue",
         step: 1,
         wait: false,
       },
@@ -4610,6 +4531,7 @@ export const shops: { [key: string]: any } = {
         sel: "kat-dropdown[label='Amazon Shop']",
         btn_sel: "div.indicator",
         action: "click",
+        name: "shop",
         step: 1,
         wait: false,
       },
@@ -4617,6 +4539,7 @@ export const shops: { [key: string]: any } = {
         type: "button",
         sel: "kat-option[value='DE']",
         action: "click",
+        name: 'Select country',
         step: 1,
         wait: false,
       },
@@ -4624,6 +4547,7 @@ export const shops: { [key: string]: any } = {
         type: "shadowroot-input",
         sel: "kat-input[label='Bei Amazon nach dem Produkt suchen']",
         input_sel: "input",
+        name: "search",
         action: "type",
         step: 1,
         wait: false,
@@ -4634,6 +4558,7 @@ export const shops: { [key: string]: any } = {
         sel: "kat-button[label='Suchen']",
         btn_sel: "button",
         action: "click",
+        name: 'search',
         step: 1,
         wait: true,
       },
@@ -4641,6 +4566,7 @@ export const shops: { [key: string]: any } = {
         type: "shadowroot-button-test",
         sel: "kat-box[id=product-item] kat-button",
         btn_sel: "button",
+        name: "select",
         action: "click",
         step: 1,
         wait: true,
@@ -4649,6 +4575,7 @@ export const shops: { [key: string]: any } = {
         type: "shadowroot-button-test",
         sel: "kat-button[label='Oktober–Dezember']",
         btn_sel: "button",
+        name: "select",
         action: "click",
         waitDuration: 200,
         wait: false,
@@ -4671,8 +4598,7 @@ export const shops: { [key: string]: any } = {
         "image",
         // "xhr",
         // "fetch",
-        "imageset",
-        "sub_frame",
+
         // "script",
       ],
     },
@@ -4690,12 +4616,18 @@ export const shops: { [key: string]: any } = {
         category: "default",
       },
     ],
+    categories: {
+      sel: "",
+      type: "",
+      exclude: [],
+      subCategories: [],
+    },
     mimic: "a[id=gh-la]",
     paginationEl: [],
     productList: [
       {
         sel: "ul.srp-results",
-        type: "container",
+        productCntSel: [],
         product: {
           sel: "ul.srp-results li.s-item",
           type: "container",
@@ -4724,6 +4656,8 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    crawlActions: [],
+    hasEan: false,
     proxyType: "mix",
     queryActions: [],
     product: [
@@ -4799,8 +4733,7 @@ export const shops: { [key: string]: any } = {
         "other",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
       ],
     },
@@ -4810,7 +4743,9 @@ export const shops: { [key: string]: any } = {
     },
   },
   "action.com": {
-    action: [],
+    actions: [],
+    product: [],
+    hasEan: true,
     active: false,
     categories: {
       exclude: [],
@@ -4927,8 +4862,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -4939,7 +4873,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "sportspar.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["sparclub", "service", "marken", "weitere"],
@@ -5056,6 +4990,8 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
+    hasEan: true,
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
@@ -5069,8 +5005,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5080,11 +5015,11 @@ export const shops: { [key: string]: any } = {
       entryPoint: "domcontentloaded",
     },
   },
-  "weltbild.de": {
-    action: [],
+  "thalia.de": {
+    actions: [],
     active: false,
     categories: {
-      exclude: ["nur-bei-weltbild", "alles"],
+      exclude: [ "alles"],
       sel: "nav.nav-container a.nav-link",
       type: "href",
       visible: false,
@@ -5102,7 +5037,7 @@ export const shops: { [key: string]: any } = {
       ],
     },
     crawlActions: [],
-    d: "weltbild.de",
+    d: "thalia.de",
     entryPoints: [
       {
         url: "https://www.weltbild.de",
@@ -5111,6 +5046,7 @@ export const shops: { [key: string]: any } = {
     ],
     manualCategories: [],
     mimic: "img[alt=Weltbild]",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
@@ -5160,6 +5096,8 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
+
     proxyType: "de",
     purlschema: "",
     queryActions: [],
@@ -5173,8 +5111,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5185,7 +5122,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "kaufland.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["ratgeber"],
@@ -5217,12 +5154,10 @@ export const shops: { [key: string]: any } = {
       },
     ],
     mimic: "span.svg-logo.rh-main__logo-normal svg",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
-        scriptPagination: {
-          regexp: "",
-        },
         initialUrl: {
           regexp: "\\\\u002Fcategory\\\\u002F\\d+\\\\u002F",
           type: "encoded",
@@ -5289,6 +5224,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
     proxyType: "mix",
     purlschema: "",
     queryActions: [],
@@ -5302,8 +5238,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5314,7 +5249,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "otto.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["marken"],
@@ -5337,6 +5272,7 @@ export const shops: { [key: string]: any } = {
     ],
     manualCategories: [],
     mimic: "svg.pl_logo",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
@@ -5424,6 +5360,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
@@ -5437,8 +5374,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5449,7 +5385,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "costway.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["alle"],
@@ -5562,6 +5498,8 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
+    hasEan: true,
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
@@ -5575,8 +5513,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5587,7 +5524,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "quelle.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: [],
@@ -5615,6 +5552,7 @@ export const shops: { [key: string]: any } = {
       },
     ],
     mimic: "header > a > svg",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
@@ -5694,6 +5632,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
@@ -5707,8 +5646,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5719,7 +5657,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "actionsports.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["marken"],
@@ -5742,6 +5680,7 @@ export const shops: { [key: string]: any } = {
     ],
     manualCategories: [],
     mimic: "a.logo--link img",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
@@ -5823,6 +5762,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [
@@ -5831,6 +5771,7 @@ export const shops: { [key: string]: any } = {
         sel: "aside[id=usercentrics-cmp-ui]",
         btn_sel: "button[id=deny]",
         action: "click",
+        name: 'Deny "Marketing"',
         wait: false,
       },
     ],
@@ -5844,8 +5785,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -5856,7 +5796,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "mindfactory.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: ["mindstart", "actionen", "highlights", "software"],
@@ -5997,8 +5937,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -6009,7 +5948,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "digitalo.de": {
-    action: [],
+    actions: [],
     active: true,
     categories: {
       exclude: [],
@@ -6187,8 +6126,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -6199,7 +6137,7 @@ export const shops: { [key: string]: any } = {
     },
   },
   "fahrrad.de": {
-    action: [],
+    actions: [],
     active: false,
     categories: {
       exclude: ["aktivitäten", "marken", "service & beratung"],
@@ -6222,6 +6160,7 @@ export const shops: { [key: string]: any } = {
     ],
     manualCategories: [],
     mimic: "a.logo",
+    hasEan: true,
     paginationEl: [
       {
         type: "pagination",
@@ -6301,6 +6240,7 @@ export const shops: { [key: string]: any } = {
         },
       },
     ],
+    product: [],
     proxyType: "mix",
     purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
@@ -6314,8 +6254,7 @@ export const shops: { [key: string]: any } = {
         "image",
         "xhr",
         "fetch",
-        "imageset",
-        "sub_frame",
+
         "script",
         "other",
       ],
@@ -6326,15 +6265,3 @@ export const shops: { [key: string]: any } = {
     },
   },
 };
-
-const updateShops = async (shops: { [key: string]: any }) => {
-  return Promise.all(
-    Object.entries(shops).map(async ([key, val]) => {
-      return await insertShop(val);
-    })
-  );
-};
-
-updateShops(shops).then(() => {
-  process.exit(0);
-});
