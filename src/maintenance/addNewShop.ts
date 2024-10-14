@@ -117,6 +117,7 @@ const statsPerDay: SplitStats = {
 };
 
 const main = async () => {
+  
   const db = await getArbispotterDb();
   const tasks = (await findTasks({ type: "CRAWL_SHOP" })) as ScrapeShopTask[];
   tasks.forEach((task) => {

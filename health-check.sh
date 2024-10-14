@@ -24,6 +24,7 @@ VERSION=$(jq -r '.version' $PACKAGE_JSON)
 if test `find "$HEARTBEAT_LOG" -mmin +$MAX_TIME_DIFF`
 then
   echo "{\"level\":30,\"time\":$timestamp,\"pid\":$pid,\"hostname\":\"$hostname\",\"msg\":\"App is unresponsive. Restarting...\"}" >> /var/log/tasks/_GLOBAL.log
+  pkill -f puppeteer
   pm2 restart "scheduler_$VERSION"  # Replace "scheduler" with the name of your app in PM2
 else
   echo "{\"level\":30,\"time\":$timestamp,\"pid\":$pid,\"hostname\":\"$hostname\",\"msg\":\"App is running normally.\"}" >> /var/log/tasks/_GLOBAL.log

@@ -5492,7 +5492,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ["marken", "ideenwelt"],
+      exclude: ["marken", "ideenwelt", 'angebote'],
       sel: "div.rm-navigation__group--main li.rm-navigation__item div.rm-navigation__item-wrap > span> a.rm-cms__link",
       type: "href",
       subCategories: [
