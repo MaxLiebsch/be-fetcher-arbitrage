@@ -147,14 +147,11 @@ export default async function queryEansOnEby(
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         if (cause === "exceedsLimit") {
-          const result = await updateProductWithQuery(
-            productId,
-            {
-              $unset: {
-                eby_taskId: "",
-              },
-            }
-          );
+          const result = await updateProductWithQuery(productId, {
+            $unset: {
+              eby_taskId: "",
+            },
+          });
           log(`ExceedsLimit: ${srcShopDomain}-${productId}`, result);
         } else {
           await handleQueryEansOnEbyNotFound(srcShopDomain, product);
@@ -173,6 +170,9 @@ export default async function queryEansOnEby(
         },
         category: "default",
       };
+      if (!toolInfo.queryUrlSchema) {
+        return reject(new Error("No queryUrlSchema found for ebay.de"));
+      }
       const queryLink = queryURLBuilder(toolInfo.queryUrlSchema, query).url;
 
       queue.pushTask(queryEansOnEbyQueue, {

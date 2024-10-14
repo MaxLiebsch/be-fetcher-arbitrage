@@ -7,22 +7,12 @@ import {
   uuid,
   terminateConnection,
   registerRequestv3,
+  CHROME_VERSIONS,
 } from "@dipmaxtech/clr-pkg";
 import { getShop } from "../src/db/util/shops.js";
 
-// const proxyAuth = {
-//   host: "rp.proxyscrape.com:6060",
-//   username: "4a2lvpvkrwf3zgi-country-de",
-//   password: "myuk165vxsk5fdq",
-// };
-
 const secureMode = async () => {
-  const browser = await mainBrowser(
-    //@ts-ignore
-    { id: "test", type: "CRAWL_EAN", productLimit: 1, statistics: {} },
-    proxyAuth,
-    "127.0.6533.119"
-  );
+  const browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
   const shopDomain = "dm.de";
 
   const shop = await getShop(shopDomain);
@@ -57,7 +47,7 @@ const secureMode = async () => {
     }
     return originalGoto.apply(this, [url, options]);
   };
-  await page.goto('https://bot-detector.rebrowser.net/')
+  await page.goto("https://bot-detector.rebrowser.net/");
   // const page = await browser.newPage();
   // const result = await page.goto(lnk);
   // const status = result?.status();

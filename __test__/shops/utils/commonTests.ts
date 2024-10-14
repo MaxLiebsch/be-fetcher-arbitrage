@@ -15,7 +15,7 @@ import {
   lookupProductQueue,
   mainBrowser,
   notifyProxyChange,
-  paginationUrlBuilder,
+  paginationUrlSchemaBuilder,
   queryEansOnEbyQueue,
   queryProductPageQueue,
   querySellerInfosQueue,
@@ -37,6 +37,52 @@ let shops: { [key: string]: Shop } | null = null;
 let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
+
+export const visitPage = async (page: Page, url: string, shop: Shop) => {
+  const requestId = uuid();
+  const { proxyType, allowedHosts, waitUntil } = shop;
+  const originalGoto = page.goto;
+  page.goto = async function (url, options) {
+    if (proxyType && proxyType !== "mix") {
+      await notifyProxyChange(
+        proxyType,
+        url,
+        requestId,
+        Date.now(),
+        allowedHosts
+      );
+    } else {
+      await registerRequest(url, requestId, allowedHosts || [], Date.now());
+    }
+    return originalGoto.apply(this, [url, options]);
+  };
+
+  return page.goto(url, {
+    waitUntil: waitUntil ? waitUntil.entryPoint : "networkidle2",
+    timeout: 60000,
+  });
+};
+
+export const createPage = async (browser: Browser, shop: Shop) => {
+  const { proxyType, resourceTypes } = shop;
+  const disAllowedResourceTypes = resourceTypes["crawl"];
+
+  initFingerPrintForHost(`www.${shop.d}`, true, proxyType);
+
+  const pageAndFingerprint = await getPage({
+    browser,
+    host: `www.${shopDomain}`,
+    shop: shop,
+    requestCount: Math.floor(Math.random() * 1000) * 11,
+    disAllowedResourceTypes: disAllowedResourceTypes
+      ? disAllowedResourceTypes
+      : shop.resourceTypes["crawl"],
+    exceptions: shop.exceptions,
+    rules: shop.rules,
+    proxyType,
+  });
+  return pageAndFingerprint.page;
+};
 
 export const newPage = async (
   proxyType: ProxyType,
@@ -76,37 +122,7 @@ export const myBeforeAll = async (
   version?: Versions
 ) => {
   shopDomain = _shopDomain;
-  const task: { [key: string]: any } = {
-    productLimit: 500,
-    statistics: {
-      estimatedProducts: 500,
-      statusHeuristic: {
-        "error-handled": 0,
-        "not-found": 0,
-        "page-completed": 0,
-        "limit-reached": 0,
-        total: 0,
-      },
-      retriesHeuristic: {
-        "0": 0,
-        "1-9": 0,
-        "10-49": 0,
-        "50-99": 0,
-        "100-499": 0,
-        "500+": 0,
-      },
-      resetedSession: 0,
-      errorTypeCount: {},
-      browserStarts: 0,
-    },
-  };
-  // if (proxyType === "de") {
-  //   (task["proxyType"] = "de"), (task["timezones"] = ["Europe/Berlin"]);
-  // }
-
   browser = await mainBrowser(
-    //@ts-ignore
-    task,
     proxyAuth,
     version || (process.env.BROWSER_VERSION as Versions)
   );
@@ -256,9 +272,7 @@ export const countProductPages = async () => {
       shops[shopDomain].paginationEl[0],
       count
     );
-    expect(pageNumberCount.pages.length).toBeGreaterThan(
-      testParameters[shopDomain].pages
-    );
+    expect(pageNumberCount).toBeGreaterThan(testParameters[shopDomain].pages);
   }
 };
 export const findPaginationAndNextPage = async () => {
@@ -276,7 +290,7 @@ export const findPaginationAndNextPage = async () => {
 
     let nextUrl = `${initialProductPageUrl}${paginationEl.nav}${pageNo}`;
     if (paginationEl?.paginationUrlSchema) {
-      nextUrl = await paginationUrlBuilder(
+      nextUrl = await paginationUrlSchemaBuilder(
         initialProductPageUrl,
         shops[shopDomain].paginationEl,
         pageNo,

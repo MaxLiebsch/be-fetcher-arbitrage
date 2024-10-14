@@ -1,4 +1,4 @@
-import { ICategory} from "@dipmaxtech/clr-pkg";
+import { ICategory } from "@dipmaxtech/clr-pkg";
 import { getShop, updateShopWithQuery } from "../db/util/shops.js";
 import { findTasks } from "../db/util/tasks.js";
 import { createCrawlTasks, createDailySalesTask } from "../tasks.js";
@@ -22,7 +22,9 @@ export const newShops: {
     productLimit: 500,
     salesProductLimit: 4000,
     categories: [],
-    dailySalesCategories: [],
+    dailySalesCategories: [
+      { link: "https://www.galeria.de/sale", name: "Sale" },
+    ],
   },
   // {
   //   d: "galaxus.de",
@@ -146,18 +148,24 @@ const main = async () => {
       );
       const _shop = await getShop(shop.d);
       if (!_shop) {
-        console.log(`Shop ${shop.d} not found!`);
-        return;
+        throw new Error(`Shop ${shop.d} not found!`);
       }
-      const task = tasks.find((task) => task.shopDomain === shop.d);
+      const salesTask = tasks.find(
+        (t) => t.shopDomain === shop.d && t.type === "DAILY_SALES"
+      );
+      if (!salesTask && shop.dailySalesCategories.length > 0) {
+        await createDailySalesTask(
+          shop.d,
+          shop.dailySalesCategories,
+          shop.salesProductLimit
+        );
+      }else{
+        console.log(`Sales task for ${shop.d} already exists!`);
+      }
+      const task = tasks.find(
+        (task) => task.shopDomain === shop.d && task.type === "CRAWL_SHOP"
+      );
       if (!task) {
-        if (shop.dailySalesCategories.length > 0) {
-          await createDailySalesTask(
-            shop.d,
-            shop.dailySalesCategories,
-            shop.salesProductLimit
-          );
-        }
         return createCrawlTasks(_shop, shop.maxProducts);
       } else {
         console.log(`Tasks for ${shop.d} already exists!`);

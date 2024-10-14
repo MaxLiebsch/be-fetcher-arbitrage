@@ -151,6 +151,10 @@ export const queryEansOnEby = async (
         },
         category: "default",
       };
+
+      if(!ebay.queryUrlSchema) {
+        return rej(new Error("No queryUrlSchema found for ebay.de"));
+      }
       const queryLink = queryURLBuilder(ebay.queryUrlSchema, query).url;
       queue.pushTask(queryEansOnEbyQueue, {
         retries: 0,

@@ -4,12 +4,13 @@ import {
   mimicTest,
   myBeforeAll,
 } from "../utils/commonTests.js";
+import { CHROME_VERSIONS } from "@dipmaxtech/clr-pkg";
 
 const shopDomain = "digitalo.de";
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, "mix", "129.0.6668.89");
+    await myBeforeAll(shopDomain, "mix", CHROME_VERSIONS[0]);
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {

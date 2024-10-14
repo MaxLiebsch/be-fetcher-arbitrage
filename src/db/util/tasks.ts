@@ -134,6 +134,13 @@ export const deleteTask = async (id: ObjectId) => {
   return collection.findOneAndDelete({ _id: id });
 };
 
+export const insertTasks = async (tasks: Tasks[]) => {
+  const collectionName = tasksCollectionName;
+  const db = await getCrawlDataDb();
+  const collection = db.collection(collectionName);
+  return collection.insertMany(tasks);
+}
+
 export const deleteTasks = async () => {
   const collectionName = tasksCollectionName;
   const db = await getCrawlDataDb();

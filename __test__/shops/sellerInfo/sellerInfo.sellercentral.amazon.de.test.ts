@@ -8,7 +8,7 @@ import {
   myBeforeAll,
   querySellerInfos,
 } from "../utils/commonTests.js";
-import { generateUpdate } from "@dipmaxtech/clr-pkg";
+import { CHROME_VERSIONS, generateUpdate } from "@dipmaxtech/clr-pkg";
 
 const shopDomain = "sellercentral.amazon.de";
 
@@ -40,7 +40,7 @@ const product = {
   prc: 7.84,
   a_lnk: "https://www.amazon.de/dp/product/B07LH45G51",
   a_nm: "Intex Luftbett, 64756, bunt, 191 x 76 x 25 cm",
-  asin: "B07LH45G51",
+  asin: "B0001D8PBW",
   a_prc: 1,
   a_p_mrgn: -12.36,
   a_p_mrgn_pct: -1236,
@@ -249,7 +249,7 @@ const product = {
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "126.0.6478.126");
+    await myBeforeAll(shopDomain, 'mix',CHROME_VERSIONS[0] );
   }, 1000000);
 
   test("Mimic for block detection is working", async () => {
@@ -276,7 +276,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         }
       }
     };
-    await querySellerInfos(addProductInfo, "6941057412436");
+    await querySellerInfos(addProductInfo, product.asin || product.eanList[0]);
   }, 200000);
 
   afterAll(async () => {
