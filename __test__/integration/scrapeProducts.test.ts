@@ -4,57 +4,54 @@ import { LocalLogger } from "@dipmaxtech/clr-pkg";
 import scrapeShop from "../../src/services/scrapeShop";
 import { sub } from "date-fns";
 import { ScrapeShopTask } from "../../src/types/tasks/Tasks";
-
-const shopDomain = "notino.de";
+import {
+  deleteTasks,
+  findTask,
+  getTasks,
+  insertTasks,
+} from "../../src/db/util/tasks";
+import { path, read } from "fs-jetpack";
+import { after } from "underscore";
 
 const today = new Date();
-const productLimit = 500;
+const productLimit = 150;
 const yesterday = sub(today, { days: 1 });
 
-const task = {
-  _id: "661a785dc801f69f2beb16d9",
-  type: "CRAWL_SHOP",
-  id: `crawl_shop_${shopDomain}_1_of_4`,
-  shopDomain,
-  visitedPages: [],
-  limit: {
-    mainCategory: 9,
-    subCategory: 100,
-    pages: 50,
-  },
-  categories: [
-    {
-      "name": "Raumdüfte",
-      "link": "https://www.notino.de/raumerfrischer/"
-    },
-    {
-      "name": "Elektro",
-      "link": "https://www.notino.de/elektronik/"
-    },
-    {
-      "name": "Gesundheit",
-      "link": "https://www.notino.de/gesundheit/"
-    } 
-  ],
-  recurrent: true,
-  executing: false,
-  completed: true,
-  createdAt: "2024-04-13T12:19:41.168Z",
-  startedAt: yesterday.toISOString(),
-  completedAt: yesterday.toISOString(),
-  productLimit,
-  retry: 0,
-  maintenance: false,
-  lastCrawler: [],
-  weekday: today.getDay(),
-};
-
 describe("crawlproducts", () => {
+  beforeAll(async () => {
+    await deleteTasks();
+    const tasks = read(
+      path(`__test__/static/collections/crawler-data.tasks.json`),
+      "json"
+    );
+    if (!tasks) throw new Error("Tasks not found");
+    const _tasks = tasks.map((t: any) => {
+      delete t._id;
+      return t;
+    })
+    await insertTasks(_tasks);
+  });
   test("lookup info listings", async () => {
+    const task = (await findTask({
+      id: "crawl_shop_euronics.de_1_of_3",
+    })) as ScrapeShopTask;
+    if (!task) {
+      console.log("Task not found");
+      throw new Error("Task not found");
+    }
+    task.weekday = today.getDay();
+    task.startedAt = yesterday.toISOString();
+    task.completedAt = yesterday.toISOString();
+    task.productLimit = productLimit;
     const logger = new LocalLogger().createLogger("CRAWL_SHOP");
     setTaskLogger(logger, "TASK_LOGGER");
+    ``;
 
     const infos = await scrapeShop(task as unknown as ScrapeShopTask);
     console.log(JSON.stringify(infos, null, 2));
   }, 1000000);
+
+  afterAll(async () => {
+    await deleteTasks();
+  });
 });
