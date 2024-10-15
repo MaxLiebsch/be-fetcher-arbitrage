@@ -1,110 +1,107 @@
 import { Shop } from "@dipmaxtech/clr-pkg";
 
 export const shops: { [key: string]: Shop } = {
-  "idealo.de": {
-    actions: [
-      {
-        type: "recursive-button",
-        sel: "button.productOffers-listLoadMore",
-        action: "click",
-        waitDuration: 600,
-        name: "load more",
-        wait: false,
-      },
+  "aldi-onlineshop.de": {
+    actions: [],
+    allowedHosts: [
+      "algolia.net",
+      "cdns.eu1.gigya.com",
+      "algolianet.com",
+      "mjdumziil5-dsn.algolia.net",
+      "mjdumziil5-3.algolianet.com",
+      "mjdumziil5-2.algolianet.com",
+      "mjdumziil5-1.algolianet.com",
     ],
-    allowedHosts: ["cdn.idealo.com"],
     active: true,
     categories: {
-      exclude: ["flug", "flüge", "hotel"],
-      sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
+      exclude: ["mode"],
+      sel: "",
       type: "href",
+      visible: false,
       subCategories: [
         {
-          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
+          visible: false,
+          sel: "nav.category-nav a",
           type: "href",
         },
       ],
     },
-    crawlActions: [
-      {
-        type: "button",
-        sel: "a.productVariants-listItemWrapper",
-        action: "click",
-        name: "click on variant",
-        wait: true,
-      },
-    ],
-    d: "idealo.de",
+    crawlActions: [],
+    d: "aldi-onlineshop.de",
     entryPoints: [
       {
-        url: "https://www.idealo.de",
+        url: "https://www.aldi-onlineshop.de",
         category: "default",
       },
     ],
-    exceptions: ["https://www.idealo.de/offerpage/offerlist/product/"],
     hasEan: true,
     manualCategories: [
+      { link: "https://www.aldi-onlineshop.de/c/garten-2/", name: "Garten" },
       {
-        name: "Sale",
-        link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
+        link: "https://www.aldi-onlineshop.de/c/baumarkt-54/",
+        name: "Baumarkt",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/sport--outdoor-97/",
+        name: "Sport & Outdoor",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/elektronik--computer-4/",
+        name: "Elektronik & Computer",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/haushalt--kueche-5/",
+        name: "Haushalt & Küche",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/wohnen--einrichten-6/",
+        name: "Wohnen & Einrichten",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/tierbedarf-78/",
+        name: "Tierbedarf",
+      },
+      {
+        link: "https://www.aldi-onlineshop.de/c/drogerie-1/",
+        name: "Drogerie",
+      },
+      { link: "https://www.aldi-onlineshop.de/c/wein-70/", name: "Wein" },
+      {
+        link: "https://www.aldi-onlineshop.de/c/bestseller-9/",
+        name: "Bestseller",
       },
     ],
-    mimic: "svg.i-header-logo-image",
+    mimic: "div.logo-text span.logo-svg",
     paginationEl: [
       {
         type: "pagination",
-        sel: "div[class*=sr-pagination__numbers]",
-        nav: "I16-<page>.html",
-        paginationUrlSchema: {
-          replaceRegexp: "\\.html",
-          withQuery: false,
-          calculation: {
-            method: "offset",
-            offset: 15,
-          },
-        },
+        sel: "a.js-algolia-show-more",
+        nav: "?page=",
         calculation: {
-          method: "count",
-          last: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
-          sel: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
-        },
-      },
-      {
-        type: "pagination",
-        sel: "ul.pagination",
-        nav: "/100I16-<page>.html?q=<query>",
-        paginationUrlSchema: {
-          replaceRegexp: "\\.html\\?q=\\S*",
-          withQuery: true,
-          calculation: {
-            method: "offset",
-            offset: 15,
-          },
-        },
-        calculation: {
-          method: "count",
-          last: "li.pagination-item a",
-          sel: "li.pagination-item a",
+          productsPerPage: 24,
+          method: "product_count",
+          last: "a.js-algolia-show-more",
+          sel: "a.js-algolia-show-more",
         },
       },
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 500,
-      max: 800,
+      min: 3600,
+      max: 4000,
     },
     product: [
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "image",
-        path: "image[0]",
+        content: "ean",
+        path: "gtin13",
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "price",
-        path: "offers.lowPrice",
+        content: "sku",
+        path: "sku",
       },
       {
         sel: "script[type='application/ld+json']",
@@ -115,130 +112,61 @@ export const shops: { [key: string]: Shop } = {
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "ean",
-        path: "gtin",
+        content: "price",
+        path: "offers.price",
       },
       {
         sel: "script[type='application/ld+json']",
         type: "parse_json_element",
-        content: "sku",
-        path: "sku",
+        content: "mnfctr",
+        path: "brand",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image.contentUrl",
       },
     ],
     productList: [
       {
-        sel: "div.offerList",
-        timeout: 100,
-        productCntSel: [
-          "span[class*=offerList-count]",
-          "span[class*=sr-resultTitle__resultCount]",
-        ],
+        sel: "div.product-card-list",
+        productCntSel: ["span.js-filter-results-text"],
+        waitProductCntSel: 4000,
+        awaitProductCntSel: true,
         product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
+          sel: "div.product-card-list div.product-item",
+          type: "not_link",
           details: [
             {
+              content: "link",
+              sel: "a.card-action",
+              type: "href",
+            },
+            {
+              content: "mnfctr",
+              sel: "span.span.product-item__brand-name",
+              type: "text",
+            },
+            {
               content: "image",
-              sel: "img",
+              sel: "div.product-item__media__image-wrapper img",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
+              sel: "em.product-item__product-name",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.offerList-item-priceMin",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div[id=offerList]",
-        timeout: 100,
-        productCntSel: [
-          "span[class*=offerList-count]",
-          "span[class*=sr-resultTitle__resultCount]",
-        ],
-        product: {
-          sel: "div[id=offerList] li.productOffers-listItem",
-          type: "not_link",
-          details: [
-            {
-              content: "link",
-              sel: "a.productOffers-listItemTitle",
-              type: "href",
-            },
-            {
-              content: "vendor",
-              sel: "div[id=offerList] li.productOffers-listItem",
-              attr: "data-dl-click",
-              key: "shop_name",
-              type: "parse_object_property",
-            },
-            {
-              content: "name",
-              sel: "span.productOffers-listItemTitleInner",
-              type: "text",
-            },
-            {
-              content: "price",
-              attr: "data-dl-click",
-              key: "products[0].price",
-              sel: "div[id=offerList] li.productOffers-listItem",
-              type: "parse_object_property",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div[class*=sr-resultList__]",
-        timeout: 100,
-        productCntSel: [
-          "span[class*=offerList-count]",
-          "span[class*=sr-resultTitle__resultCount]",
-        ],
-        product: {
-          sel: "div[class*=sr-resultList_] div[class*=sr-resultList__item]",
-          type: "not_link",
-          details: [
-            {
-              content: "vendor",
-              sel: "div[class*=sr-singleOffer__shopName] span[role=link]",
-              type: "text",
-            },
-            {
-              content: "link",
-              sel: "div[class*=sr-resultItemLink] a",
-              type: "href",
-            },
-            {
-              content: "image",
-              sel: "div[class*=sr-resultItemTile__imageSection] noscript",
-              type: "text",
-              extractPart: 0,
-              regexp: "(www|http:|https:)+[^\\s]+[\\w]",
-            },
-            {
-              content: "name",
-              sel: "div[class*=sr-productSummary__title]",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "div[class*=sr-productSummary__description]",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div[class*=sr-detailedPriceInfo__price]",
+              sel: "span.price__main",
               type: "text",
             },
           ],
@@ -246,53 +174,24 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
-    queryUrlSchema: [
-      {
-        baseUrl:
-          "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>",
-        category: "default",
-      },
-    ],
+    queryUrlSchema: [],
     resourceTypes: {
-      crawl: ["media", "font", "stylesheet", "ping", "image", "xhr", "other"],
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "other",
+        // "script",
+        // "fetch",
+        // "xhr",
+        // "stylesheet",
+      ],
     },
-    rules: [
-      {
-        description:
-          "Block all .js files except those containing 'vendor' or 'idealo-'",
-        action: "abort",
-        conditions: [
-          {
-            type: "endsWith",
-            value: ".js",
-          },
-          {
-            type: "notIncludes",
-            value: "vendor",
-          },
-          {
-            type: "notIncludes",
-            value: "idealo-",
-          },
-        ],
-      },
-      {
-        description: "Block URLs matching a specific UUID pattern",
-        action: "abort",
-        conditions: [
-          {
-            type: "regexMatch",
-            value:
-              "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
-          },
-        ],
-      },
-    ],
     waitUntil: {
-      product: "domcontentloaded",
-      entryPoint: "domcontentloaded",
+      product: "load",
+      entryPoint: "load",
     },
   },
   "alternate.de": {
@@ -3914,7 +3813,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ["wohntrends", 'sortiment'],
+      exclude: ["wohntrends", "sortiment"],
       sel: "ul.hbhd-main-nav__level1 > li.hbhd-main-nav__item:nth-child(2) a",
       type: "href",
       subCategories: [
@@ -4047,6 +3946,300 @@ export const shops: { [key: string]: Shop } = {
     waitUntil: {
       product: "load",
       entryPoint: "load",
+    },
+  },
+  "idealo.de": {
+    actions: [
+      {
+        type: "recursive-button",
+        sel: "button.productOffers-listLoadMore",
+        action: "click",
+        waitDuration: 600,
+        name: "load more",
+        wait: false,
+      },
+    ],
+    allowedHosts: ["cdn.idealo.com"],
+    active: true,
+    categories: {
+      exclude: ["flug", "flüge", "hotel"],
+      sel: "div.TopCategoriesCarouselstyle__TopCategoriesTextCarousel-sc-5vawzj-1 a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [
+      {
+        type: "button",
+        sel: "a.productVariants-listItemWrapper",
+        action: "click",
+        name: "click on variant",
+        wait: true,
+      },
+    ],
+    d: "idealo.de",
+    entryPoints: [
+      {
+        url: "https://www.idealo.de",
+        category: "default",
+      },
+    ],
+    exceptions: ["https://www.idealo.de/offerpage/offerlist/product/"],
+    hasEan: true,
+    manualCategories: [
+      {
+        name: "Sale",
+        link: "https://www.idealo.de/preisvergleich/MainSearchProductCategory/100oE0oJ4.html",
+      },
+    ],
+    mimic: "svg.i-header-logo-image",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "div[class*=sr-pagination__numbers]",
+        nav: "I16-<page>.html",
+        paginationUrlSchema: {
+          replaceRegexp: "\\.html",
+          withQuery: false,
+          calculation: {
+            method: "offset",
+            offset: 15,
+          },
+        },
+        calculation: {
+          method: "count",
+          last: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
+          sel: "div[class*=sr-pagination__numbers] a[class*=sr-pageElement]",
+        },
+      },
+      {
+        type: "pagination",
+        sel: "ul.pagination",
+        nav: "/100I16-<page>.html?q=<query>",
+        paginationUrlSchema: {
+          replaceRegexp: "\\.html\\?q=\\S*",
+          withQuery: true,
+          calculation: {
+            method: "offset",
+            offset: 15,
+          },
+        },
+        calculation: {
+          method: "count",
+          last: "li.pagination-item a",
+          sel: "li.pagination-item a",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 500,
+      max: 800,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0]",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.lowPrice",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+    ],
+    productList: [
+      {
+        sel: "div.offerList",
+        timeout: 100,
+        productCntSel: [
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
+        ],
+        product: {
+          sel: "div.offerList a.offerList-itemWrapper",
+          type: "link",
+          details: [
+            {
+              content: "image",
+              sel: "img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "div.offerList-item-description-title",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "span.description-part-one",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.offerList-item-priceMin",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div[id=offerList]",
+        timeout: 100,
+        productCntSel: [
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
+        ],
+        product: {
+          sel: "div[id=offerList] li.productOffers-listItem",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.productOffers-listItemTitle",
+              type: "href",
+            },
+            {
+              content: "vendor",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              attr: "data-dl-click",
+              key: "shop_name",
+              type: "parse_object_property",
+            },
+            {
+              content: "name",
+              sel: "span.productOffers-listItemTitleInner",
+              type: "text",
+            },
+            {
+              content: "price",
+              attr: "data-dl-click",
+              key: "products[0].price",
+              sel: "div[id=offerList] li.productOffers-listItem",
+              type: "parse_object_property",
+            },
+          ],
+        },
+      },
+      {
+        sel: "div[class*=sr-resultList__]",
+        timeout: 100,
+        productCntSel: [
+          "span[class*=offerList-count]",
+          "span[class*=sr-resultTitle__resultCount]",
+        ],
+        product: {
+          sel: "div[class*=sr-resultList_] div[class*=sr-resultList__item]",
+          type: "not_link",
+          details: [
+            {
+              content: "vendor",
+              sel: "div[class*=sr-singleOffer__shopName] span[role=link]",
+              type: "text",
+            },
+            {
+              content: "link",
+              sel: "div[class*=sr-resultItemLink] a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div[class*=sr-resultItemTile__imageSection] noscript",
+              type: "text",
+              extractPart: 0,
+              regexp: "(www|http:|https:)+[^\\s]+[\\w]",
+            },
+            {
+              content: "name",
+              sel: "div[class*=sr-productSummary__title]",
+              type: "text",
+            },
+            {
+              content: "description",
+              sel: "div[class*=sr-productSummary__description]",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div[class*=sr-detailedPriceInfo__price]",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    purlschema: "Prod\\w*\\/\\d*",
+    queryActions: [],
+    queryUrlSchema: [
+      {
+        baseUrl:
+          "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=<query>",
+        category: "default",
+      },
+    ],
+    resourceTypes: {
+      crawl: ["media", "font", "stylesheet", "ping", "image", "xhr", "other"],
+    },
+    rules: [
+      {
+        description:
+          "Block all .js files except those containing 'vendor' or 'idealo-'",
+        action: "abort",
+        conditions: [
+          {
+            type: "endsWith",
+            value: ".js",
+          },
+          {
+            type: "notIncludes",
+            value: "vendor",
+          },
+          {
+            type: "notIncludes",
+            value: "idealo-",
+          },
+        ],
+      },
+      {
+        description: "Block URLs matching a specific UUID pattern",
+        action: "abort",
+        conditions: [
+          {
+            type: "regexMatch",
+            value:
+              "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+          },
+        ],
+      },
+    ],
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
     },
   },
   "mueller.de": {
@@ -5492,7 +5685,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ["marken", "ideenwelt", 'angebote'],
+      exclude: ["marken", "ideenwelt", "angebote"],
       sel: "div.rm-navigation__group--main li.rm-navigation__item div.rm-navigation__item-wrap > span> a.rm-cms__link",
       type: "href",
       subCategories: [
@@ -5521,7 +5714,7 @@ export const shops: { [key: string]: Shop } = {
         sel: "div.rm-pagination a",
         nav: "?q=%3Arelevance%3A&page=<page>&pageSize=24#",
         paginationUrlSchema: {
-          replace: 'attach_end',
+          replace: "attach_end",
           calculation: {
             method: "offset",
             offset: 1,
@@ -5564,7 +5757,6 @@ export const shops: { [key: string]: Shop } = {
         type: "text",
         content: "name",
       },
-      
     ],
     productList: [
       {
@@ -6359,7 +6551,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ["wohntrends", 'marken'],
+      exclude: ["wohntrends", "marken"],
       sel: "div.navigation--list-wrapper ul li a",
       type: "href",
       subCategories: [

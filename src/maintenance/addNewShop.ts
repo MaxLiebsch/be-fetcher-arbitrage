@@ -16,40 +16,44 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "hornbach.de",
-    ne: "Hornbach.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    categories: [],
-    dailySalesCategories: [
-    ],
-  },
-  {
-    d: "pieper.de",
-    ne: "Pieper.de",
-    maxProducts: 80000,
-    productLimit: 500,
-    salesProductLimit: 4000,
-    categories: [],
-    dailySalesCategories: [
-      { link: "https://www.pieper.de/sale", name: "Sale" },
-    ],
-  },
-  {
-    d: "rossmann.de",
-    ne: "Rossmann.de",
+    d: "aldi-onlineshop.de",
+    ne: "Aldi-onlineshop.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
     categories: [],
     dailySalesCategories: [
       {
-        link: "https://www.rossmann.de/de/angebote/m/angebote",
-        name: "Sale",
+        name: "Sales",
+        link: "https://www.aldi-onlineshop.de/aktionen/",
       },
     ],
   },
+  // {
+  //   d: "pieper.de",
+  //   ne: "Pieper.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     { link: "https://www.pieper.de/sale", name: "Sale" },
+  //   ],
+  // },
+  // {
+  //   d: "rossmann.de",
+  //   ne: "Rossmann.de",
+  //   maxProducts: 80000,
+  //   productLimit: 500,
+  //   salesProductLimit: 4000,
+  //   categories: [],
+  //   dailySalesCategories: [
+  //     {
+  //       link: "https://www.rossmann.de/de/angebote/m/angebote",
+  //       name: "Sale",
+  //     },
+  //   ],
+  // },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };
@@ -117,7 +121,6 @@ const statsPerDay: SplitStats = {
 };
 
 const main = async () => {
-  
   const db = await getArbispotterDb();
   const tasks = (await findTasks({ type: "CRAWL_SHOP" })) as ScrapeShopTask[];
   tasks.forEach((task) => {
@@ -159,7 +162,7 @@ const main = async () => {
           shop.dailySalesCategories,
           shop.salesProductLimit
         );
-      }else{
+      } else {
         console.log(`Sales task for ${shop.d} already exists!`);
       }
       const task = tasks.find(

@@ -367,6 +367,21 @@ const testParameters = {
     nextPageUrl:
       "https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036?q=%3Arelevance%3A&page=1&pageSize=24#",
   },
+  "aldi-onlineshop.de": {
+    salesUrl: "https://www.aldi-onlineshop.de/aktionen/",
+    ean: "4260280775081",
+    productPageUrl:"https://www.aldi-onlineshop.de/p/bepflanzbare-muelltonnenbox-edelstahl-2-x-240-l-101011113/",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 50,
+    subCategoriesCount: 10,
+    mainCategoriesCount: 7,
+    initialProductPageUrl:
+      "https://www.aldi-onlineshop.de/c/garten-2/",
+    subCategoryUrl:
+      "https://www.aldi-onlineshop.de/c/garten-2/",
+    nextPageUrl:
+      "https://www.aldi-onlineshop.de/c/garten-2/?page=2",
+  },
 };
 
 export default testParameters;
