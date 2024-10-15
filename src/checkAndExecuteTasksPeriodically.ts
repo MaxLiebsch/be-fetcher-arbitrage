@@ -53,6 +53,7 @@ const errorHandler = (err: any, origin: any) => {
   const IsNavigationDetachedError = `${err}`.includes(
     "Navigating frame was detached"
   );
+  const IsProtocolError = `${err}`.includes("ProtocolError");
 
   let type = "unhandledException";
   if (IsTargetError) {
@@ -61,6 +62,8 @@ const errorHandler = (err: any, origin: any) => {
     type = "SessionClosed";
   } else if (IsNavigationDetachedError) {
     type = "NavigationDetached";
+  } else if (IsProtocolError) {
+    type = "ProtocolError";
   }
   logGlobal(
     `Error: ${type} on ${hostname} taskId: ${taskId} error: ${err?.message}`
