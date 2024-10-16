@@ -131,9 +131,11 @@ async function handleCrawlTask({
         pages: newPageLimit,
       };
     }
+
+    update["lastTotal"] = total;
+
     if (retry === MAX_TASK_RETRIES && total > 0) {
       update["productLimit"] = total;
-      update["lastTotal"] = total;
     }
     await updateTask(_id, {
       $set: update,
