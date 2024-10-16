@@ -44,9 +44,9 @@ const testCompleted = [
   // "saturn.de",
   // "digitalo.de",
   // "dm.de",
-  // "fressnapf.de",
+  "fressnapf.de",
   // "alza.de",
-  'rossmann.de',
+  // 'rossmann.de',
   // 'pieper.de',
   // 'hornbach.de'
 ];

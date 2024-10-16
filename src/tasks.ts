@@ -124,6 +124,8 @@ export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
           errored: false,
           startedAt: "",
           completedAt: "",
+          lastTotal: 0,
+          estimatedTotal: chunk.length * productsPerCategory,
           productLimit: chunk.length * productsPerCategory,
         };
         return await addTask(task);
@@ -220,6 +222,8 @@ export const createDailySalesTask = async (
     recurrent: true,
     completed: false,
     errored: false,
+    lastTotal: 0,
+    estimatedProducts: productLimit,
     actualProductLimit: productLimit,
     startedAt: sub(new Date(), { days: 1 }).toISOString(),
     completedAt: sub(new Date(), { days: 1 }).toISOString(),

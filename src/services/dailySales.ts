@@ -36,7 +36,14 @@ interface AllQueueStats {
 
 export const dailySales = async (task: DailySalesTask): TaskReturnType => {
   const processStartTime = Date.now();
-  const { productLimit, shopDomain, type, progress, action } = task;
+  const {
+    productLimit,
+    shopDomain,
+    type,
+    progress,
+    action,
+    _id: taskId,
+  } = task;
 
   return new Promise(async (res, rej) => {
     const shops = await findShops([
@@ -51,6 +58,12 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
     } else {
       log(`Starting ${type}`);
     }
+
+    updateTask(taskId, {
+      $set: {
+        lastTotal: 0,
+      },
+    });
 
     if (!shops) {
       return rej(new MissingShopError(`No shop found for ${shopDomain}`, task));

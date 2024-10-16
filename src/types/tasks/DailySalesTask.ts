@@ -24,6 +24,8 @@ export interface DailySalesTask extends Task {
   aznListings: DbProductRecord[];
   progress: DailySalesProgress;
   browserConfig: BrowserConfig;
+  lastTotal: number;
+  estimatedTotal: number;
 }
 export interface DailySalesProgress {
   crawlEan: ObjectId[];

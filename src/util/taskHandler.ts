@@ -45,11 +45,15 @@ async function handleDailySalesTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     subject += " " + taskStats.total;
-    await handleTaskCompleted(_id, taskStats, { executing: false });
+    await handleTaskCompleted(_id, taskStats, {
+      executing: false,
+      lastTotal: taskStats.total,
+    });
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const update = {
       executing: false,
+      lastTotal: taskStats.total,
       completedAt: new UTCDate().toISOString(),
       visitedPages: queueStats?.visitedPages || [],
     };
@@ -95,7 +99,12 @@ async function handleCrawlTask({
       Partial<
         Pick<
           ScrapeShopTask,
-          "limit" | "productLimit" | "retry" | "completedAt" | "cooldown" | 'lastTotal'
+          | "limit"
+          | "productLimit"
+          | "retry"
+          | "completedAt"
+          | "cooldown"
+          | "lastTotal"
         >
       > = {
       executing: false,
@@ -124,7 +133,7 @@ async function handleCrawlTask({
     }
     if (retry === MAX_TASK_RETRIES && total > 0) {
       update["productLimit"] = total;
-      update['lastTotal'] = total;
+      update["lastTotal"] = total;
     }
     await updateTask(_id, {
       $set: update,

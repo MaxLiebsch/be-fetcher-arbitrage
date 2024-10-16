@@ -2281,7 +2281,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     hasEan: false,
     manualCategories: [],
-    mimic: "svg[data-dmid=dm-brand]",
+    mimic: "svg[data-dmid=dm-brand];",
     paginationEl: [
       {
         type: "recursive-more-button",
@@ -3023,11 +3023,12 @@ export const shops: { [key: string]: Shop } = {
     allowedHosts: ["fressnapf.app.baqend.com"],
     categories: {
       exclude: ["service", "magazin"],
-      sel: "div[id=__navigation] ul.nav-level-1 a",
+      sel: "div[data-qa-id=__navigation] ul.nav-level-1 a",
       type: "href",
       subCategories: [
         {
-          sel: "div.teaser-slider-small div.swiper-wrapper a.swiper-slide",
+          visible: false,
+          sel: "div.swiper-wrapper a.swiper-slide",
           type: "href",
         },
       ],
@@ -3047,18 +3048,6 @@ export const shops: { [key: string]: Shop } = {
       serviceWorker: "disabled",
     },
     manualCategories: [
-      {
-        name: "Sale",
-        link: "https://www.fressnapf.de/aktionen-angebote/sale/",
-      },
-      {
-        name: "Preisknaller",
-        link: "https://www.fressnapf.de/aktionen-angebote/preiskraller/",
-      },
-      {
-        name: "Gutschein & Zubehör",
-        link: "https://www.fressnapf.de/aktionen-angebote/gutschein-zubehoer/",
-      },
     ],
     mimic: "a[id=header-logo]",
     paginationEl: [
@@ -3119,7 +3108,7 @@ export const shops: { [key: string]: Shop } = {
     productList: [
       {
         sel: "div.grid-container.product-grid",
-        productCntSel: ["div.divider > div"],
+        productCntSel: ["div.pl-actions div.divider > div"],
         product: {
           sel: "div.grid-container.product-grid div.product-teaser",
           type: "not_link",
@@ -3163,9 +3152,6 @@ export const shops: { [key: string]: Shop } = {
         "stylesheet",
         "ping",
         "image",
-        "xhr",
-        "fetch",
-
         "other",
       ],
     },

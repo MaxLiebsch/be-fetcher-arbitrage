@@ -259,9 +259,9 @@ const testParameters = {
     productPageUrl:
       "https://www.fressnapf.de/p/tetra-reptomin-energy-250ml-1035195/",
     productsPerPage: 48,
-    productsPerPageAfterLoadMore: 7,
+    productsPerPageAfterLoadMore: 96,
     subCategoriesCount: 6,
-    mainCategoriesCount: 9,
+    mainCategoriesCount: 11,
     initialProductPageUrl:
       "https://www.fressnapf.de/c/vogel/vogelfutter/",
     subCategoryUrl: "https://www.fressnapf.de/c/kleintier/",
