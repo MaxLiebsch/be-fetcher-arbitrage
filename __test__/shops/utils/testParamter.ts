@@ -51,14 +51,6 @@ const testParameters = {
     nextPageUrl:
       "https://www.cyberport.de/notebook-und-tablet/tablets.html?p=2",
   },
-  "thalia.de": {
-    productsPerPage: 30,
-    subCategoriesCount: 42,
-    mainCategoriesCount: 18,
-    initialProductPageUrl: "https://www.weltbild.de/buecher/dystopie",
-    subCategoryUrl: "https://www.weltbild.de/buecher/dystopie",
-    nextPageUrl: "https://www.weltbild.de/buecher/dystopie?seite=2",
-  },
   "dm.de": {
     productPageUrl:
       "https://www.dm.de/nutrisse-haarfarbe-6n-nude-natuerliches-dunkelblond-p3600541901643.html",
@@ -397,6 +389,22 @@ const testParameters = {
     nextPageUrl:
       "https://allesfuerzuhause.de/tv-audio/tv-geraete/#?comID=l15$c1$c3$c1&pix=1&ajaxtargets=product-grid",
   },
+  "thalia.de": {
+    salesUrl: "https://www.thalia.de/themenwelten/sale/#/list",
+    ean: "8717418548551",
+    productPageUrl:"https://www.thalia.de/shop/home/artikeldetails/A1053903281",
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 72,
+    subCategoriesCount: 18,
+    mainCategoriesCount: 4,
+    initialProductPageUrl:
+      "https://www.thalia.de/kategorie/brettspiele-4810/",
+    subCategoryUrl:
+      "https://www.thalia.de/kategorie/gesellschaftsspiele-4808/",
+    nextPageUrl:
+      "https://www.thalia.de/kategorie/brettspiele-4810/?p=2",
+  },
 };
+
 
 export default testParameters;

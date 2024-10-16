@@ -17,16 +17,16 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "allesfuerzuhause.de",
-    ne: "Allesfuerzuhause.de",
-    maxProducts: 80000,
+    d: "thalia.de",
+    ne: "Thalia.de",
+    maxProducts: 60000,
     productLimit: 500,
     salesProductLimit: 4000,
     categories: [],
     dailySalesCategories: [
       {
         name: "Sales",
-        link: "https://allesfuerzuhause.de/sale/",
+        link: "https://www.thalia.de/themenwelten/sale/#/list",
       },
     ],
   },

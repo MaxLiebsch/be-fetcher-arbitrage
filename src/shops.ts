@@ -6287,19 +6287,19 @@ export const shops: { [key: string]: Shop } = {
   },
   "thalia.de": {
     actions: [],
-    active: false,
+    active: true,
     categories: {
       exclude: [
         "buecher",
         "ebooks",
         "tolino",
         "hoerbuch",
+        'marken',
         "club",
         "lehmanns",
         "gutschein",
         "geschenke",
         "zeitschriften",
-        "kalender",
       ],
       sel: "nav.off-canvas.no-scrollbar li.item a[interaction=navigation-links]",
       type: "href",
@@ -6307,79 +6307,142 @@ export const shops: { [key: string]: Shop } = {
       subCategories: [
         {
           visible: false,
-          sel: "section.sx-box.listnavigation a:not(.current)",
+          sel: "nav.menu-container ul.menu-list li a",
           type: "href",
         },
         {
           visible: false,
-          sel: "div.rb-linklist-image-text a",
+          sel: "ul.logo-list li.logo-box a",
           type: "href",
-        },
+        }
       ],
     },
     crawlActions: [],
     d: "thalia.de",
     entryPoints: [
       {
-        url: "https://www.weltbild.de",
+        url: "https://www.thalia.de",
         category: "default",
       },
     ],
     manualCategories: [],
-    mimic: "img[alt=Weltbild]",
+    mimic: "header-prime-logo a",
     hasEan: true,
     paginationEl: [
       {
         type: "pagination",
-        sel: "div.pagination",
-        nav: "?seite=",
+        sel: "p.ergebnisanzeige",
+        visible: false,
+        nav: "?p=",
         calculation: {
-          method: "count",
-          last: "div.pagination li a",
-          sel: "div.pagination li a",
+          method: "product_count",
+          productsPerPage: 24,
+          last: "p.ergebnisanzeige",
+          sel: "p.ergebnisanzeige",
         },
       },
     ],
     productList: [
       {
-        sel: "div[property=list]",
-        productCntSel: ["span.article-count"],
+        sel: "ul.tm-produktliste",
+        productCntSel: ["span.anzahl-treffer"],
         product: {
-          sel: "div[property=list] div.inner-flex-container",
+          sel: "ul.tm-produktliste li.tm-produktliste__eintrag",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "a[data-load-index]",
+              sel: "a.tm-produkt-link",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.image-container img",
-              type: "data-srcset",
+              sel: "picture img",
+              type: "src",
             },
             {
               content: "name",
-              sel: "p.title",
-              type: "text",
-            },
-            {
-              content: "nmSub",
-              sel: "p.usp.shorten-long-text",
+              sel: "strong.tm-artikeldetails__titel",
               type: "text",
             },
             {
               content: "price",
-              sel: "span[property=priceblock_el]",
+              sel: "div.tm-artikeldetails span.tm-preis-wrapper__verkaufspreis",
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        sel: "suche-produktslider div.tm-produktliste-wrapper",
+        productCntSel: ["span.anzahl-treffer"],
+        product: {
+          sel: "suche-produktslider div.tm-produktliste-wrapper li.tm-produktliste__eintrag",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "a.tm-produkt-link",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "picture img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "strong.tm-artikeldetails__titel",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.tm-artikeldetails span.tm-preis-wrapper__verkaufspreis",
               type: "text",
             },
           ],
         },
       },
     ],
-    product: [],
-
-    proxyType: "de",
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0]",
+      }
+    ],
+    proxyType: "mix",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {

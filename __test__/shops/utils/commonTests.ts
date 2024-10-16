@@ -29,12 +29,11 @@ import { MockQueue } from "./MockQueue.js";
 import { Browser } from "puppeteer";
 import testParameters from "./testParamter.js";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
-import { getShops } from "../../../src/db/util/shops.js";
+import { getShops, updateShops } from "../../../src/db/util/shops.js";
 import { proxyAuth } from "../../../src/constants.js";
-import { Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
+import { shops } from "../../../src/shops.js";
 
 let browser: Browser | null = null;
-let shops: { [key: string]: Shop } | null = null;
 let page: Page | null = null;
 const pageNo = 2;
 let shopDomain = "";
@@ -119,12 +118,14 @@ export const newPage = async (
 
 export const myBeforeAll = async (_shopDomain: string) => {
   shopDomain = _shopDomain;
+
   browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
-  shops = await getShops([{ d: shopDomain }]);
-  const shop = shops && shops[shopDomain];
+  await updateShops(shops);
+  const shop = shops[shopDomain];
   if (!shop) return;
+
   const { proxyType } = shop;
-  if (browser && shops && shop) {
+  if (browser && shop) {
     if (proxyType) {
       await notifyProxyChange(
         proxyType,
@@ -147,7 +148,7 @@ export const myBeforeAll = async (_shopDomain: string) => {
 };
 
 export const mimicTest = async () => {
-  if (page && shops && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     const blocked = await checkForBlockingSignals(
       page,
       true,
@@ -159,7 +160,7 @@ export const mimicTest = async () => {
   }
 };
 export const findMainCategories = async () => {
-  if (page && shops && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     const categories = await getCategories(page, {
       // @ts-ignore
       queue: new MockQueue(),
@@ -195,7 +196,7 @@ export const findMainCategories = async () => {
   }
 };
 export const findSubCategories = async () => {
-  if (page && shops && shops[shopDomain]) {
+  if (page  && shops[shopDomain]) {
     try {
       await page.goto(testParameters[shopDomain].subCategoryUrl);
       const categories = await getCategories(
@@ -241,7 +242,7 @@ export const findSubCategories = async () => {
   }
 };
 export const productPageCount = async (url = "") => {
-  if (page && shops && shops[shopDomain]) {
+  if (page  && shops[shopDomain]) {
     await page.goto(
       url ? url : testParameters[shopDomain].initialProductPageUrl
     );
@@ -254,7 +255,7 @@ export const productPageCount = async (url = "") => {
 };
 
 export const countProductPages = async () => {
-  if (page && shops && shops[shopDomain]) {
+  if (page  && shops[shopDomain]) {
     await page.goto(testParameters[shopDomain].countProductPageUrl);
 
     const count = await getProductCount(page, shops[shopDomain].productList);
@@ -269,7 +270,7 @@ export const countProductPages = async () => {
   }
 };
 export const findPaginationAndNextPage = async () => {
-  if (page && shops && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     const initialProductPageUrl =
       testParameters[shopDomain].initialProductPageUrl;
     const nextPageUrl = testParameters[shopDomain].nextPageUrl;
