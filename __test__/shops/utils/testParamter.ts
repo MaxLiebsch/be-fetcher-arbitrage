@@ -382,6 +382,21 @@ const testParameters = {
     nextPageUrl:
       "https://www.aldi-onlineshop.de/c/garten-2/?page=2",
   },
+  "allesfuerzuhause.de": {
+    salesUrl: "https://allesfuerzuhause.de/sale/",
+    ean: "8806095414997",
+    productPageUrl:"https://allesfuerzuhause.de/product/samsung-gq77s95dat-5247258/",
+    productsPerPage: 16,
+    productsPerPageAfterLoadMore: 32,
+    subCategoriesCount: 10,
+    mainCategoriesCount: 11,
+    initialProductPageUrl:
+      "https://allesfuerzuhause.de/tv-audio/tv-geraete/",
+    subCategoryUrl:
+      "https://allesfuerzuhause.de/tv-audio/",
+    nextPageUrl:
+      "https://allesfuerzuhause.de/tv-audio/tv-geraete/#?comID=l15$c1$c3$c1&pix=1&ajaxtargets=product-grid",
+  },
 };
 
 export default testParameters;

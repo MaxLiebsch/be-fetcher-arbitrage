@@ -1,6 +1,158 @@
 import { Shop } from "@dipmaxtech/clr-pkg";
 
 export const shops: { [key: string]: Shop } = {
+  "allesfuerzuhause.de": {
+    actions: [],
+    allowedHosts: ["allesfuerzuhause.de"],
+    leaveDomainAsIs: true,
+    active: true,
+    categories: {
+      exclude: ["mode"],
+      sel: "li.navi-header__cat ul li > a",
+      type: "href",
+      visible: false,
+      subCategories: [
+        {
+          visible: false,
+          sel: "div.ep-cat--subcat a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [
+      {
+        type: "button",
+        sel: "button[id=ctl07_declinebtn]",
+        action: "click",
+        wait: false,
+        name: "click on consent",
+      },
+    ],
+    d: "allesfuerzuhause.de",
+    entryPoints: [
+      {
+        url: "https://www.allesfuerzuhause.de",
+        category: "default",
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: "div.header--logo",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "ul.pagination li",
+        nav: "?comID=l15$c1$c3$c1&pix=<page>&ajaxtargets=product-grid",
+        paginationUrlSchema: {
+          replace: "attach_end",
+          calculation: {
+            method: "offset",
+            offset: 1,
+          },
+        },
+        calculation: {
+          method: "find_highest",
+          last: "ul.pagination li",
+          sel: "ul.pagination li",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "div.loadbeeTabContent",
+        parent: "div[id=ep-tab1-c]",
+        type: "data-loadbee-gtin",
+        content: "ean",
+      },
+      {
+        sel: "script[data-flix-ean]",
+        parent: "div[id=ep-tab1-c]",
+        type: "data-flix-ean",
+        content: "ean",
+      },
+      {
+        parent: "div.product-cart--cart",
+        sel: "div.product-as-cart",
+        type: "text",
+        content: "instock",
+      },
+      {
+        sel: "div.product-price--final",
+        parent: "div.product-price",
+        type: "text",
+        content: "price",
+      },
+      {
+        sel: "h1.ep-det__title",
+        parent: "div.ep-top--right",
+        type: "text",
+        content: "name",
+      },
+      {
+        sel: "img",
+        parent: "div.ep-gall",
+        type: "src",
+        content: "image",
+      },
+    ],
+    productList: [
+      {
+        sel: "div[id=product-grid] div[id=grid-ep]",
+        productCntSel: [],
+        product: {
+          sel: "div[id=product-grid] div[id=grid-ep] div.ep-prev",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "figure.ep-prev__img a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "figure.ep-prev__img img",
+              type: "src",
+            },
+            {
+              content: "name",
+              sel: "figure.ep-prev__img a",
+              type: "title",
+            },
+            {
+              content: "price",
+              sel: "span.price__main",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "ping",
+        "image",
+        "other",
+        "script",
+        "fetch",
+        "xhr",
+        "stylesheet",
+      ],
+    },
+    waitUntil: {
+      product: "load",
+      entryPoint: "load",
+    },
+  },
   "aldi-onlineshop.de": {
     actions: [],
     allowedHosts: [
@@ -198,7 +350,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ["generalüberholt"],
+      exclude: ["generalüberholt", "pc-konfigurator", "alternate-pc"],
       sel: "div[id=navigation-tree] a",
       type: "href",
       subCategories: [
@@ -3047,8 +3199,7 @@ export const shops: { [key: string]: Shop } = {
       webWorker: "enabled",
       serviceWorker: "disabled",
     },
-    manualCategories: [
-    ],
+    manualCategories: [],
     mimic: "a[id=header-logo]",
     paginationEl: [
       {
@@ -3146,14 +3297,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        "media",
-        "font",
-        "stylesheet",
-        "ping",
-        "image",
-        "other",
-      ],
+      crawl: ["media", "font", "stylesheet", "ping", "image", "other"],
     },
     waitUntil: {
       product: "load",
@@ -6145,8 +6289,19 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: false,
     categories: {
-      exclude: ["alles"],
-      sel: "nav.nav-container a.nav-link",
+      exclude: [
+        "buecher",
+        "ebooks",
+        "tolino",
+        "hoerbuch",
+        "club",
+        "lehmanns",
+        "gutschein",
+        "geschenke",
+        "zeitschriften",
+        "kalender",
+      ],
+      sel: "nav.off-canvas.no-scrollbar li.item a[interaction=navigation-links]",
       type: "href",
       visible: false,
       subCategories: [

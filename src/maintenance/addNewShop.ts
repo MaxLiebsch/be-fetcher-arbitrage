@@ -1,10 +1,11 @@
 import { ICategory } from "@dipmaxtech/clr-pkg";
-import { getShop, updateShopWithQuery } from "../db/util/shops.js";
+import { getShop, updateShops, updateShopWithQuery } from "../db/util/shops.js";
 import { findTasks } from "../db/util/tasks.js";
 import { createCrawlTasks, createDailySalesTask } from "../tasks.js";
 import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
 import { ScrapeShopTask } from "../types/tasks/Tasks.js";
 import { getArbispotterDb } from "../db/mongo.js";
+import { shops } from "../shops.js";
 
 export const newShops: {
   d: string;
@@ -16,8 +17,8 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "aldi-onlineshop.de",
-    ne: "Aldi-onlineshop.de",
+    d: "allesfuerzuhause.de",
+    ne: "Allesfuerzuhause.de",
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 4000,
@@ -25,7 +26,7 @@ export const newShops: {
     dailySalesCategories: [
       {
         name: "Sales",
-        link: "https://www.aldi-onlineshop.de/aktionen/",
+        link: "https://allesfuerzuhause.de/sale/",
       },
     ],
   },
@@ -123,6 +124,8 @@ const statsPerDay: SplitStats = {
 const main = async () => {
   const db = await getArbispotterDb();
   const tasks = (await findTasks({ type: "CRAWL_SHOP" })) as ScrapeShopTask[];
+  await updateShops(shops);
+
   tasks.forEach((task) => {
     initStatsPerDay[task.weekday].total += task.productLimit;
     initStatsPerDay[task.weekday].ids.push(task.id);
@@ -197,4 +200,7 @@ const main = async () => {
   }
 };
 
-main().then();
+main().then((r) => {
+  console.log("Done ", newShops.map((shop) => shop.d).join(", "), "added!");
+  process.exit(0);
+});

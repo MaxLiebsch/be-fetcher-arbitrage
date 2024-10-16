@@ -38,6 +38,14 @@ export const updateShopWithQuery = async (
   });
 };
 
+export const updateShops = async (shops: { [key: string]: Shop }) => {
+  return Promise.all(
+    Object.entries(shops).map(async ([key, val]) => {
+      return await insertShop(val);
+    })
+  );
+};
+
 export const getShop = async (shopDomain: string) => {
   const collectionName = shopCollectionName;
   const db = await getCrawlDataDb();
