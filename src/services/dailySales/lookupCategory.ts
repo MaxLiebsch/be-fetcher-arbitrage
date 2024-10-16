@@ -135,6 +135,7 @@ export const lookupCategory = async (
         retries: 0,
         shop: ebay,
         addProduct,
+        proxyType: ebay.proxyType,
         requestId: uuid(),
         s_hash,
         targetShop: {

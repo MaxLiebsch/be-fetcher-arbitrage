@@ -100,6 +100,12 @@ export default async function queryEansOnEby(
 
     const toolInfo = await getShop("ebay.de");
 
+    if(!toolInfo){
+      return reject(new MissingShopError(`No shop found for ebay.de`, task));
+    }
+
+    const { proxyType } = toolInfo;
+
     if (!toolInfo) {
       return reject(new MissingShopError(`No shop found for ebay.de`, task));
     }
@@ -179,6 +185,7 @@ export default async function queryEansOnEby(
         retries: 0,
         requestId: uuid(),
         s_hash,
+        proxyType,
         shop: toolInfo,
         targetShop: {
           prefix: "",

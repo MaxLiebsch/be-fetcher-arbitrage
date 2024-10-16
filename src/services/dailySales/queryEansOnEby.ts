@@ -161,10 +161,11 @@ export const queryEansOnEby = async (
         requestId: uuid(),
         s_hash,
         shop: ebay,
+        proxyType: ebay.proxyType,
         targetShop: {
           prefix: "",
-          d: wholeSaleColname,
-          name: wholeSaleColname,
+          d: collection,
+          name: collection,
         },
         addProduct,
         isFinished,

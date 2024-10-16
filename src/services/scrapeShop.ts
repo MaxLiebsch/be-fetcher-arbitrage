@@ -27,6 +27,7 @@ import { TaskCompletedStatus } from "../status.js";
 import { TaskReturnType } from "../types/TaskReturnType.js";
 import { MissingShopError } from "../errors.js";
 import { log } from "../util/logger.js";
+import { updateTask } from "../db/util/tasks.js";
 
 async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -35,12 +36,20 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       productLimit,
       limit,
       recurrent,
+      _id: taskId,
       categories,
       concurrency,
     } = task;
     log(`Scrape categories ${shopDomain}`);
 
     const shop = await getShop(shopDomain);
+    // Reset lastTotal to 0
+    await updateTask(taskId, {
+      $set: {
+        lastTotal: 0,
+      },
+    });
+
     if (shop === null) {
       return reject(new MissingShopError(`Shop ${shopDomain} not found`, task));
     }

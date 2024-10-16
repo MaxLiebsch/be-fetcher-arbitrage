@@ -1297,7 +1297,11 @@ export const findTasksQuery = () => {
       {
         $or: [
           {
-            $and: crawlShopTaskQuery,
+            $and: [
+              ...crawlShopTaskQuery,
+              { cooldown: { $lt: new UTCDate().toISOString() } }
+            ],
+
           },
           {
             $and: dailySalesTaskQuery,

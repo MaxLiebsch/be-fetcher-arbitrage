@@ -144,7 +144,7 @@ export default negAznDeals;
 
 export async function scrapeAznListings(
   queue: QueryQueue,
-  target: Shop,
+  azn: Shop,
   source: Shop,
   targetLink: string,
   product: DbProductRecord,
@@ -153,7 +153,7 @@ export async function scrapeAznListings(
 ) {
   return new Promise((res, rej) => {
     const { taskIdProp } = processProps;
-    const { d } = target;
+    const { d , proxyType} = azn;
     const { d: shopDomain } = source;
     const { _id, s_hash } = product;
     const addProduct = async (product: ProductRecord) => {};
@@ -190,7 +190,8 @@ export async function scrapeAznListings(
 
     queue.pushTask(queryProductPageQueue, {
       retries: 0,
-      shop: target,
+      shop: azn,
+      proxyType,
       s_hash,
       requestId: uuid(),
       addProduct,

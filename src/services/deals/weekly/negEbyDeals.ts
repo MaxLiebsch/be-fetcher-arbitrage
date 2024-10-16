@@ -42,7 +42,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { _id: taskId, action, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await findPendingProductsWithAggForTask(
-      'NEG_EBY_DEALS',
+      "NEG_EBY_DEALS",
       taskId,
       action || "none",
       productLimit
@@ -96,12 +96,12 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           new Date(product.availUpdatedAt || product.updatedAt)
         );
         const ebyLink = "https://www.ebay.de/itm/" + esin;
-        
+
         if (diffHours > 24) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
-            product,
+            product
           );
           if (isValidProduct) {
             await scrapeEbyListings(
@@ -118,7 +118,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           } else {
             infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
-            await deleteProduct( productId);
+            await deleteProduct(productId);
             //DELETE PRODUCT
           }
         } else {
@@ -142,7 +142,7 @@ export default negEbyDeals;
 
 export async function scrapeEbyListings(
   queue: QueryQueue,
-  target: Shop,
+  eby: Shop,
   source: Shop,
   targetLink: string,
   product: DbProductRecord,
@@ -151,7 +151,7 @@ export async function scrapeEbyListings(
 ) {
   return new Promise((res, rej) => {
     const { taskIdProp } = processProps;
-    const { d } = target;
+    const { d, proxyType } = eby;
     const { d: shopDomain } = source;
     const { _id: productId, s_hash } = product;
     const addProduct = async (product: ProductRecord) => {};
@@ -174,14 +174,11 @@ export async function scrapeEbyListings(
       infos.total++;
       queue.total++;
       if (cause === "exceedsLimit") {
-        const result = await updateProductWithQuery(
-          productId,
-          {
-            $unset: {
-              [taskIdProp]: "",
-            },
-          }
-        );
+        const result = await updateProductWithQuery(productId, {
+          $unset: {
+            [taskIdProp]: "",
+          },
+        });
         log(`Exceeds Limit: ${shopDomain}-${productId} - ${cause}`, result);
       } else {
         await handleEbyListingNotFound(shopDomain, productId);
@@ -191,8 +188,9 @@ export async function scrapeEbyListings(
 
     queue.pushTask(queryProductPageQueue, {
       retries: 0,
-      shop: target,
+      shop: eby,
       addProduct,
+      proxyType,
       s_hash,
       requestId: uuid(),
       onNotFound: handleNotFound,

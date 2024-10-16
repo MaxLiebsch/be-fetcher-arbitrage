@@ -79,6 +79,12 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
       return reject(new MissingShopError("ebay.de", task));
     }
 
+    const { proxyType } = toolInfo;
+
+    if (!toolInfo) {
+      return reject(new MissingShopError("ebay.de", task));
+    }
+
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
@@ -156,6 +162,7 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
         },
         onNotFound: handleNotFound,
         addProductInfo,
+        proxyType,
         queue,
         query: defaultQuery,
         prio: 0,

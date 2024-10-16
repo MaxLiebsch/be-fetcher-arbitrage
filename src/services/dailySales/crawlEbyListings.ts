@@ -48,6 +48,7 @@ export const crawlEbyListings = (
       elapsedTime: "",
     };
     const { browserConfig, _id: taskId } = task;
+    const {proxyType} = ebay;
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
     task.actualProductLimit = task.ebyListings.length;
@@ -113,6 +114,7 @@ export const crawlEbyListings = (
         retries: 0,
         shop: ebay,
         addProduct,
+        proxyType,
         requestId: uuid(),
         s_hash,
         onNotFound: handleNotFound,

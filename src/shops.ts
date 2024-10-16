@@ -504,7 +504,6 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    purlschema: "/product/\\d+",
     proxyType: "mix",
     queryActions: [],
     queryUrlSchema: [],
@@ -663,8 +662,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: "de",
-    purlschema: "Prod\\w*\\/\\d*",
+    proxyType: "mix",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -930,7 +928,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     product: [],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [
       {
         type: "shadowroot-button",
@@ -1069,7 +1066,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -1384,7 +1380,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -1519,7 +1514,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "de",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -2045,7 +2039,6 @@ export const shops: { [key: string]: Shop } = {
     product: [],
     hasEan: true,
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -2234,7 +2227,6 @@ export const shops: { [key: string]: Shop } = {
         content: "image",
       },
     ],
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -2413,7 +2405,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -2878,7 +2869,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -3006,7 +2996,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     product: [],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -3165,7 +3154,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -3798,7 +3786,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -4193,7 +4180,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [
       {
@@ -4368,7 +4354,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -4509,7 +4494,6 @@ export const shops: { [key: string]: Shop } = {
         content: "image",
       },
     ],
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -4659,7 +4643,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "de",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -4815,7 +4798,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "de",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5054,7 +5036,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5329,7 +5310,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5510,7 +5490,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5660,7 +5639,6 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     proxyType: "de",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6156,7 +6134,6 @@ export const shops: { [key: string]: Shop } = {
     product: [],
     hasEan: true,
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6262,7 +6239,6 @@ export const shops: { [key: string]: Shop } = {
     product: [],
 
     proxyType: "de",
-    purlschema: "",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6389,7 +6365,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     product: [],
     proxyType: "mix",
-    purlschema: "",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6525,7 +6500,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     product: [],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6813,7 +6787,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     product: [],
     proxyType: "mix",
-    purlschema: "Prod\\w*\\/\\d*",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {

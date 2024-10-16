@@ -2,8 +2,10 @@ import { UTCDate } from "@date-fns/utc";
 import {
   COMPLETE_FAILURE_THRESHOLD,
   COOLDOWN,
+  COOLDOWN_MULTIPLIER,
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
+  SCRAPE_SHOP_MULTIPLIER,
 } from "../constants.js";
 import { hostname } from "../db/mongo.js";
 import { updateTask } from "../db/util/tasks.js";
@@ -83,12 +85,18 @@ async function handleCrawlTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     subject += " " + total;
-    await handleTaskCompleted(_id, taskStats, { executing: false });
+    await handleTaskCompleted(_id, taskStats, {
+      executing: false,
+      lastTotal: total,
+    });
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const update: Pick<ScrapeShopTask, "executing" | "visitedPages"> &
       Partial<
-        Pick<ScrapeShopTask, "limit" | "productLimit" | "retry" | "completedAt">
+        Pick<
+          ScrapeShopTask,
+          "limit" | "productLimit" | "retry" | "completedAt" | "cooldown" | 'lastTotal'
+        >
       > = {
       executing: false,
       visitedPages: queueStats.visitedPages,
@@ -96,10 +104,14 @@ async function handleCrawlTask({
     if (retry < MAX_TASK_RETRIES) {
       update["retry"] = retry + 1;
       update["completedAt"] = "";
+      update["cooldown"] = new UTCDate(
+        Date.now() + COOLDOWN * SCRAPE_SHOP_MULTIPLIER
+      ).toISOString(); // four hours in future
     } else {
       update["completedAt"] = new UTCDate().toISOString();
       update["retry"] = 0;
     }
+
     if (
       total > COMPLETE_FAILURE_THRESHOLD &&
       limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
@@ -112,6 +124,7 @@ async function handleCrawlTask({
     }
     if (retry === MAX_TASK_RETRIES && total > 0) {
       update["productLimit"] = total;
+      update['lastTotal'] = total;
     }
     await updateTask(_id, {
       $set: update,
@@ -429,7 +442,7 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
   if (type === TASK_TYPES.WHOLESALE_SEARCH) {
     return await handleWholesaleTask(infos);
   }
-  if(type === TASK_TYPES.WHOLESALE_EBY_SEARCH){
+  if (type === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
     return await handleWholesaleTask(infos);
   }
   if (type === TASK_TYPES.SCAN_SHOP) {

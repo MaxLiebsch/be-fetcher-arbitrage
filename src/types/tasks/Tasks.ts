@@ -57,6 +57,7 @@ export interface ScrapeShopTask extends ShopSpecificTask {
   weekday: number;
   visitedPages: any[];
   executing: boolean;
+  lastTotal: number;
 }
 
 export interface Progress {

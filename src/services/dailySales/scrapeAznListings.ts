@@ -26,6 +26,7 @@ export const scrapeAznListings = (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId } = task;
+    const {proxyType} = amazon;
     const { concurrency, productLimit } = browserConfig.crawlAznListings;
 
     let infos: DealsOnAznStats = {
@@ -112,6 +113,7 @@ export const scrapeAznListings = (
         requestId: uuid(),
         s_hash,
         addProduct,
+        proxyType,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,

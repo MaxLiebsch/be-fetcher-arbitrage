@@ -19,7 +19,7 @@ export const handleTaskFailed = async (id: ObjectId, retry: number) => {
   } else {
     update["cooldown"] = new UTCDate(
       Date.now() + COOLDOWN * COOLDOWN_MULTIPLIER
-    ).toISOString();
+    ).toISOString();  // three hours in future
     update["completedAt"] = new UTCDate().toISOString();
     update["retry"] = 0;
   }
