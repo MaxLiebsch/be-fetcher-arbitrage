@@ -5,10 +5,10 @@ import {
   TaskTypes,
 } from "@dipmaxtech/clr-pkg";
 
-import {  Tasks } from "../../types/tasks/Tasks.js";
+import { Tasks } from "../../types/tasks/Tasks.js";
 import { PendingShops } from "../../types/shops.js";
 import { Filter, UpdateFilter } from "mongodb";
-
+import { updateProgressFns } from "./updateAllTasksProgress.js";
 
 export const handleComulativTasks = async (
   task: Tasks,
@@ -21,6 +21,7 @@ export const handleComulativTasks = async (
   ) {
     return task;
   } else {
+    updateProgressFns[task.type] && (await updateProgressFns[task.type]());
     await updateTask(task._id, {
       $set: {
         executing: false,
@@ -50,7 +51,6 @@ export const handleSingleTask = async (
     return task;
   }
 };
-
 
 export const findTasks = async (query: Filter<Tasks>, test = false) => {
   const collectionName = test
@@ -139,7 +139,7 @@ export const insertTasks = async (tasks: Tasks[]) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
   return collection.insertMany(tasks);
-}
+};
 
 export const deleteTasks = async () => {
   const collectionName = tasksCollectionName;

@@ -19,12 +19,6 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateProgressInMatchTasks } from "../util/updateProgressInMatchTasks.js";
-import {
-  updateProgressInCrawlEanTask,
-  updateProgressInLookupInfoTask,
-  updateProgressInQueryEansOnEbyTask,
-} from "../util/updateProgressInTasks.js";
 import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
@@ -56,7 +50,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       "CRAWL_EAN",
       taskId,
       action || "none",
-      productLimit,
+      productLimit
     );
 
     if (action === "recover") {
@@ -82,9 +76,6 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
 
     infos.locked = products.length;
 
-    //Update task progress
-    await updateProgressInCrawlEanTask(); // update crawl ean task
-
     const startTime = Date.now();
 
     const queue = new QueryQueue(
@@ -95,6 +86,9 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
     queue.total = 0;
     await queue.connect();
 
+    let completed = false;
+    let cnt = 0;
+
     const isComplete = async () => {
       const check = await checkProgress({
         task,
@@ -103,25 +97,22 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
         startTime,
         productLimit: _productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
-        await Promise.all([
-          updateProgressInCrawlEanTask(), // update crawl ean task
-          updateProgressInMatchTasks(shops), // update matching tasks
-          updateProgressInLookupInfoTask(), // update lookup info task
-          updateProgressInQueryEansOnEbyTask(), // update query eans on eby task
-        ]);
+      if (check instanceof TaskCompletedStatus && !completed) {
+        completed = true;
         const remaining = await countRemainingProducts(shops, taskId, type);
-        log(`Remaining products: ${remaining}, taskId ${setTaskId(taskId)}`);
+        log(`Remaining products: ${remaining}, taskId: ${setTaskId(taskId)}`);
         handleResult(check, resolve, reject);
+      } else if (check !== undefined && completed) {
+        cnt++;
+        log(`Task already completed ${completed} ${cnt}`);
       }
     };
 
     for (let index = 0; index < products.length; index++) {
       const { shop, product } = products[index];
       let { lnk: productLink, _id: productId, s_hash } = product;
-      const {d: shopDomain, proxyType} = shop
+      const { d: shopDomain, proxyType } = shop;
       productLink = removeSearchParams(productLink);
-
 
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async ({

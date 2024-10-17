@@ -43,19 +43,19 @@ async function executeTaskWithLogging(task: Tasks) {
   const { type, id: taskId, _id } = task;
   try {
     if (!timeTracker.initialized) await timeTracker.initPromise;
-    timeTracker.markActive(task.type);
-    logGlobal(`Executing task ${taskId} ${type}`);
     const startTime = Date.now();
     createLogger(type);
+    logGlobal(`Executing task ${taskId} ${type}`);
+    timeTracker.markActive(task.type);
     const taskResult = await executeTask(task);
-    destroyLogger(type);
+    timeTracker.markInactive();
     const endTime = Date.now();
     logGlobal(
       `Task ${taskId} ${type} executed, took ${
         (endTime - startTime) / 1000 / 1000
       } min.`
     );
-    timeTracker.markInactive();
+    destroyLogger(type);
     return taskResult;
   } catch (error) {
     timeTracker.markInactive();
@@ -94,6 +94,7 @@ async function executeTaskWithLogging(task: Tasks) {
 export async function monitorAndProcessTasks() {
   logGlobal(`Checking for new tasks on ${hostname}`);
   const intervalId = setInterval(async () => {
+    logGlobal('Clearing interval');
     clearInterval(intervalId); // Stop checking while executing the task
     const task = await checkForNewTask(); // Implement this function to check for new tasks
 

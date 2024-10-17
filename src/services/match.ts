@@ -22,8 +22,6 @@ import { checkProgress } from "../util/checkProgress.js";
 import { parseAsinFromUrl } from "../util/parseAsin.js";
 import {
   updateMatchProgress,
-  updateProgressInLookupCategoryTask,
-  updateProgressInLookupInfoTask,
 } from "../util/updateProgressInTasks.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
@@ -133,8 +131,6 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         log(`Remaining products: ${remaining}`);
         clearInterval(interval);
         await updateMatchProgress(shopDomain, hasEan); // update match progress
-        await updateProgressInLookupInfoTask(); // update lookup info task progress
-        await updateProgressInLookupCategoryTask();
         handleResult(check, resolve, reject);
       }
     }

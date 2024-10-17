@@ -2,6 +2,7 @@ export const MATCH_TIME_LIMIT = 480;
 export const CONCURRENCY = 4;
 export const DEFAULT_CHECK_PROGRESS_INTERVAL = 5 * 60 * 1000;
 export const DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL = 15 * 60 * 1000;
+export const STANDARD_SETTLING_TIME = 2 * 60 * 1000;
 export const COOLDOWN = 30 * 60 * 1000;
 export const COOLDOWN_LONG = 60 * 60 * 1000;
 export const COOLDOWN_MULTIPLIER = 3; // 3 hours from now

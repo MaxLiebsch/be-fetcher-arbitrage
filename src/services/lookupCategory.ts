@@ -16,7 +16,6 @@ import {
   proxyAuth,
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import { updateProgressInLookupCategoryTask } from "../util/updateProgressInTasks.js";
 import { getShop } from "../db/util/shops.js";
 import {
   handleLookupCategoryNotFound,
@@ -44,7 +43,7 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
     };
 
     const { products: products, shops } = await findPendingProductsForTask(
-      'LOOKUP_CATEGORY',
+      "LOOKUP_CATEGORY",
       taskId,
       action || "none",
       productLimit
@@ -69,8 +68,6 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
 
     infos.locked = products.length;
 
-    await updateProgressInLookupCategoryTask(); // update lookup category task
-
     const startTime = Date.now();
 
     const toolInfo = await getShop("ebay.de");
@@ -93,6 +90,9 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
     queue.total = 0;
     await queue.connect();
 
+    let _completed = false;
+    let cnt = 0;
+
     const isCompleted = async () => {
       const check = await checkProgress({
         task,
@@ -101,12 +101,15 @@ async function lookupCategory(task: LookupCategoryTask): TaskReturnType {
         startTime,
         productLimit: _productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
+      if (check instanceof TaskCompletedStatus && !_completed) {
+        _completed = true;
         const remaining = await countRemainingProducts(shops, taskId, type);
         log(`Remaining products: ${remaining}`);
         clearInterval(interval);
         handleResult(check, resolve, reject);
-        await updateProgressInLookupCategoryTask(); // update lookup category task
+      } else if (check !== undefined && _completed) {
+        cnt++;
+        log(`Task already completed ${_completed} ${cnt}`);
       }
     };
 

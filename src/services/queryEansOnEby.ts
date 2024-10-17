@@ -13,10 +13,6 @@ import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { CONCURRENCY, defaultQuery, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
-import {
-  updateProgressInLookupCategoryTask,
-  updateProgressInQueryEansOnEbyTask,
-} from "../util/updateProgressInTasks.js";
 import { getShop } from "../db/util/shops.js";
 import {
   handleQueryEansOnEbyIsFinished,
@@ -83,9 +79,6 @@ export default async function queryEansOnEby(
 
     infos.locked = productsWithShop.length;
 
-    //Update task progress
-    await updateProgressInQueryEansOnEbyTask();
-
     const startTime = Date.now();
 
     const queue = new QueryQueue(
@@ -96,11 +89,9 @@ export default async function queryEansOnEby(
     queue.total = 0;
     await queue.connect();
 
-    await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-
     const toolInfo = await getShop("ebay.de");
 
-    if(!toolInfo){
+    if (!toolInfo) {
       return reject(new MissingShopError(`No shop found for ebay.de`, task));
     }
 
@@ -110,6 +101,9 @@ export default async function queryEansOnEby(
       return reject(new MissingShopError(`No shop found for ebay.de`, task));
     }
 
+    let completed = false;
+    let cnt = 0;
+
     async function isProcessComplete() {
       const check = await checkProgress({
         task,
@@ -118,12 +112,14 @@ export default async function queryEansOnEby(
         startTime,
         productLimit: _productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
+      if (check instanceof TaskCompletedStatus && !completed) {
+        completed = true;
         const remaining = await countRemainingProducts(shops, taskId, type);
         log(`Remaining products: ${remaining}`);
-        await updateProgressInQueryEansOnEbyTask(); // update query eans on eby task
-        await updateProgressInLookupCategoryTask(); // update lookup category task
         handleResult(check, resolve, reject);
+      } else if (check !== undefined && completed) {
+        cnt++;
+        log(`Task already completed ${completed} ${cnt}`);
       }
     }
 
@@ -152,7 +148,7 @@ export default async function queryEansOnEby(
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        if (cause === "exceedsLimit") {
+        if (cause === "exceedsLimit" || cause === "timeout") {
           const result = await updateProductWithQuery(productId, {
             $unset: {
               eby_taskId: "",

@@ -3,7 +3,6 @@ import {
   crawlShop,
   crawlSubpage,
   DbProductRecord,
-  globalEventEmitter,
   ProductRecord,
   roundToTwoDecimals,
   transformProduct,
@@ -99,7 +98,14 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       proxyAuth,
       task
     );
-    const emitter = globalEventEmitter;
+
+    const interval = setInterval(
+      async () => await isCompleted(),
+      DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
+    );
+
+    let completed = false;
+    let cnt = 0;
 
     const isCompleted = async () => {
       const check = await checkProgress({
@@ -109,23 +115,21 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         startTime,
         productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
-        log(`Task completed with ${uniqueLinks.length} products.`);
+      if (check instanceof TaskCompletedStatus && !completed) {
+        completed = true;
         clearInterval(interval);
+        log(`Task completed with ${uniqueLinks.length} products.`);
         await updateProgressInCrawlEanTask();
         await updateMatchProgress(shopDomain, hasEan);
         resolve(check);
+      } else if (check !== undefined && completed) {
+        cnt++;
+        log(`Task already completed ${completed} ${cnt}`);
       }
     };
 
-    emitter.on(`${queue.queueId}-finished`, async () => await isCompleted());
-
     await queue.connect();
     const startTime = Date.now();
-    const interval = setInterval(
-      async () => await isCompleted(),
-      DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
-    );
     const addProduct = async (product: ProductRecord) => {
       if (done) return;
       if (infos.total === productLimit && !queue.idle()) {
@@ -166,9 +170,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         });
       }
     };
-    const link = entryPoints.length
-      ? entryPoints[0].url
-      : "https://www." + shopDomain;
 
     if (recurrent) {
       categories.map((category) => {
@@ -191,6 +192,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         });
       });
     } else {
+      const link = entryPoints[0].url;
       queue.pushTask(crawlShop, {
         requestId: uuid(),
         shop,

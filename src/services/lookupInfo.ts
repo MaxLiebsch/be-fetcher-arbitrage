@@ -13,7 +13,6 @@ import { handleResult } from "../handleResult.js";
 import { CONCURRENCY, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { getShop } from "../db/util/shops.js";
-import { updateProgressInLookupInfoTask } from "../util/updateProgressInTasks.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
@@ -85,16 +84,14 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
 
     infos.locked = products.length;
 
-    //Update task progress
-    await updateProgressInLookupInfoTask();
-
     const startTime = Date.now();
 
     const queryQueues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
 
-    let done = false;
+    let completed = false;
+    let cnt = 0;
 
     const isCompleted = async () => {
       const check = await checkProgress({
@@ -104,11 +101,14 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         startTime,
         productLimit: _productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
+      if (check instanceof TaskCompletedStatus && !completed) {
+        completed = true;
         const remaining = await countRemainingProducts(shops, taskId, type);
         log(`Completed: Rest: ${remaining}, taskId ${setTaskId(taskId)}`);
-        await updateProgressInLookupInfoTask();
         handleResult(check, resolve, reject);
+      } else if (check !== undefined && completed) {
+        cnt++;
+        log(`Completed: ${completed} ${cnt}`);
       }
     };
 
