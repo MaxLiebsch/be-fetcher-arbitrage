@@ -125,7 +125,7 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: "price",
-              sel: "span.price__main",
+              sel: "strong.ep-prev--price__price-sale",
               type: "text",
             },
           ],

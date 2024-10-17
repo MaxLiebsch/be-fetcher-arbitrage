@@ -32,8 +32,10 @@ jobs:
     needs: build
     strategy:
       matrix:
-        server: [vars.HOSTS] # List all 30 servers here
+        server: ${{ fromJSON(vars.HOSTS) }} # List all 30 servers here
     steps:
+      - name: Print server
+        run: echo ${{ matrix.server }}
       - name: Add all server fingerprints to known_hosts
         run: |
           mkdir -p ~/.ssh
