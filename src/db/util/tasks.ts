@@ -8,7 +8,7 @@ import {
 import { Tasks } from "../../types/tasks/Tasks.js";
 import { PendingShops } from "../../types/shops.js";
 import { Filter, UpdateFilter } from "mongodb";
-import { updateProgressFns } from "./updateAllTasksProgress.js";
+import { updateProgressFns } from "../../util/updateProgressInTasks.js";
 
 export const handleComulativTasks = async (
   task: Tasks,
@@ -21,7 +21,7 @@ export const handleComulativTasks = async (
   ) {
     return task;
   } else {
-    updateProgressFns[task.type] && (await updateProgressFns[task.type]());
+    if(updateProgressFns[task.type]) await updateProgressFns[task.type]();
     await updateTask(task._id, {
       $set: {
         executing: false,

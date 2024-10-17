@@ -48,6 +48,11 @@ const secureMode = async () => {
     return originalGoto.apply(this, [url, options]);
   };
   await page.goto("https://bot-detector.rebrowser.net/");
+  const pages = await browser.pages()
+  if(pages){
+    console.log('pages:', pages[0].url())
+  
+  }
   // const page = await browser.newPage();
   // const result = await page.goto(lnk);
   // const status = result?.status();

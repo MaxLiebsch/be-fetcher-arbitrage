@@ -92,9 +92,7 @@ async function executeTaskWithLogging(task: Tasks) {
 }
 
 export async function monitorAndProcessTasks() {
-  logGlobal(`Checking for new tasks on ${hostname}`);
   const intervalId = setInterval(async () => {
-    logGlobal('Clearing interval');
     clearInterval(intervalId); // Stop checking while executing the task
     const task = await checkForNewTask(); // Implement this function to check for new tasks
 

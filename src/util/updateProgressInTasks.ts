@@ -1,7 +1,7 @@
 import { getWholesaleSearchProgress } from "../db/util/wholesaleSearch/getWholesaleProgress.js";
 import { updateTaskWithQuery } from "../db/util/tasks.js";
 import { MultiStageTaskTypes, TASK_TYPES } from "./taskTypes.js";
-import { ObjectId } from "@dipmaxtech/clr-pkg";
+import { ObjectId, TaskTypes } from "@dipmaxtech/clr-pkg";
 import { PendingShops } from "../types/shops.js";
 import { findPendingShops } from "../db/util/multiShopUtilities/findPendingShops.js";
 import { getTaskProgress } from "../db/util/multiShopUtilities/getTaskProgress.js";
@@ -178,4 +178,24 @@ export const updateWholesaleProgress = async (
 
   await updateTaskWithQuery({ _id: taskId }, { progress });
   return progress;
+};
+
+
+export const updateProgressFns: {
+  [key in TaskTypes]: any;
+} = {
+  DEALS_ON_EBY: updateProgressDealsOnEbyTasks,
+  DEALS_ON_AZN: updateProgressDealsOnAznTasks,
+  DAILY_SALES: undefined,
+  CRAWL_SHOP: undefined,
+  WHOLESALE_SEARCH: updateWholesaleProgress,
+  WHOLESALE_EBY_SEARCH: updateWholesaleProgress,
+  SCAN_SHOP: undefined,
+  MATCH_PRODUCTS: undefined,
+  CRAWL_AZN_LISTINGS: updateProgressNegDealTasks,
+  CRAWL_EBY_LISTINGS: updateProgressNegDealTasks,
+  CRAWL_EAN: updateProgressInCrawlEanTask,
+  LOOKUP_INFO: updateProgressInLookupInfoTask,
+  QUERY_EANS_EBY: updateProgressInQueryEansOnEbyTask,
+  LOOKUP_CATEGORY: updateProgressInLookupCategoryTask,
 };
