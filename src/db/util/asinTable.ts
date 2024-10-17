@@ -1,6 +1,6 @@
 import { Costs } from "@dipmaxtech/clr-pkg";
 import { getCrawlDataDb } from "../mongo.js";
-import { UTCDate } from "@date-fns/utc";
+
 const collectionName = "asinean";
 
 export const findAsin = async (asin: string) => {
@@ -27,7 +27,7 @@ export const upsertAsin = async (asin: string, eanList: string[], costs: Costs) 
       },
       $set: {
         costs,
-        updatedAt: new UTCDate().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     },
     {

@@ -8,7 +8,7 @@ import {
   roundToTwoDecimals,
   resetEbyProductQuery,
 } from "@dipmaxtech/clr-pkg";
-import { UTCDate } from "@date-fns/utc";
+
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { createHash } from "./hash.js";
 import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
@@ -107,7 +107,7 @@ export async function handleQueryEansOnEbyIsFinished(
     const result = await updateProductWithQuery(productId, {
       $set: {
         ...update,
-        qEbyUpdatedAt: new UTCDate().toISOString(),
+        qEbyUpdatedAt: new Date().toISOString(),
         eby_prop: "complete",
       },
       $unset: {

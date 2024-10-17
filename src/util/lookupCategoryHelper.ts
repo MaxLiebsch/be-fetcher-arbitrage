@@ -12,10 +12,9 @@ import {
   resetEbyProductQuery,
   safeParsePrice,
 } from "@dipmaxtech/clr-pkg";
-import { UTCDate } from "@date-fns/utc";
+
 import {
   deleteProduct,
-  moveProduct,
   updateProductWithQuery,
 } from "../db/util/crudProducts.js";
 import { getEanFromProduct } from "./getEanFromProduct.js";
@@ -108,7 +107,7 @@ export async function handleLookupCategoryNotFound(
   infos.total++;
   queue.total++;
 
-  if (cause === "exceedsLimit") {
+  if (cause === "exceedsLimit" || cause === "timeout") {
     const result = await updateProductWithQuery(
       productId,
       isWholeSaleEby
@@ -126,11 +125,6 @@ export async function handleLookupCategoryNotFound(
   } else if (cause === "notFound") {
     const result = await deleteProduct(productId);
     log(`Deleted: ${collection}-${productId}`, result);
-  } else {
-    !isWholeSaleEby &&
-      (await moveProduct( "grave", productId));
-
-    log(`Moved to grave ${collection}-${productId} ${cause}`);
   }
 }
 
@@ -179,14 +173,14 @@ export const handleCategoryAndUpdate = async (
           },
         }),
         cat_prop: "complete",
-        catUpdatedAt: new UTCDate().toISOString(),
+        catUpdatedAt: new Date().toISOString(),
         e_prc: sellPrice,
         e_uprc: sellUnitPrice,
-        ebyUpdatedAt: new UTCDate().toISOString(),
+        ebyUpdatedAt: new Date().toISOString(),
         ebyCategories: [
           {
             id: mappedCategory.id,
-            createdAt: new UTCDate().toISOString(),
+            createdAt: new Date().toISOString(),
             category: mappedCategory.category,
           },
         ],

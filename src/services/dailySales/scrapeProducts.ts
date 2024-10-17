@@ -12,7 +12,7 @@ import {
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import { parseISO } from "date-fns";
-import { UTCDate } from "@date-fns/utc";
+
 import {
   MAX_RETIRES_SCRAPE_SHOP,
   proxyAuth,
@@ -126,7 +126,7 @@ export const scrapeProducts = async (
                 buyPrice / transformedProduct["qty"]
               );
               transformedProduct["availUpdatedAt"] =
-                new UTCDate().toISOString();
+                new Date().toISOString();
               const existingProduct = await findProductByHash(productHash);
               if (existingProduct) {
                 const {
@@ -147,7 +147,7 @@ export const scrapeProducts = async (
                   `Updating availUpdatedAt: ${salesDbName}-${productId}`,
                   result
                 );
-                const xDaysAgo = new UTCDate();
+                const xDaysAgo = new Date();
                 xDaysAgo.setDate(
                   xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
                 );
@@ -176,7 +176,7 @@ export const scrapeProducts = async (
                 // ean_prop is found and info_prop is missing or completed
                 // info_prop can have the following values: missing, complete
                 if (
-                  new UTCDate(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!info_prop ||
                       (info_prop !== "missing" && info_prop !== "complete")))
@@ -185,7 +185,7 @@ export const scrapeProducts = async (
                 }
 
                 if (
-                  new UTCDate(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
                   (ean_prop === "found" &&
                     (!eby_prop ||
                       (eby_prop !== "missing" && eby_prop !== "complete")))

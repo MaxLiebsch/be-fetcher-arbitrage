@@ -1,7 +1,7 @@
 import { getCrawlDataDb, tasksCollectionName } from "../mongo.js";
 import { findTasksQuery } from "./queries.js";
 import { countPendingProductsForWholesaleSearch } from "./wholesaleSearch/getWholesaleProgress.js";
-import { UTCDate } from "@date-fns/utc";
+
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { MatchProductsTask, Tasks } from "../../types/tasks/Tasks.js";
 import { COOLDOWN, COOLDOWN_LONG } from "../../constants.js";
@@ -125,7 +125,7 @@ export const getNewTask = async (): Promise<Tasks | null | undefined> => {
 
     console.log("FallbackTask ", fallbackTask?.type || "no task");
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN_LONG; // 60 min in future
-    const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString();
+    const cooldown = new Date(Date.now() + coolDownFactor).toISOString();
     if (fallbackTask) {
       const { _id, type } = fallbackTask;
       if (type === TASK_TYPES.WHOLESALE_SEARCH) {

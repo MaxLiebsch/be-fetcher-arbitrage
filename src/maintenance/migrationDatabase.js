@@ -1,6 +1,6 @@
 import { getArbispotterDb, getCrawlDataDb } from "../db/mongo.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
-import { UTCDate } from "@date-fns/utc";
+
 import { findCrawlDataProducts } from "../db/util/crudCrawlDataProduct.js";
 import { add } from "date-fns";
 import { parseAsinFromUrl } from "../../src/util/parseAsin.js";
@@ -47,7 +47,7 @@ const migrationPackage = async () => {
             const spotterSet = {};
             const crawlDataSet = {
               migrationCompleted: "v3",
-              migrationAt: new UTCDate().toISOString(),
+              migrationAt: new Date().toISOString(),
             };
 
             const {
@@ -178,8 +178,8 @@ const migrationPackage = async () => {
                 spotterSet.infoUpdatedAt = aznUpdatedAt;
                 spotterSet.eanUpdatedAt = aznUpdatedAt;
               } else {
-                spotterSet.infoUpdatedAt = new UTCDate().toISOString();
-                spotterSet.eanUpdatedAt = add(new UTCDate(), {
+                spotterSet.infoUpdatedAt = new Date().toISOString();
+                spotterSet.eanUpdatedAt = add(new Date(), {
                   hours: 32,
                 }).toISOString();
               }

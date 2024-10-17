@@ -1,11 +1,11 @@
-import { UTCDate } from "@date-fns/utc";
+
 import {
   COMPLETE_FAILURE_THRESHOLD,
   COOLDOWN,
   COOLDOWN_MULTIPLIER,
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
-  SCRAPE_SHOP_MULTIPLIER,
+  SCRAPE_SHOP_COOLDOWN,
 } from "../constants.js";
 import { hostname } from "../db/mongo.js";
 import { updateTask } from "../db/util/tasks.js";
@@ -54,7 +54,7 @@ async function handleDailySalesTask({
     const update = {
       executing: false,
       lastTotal: taskStats.total,
-      completedAt: new UTCDate().toISOString(),
+      completedAt: new Date().toISOString(),
       visitedPages: queueStats?.visitedPages || [],
     };
     await updateTask(_id, {
@@ -110,14 +110,15 @@ async function handleCrawlTask({
       executing: false,
       visitedPages: queueStats.visitedPages,
     };
+    update["cooldown"] = new Date(
+      Date.now() + SCRAPE_SHOP_COOLDOWN
+    ).toISOString(); // four hours in future
+
     if (retry < MAX_TASK_RETRIES) {
       update["retry"] = retry + 1;
       update["completedAt"] = "";
-      update["cooldown"] = new UTCDate(
-        Date.now() + COOLDOWN * SCRAPE_SHOP_MULTIPLIER
-      ).toISOString(); // four hours in future
     } else {
-      update["completedAt"] = new UTCDate().toISOString();
+      update["completedAt"] = new Date().toISOString();
       update["retry"] = 0;
     }
 
@@ -340,7 +341,7 @@ async function handleScanTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     const update = {
-      completedAt: new UTCDate().toISOString(),
+      completedAt: new Date().toISOString(),
       completed: true,
       executing: false,
       retry: 0,
@@ -376,7 +377,7 @@ async function handleWholesaleTask({
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     const update = {
-      completedAt: new UTCDate().toISOString(),
+      completedAt: new Date().toISOString(),
       executing: false,
       retry: 0,
     };
@@ -387,7 +388,7 @@ async function handleWholesaleTask({
   } else {
     subject = "🚱 " + subject + " " + completionPercentage;
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
-    const cooldown = new UTCDate(Date.now() + coolDownFactor).toISOString(); // 30 min in future
+    const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
     await handleTaskFailed(_id, retry);
   }
   const emailBody = {

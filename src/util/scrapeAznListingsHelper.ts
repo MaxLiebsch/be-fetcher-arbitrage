@@ -10,7 +10,7 @@ import {
   resetAznProductQuery,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
-import { UTCDate } from "@date-fns/utc";
+
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { defaultAznDealTask } from "../constants.js";
 import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn.js";
@@ -53,7 +53,7 @@ export async function handleAznListingProductInfo(
         const a_uprc = roundToTwoDecimals(parsedPrice / sellQty!);
 
         const productUpdate = {
-          [timestamp]: new UTCDate().toISOString(),
+          [timestamp]: new Date().toISOString(),
           a_prc,
           a_uprc,
           ...(rawName && { a_nm: replaceAllHiddenCharacters(rawName) }),

@@ -7,7 +7,7 @@ import {
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
 import { upsertAsin } from "../db/util/asinTable.js";
-import { UTCDate } from "@date-fns/utc";
+
 import { LookupInfoStats } from "../types/taskStats/LookupInfoStats.js";
 
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
@@ -62,8 +62,8 @@ export async function handleLookupInfoProductInfo(
               ? { a_nm: replaceAllHiddenCharacters(a_nm) }
               : {}),
             info_prop: "complete",
-            aznUpdatedAt: new UTCDate().toISOString(),
-            infoUpdatedAt: new UTCDate().toISOString(),
+            aznUpdatedAt: new Date().toISOString(),
+            infoUpdatedAt: new Date().toISOString(),
           },
           $unset: { info_taskId: "" },
         }

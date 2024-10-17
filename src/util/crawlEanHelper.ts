@@ -13,11 +13,10 @@ import {
 import {
   deleteProduct,
   insertProduct,
-  moveProduct,
   updateProductWithQuery,
 } from "../db/util/crudProducts.js";
 import { createHash } from "./hash.js";
-import { UTCDate } from "@date-fns/utc";
+
 import { ScrapeEanStats } from "../types/taskStats/ScrapeEanStats.js";
 import { ScrapeEansTask } from "../types/tasks/Tasks.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
@@ -50,7 +49,7 @@ export async function handleCrawlEanProductInfo(
       const inStock = infoMap.get("instock");
 
       const productUpdate = {
-        eanUpdatedAt: new UTCDate().toISOString(),
+        eanUpdatedAt: new Date().toISOString(),
         ean_prop: "found",
         ean,
         eanList: [ean],
@@ -78,9 +77,7 @@ export async function handleCrawlEanProductInfo(
         });
         log(`Product info updated: ${collectionName}-${productId}`, result);
       } else {
-        const result = await deleteProduct(
-          productId
-        );
+        const result = await deleteProduct(productId);
         log(`Product deleted: ${collectionName}-${productId}`, result);
         if (result.deletedCount === 1) {
           url = removeSearchParams(url);
@@ -98,7 +95,7 @@ export async function handleCrawlEanProductInfo(
     } else {
       taskStats.missingProperties[collectionName]["ean"]++;
       const productUpdate = {
-        eanUpdatedAt: new UTCDate().toISOString(),
+        eanUpdatedAt: new Date().toISOString(),
         ean_prop: ean ? "invalid" : "missing",
       };
       const result = await updateProductWithQuery(productId, {
@@ -111,7 +108,7 @@ export async function handleCrawlEanProductInfo(
     const result = await updateProductWithQuery(productId, {
       $set: {
         ean_prop: "invalid",
-        eanUpdatedAt: new UTCDate().toISOString(),
+        eanUpdatedAt: new Date().toISOString(),
       },
       $unset: {
         ean_taskId: "",
@@ -128,11 +125,11 @@ export async function handleCrawlEanNotFound(
   cause: NotFoundCause,
   productId: ObjectId
 ) {
-  if (cause === "exceedsLimit") {
+  if (cause === "exceedsLimit" || cause === "timeout") {
     const result = await updateProductWithQuery(productId, {
       $set: {
         ean_prop: "timeout",
-        eanUpdatedAt: new UTCDate().toISOString(),
+        eanUpdatedAt: new Date().toISOString(),
       },
       $unset: {
         ean_taskId: "",
@@ -142,8 +139,5 @@ export async function handleCrawlEanNotFound(
   } else if (cause === "notFound") {
     const result = await deleteProduct(productId);
     log(`Deleted: ${collection}-${productId} - ${cause}`, result);
-  } else {
-    await moveProduct("grave", productId);
-    log(`Moved to grave: ${collection}-${productId} - ${cause} - ${cause}`);
   }
 }

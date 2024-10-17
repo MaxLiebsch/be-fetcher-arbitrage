@@ -8,7 +8,7 @@ import {
   safeParsePrice,
   Shop,
 } from "@dipmaxtech/clr-pkg";
-import { UTCDate } from "@date-fns/utc";
+
 import { updateProductWithQuery } from "../../db/util/crudProducts.js";
 import { log } from "../logger.js";
 
@@ -33,7 +33,7 @@ export async function handleDealsProductInfo(
     const parsedDeliveryTime = deliveryTime(inStock || "");
 
     const productUpdate = {
-      availUpdatedAt: new UTCDate().toISOString(),
+      availUpdatedAt: new Date().toISOString(),
       ...(parsedDeliveryTime && { a: parsedDeliveryTime }),
       ...(currency && { cur: currency }),
       ...(prc && { prc, uprc: roundToTwoDecimals(prc / buyQty) }),

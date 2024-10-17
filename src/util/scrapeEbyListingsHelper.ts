@@ -11,7 +11,7 @@ import {
   resetEbyProductQuery,
   replaceAllHiddenCharacters,
 } from "@dipmaxtech/clr-pkg";
-import { UTCDate } from "@date-fns/utc";
+
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
 import { defaultEbyDealTask } from "../constants.js";
 import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
@@ -113,7 +113,7 @@ export async function handleEbyListingProductInfo(
             });
             productUpdate = {
               ...productUpdate,
-              [timestamp]: new UTCDate().toISOString(),
+              [timestamp]: new Date().toISOString(),
               ...(image && { e_img: image }),
             };
             const query = {

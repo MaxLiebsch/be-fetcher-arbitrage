@@ -1,4 +1,4 @@
-import { UTCDate } from "@date-fns/utc";
+
 import { getArbispotterDb, getProductsCol } from "../mongo.js";
 import {
   DbProductRecord,
@@ -29,8 +29,8 @@ export const findProductByHash = async (hash: string) => {
 export const insertProduct = async (product: DbProductRecord) => {
   try {
     const productsCol = await getProductsCol();
-    product["createdAt"] = new UTCDate().toISOString();
-    product["updatedAt"] = new UTCDate().toISOString();
+    product["createdAt"] = new Date().toISOString();
+    product["updatedAt"] = new Date().toISOString();
 
     return await productsCol.insertOne(product);
   } catch (error) {
@@ -52,9 +52,9 @@ export const updateProductWithQuery = async (
   while (attempt < maxRetries) {
     try {
       if (query?.$set) {
-        query.$set["updatedAt"] = new UTCDate().toISOString();
+        query.$set["updatedAt"] = new Date().toISOString();
       } else {
-        query["$set"] = { updatedAt: new UTCDate().toISOString() };
+        query["$set"] = { updatedAt: new Date().toISOString() };
       }
 
       return await productsCol.updateOne({ _id: id }, query); // Exit the function if the update is successful
@@ -94,9 +94,9 @@ export const updateProductHashQuery = async (
   while (attempt < maxRetries) {
     try {
       if (query?.$set) {
-        query.$set["updatedAt"] = new UTCDate().toISOString();
+        query.$set["updatedAt"] = new Date().toISOString();
       } else {
-        query["$set"] = { updatedAt: new UTCDate().toISOString() };
+        query["$set"] = { updatedAt: new Date().toISOString() };
       }
 
       return await productCol.updateOne({ s_hash: hash }, query); // Exit the function if the update is successful
@@ -177,8 +177,8 @@ export const insertProducts = async (products: DbProductRecord[]) => {
   try {
     const productsCol = await getProductsCol();
     products.forEach((product) => {
-      product["createdAt"] = new UTCDate().toISOString();
-      product["updatedAt"] = new UTCDate().toISOString();
+      product["createdAt"] = new Date().toISOString();
+      product["updatedAt"] = new Date().toISOString();
     });
 
     return await productsCol.insertMany(products);

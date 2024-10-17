@@ -1,6 +1,6 @@
 import { startOfDay } from "date-fns";
 import { hostname, wholeSaleColname } from "../mongo.js";
-import { UTCDate } from "@date-fns/utc";
+
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { ObjectId } from "mongodb";
 import { Action } from "../../types/tasks/Tasks.js";
@@ -1239,12 +1239,12 @@ export const countCompletedProductsUpdateProductinfoAgg = [
 /*               Queries: Tasks                                */
 
 export const findTasksQuery = () => {
-  const today = new UTCDate();
+  const today = new Date();
 
-  const fiveMinutesAgo = new UTCDate();
+  const fiveMinutesAgo = new Date();
   fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-  const oneMinuteAgo = new UTCDate();
+  const oneMinuteAgo = new Date();
   oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
   const danglingLookupThreshold =
@@ -1266,7 +1266,7 @@ export const findTasksQuery = () => {
     },
     $set: {
       executing: true,
-      startedAt: new UTCDate().toISOString(),
+      startedAt: new Date().toISOString(),
     },
   };
 
@@ -1299,7 +1299,7 @@ export const findTasksQuery = () => {
           {
             $and: [
               ...crawlShopTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } }
+              { cooldown: { $lt: new Date().toISOString() } }
             ],
 
           },
@@ -1330,43 +1330,43 @@ export const findTasksQuery = () => {
           {
             $and: [
               ...wholesaleTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...wholesaleEbyTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...crawlEanTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...queryEansOnEbyTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...lookupInfoTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...lookupCategoryTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
           {
             $and: [
               ...matchTaskQuery,
-              { cooldown: { $lt: new UTCDate().toISOString() } },
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
           },
         ],
