@@ -1,7 +1,7 @@
 import { shuffle } from "underscore";
 import { updateTaskWithQuery } from "../tasks.js";
 import { getProductsWithShop } from "../getProductsWithShop.js";
-import { ObjectId} from "@dipmaxtech/clr-pkg";
+import { ObjectId } from "@dipmaxtech/clr-pkg";
 import { Action } from "../../../types/tasks/Tasks.js";
 import { PendingShops, PendingShopsWithBatch } from "../../../types/shops.js";
 import { log } from "../../../util/logger.js";
@@ -14,13 +14,13 @@ export async function findPendingProductsForTask(
   taskType: MultiShopTaskTypesWithQuery,
   taskId: ObjectId,
   action: Action,
-  productLimit: number,
+  productLimit: number
 ) {
   if (action === "recover") {
     const recoveryProducts = await getRecoveryProducts(
       taskType,
       taskId,
-      productLimit,
+      productLimit
     );
     log(
       `Missing ${taskType}: ${recoveryProducts.shops
@@ -49,7 +49,8 @@ export async function findPendingProductsForTask(
           shop.d,
           limit,
           action,
-          taskId
+          taskId,
+          Boolean(shop.ean || shop.hasEan)
         );
 
         const productsWithShop = getProductsWithShop(products, shop, shops);

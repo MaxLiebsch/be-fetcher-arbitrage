@@ -2,6 +2,7 @@ import {
   AddProductInfoProps,
   NotFoundCause,
   ProductRecord,
+  Query,
   QueryQueue,
   globalEventEmitter,
   querySellerInfosQueue,
@@ -10,7 +11,7 @@ import {
 } from "@dipmaxtech/clr-pkg";
 import _ from "underscore";
 import { handleResult } from "../handleResult.js";
-import { CONCURRENCY, proxyAuth } from "../constants.js";
+import { CONCURRENCY, defaultQuery, proxyAuth } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { getShop } from "../db/util/shops.js";
 import {
@@ -121,7 +122,6 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
             task
           );
           queuesWithId[queue.queueId] = queue;
-          //@ts-ignore
           eventEmitter.on(
             `${queue.queueId}-finished`,
             async function lookupInfoCallback({ queueId }) {
@@ -162,7 +162,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
     const queueIterator = yieldQueues(queryQueues);
 
     for (let index = 0; index < products.length; index++) {
-      const queue = queueIterator.next().value;
+      const queue = queueIterator.next().value as QueryQueue;
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
@@ -194,16 +194,18 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         await isCompleted();
       };
 
-      const query = {
+      const query: Query = {
+        ...defaultQuery,
         product: {
-          value: hasEan ? asin || ean : asin,
-          key: hasEan ? asin || ean : asin,
+          value: hasEan ? asin || ean || "" : asin || "",
+          key: hasEan ? asin || ean || "" : asin || "",
         },
       };
       queue.pushTask(querySellerInfosQueue, {
         retries: 0,
         shop: toolInfo,
         s_hash,
+        proxyType: toolInfo.proxyType,
         requestId: uuid(),
         targetShop: {
           prefix: "",

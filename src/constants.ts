@@ -1,3 +1,5 @@
+import { Query } from "@dipmaxtech/clr-pkg";
+
 export const MATCH_TIME_LIMIT = 480;
 export const CONCURRENCY = 4;
 export const DEFAULT_CHECK_PROGRESS_INTERVAL = 5 * 60 * 1000;
@@ -33,7 +35,7 @@ export const proxyAuth = {
   password: "",
 };
 
-export const defaultQuery = {
+export const defaultQuery: Query = {
   category: "",
   brand: {
     key: "",
@@ -61,7 +63,7 @@ export const defaultEbyDealTask = {
 export const defaultAznDealTask = {
   timestamp: "aznUpdatedAt",
   taskIdProp: "azn_taskId",
-}
+};
 
 /*
 000-019	GS1 US-Präfix

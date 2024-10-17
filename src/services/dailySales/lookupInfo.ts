@@ -10,7 +10,11 @@ import {
   uuid,
   yieldQueues,
 } from "@dipmaxtech/clr-pkg";
-import { DEFAULT_CHECK_PROGRESS_INTERVAL, proxyAuth } from "../../constants.js";
+import {
+  DEFAULT_CHECK_PROGRESS_INTERVAL,
+  defaultQuery,
+  proxyAuth,
+} from "../../constants.js";
 
 import { updateTask } from "../../db/util/tasks.js";
 import {
@@ -61,7 +65,6 @@ export const lookupInfo = async (
           const queue = new QueryQueue(concurrency, proxyAuth, task);
           queuesWithId[queue.queueId] = queue;
           queryQueues.push(queue);
-          //@ts-ignore
           eventEmitter.on(
             `${queue.queueId}-finished`,
             async function lookupInfoCallback({ queueId }) {
@@ -125,7 +128,7 @@ export const lookupInfo = async (
       const product = task.lookupInfo.pop();
       task.progress.lookupInfo.pop();
       if (!product) continue;
-      const queue = queueIterator.next().value;
+      const queue = queueIterator.next().value as QueryQueue;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
       const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
@@ -160,6 +163,7 @@ export const lookupInfo = async (
         shop: sellerCentral,
         requestId: uuid(),
         s_hash,
+        proxyType: sellerCentral.proxyType,
         targetShop: {
           prefix: "",
           d: shopDomain,
@@ -171,9 +175,10 @@ export const lookupInfo = async (
         addProductInfo,
         queue,
         query: {
+          ...defaultQuery,
           product: {
-            value: hasEan ? asin || ean : asin,
-            key: hasEan ? asin || ean : asin,
+            value: hasEan ? asin || ean || "" : asin || "",
+            key: hasEan ? asin || ean || "" : asin || "",
           },
         },
         prio: 0,

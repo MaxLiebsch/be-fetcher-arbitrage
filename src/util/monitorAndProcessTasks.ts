@@ -58,9 +58,12 @@ async function executeTaskWithLogging(task: Tasks) {
     destroyLogger(type);
     return taskResult;
   } catch (error) {
+    console.log("error:", error);
     timeTracker.markInactive();
     logGlobal(
-      `Hostname: ${hostname} TaskId: ${taskId} Type: ${type} Error: ${error}`
+      `Hostname: ${hostname} TaskId: ${taskId} Type: ${type} Error: ${
+        error instanceof Error ? error.message : error
+      }`
     );
 
     if (error instanceof MissingProductsError) {
