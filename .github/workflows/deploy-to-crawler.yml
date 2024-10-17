@@ -30,6 +30,9 @@ jobs:
     name: Deploy image to crawler
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        server: [vars.HOSTS] # List all 30 servers here
     steps:
       - name: Add all server fingerprints to known_hosts
         run: |
@@ -44,7 +47,7 @@ jobs:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{vars.HOSTS}}
+          host: ${{matrix.server}}
           command_timeout: 60m
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.DEPLOY_CRAWLER_PK }}
