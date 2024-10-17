@@ -5,31 +5,31 @@ on:
     branches:
       - master
 jobs:
-  build:
-    name: Create image for crawler
-    runs-on: ubuntu-latest
-    steps:
-      - name: Execute image builder script
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{secrets.BUILDER_HOST}}
-          username: ${{ secrets.USERNAME }}
-          command_timeout: 60m
-          key: ${{ secrets.DEPLOY_CRAWLER_PK }}
-          passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
-          script: |
-            echo ${{secrets.DOCKER_TOKEN}} | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
-            docker image prune -a -f
-            docker builder prune -f
-            git --work-tree=/root/be-fetcher-arbitrage --git-dir=/root/be-fetcher-arbitrage/.git pull
-            docker build --progress=plain --secret id=ssh_key,src=/root/.ssh/id_clr_pkg --no-cache -t be-fetcher-arbitrage /root/be-fetcher-arbitrage/.
-            docker tag be-fetcher-arbitrage:latest maxliebsch/be-fetcher-arbitrage:latest
-            docker push maxliebsch/be-fetcher-arbitrage:latest
-            docker logout
+  # build:
+  #   name: Create image for crawler
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Execute image builder script
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{secrets.BUILDER_HOST}}
+  #         username: ${{ secrets.USERNAME }}
+  #         command_timeout: 60m
+  #         key: ${{ secrets.DEPLOY_CRAWLER_PK }}
+  #         passphrase: ${{ secrets.DEPLOY_CRAWLER_PASSPHRASE }}
+  #         script: |
+  #           echo ${{secrets.DOCKER_TOKEN}} | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
+  #           docker image prune -a -f
+  #           docker builder prune -f
+  #           git --work-tree=/root/be-fetcher-arbitrage --git-dir=/root/be-fetcher-arbitrage/.git pull
+  #           docker build --progress=plain --secret id=ssh_key,src=/root/.ssh/id_clr_pkg --no-cache -t be-fetcher-arbitrage /root/be-fetcher-arbitrage/.
+  #           docker tag be-fetcher-arbitrage:latest maxliebsch/be-fetcher-arbitrage:latest
+  #           docker push maxliebsch/be-fetcher-arbitrage:latest
+  #           docker logout
   deploy:
     name: Deploy image to crawler
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     strategy:
       matrix:
         server: ${{ fromJSON(vars.HOSTS) }} # List all 30 servers here
