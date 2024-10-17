@@ -1,15 +1,5 @@
 import { TaskErrors } from "./errors.js";
-import {
-  ProductLimitReachedStatus,
-  TaskCompletedStatus,
-  TimeLimitReachedStatus,
-} from "./status.js";
-
-export type ResultType =
-  | typeof TaskCompletedStatus
-  | typeof ProductLimitReachedStatus
-  | typeof TimeLimitReachedStatus;
-
+import { TaskCompletedStatus } from "./status.js";
 
 export const handleResult = (
   result: TaskCompletedStatus | TaskErrors,

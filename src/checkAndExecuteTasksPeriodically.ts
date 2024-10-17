@@ -42,11 +42,7 @@ scheduleJob("*/2 * * * *", async () => {
 
 let taskId = "";
 
-monitorAndProcessTasks()
-  .then()
-  .catch((e) => {
-    logGlobal(`Error: Queue failed on ${hostname} error: ${e.message}`);
-  });
+monitorAndProcessTasks().then();
 
 const errorHandler = (err: any, origin: any) => {
   const IsTargetError = `${err}`.includes("Target closed");
@@ -88,7 +84,6 @@ const errorHandler = (err: any, origin: any) => {
   } else {
     return;
   }
-
 };
 process.on("unhandledRejection", errorHandler);
 

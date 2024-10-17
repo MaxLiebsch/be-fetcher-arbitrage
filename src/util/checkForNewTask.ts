@@ -23,7 +23,8 @@ export async function checkForNewTask() {
   });
   if (remainingTask) {
     logGlobal(`Recovering task ${remainingTask.id} ${remainingTask.id}`);
-    return { ...remainingTask, action: "recover" as Action };
+    const task = { ...remainingTask, action: "recover" as Action };
+    return task;
   }
   const task = await getNewTask();
   if (task) return task;
