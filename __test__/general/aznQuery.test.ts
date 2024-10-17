@@ -1,16 +1,14 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-//@ts-ignore
-import { resetAznProductQuery } from "../../src/db/util/aznQueries.js";
-import { UTCDate } from "@date-fns/utc";
+import {resetAznProductQuery} from "@dipmaxtech/clr-pkg";
 
 describe("aznQuery", () => {
   test("aznQuery", () => {
     const reset = resetAznProductQuery({ info_prop: "missing" });
     
     if (reset?.$set) {
-        reset.$set["updatedAt"] = new UTCDate().toISOString();
+        reset.$set["updatedAt"] = new Date().toISOString();
     } else {
-        reset["$set"] = { updatedAt: new UTCDate().toISOString() };
+        reset["$set"] = { updatedAt: new Date().toISOString() };
     }
     console.log("reset:", reset);
     
