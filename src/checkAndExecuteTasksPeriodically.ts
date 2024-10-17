@@ -6,7 +6,8 @@ import { updateAllTasksProgress } from "./db/util/updateAllTasksProgress.js";
 import { scheduleJob } from "node-schedule";
 import { updateAllShopsStats } from "./db/util/updateShopStats.js";
 import pkg from "fs-jetpack";
-const {write } = pkg;
+const { write } = pkg;
+import { exec } from "child_process";
 
 const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
@@ -68,11 +69,26 @@ const errorHandler = (err: any, origin: any) => {
   logGlobal(
     `Error: ${type} on ${hostname} taskId: ${taskId} error: ${err?.message}`
   );
+
+  // Run pkill -f puppeteer when an error occurs
+  exec("pkill -f puppeteer", (error, stdout, stderr) => {
+    if (error) {
+      logGlobal(`Error executing pkill: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      logGlobal(`pkill stderr: ${stderr}`);
+      return;
+    }
+    logGlobal(`pkill stdout: ${stdout}`);
+  });
+
   if (type === "unhandledException") {
     throw err; //unhandledException:  Re-throw all other errors
   } else {
     return;
   }
+
 };
 process.on("unhandledRejection", errorHandler);
 
