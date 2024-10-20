@@ -370,7 +370,7 @@ export const countPendingProductsForMatchQuery = (
   hasEan?: boolean
 ) => {
   const twentyFourAgo = subDateDaysISO(1);
-  let query = {
+  let query: Query = {
     $and: [
       { sdmn: domain },
       { taskId: { $exists: false } },
@@ -384,7 +384,6 @@ export const countPendingProductsForMatchQuery = (
     ],
   };
   if (hasEan) {
-    // @ts-ignore
     query["$and"].push({ $or: eanExistsQuery });
   }
   return query;
@@ -1299,9 +1298,8 @@ export const findTasksQuery = () => {
           {
             $and: [
               ...crawlShopTaskQuery,
-              { cooldown: { $lt: new Date().toISOString() } }
+              { cooldown: { $lt: new Date().toISOString() } },
             ],
-
           },
           {
             $and: dailySalesTaskQuery,

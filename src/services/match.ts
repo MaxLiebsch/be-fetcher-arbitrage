@@ -20,9 +20,7 @@ import {
 } from "../constants.js";
 import { checkProgress } from "../util/checkProgress.js";
 import { parseAsinFromUrl } from "../util/parseAsin.js";
-import {
-  updateMatchProgress,
-} from "../util/updateProgressInTasks.js";
+import { updateMatchProgress } from "../util/updateProgressInTasks.js";
 import { handleRelocateLinks } from "../util/handleRelocateLinks.js";
 import { parseEsinFromUrl } from "../util/parseEsin.js";
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
@@ -35,6 +33,7 @@ import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { log } from "../util/logger.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
 import { lockProducts } from "../db/util/multiShopUtilities/lockProducts.js";
+import { findPendingProductsForMatchTask } from "../db/util/singleShopUtilities/findPendingProductsForMatchTask.js";
 
 export default async function match(task: MatchProductsTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -54,12 +53,12 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
 
     const { hasEan, ean } = srcShop;
 
-    const lockedProducts = await lockProducts(
+    const lockedProducts = await findPendingProductsForMatchTask(
       "MATCH_PRODUCTS",
       shopDomain,
-      productLimit,
-      action || "none",
       taskId,
+      action || "none",
+      productLimit,
       Boolean(hasEan || ean)
     );
 
@@ -114,6 +113,8 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
 
     const procProductsPromiseArr = [];
 
+    let completed = false;
+
     async function isProcessComplete() {
       const check = await checkProgress({
         task,
@@ -122,7 +123,8 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         startTime,
         productLimit: _productLimit,
       });
-      if (check instanceof TaskCompletedStatus) {
+      if (check instanceof TaskCompletedStatus  && !completed) {
+        completed = true;
         const remaining = await countRemainingProductsShop(
           shopDomain,
           taskId,
@@ -132,16 +134,16 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         clearInterval(interval);
         await updateMatchProgress(shopDomain, hasEan); // update match progress
         handleResult(check, resolve, reject);
+      }else if (check !== undefined && completed) {
+        log(`Task already completed ${completed}`);
+      }else {
+
       }
     }
     const interval = setInterval(
       async () => await isProcessComplete(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
-
-    const shuffled = shuffle(lockedProducts);
-
-    const sliced = shuffled;
 
     const handleOutput = async (
       procProd: DbProductRecord,
@@ -187,10 +189,10 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       );
     };
 
-    for (let index = 0; index < sliced.length; index++) {
-      const product = sliced[index];
+    for (let index = 0; index < lockedProducts.length; index++) {
+      const product = lockedProducts[index];
 
-      const { nm, mnfctr } = product;
+      const { nm, mnfctr, _id: productId } = product;
       const ean = getEanFromProduct(product);
 
       let reducedName = reduceString(nm, 55);
@@ -218,7 +220,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       const _shops = await queryTargetShops(
         startShops ? startShops : targetShops,
         queue,
-        shops,  
+        shops,
         query,
         task,
         prodInfo,
@@ -245,7 +247,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
             );
             await handleOutput(procProd, product);
           } else {
-            await updateProductWithQuery(product._id, {
+            await updateProductWithQuery(productId, {
               $set: {
                 matched: false,
               },
