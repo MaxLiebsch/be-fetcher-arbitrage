@@ -1,4 +1,3 @@
-
 import { getArbispotterDb, getProductsCol } from "../mongo.js";
 import {
   DbProductRecord,
@@ -128,6 +127,11 @@ export const updateProductHashQuery = async (
 export const countProducts = async (query: Filter<DbProductRecord>) => {
   const productsCol = await getProductsCol();
   return productsCol.countDocuments(query);
+};
+
+export const findProduct = async (query: Filter<DbProductRecord>) => {
+  const productsCol = await getProductsCol();
+  return productsCol.findOne({ ...query });
 };
 
 export const findProductsNoLimit = async (

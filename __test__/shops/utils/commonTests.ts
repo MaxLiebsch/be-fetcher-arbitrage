@@ -9,6 +9,7 @@ import {
   browseProductpages,
   checkForBlockingSignals,
   crawlProducts,
+  getAznAvgPrice,
   getCategories,
   getPage,
   getPageNumberFromPagination,
@@ -33,7 +34,7 @@ import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
 import { updateShops } from "../../../src/db/util/shops.js";
 import { proxyAuth } from "../../../src/constants.js";
 import { shops } from "../../../src/shops.js";
-import {priceToString}from '../../../src/util/lookupInfoHelper.js'
+import { priceToString } from "../../../src/util/lookupInfoHelper.js";
 
 let browser: Browser | null = null;
 let page: Page | null = null;
@@ -198,7 +199,7 @@ export const findMainCategories = async () => {
   }
 };
 export const findSubCategories = async () => {
-  if (page  && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     try {
       await page.goto(testParameters[shopDomain].subCategoryUrl);
       const categories = await getCategories(
@@ -244,7 +245,7 @@ export const findSubCategories = async () => {
   }
 };
 export const productPageCount = async (url = "") => {
-  if (page  && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     await page.goto(
       url ? url : testParameters[shopDomain].initialProductPageUrl
     );
@@ -257,7 +258,7 @@ export const productPageCount = async (url = "") => {
 };
 
 export const countProductPages = async () => {
-  if (page  && shops[shopDomain]) {
+  if (page && shops[shopDomain]) {
     await page.goto(testParameters[shopDomain].countProductPageUrl);
 
     const count = await getProductCount(page, shops[shopDomain].productList);
@@ -497,9 +498,23 @@ export const extractProductInfos = async (addProductInfo: any) => {
   }
 };
 
-export const querySellerInfos = async (addProductInfo: any, product: DbProductRecord) => {
+export const querySellerInfos = async (
+  addProductInfo: any,
+  product: DbProductRecord
+) => {
   if (page && shops && shops[shopDomain]) {
     const { eanList, asin, prc } = product;
+
+    const { avgPrice, a_useCurrPrice, a_prc } = getAznAvgPrice(
+      product,
+      product.a_prc || 0
+    );
+    const selectedPrice = a_useCurrPrice
+      ? priceToString(a_prc)
+      : avgPrice > 0
+      ? priceToString(avgPrice)
+      : priceToString(prc);
+
     return await querySellerInfosQueue(page, {
       shop: shops[shopDomain],
       addProductInfo,
@@ -511,7 +526,7 @@ export const querySellerInfos = async (addProductInfo: any, product: DbProductRe
         product: {
           value: asin || eanList[0],
           key: asin || eanList[0],
-          price: priceToString(prc),
+          price: selectedPrice,
         },
       },
       // @ts-ignore
