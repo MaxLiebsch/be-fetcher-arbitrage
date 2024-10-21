@@ -404,6 +404,21 @@ const testParameters = {
     nextPageUrl:
       "https://www.thalia.de/kategorie/brettspiele-4810/?p=2",
   },
+  "otto.de": {
+    salesUrl: "https://www.otto.de/sale/",
+    ean: "4011577840445",
+    productPageUrl:"https://www.otto.de/p/bauknecht-einbaubackofen-bar2-kn5v2-in-mit-2-fach-teleskopauszug-C1735919991/",
+    productsPerPage: 120,
+    productsPerPageAfterLoadMore: 96,
+    subCategoriesCount: 18,
+    mainCategoriesCount: 4,
+    initialProductPageUrl:
+      "https://www.otto.de/haushalt/haushaltsgeraete/",
+    subCategoryUrl:
+      "https://www.otto.de/haushalt/haushaltsgeraete/",
+    nextPageUrl:
+      "https://www.otto.de/haushalt/haushaltsgeraete/?l=gp&o=120",
+  },
 };
 
 

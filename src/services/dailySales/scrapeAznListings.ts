@@ -19,7 +19,7 @@ import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { DealsOnAznStats } from "../../types/taskStats/DealsOnAznStats.js";
 import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 
-export const scrapeAznListings = (
+export const scrapeAznListingsDailyDeals = (
   amazon: Shop,
   origin: Shop,
   task: DailySalesTask

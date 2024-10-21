@@ -14,7 +14,7 @@ import {
   MIN_DAILY_SALES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
-import { scrapeAznListings } from "./dailySales/scrapeAznListings.js";
+import { scrapeAznListingsDailyDeals } from "./dailySales/scrapeAznListings.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "../db/util/tasks.js";
 import { getElapsedTime } from "../util/dates.js";
@@ -286,7 +286,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(`DailySales: AznListings ${products.length}`);
         task.aznListings = products;
         task.browserConfig.crawlAznListings.productLimit = products.length;
-        const crawlAznListingsInfo = await scrapeAznListings(
+        const crawlAznListingsInfo = await scrapeAznListingsDailyDeals(
           amazon,
           origin,
           task

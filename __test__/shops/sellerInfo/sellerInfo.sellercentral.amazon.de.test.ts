@@ -8,7 +8,11 @@ import {
   myBeforeAll,
   querySellerInfos,
 } from "../utils/commonTests.js";
-import { CHROME_VERSIONS, generateUpdate } from "@dipmaxtech/clr-pkg";
+import {
+  CHROME_VERSIONS,
+  DbProductRecord,
+  generateUpdate,
+} from "@dipmaxtech/clr-pkg";
 
 const shopDomain = "sellercentral.amazon.de";
 
@@ -37,10 +41,10 @@ const product = {
   nm: "Dura-Beam Classic Downy Airbed",
   img: "https://cdn.idealo.com/folder/Product/201481/7/201481785/s1_produktbild_gross/intex-dura-beam-classic-downy-airbed-cot-64756.jpg",
   lnk: "https://www.idealo.de/preisvergleich/OffersOfProduct/201481785_-dura-beam-classic-downy-airbed-cot-64756-intex-pools.html",
-  prc: 7.84,
+  prc: 18.9,
   a_lnk: "https://www.amazon.de/dp/product/B07LH45G51",
   a_nm: "Intex Luftbett, 64756, bunt, 191 x 76 x 25 cm",
-  asin: "B0001D8PBW",
+  asin: "B00L9IVBZA",
   a_prc: 1,
   a_p_mrgn: -12.36,
   a_p_mrgn_pct: -1236,
@@ -264,11 +268,13 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       productInfo: any[] | null;
       url: string;
     }) => {
-      console.log('productInfo:', productInfo)
+      console.log("productInfo:", productInfo);
       if (productInfo) {
         try {
-          const {prc, a_qty, qty} = product
-          const update = generateUpdate(productInfo, prc, a_qty, qty);
+          const update = generateUpdate(
+            productInfo,
+            product as unknown as DbProductRecord
+          );
           console.log(update);
         } catch (error) {
           console.log("error:", error);
@@ -276,10 +282,13 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         }
       }
     };
-    await querySellerInfos(addProductInfo, product.asin || product.eanList[0]);
+    await querySellerInfos(
+      addProductInfo,
+      product as unknown as DbProductRecord
+    );
   }, 200000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

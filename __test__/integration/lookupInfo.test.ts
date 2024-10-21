@@ -12,7 +12,7 @@ import {
 const shopDomain = "gamestop.de";
 
 describe("lookup info", () => {
-  let productLimit = 15;
+  let productLimit = 45;
   beforeAll(async () => {
     const aznListings = read(
       path("__test__/static/collections/arbispotter.gamestop.de-with-ean.json"),
@@ -31,12 +31,12 @@ describe("lookup info", () => {
         return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
       })
     );
-    await resetProperty({
-      $unset: {
-        info_prop: "",
-        info_taskId: "",
-      },
-    });
+    // await resetProperty({
+    //   $unset: {
+    //     info_prop: "",
+    //     info_taskId: "",
+    //   },
+    // });
   }, 100000);
 
   test("lookup info listings", async () => {
@@ -52,6 +52,6 @@ describe("lookup info", () => {
       _id: new ObjectId("60f3b3b3b3b3b3b3b3b3b3b3"),
       action: "none",
     });
-    console.log("infos:", infos);
+    console.log("infos:", JSON.stringify(infos,null,2));
   }, 1000000);
 });

@@ -9,6 +9,7 @@ import {
   safeParsePrice,
   resetAznProductQuery,
   replaceAllHiddenCharacters,
+  getAznAvgPrice,
 } from "@dipmaxtech/clr-pkg";
 
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
@@ -46,12 +47,14 @@ export async function handleAznListingProductInfo(
     const bsr = infoMap.get("bsr");
     const parsedPrice = safeParsePrice(price || "0");
 
-    if (parsedPrice > 0) {
+    const { a_useCurrPrice, a_prc, a_uprc, avgPrice } = getAznAvgPrice(
+      product,
+      parsedPrice
+    );
+
+    if (a_prc > 0) {
       if (costs && costs.azn > 0) {
         const currency = detectCurrency(price);
-        const a_prc = parsedPrice;
-        const a_uprc = roundToTwoDecimals(parsedPrice / sellQty!);
-
         const productUpdate = {
           [timestamp]: new Date().toISOString(),
           a_prc,
@@ -60,11 +63,12 @@ export async function handleAznListingProductInfo(
           ...(currency && { a_cur: currency }),
           ...(image && { a_img: image }),
           ...(bsr && { bsr }),
+          a_useCurrPrice,
         };
 
         const arbitrage = calculateAznArbitrage(
           buyPrice * (sellQty! / buyQty),
-          a_prc,
+          a_useCurrPrice ? a_prc : avgPrice,
           costs,
           tax
         );
@@ -107,9 +111,6 @@ export async function handleAznListingNotFound(
   collection: string,
   id: ObjectId
 ) {
-  const result = await updateProductWithQuery(
-    id,
-    resetAznProductQuery()
-  );
+  const result = await updateProductWithQuery(id, resetAznProductQuery());
   log(`Not found: ${collection}-${id}`, result);
 }

@@ -32,10 +32,9 @@ export async function handleLookupInfoProductInfo(
     try {
       const update = generateUpdate(
         productInfo,
-        buyPrice,
-        sellQty || 1,
-        buyQty || 1
+        product
       );
+
       const { costs, a_nm, asin } = update;
 
       update["a_orgn"] = "a";
@@ -53,21 +52,18 @@ export async function handleLookupInfoProductInfo(
         };
       }
 
-      const result = await updateProductWithQuery(
-        productId,
-        {
-          $set: {
-            ...update,
-            ...(a_nm && typeof a_nm === "string"
-              ? { a_nm: replaceAllHiddenCharacters(a_nm) }
-              : {}),
-            info_prop: "complete",
-            aznUpdatedAt: new Date().toISOString(),
-            infoUpdatedAt: new Date().toISOString(),
-          },
-          $unset: { info_taskId: "" },
-        }
-      );
+      const result = await updateProductWithQuery(productId, {
+        $set: {
+          ...update,
+          ...(a_nm && typeof a_nm === "string"
+            ? { a_nm: replaceAllHiddenCharacters(a_nm) }
+            : {}),
+          info_prop: "complete",
+          aznUpdatedAt: new Date().toISOString(),
+          infoUpdatedAt: new Date().toISOString(),
+        },
+        $unset: { info_taskId: "" },
+      });
       log(`Updated infos: ${collection}-${productId.toString()}`, result);
     } catch (error) {
       if (error instanceof Error) {
@@ -112,4 +108,8 @@ export async function handleLookupInfoNotFound(
     })
   );
   log(`Not found: ${collection}-${productId.toString()}`, result);
+}
+
+export function priceToString(price: number) {
+  return price.toString().replace(".", ",");
 }

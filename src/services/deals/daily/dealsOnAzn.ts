@@ -5,7 +5,6 @@ import { TaskCompletedStatus } from "../../../status.js";
 import { proxyAuth } from "../../../constants.js";
 import { deleteProduct } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import { scrapeAznListings } from "../weekly/negAznDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
 import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats.js";
@@ -16,6 +15,7 @@ import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/findPendingProductsForTask.js";
 import { ShopPick } from "../../../types/shops.js";
+import { scrapeAznListings } from "../../../util/deals/scrapeAznListings.js";
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;

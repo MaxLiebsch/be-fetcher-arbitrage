@@ -33,7 +33,7 @@ describe("crawlproducts", () => {
   });
   test("lookup info listings", async () => {
     const task = (await findTask({
-      id: "crawl_shop_euronics.de_1_of_3",
+      id: "crawl_shop_cyberport.de_1_of_4",
     })) as ScrapeShopTask;
     if (!task) {
       console.log("Task not found");

@@ -170,7 +170,7 @@ export const lookupInfo = async (
           name: shopDomain,
         },
         addProduct,
-        lookupRetryLimit: 0,
+        lookupRetryLimit: 1,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,

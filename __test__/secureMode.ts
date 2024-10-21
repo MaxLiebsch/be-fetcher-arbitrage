@@ -19,9 +19,9 @@ const secureMode = async () => {
   if (!shop) return;
 
   const { exceptions } = shop;
-  // const lnk = "https://www.browserleaks.com/ip";
-  const lnk =
-    "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
+  const lnk = "https://www.otto.de";
+  // const lnk =
+  //   "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
   const requestId = uuid();
   const proxyType = "de";
   const { page } = await getPage({
@@ -47,14 +47,10 @@ const secureMode = async () => {
     }
     return originalGoto.apply(this, [url, options]);
   };
-  await page.goto("https://bot-detector.rebrowser.net/");
-  const pages = await browser.pages()
-  if(pages){
-    console.log('pages:', pages[0].url())
-  
-  }
+  // await page.goto("https://bot-detector.rebrowser.net/");
+
   // const page = await browser.newPage();
-  // const result = await page.goto(lnk);
+  const result = await page.goto(lnk);
   // const status = result?.status();
   // if (status !== 200) {
   //   const response = await page.reload();

@@ -4,6 +4,7 @@ import {
   ProductRecord,
   Query,
   QueryQueue,
+  getAznAvgPrice,
   globalEventEmitter,
   querySellerInfosQueue,
   uuid,
@@ -17,6 +18,7 @@ import { getShop } from "../db/util/shops.js";
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
+  priceToString,
 } from "../util/lookupInfoHelper.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { getEanFromProduct } from "../util/getEanFromProduct.js";
@@ -166,7 +168,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
-      const { asin, _id: productId, s_hash } = product;
+      const { asin, _id: productId, s_hash, prc } = product;
       const ean = getEanFromProduct(product);
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async ({
@@ -194,11 +196,21 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         await isCompleted();
       };
 
+      const { avgPrice, a_useCurrPrice, a_prc } = getAznAvgPrice(
+        product,
+        product.a_prc || 0
+      );
+
       const query: Query = {
         ...defaultQuery,
         product: {
           value: hasEan ? asin || ean || "" : asin || "",
           key: hasEan ? asin || ean || "" : asin || "",
+          price: a_useCurrPrice
+            ? priceToString(a_prc)
+            : avgPrice > 0
+            ? priceToString(avgPrice)
+            : priceToString(prc),
         },
       };
       queue.pushTask(querySellerInfosQueue, {
@@ -213,7 +225,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           name: shopDomain,
         },
         addProduct,
-        lookupRetryLimit: 0,
+        lookupRetryLimit: 2,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,

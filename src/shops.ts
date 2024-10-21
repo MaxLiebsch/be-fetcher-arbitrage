@@ -4358,6 +4358,135 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: "domcontentloaded",
     },
   },
+  "lidl.de": {
+    actions: [],
+    active: false,
+    categories: {
+      exclude: [
+        "lidl-connect",
+        "newsletter-anmeldeseite",
+        "lidl-fotos",
+        "themenwelt",
+        "rezepte",
+        "lidl-plus",
+        "mode",
+        "guthabenkarten",
+        "gutscheine",
+      ],
+      sel: "li[data-mdd-level2-id] a",
+      type: "href",
+      subCategories: [
+        {
+          sel: "ul.s-facet__list li.s-facet__item--parent div.s-link--REFINE a",
+          type: "href",
+        },
+      ],
+    },
+    crawlActions: [],
+    d: "mindfactory.de",
+    entryPoints: [
+      {
+        url: "https://www.mindfactory.de",
+        category: "default",
+      },
+    ],
+    manualCategories: [],
+    mimic: "div[id=boxtop] div.logo-parent",
+    paginationEl: [
+      {
+        type: "pagination",
+        sel: "ul.pagination",
+        nav: "/page/",
+        calculation: {
+          method: "find_highest",
+          last: "ul.pagination a",
+          sel: "ul.pagination a",
+        },
+      },
+    ],
+    productList: [
+      {
+        sel: "div[id=bProducts]",
+        productCntSel: [
+          "div.show-articles-per-page-top span.bold:nth-child(3)",
+        ],
+        product: {
+          sel: "div.p",
+          type: "not_link",
+          details: [
+            {
+              content: "link",
+              sel: "div.pcontent a",
+              type: "href",
+            },
+            {
+              content: "image",
+              sel: "div.pcontent img",
+              type: "data-src",
+            },
+            {
+              content: "name",
+              sel: "div.pcontent div.pname",
+              type: "text",
+            },
+            {
+              content: "price",
+              sel: "div.pcontent div.pprice",
+              type: "text",
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: "mix",
+    hasEan: true,
+    product: [
+      {
+        sel: "div.pshipping a",
+        parent: "form[name=cart_quantity]",
+        type: "text",
+        content: "instock",
+      },
+      {
+        sel: "div.pprice",
+        parent: "form[name=cart_quantity]",
+        type: "text",
+        content: "price",
+      },
+      {
+        sel: "span[itemprop=gtin8]",
+        parent: "form[name=cart_quantity]",
+        type: "content",
+        content: "ean",
+      },
+      {
+        sel: "div[id=bImageCarousel] img",
+        parent: "form[name=cart_quantity]",
+        type: "src",
+        content: "image",
+      },
+    ],
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        "media",
+        "font",
+        "stylesheet",
+        "ping",
+        "image",
+        "xhr",
+        "fetch",
+
+        "script",
+        "other",
+      ],
+    },
+    waitUntil: {
+      product: "domcontentloaded",
+      entryPoint: "domcontentloaded",
+    },
+  },
   "mueller.de": {
     actions: [],
     active: true,
@@ -5996,6 +6125,20 @@ export const shops: { [key: string]: Shop } = {
         step: 1,
       },
       {
+        sel: "tbody tr:nth-child(5) td:nth-child(2) kat-star-rating",
+        parent: "table.product-detail-table-right",
+        type: "value",
+        content: "a_rating",
+        step: 1,
+      },
+      {
+        sel: "tbody tr:nth-child(5) td:nth-child(2) span.paddedLittle",
+        parent: "table.product-detail-table-right",
+        type: "text",
+        content: "a_reviewcnt",
+        step: 1,
+      },
+      {
         sel: "tbody tr:nth-child(5) td:nth-child(5)",
         parent: "table.product-detail-table-right",
         type: "text",
@@ -6011,11 +6154,26 @@ export const shops: { [key: string]: Shop } = {
       },
       {
         sel: "kat-label",
+        parent: "kat-box[id=ProgramCard]:nth-child(2) kat-expander div.section-expander-content",
+        type: "text",
+        content: "costs.azn",
+        step: 1.2,
+      },
+      {
+        sel: "kat-label",
         parent:
           "kat-expander div.section-expander-content div.input-block:nth-child(3)",
         type: "text",
         content: "costs.varc",
         step: 1,
+      },
+      {
+        sel: "kat-label",
+        parent:
+          "kat-box[id=ProgramCard]:nth-child(2) kat-expander div.section-expander-content div.input-block:nth-child(3)",
+        type: "text",
+        content: "costs.varc",
+        step: 1.2,
       },
       {
         sel: "kat-input",
@@ -6087,7 +6245,7 @@ export const shops: { [key: string]: Shop } = {
         action: "type",
         step: 1,
         wait: false,
-        what: ["product"],
+        what: ["product.value"],
       },
       {
         type: "shadowroot-button-test",
@@ -6106,6 +6264,18 @@ export const shops: { [key: string]: Shop } = {
         action: "click",
         step: 1,
         wait: true,
+      },
+      {
+        type: "shadowroot-input",
+        sel: "kat-box[id=ProgramCard]:nth-child(2) kat-input-group kat-input",
+        input_sel: "input",
+        name: "enter price",
+        action: "type",
+        step: 1.2,
+        wait: false,
+        blur: true,
+        clear: true,
+        what: ["product.price"],
       },
       {
         type: "shadowroot-button-test",
@@ -6294,7 +6464,7 @@ export const shops: { [key: string]: Shop } = {
         "ebooks",
         "tolino",
         "hoerbuch",
-        'marken',
+        "marken",
         "club",
         "lehmanns",
         "gutschein",
@@ -6314,7 +6484,7 @@ export const shops: { [key: string]: Shop } = {
           visible: false,
           sel: "ul.logo-list li.logo-box a",
           type: "href",
-        }
+        },
       ],
     },
     crawlActions: [],
@@ -6440,7 +6610,7 @@ export const shops: { [key: string]: Shop } = {
         type: "parse_json_element",
         content: "image",
         path: "image[0]",
-      }
+      },
     ],
     proxyType: "mix",
     queryActions: [],
@@ -6594,8 +6764,16 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: false,
     categories: {
-      exclude: ["marken"],
-      sel: "a.nav_navi-elem",
+      exclude: [
+        "marken",
+        "herren-mode",
+        "ratgeber",
+        "damen-mode",
+        "mode",
+        "inspiration",
+        "marke",
+      ],
+      sel: "ul.nav_desktop-global-navigation__content a",
       type: "href",
       subCategories: [
         {
@@ -6613,7 +6791,7 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     manualCategories: [],
-    mimic: "svg.pl_logo",
+    mimic: "div.find_ottoLogo svg.pl_logo",
     hasEan: true,
     paginationEl: [
       {
@@ -6637,73 +6815,80 @@ export const shops: { [key: string]: Shop } = {
     ],
     productList: [
       {
-        sel: "div.sr-resultList",
+        sel: "section[id=reptile-tilelist]",
         productCntSel: ["span.reptile_tilelist__itemCount"],
         product: {
-          sel: "div.sr-resultList div.sr-resultItemTile",
+          sel: "section[id=reptile-tilelist] article",
           type: "not_link",
           details: [
             {
               content: "link",
-              sel: "div.sr-resultItemLink a",
+              sel: "a.find_tile__productLink",
               type: "href",
             },
             {
               content: "image",
-              sel: "div.sr-resultItemTile__imageSection img.sr-resultItemTile__image",
+              sel: "img.find_tile__productImage",
               type: "src",
             },
             {
               content: "name",
-              sel: "div.sr-productSummary__title",
+              sel: "p.find_tile__name",
               type: "text",
             },
             {
-              content: "description",
-              sel: "div.sr-productSummary__description",
-              type: "text",
-            },
-            {
-              content: "price",
-              sel: "div.sr-detailedPriceInfo__price",
-              type: "text",
-            },
-          ],
-        },
-      },
-      {
-        sel: "div.offerList",
-        productCntSel: ["span.reptile_tilelist__itemCount"],
-        product: {
-          sel: "div.offerList a.offerList-itemWrapper",
-          type: "link",
-          details: [
-            {
-              content: "image",
-              sel: "img",
-              type: "src",
-            },
-            {
-              content: "name",
-              sel: "div.offerList-item-description-title",
-              type: "text",
-            },
-            {
-              content: "description",
-              sel: "span.description-part-one",
+              content: "mnfctr",
+              sel: "p.find_tile__brand",
               type: "text",
             },
             {
               content: "price",
-              sel: "div.offerList-item-priceMin",
+              sel: "span.find_tile__retailPrice",
               type: "text",
             },
           ],
         },
       },
     ],
-    product: [],
-    proxyType: "mix",
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "ean",
+        path: "gtin13",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "sku",
+        path: "sku",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "instock",
+        path: "offers.availability",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "price",
+        path: "offers.price",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "name",
+        path: "name",
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: "parse_json_element",
+        content: "image",
+        path: "image[0]",
+      },
+    ],
+    proxyType: "de",
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -6715,7 +6900,6 @@ export const shops: { [key: string]: Shop } = {
         "image",
         "xhr",
         "fetch",
-
         "script",
         "other",
       ],
@@ -6884,8 +7068,8 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: false,
     categories: {
-      exclude: [],
-      sel: "nav div[data-testid=stack] a.MuiTypography-root",
+      exclude: ["mode", "arbeitskleidung", "herren", "damen", "kinder"],
+      sel: "nav li a",
       type: "href",
       subCategories: [
         {

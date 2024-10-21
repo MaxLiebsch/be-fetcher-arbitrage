@@ -1,0 +1,138 @@
+yarn run v1.22.22
+$ C:\Users\love\mx\be-fetcher-arbitrage\node_modules\.bin\cross-env NODE_ENV=development yarn jest lookupInfo.test
+$ C:\Users\love\mx\be-fetcher-arbitrage\node_modules\.bin\jest lookupInfo.test
+  console.log
+    lookup info listings 50
+
+      at log (__test__/integration/lookupInfo.test.ts:25:13)
+
+  console.log
+    Browser Version:  Chrome/129.0.6668.100
+
+      at call (../clr-pkg/src/util/browser/browsers.ts:217:14)
+
+  console.log
+    Browser Version:  Chrome/129.0.6668.100
+
+      at call (../clr-pkg/src/util/browser/browsers.ts:217:14)
+
+  console.log
+    Browser Version:  Chrome/129.0.6668.100
+
+      at call (../clr-pkg/src/util/browser/browsers.ts:217:14)
+
+  console.log
+    Running:  1 Queue: 1
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+    Running:  1 Queue: 1
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+    Running:  1 Queue: 1
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+    ea4e103f  Retries:  0  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+
+  console.log
+    Running:  1 Queue: 7
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+     Details: Ôøö Id: ea4e103f - LOOKUP_INFO - Error: AznTimeout - sellercentral.amazon.de - Hash: undefined, Status: error-handled, Retries: 0 ProxyType: mix
+
+      at log (../clr-pkg/src/util.services/queue/BaseQueue.ts:1037:19)
+
+  console.log
+    05e76992  Retries:  0  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+
+  console.log
+    Running:  1 Queue: 7
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+     Details: Ôøö Id: 05e76992 - LOOKUP_INFO - Error: AznTimeout - sellercentral.amazon.de - Hash: undefined, Status: error-handled, Retries: 0 ProxyType: mix
+
+      at log (../clr-pkg/src/util.services/queue/BaseQueue.ts:1037:19)
+
+  console.log
+    0b559e90  Retries:  0  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+
+  console.log
+    Running:  1 Queue: 7
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+     Details: Ôøö Id: 0b559e90 - LOOKUP_INFO - Error: AznTimeout - sellercentral.amazon.de - Hash: undefined, Status: error-handled, Retries: 0 ProxyType: mix
+
+      at log (../clr-pkg/src/util.services/queue/BaseQueue.ts:1037:19)
+
+  console.log
+    05e76992  Clear timeout before new request [Function: earlyResolve]
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:187:13)
+
+  console.log
+    resolved...
+
+      at Object.log [as resolveTimeout] (../clr-pkg/src/util/query/querySellerInfosQueue.ts:38:15)
+
+  console.log
+    05e76992  Retries:  1  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+
+  console.log
+    Running:  1 Queue: 7
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+     Details: Ôøö Id: 05e76992 - LOOKUP_INFO - Error: AznTimeout - sellercentral.amazon.de - Hash: undefined, Status: error-handled, Retries: 1 ProxyType: mix
+
+      at log (../clr-pkg/src/util.services/queue/BaseQueue.ts:1037:19)
+
+  console.log
+    2266c895  Retries:  0  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+
+  console.log
+    Running:  1 Queue: 7
+
+      at QueryQueue.log (../clr-pkg/src/util.services/queue/BaseQueue.ts:989:13)
+
+  console.log
+     Details: Ôøö Id: 2266c895 - LOOKUP_INFO - Error: AznTimeout - sellercentral.amazon.de - Hash: undefined, Status: error-handled, Retries: 0 ProxyType: mix
+
+      at log (../clr-pkg/src/util.services/queue/BaseQueue.ts:1037:19)
+
+  console.log
+    ea4e103f  Clear timeout before new request [Function: earlyResolve]
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:187:13)
+
+  console.log
+    resolved...
+
+      at Object.log [as resolveTimeout] (../clr-pkg/src/util/query/querySellerInfosQueue.ts:38:15)
+
+  console.log
+    ea4e103f  Retries:  1  from  2
+
+      at log (../clr-pkg/src/util/query/querySellerInfosQueue.ts:199:11)
+

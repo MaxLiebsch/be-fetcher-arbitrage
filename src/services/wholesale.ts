@@ -28,6 +28,7 @@ import { TaskCompletedStatus } from "../status.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
 import { hostname, wholeSaleColname } from "../db/mongo.js";
 import { updateProductWithQuery } from "../db/util/crudProducts.js";
+import { priceToString } from "../util/lookupInfoHelper.js";
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -146,26 +147,21 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           try {
             const productUpdate = generateUpdate(
               productInfo,
-              prc,
-              buyQty || 1,
-              sellQty || 1
+              wholesaleProduct
             );
 
             let reducedCosts = { ...productUpdate.costs };
             delete reducedCosts.azn;
             await upsertAsin(productUpdate.asin, [ean], reducedCosts);
-            const result = await updateProductWithQuery(
-              productId,
-              {
-                $set: {
-                  ...productUpdate,
-                  a_status: "complete",
-                  a_lookup_pending: false,
-                },
-                $unset: { a_locked: "" },
-                $pull: { clrName: hostname },
-              }
-            );
+            const result = await updateProductWithQuery(productId, {
+              $set: {
+                ...productUpdate,
+                a_status: "complete",
+                a_lookup_pending: false,
+              },
+              $unset: { a_locked: "" },
+              $pull: { clrName: hostname },
+            });
             log(`Updated: ${ean}`, result);
             if (result && result.acknowledged) {
               if (result.upsertedId) infos.new++;
@@ -181,17 +177,14 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
               if (error.message === "costs.azn is 0") {
                 infos.missingProperties.costs++;
               }
-              const result = await updateProductWithQuery(
-                productId,
-                {
-                  $set: {
-                    a_status: "not found",
-                    a_lookup_pending: false,
-                  },
-                  $unset: { a_locked: "" },
-                  $pull: { clrName: hostname },
-                }
-              );
+              const result = await updateProductWithQuery(productId, {
+                $set: {
+                  a_status: "not found",
+                  a_lookup_pending: false,
+                },
+                $unset: { a_locked: "" },
+                $pull: { clrName: hostname },
+              });
               log(`Not found: ${ean}`, result);
               if (result && result.acknowledged) {
                 if (result.upsertedId) infos.new++;
@@ -202,17 +195,14 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             }
           }
         } else {
-          const result = await updateProductWithQuery(
-            productId,
-            {
-              $set: {
-                a_status: "not found",
-                a_lookup_pending: false,
-              },
-              $unset: { a_locked: "" },
-              $pull: { clrName: hostname },
-            }
-          );
+          const result = await updateProductWithQuery(productId, {
+            $set: {
+              a_status: "not found",
+              a_lookup_pending: false,
+            },
+            $unset: { a_locked: "" },
+            $pull: { clrName: hostname },
+          });
           log(`Product info missing: ${ean}`, result);
           if (result && result.acknowledged) {
             if (result.upsertedId) infos.new++;
@@ -228,17 +218,14 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         infos.notFound++;
         infos.total++;
         queue.total++;
-        const result = await updateProductWithQuery(
-          productId,
-          {
-            $set: {
-              a_status: "not found",
-              a_lookup_pending: false,
-            },
-            $unset: { a_locked: "" },
-            $pull: { clrName: hostname },
-          }
-        );
+        const result = await updateProductWithQuery(productId, {
+          $set: {
+            a_status: "not found",
+            a_lookup_pending: false,
+          },
+          $unset: { a_locked: "" },
+          $pull: { clrName: hostname },
+        });
         log(`Not found: ${ean} - ${cause}`, result);
         if (result && result.acknowledged) {
           if (result.upsertedId) infos.new++;
@@ -267,6 +254,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           product: {
             value: ean,
             key: ean,
+            price: priceToString(prc)
           },
         },
         prio: 0,
