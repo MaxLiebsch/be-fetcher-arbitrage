@@ -22,7 +22,7 @@ describe("generate Margin", () => {
         },
         { key: 'asin', value: 'B0734WFLL5' },
         { key: 'totalOfferCount', value: '1 Angebote' },
-        { key: 'a_prc', value: '1,00 €' },
+        { key: 'a_prc', value: '2,00 €' },
         { key: 'sellerRank', value: '-' },
         { key: 'a_rating', value: '3.7' },
         { key: 'a_reviewcnt', value: '6' },
