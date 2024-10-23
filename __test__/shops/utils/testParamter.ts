@@ -1,4 +1,3 @@
-import { sub } from "date-fns";
 
 const testParameters = {
   "amazon.de": {
@@ -331,9 +330,9 @@ const testParameters = {
   },
   "pieper.de": {
     salesUrl: "",
-    ean: "4052136261660",
+      ean: "4052136261646",
     productPageUrl:"https://www.pieper.de/artdeco-lippen-makeup-couture-lipstick-refill-1114468.html",
-    productsPerPage: 60,
+    productsPerPage: 48,
     productsPerPageAfterLoadMore: 50,
     subCategoriesCount: 14,
     mainCategoriesCount: 9,

@@ -24,7 +24,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   }, 1000000);
 
   test("Extract product Infos", async () => {
-    const product = await findProduct({ eanList: '5060173370558'})
+    const product = await findProduct({ eanList: '0195208220944'})
     if(!product){
       throw new Error('Product not found')
     }

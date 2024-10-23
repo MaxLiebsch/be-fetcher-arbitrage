@@ -10,8 +10,8 @@ import {
   getTasks,
   insertTasks,
 } from "../../src/db/util/tasks";
-import { path, read } from "fs-jetpack";
-import { after } from "underscore";
+import { updateShops } from "../../src/db/util/shops";
+import { shops } from "../../src/shops";
 
 const today = new Date();
 const productLimit = 150;
@@ -19,21 +19,22 @@ const yesterday = sub(today, { days: 1 });
 
 describe("crawlproducts", () => {
   beforeAll(async () => {
-    await deleteTasks();
-    const tasks = read(
-      path(`__test__/static/collections/crawler-data.tasks.json`),
-      "json"
-    );
-    if (!tasks) throw new Error("Tasks not found");
-    const _tasks = tasks.map((t: any) => {
-      delete t._id;
-      return t;
-    })
-    await insertTasks(_tasks);
+    await updateShops(shops);
+    // await deleteTasks();
+    // const tasks = read(
+    //   path(`__test__/static/collections/crawler-data.tasks.json`),
+    //   "json"
+    // );
+    // if (!tasks) throw new Error("Tasks not found");
+    // const _tasks = tasks.map((t: any) => {
+    //   delete t._id;
+    //   return t;
+    // })
+    // await insertTasks(_tasks);
   });
-  test("lookup info listings", async () => {
+  test("Scrape shop", async () => {
     const task = (await findTask({
-      id: "crawl_shop_cyberport.de_1_of_4",
+      id: "crawl_shop_coolshop.de_4_of_7",
     })) as ScrapeShopTask;
     if (!task) {
       console.log("Task not found");
@@ -51,7 +52,7 @@ describe("crawlproducts", () => {
     console.log(JSON.stringify(infos, null, 2));
   }, 1000000);
 
-  afterAll(async () => {
-    await deleteTasks();
-  });
+  // afterAll(async () => {
+  //   await deleteTasks();
+  // });
 });

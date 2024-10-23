@@ -17,30 +17,30 @@ const shopDomain = ["cyberport.de", "reichelt.de", "alza.de"];
 describe("pos azn listign", () => {
   let productLimit = 30;
   beforeAll(async () => {
-    const listings = shopDomain.map((shopDomain) => {
-      return read(
-        path(
-          `__test__/static/collections/arbispotter.${shopDomain}-pos-azn-listing.json`
-        ),
-        "json"
-      );
-    });
-    console.log(
-      "listings:",
-      listings.reduce((acc, l) => acc + l.length, 0)
-    );
-    await Promise.all(
-      shopDomain.map(async (shopDomain, i) => {
-        await deleteAllProducts(shopDomain);
-        await insertProducts(
-          listings[i].map((l) => {
-            const id = l._id.$oid;
-            delete l._id;
-            return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
-          })
-        );
-      })
-    );
+    // const listings = shopDomain.map((shopDomain) => {
+    //   return read(
+    //     path(
+    //       `__test__/static/collections/arbispotter.${shopDomain}-pos-azn-listing.json`
+    //     ),
+    //     "json"
+    //   );
+    // });
+    // console.log(
+    //   "listings:",
+    //   listings.reduce((acc, l) => acc + l.length, 0)
+    // );
+    // await Promise.all(
+    //   shopDomain.map(async (shopDomain, i) => {
+    //     await deleteAllProducts(shopDomain);
+    //     await insertProducts(
+    //       listings[i].map((l) => {
+    //         const id = l._id.$oid;
+    //         delete l._id;
+    //         return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
+    //       })
+    //     );
+    //   })
+    // );
     const shops = await getActiveShops();
     const productCol = await getProductsCol();
     await Promise.all(

@@ -53,7 +53,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       return reject(new MissingShopError(`Shop ${shopDomain} not found`, task));
     }
 
-    let done = false;
     const { entryPoints, proxyType, hasEan } = shop;
     const uniqueLinks: string[] = [];
 
@@ -131,11 +130,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
     await queue.connect();
     const startTime = Date.now();
     const addProduct = async (product: ProductRecord) => {
-      if (done) return;
-      if (infos.total === productLimit && !queue.idle()) {
-        done = true;
-        return;
-      }
       const transformedProduct = transformProduct(product, shopDomain);
       const { lnk, nm, prc, qty } = transformedProduct;
       if (nm && prc && lnk) {
@@ -157,6 +151,8 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           } else {
             infos.failedSave++;
           }
+        }else{
+          console.log('Product already exists:', transformedProduct.lnk)
         }
       } else {
         const properties: Array<

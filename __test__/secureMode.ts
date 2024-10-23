@@ -19,11 +19,10 @@ const secureMode = async () => {
   if (!shop) return;
 
   const { exceptions } = shop;
-  const lnk = "https://www.otto.de";
+  const lnk = "https://www.amazon.de/dp/product/B00ZETXNAQ?language=de_DE";
   // const lnk =
   //   "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
   const requestId = uuid();
-  const proxyType = "de";
   const { page } = await getPage({
     browser,
     shop,
@@ -36,7 +35,7 @@ const secureMode = async () => {
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
     await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
-    if (proxyType === "de") {
+    if (shop.proxyType === 'de') {
       await notifyProxyChange(
         "de",
         url,
@@ -50,7 +49,7 @@ const secureMode = async () => {
   // await page.goto("https://bot-detector.rebrowser.net/");
 
   // const page = await browser.newPage();
-  const result = await page.goto(lnk);
+  await page.goto(lnk);
   // const status = result?.status();
   // if (status !== 200) {
   //   const response = await page.reload();

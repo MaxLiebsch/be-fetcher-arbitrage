@@ -6,7 +6,7 @@ import {
   ResourceTypes,
   Shop,
   browseProductPagesQueue,
-  browseProductpages,
+  browseProductPages,
   checkForBlockingSignals,
   crawlProducts,
   getAznAvgPrice,
@@ -426,7 +426,7 @@ export const extractProductsFromSecondPageQueueless = async (
   };
   if (page && shops && shops[shopDomain]) {
     await page.goto(url ? url : initialProductPageUrl);
-    const result = await browseProductpages(
+    const result = await browseProductPages(
       page,
       shops[shopDomain],
       addProductCb,
@@ -458,9 +458,9 @@ export const extractProductsFromSecondPageQueueless = async (
   }
 };
 
-export const extractProductInfos = async (addProductInfo: any) => {
+export const extractProductInfos = async (addProductInfo: any, lnk?: string) => {
   if (page && shops && shops[shopDomain]) {
-    const productPageUrl = testParameters[shopDomain].productPageUrl;
+    const productPageUrl = lnk?lnk:testParameters[shopDomain].productPageUrl;
     await page.goto(productPageUrl);
     return await queryProductPageQueue(page, {
       shop: shops[shopDomain],

@@ -5,18 +5,17 @@ import {
   detectCurrency,
   ObjectId,
   QueryQueue,
-  roundToTwoDecimals,
   safeParsePrice,
   resetAznProductQuery,
   replaceAllHiddenCharacters,
   getAznAvgPrice,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
-import { updateProductWithQuery } from "../db/util/crudProducts.js";
-import { defaultAznDealTask } from "../constants.js";
-import { NegDealsOnAznStats } from "../types/taskStats/NegDealsOnAzn.js";
-import { DealsOnAznStats } from "../types/taskStats/DealsOnAznStats.js";
-import { log } from "./logger.js";
+import { updateProductWithQuery } from '../db/util/crudProducts.js';
+import { defaultAznDealTask } from '../constants.js';
+import { NegDealsOnAznStats } from '../types/taskStats/NegDealsOnAzn.js';
+import { DealsOnAznStats } from '../types/taskStats/DealsOnAznStats.js';
+import { log } from './logger.js';
 
 export async function handleAznListingProductInfo(
   collection: string,
@@ -24,7 +23,7 @@ export async function handleAznListingProductInfo(
   { productInfo, url }: AddProductInfoProps,
   infos: NegDealsOnAznStats | DealsOnAznStats,
   queue: QueryQueue,
-  processProps = defaultAznDealTask
+  processProps = defaultAznDealTask,
 ) {
   const {
     costs,
@@ -41,44 +40,49 @@ export async function handleAznListingProductInfo(
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
-    const price = infoMap.get("a_prc");
-    const image = infoMap.get("a_img");
-    const rawName = infoMap.get("name");
-    const bsr = infoMap.get("bsr");
-    const parsedPrice = safeParsePrice(price || "0");
+    const price = infoMap.get('a_prc');
+    const image = infoMap.get('a_img');
+    const a_reviewcnt = infoMap.get('a_reviewcnt');
+    const a_rating = infoMap.get('a_rating');
+    const rawName = infoMap.get('name');
+    const parsedPrice = safeParsePrice(price || '0');
 
     const { a_useCurrPrice, a_prc, a_uprc, avgPrice } = getAznAvgPrice(
       product,
-      parsedPrice
+      parsedPrice,
     );
 
     if (a_prc > 0) {
       if (costs && costs.azn > 0) {
         const currency = detectCurrency(price);
-        const productUpdate = {
-          [timestamp]: new Date().toISOString(),
-          a_prc,
-          a_uprc,
-          ...(rawName && { a_nm: replaceAllHiddenCharacters(rawName) }),
-          ...(currency && { a_cur: currency }),
-          ...(image && { a_img: image }),
-          ...(bsr && { bsr }),
-          a_useCurrPrice,
-        };
 
         const arbitrage = calculateAznArbitrage(
           buyPrice * (sellQty! / buyQty),
           a_useCurrPrice ? a_prc : avgPrice,
           costs,
-          tax
+          tax,
         );
-        Object.entries(arbitrage).forEach(([key, val]) => {
-          productUpdate[key] = val;
-        });
+        const productUpdate: { [key in keyof DbProductRecord]: any } = {
+          [timestamp]: new Date().toISOString(),
+          a_prc,
+          a_uprc,
+          ...(typeof a_rating === 'string' && {
+            a_rating: safeParsePrice(a_rating),
+          }),
+          ...(typeof a_reviewcnt === 'string' && {
+            a_reviewcnt: safeParsePrice(a_reviewcnt),
+          }),
+          ...(rawName && { a_nm: replaceAllHiddenCharacters(rawName) }),
+          ...(currency && { a_cur: currency }),
+          ...(image && { a_img: image }),
+          a_useCurrPrice,
+          ...arbitrage,
+        };
+
         const result = await updateProductWithQuery(productId, {
           $set: productUpdate,
           $unset: {
-            [taskIdProp]: "",
+            [taskIdProp]: '',
           },
         });
         log(`Product info: ${collection}-${productId}`, result);
@@ -86,7 +90,7 @@ export async function handleAznListingProductInfo(
         infos.missingProperties.aznCostNeg++;
         const result = await updateProductWithQuery(
           productId,
-          resetAznProductQuery()
+          resetAznProductQuery(),
         );
         log(`Costs 0: ${collection}-${productId}`, result);
       }
@@ -94,7 +98,7 @@ export async function handleAznListingProductInfo(
       infos.missingProperties.price++;
       const result = await updateProductWithQuery(
         productId,
-        resetAznProductQuery()
+        resetAznProductQuery(),
       );
       log(`Price 0: ${collection}-${productId}`, result);
     }
@@ -102,14 +106,14 @@ export async function handleAznListingProductInfo(
     infos.missingProperties.infos++;
     const result = await updateProductWithQuery(
       productId,
-      resetAznProductQuery()
+      resetAznProductQuery(),
     );
     log(`No product info: ${collection}-${productId}`, result);
   }
 }
 export async function handleAznListingNotFound(
   collection: string,
-  id: ObjectId
+  id: ObjectId,
 ) {
   const result = await updateProductWithQuery(id, resetAznProductQuery());
   log(`Not found: ${collection}-${id}`, result);
