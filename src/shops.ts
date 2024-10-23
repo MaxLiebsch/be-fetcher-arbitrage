@@ -1590,7 +1590,7 @@ export const shops: { [key: string]: Shop } = {
       subCategories: [
         {
           visible: false,
-          sel: 'li:is(.levelFirst,.levelSecond) a',
+          sel: 'div.sidebarNavigationBox ul li:is(.levelFirst) > a',
           type: 'href',
         },
       ],
@@ -1605,18 +1605,6 @@ export const shops: { [key: string]: Shop } = {
     ],
     hasEan: false,
     manualCategories: [
-      {
-        name: 'Angebote',
-        link: 'https://www.cyberport.de/angebote.html',
-      },
-      {
-        name: 'Restposten (A-Ware)',
-        link: 'https://www.cyberport.de/markenshops/outlet/restposten-a-ware-.html',
-      },
-      {
-        name: 'Gebrauchtware (B-Ware)',
-        link: 'https://www.cyberport.de/markenshops/outlet/gebrauchtware-b-ware-.html',
-      },
     ],
     mimic: 'svg.cpHeaderLogo__svg',
     paginationEl: [

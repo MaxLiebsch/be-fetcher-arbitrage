@@ -151,8 +151,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           } else {
             infos.failedSave++;
           }
-        }else{
-          console.log('Product already exists:', transformedProduct.lnk)
         }
       } else {
         const properties: Array<

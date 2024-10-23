@@ -49,7 +49,15 @@ const secureMode = async () => {
   // await page.goto("https://bot-detector.rebrowser.net/");
 
   // const page = await browser.newPage();
-  await page.goto(lnk);
+  await page.goto(lnk, {timeout: 60000});
+  await page
+  .evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  })
+  .catch((e) => {
+    console.error('Failed to clear storage:', e?.message);
+  });
   // const status = result?.status();
   // if (status !== 200) {
   //   const response = await page.reload();
