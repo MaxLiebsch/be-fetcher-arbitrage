@@ -9,6 +9,7 @@ import {
   resetAznProductQuery,
   replaceAllHiddenCharacters,
   getAznAvgPrice,
+  roundToTwoDecimals,
 } from '@dipmaxtech/clr-pkg';
 
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
@@ -25,7 +26,7 @@ export async function handleAznListingProductInfo(
   queue: QueryQueue,
   processProps = defaultAznDealTask,
 ) {
-  const {
+  let {
     costs,
     a_qty: sellQty,
     qty: buyQty,
@@ -55,6 +56,10 @@ export async function handleAznListingProductInfo(
     if (a_prc > 0) {
       if (costs && costs.azn > 0) {
         const currency = detectCurrency(price);
+        
+        if(!a_useCurrPrice){
+          costs.azn = roundToTwoDecimals((costs.azn / a_prc) * avgPrice);
+        }
 
         const arbitrage = calculateAznArbitrage(
           buyPrice * (sellQty! / buyQty),
