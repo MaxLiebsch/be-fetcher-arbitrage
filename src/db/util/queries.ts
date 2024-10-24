@@ -1,15 +1,15 @@
-import { startOfDay } from "date-fns";
-import { hostname, wholeSaleColname } from "../mongo.js";
+import { startOfDay } from 'date-fns';
+import { hostname, wholeSaleColname } from '../mongo.js';
 
-import { TASK_TYPES } from "../../util/taskTypes.js";
-import { ObjectId } from "mongodb";
-import { Action } from "../../types/tasks/Tasks.js";
-import { subDateDaysISO } from "../../util/dates.js";
+import { TASK_TYPES } from '../../util/taskTypes.js';
+import { ObjectId } from 'mongodb';
+import { Action } from '../../types/tasks/Tasks.js';
+import { subDateDaysISO } from '../../util/dates.js';
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
-} from "../../constants.js";
-import { totalPositivAmazon, totalPositivEbay } from "@dipmaxtech/clr-pkg";
+} from '../../constants.js';
+import { totalPositivAmazon, totalPositivEbay } from '@dipmaxtech/clr-pkg';
 // a_origin setzen when infos ueber lookup ean
 
 /*
@@ -98,7 +98,7 @@ export const startedAtField = (lowerThenStartedAt: string) => {
   return {
     $or: [
       { startedAt: { $exists: false } },
-      { startedAt: "" },
+      { startedAt: '' },
       {
         startedAt: { $lt: lowerThenStartedAt },
       },
@@ -115,26 +115,26 @@ export const ebayMarginCalculationAggregationStep = [
         $round: [
           {
             $subtract: [
-              "$e_prc",
+              '$e_prc',
               {
                 $add: [
                   {
                     $divide: [
                       {
-                        $multiply: ["$prc", { $divide: ["$e_qty", "$qty"] }],
+                        $multiply: ['$prc', { $divide: ['$e_qty', '$qty'] }],
                       },
                       {
                         $add: [
                           1,
-                          { $divide: [{ $ifNull: ["$tax", 19] }, 100] },
+                          { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
                         ],
                       },
                     ],
                   },
-                  "$e_tax",
+                  '$e_tax',
                   0,
                   0,
-                  "$e_costs",
+                  '$e_costs',
                 ],
               },
             ],
@@ -151,7 +151,7 @@ export const ebayMarginCalculationAggregationStep = [
           {
             $multiply: [
               {
-                $divide: ["$e_mrgn", "$e_prc"],
+                $divide: ['$e_mrgn', '$e_prc'],
               },
               100,
             ],
@@ -165,13 +165,13 @@ export const ebayMarginCalculationAggregationStep = [
 /*               General                                    */
 
 const eanExistsQuery = [
-  { ean: { $exists: true, $ne: "" } },
+  { ean: { $exists: true, $ne: '' } },
   { eanList: { $size: 1 } },
 ];
 const eanNotExistsQuery = {
   $and: [
     {
-      $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: "" } }],
+      $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: '' } }],
     },
     { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
   ],
@@ -186,7 +186,7 @@ export const crawlShopTaskQueryFn = (start: string, weekday: number) => {
     { executing: { $eq: false } },
     { weekday: { $eq: weekday } },
     {
-      $or: [{ completedAt: "" }, { completedAt: { $lt: start } }],
+      $or: [{ completedAt: '' }, { completedAt: { $lt: start } }],
     },
   ];
 };
@@ -197,12 +197,12 @@ export const lockProductsForCrawlEanQuery = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
 
-  if (action === "recover") {
+  if (action === 'recover') {
     query = {
       sdmn: domain,
       ean_taskId: setTaskId(taskId),
@@ -210,7 +210,7 @@ export const lockProductsForCrawlEanQuery = (
   } else {
     query = countPendingProductsForCrawlEanQuery(domain);
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
@@ -229,7 +229,7 @@ export const countPendingProductsForCrawlEanQuery = (domain: string) => {
       { ean_taskId: { $exists: false } },
       { ...eanNotExistsQuery },
       {
-        $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: "" } }],
+        $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: '' } }],
       },
     ],
   };
@@ -256,18 +256,18 @@ export const lockProductsForLookupInfoQuery = (
   domain: string,
   limit: number,
   action: Action,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
   let query: Query = {};
   let options: Options = {};
 
-  if (action === "recover") {
+  if (action === 'recover') {
     query = { info_taskId: setTaskId(taskId), sdmn: domain };
   } else {
     query = countPendingProductsLookupInfoQuery(domain, hasEan);
 
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
@@ -285,14 +285,14 @@ export const recoveryLookupInfoQuery = (taskId: ObjectId, domain: string) => {
 
 export const countPendingProductsLookupInfoQuery = (
   domain: string,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
   return {
     $and: [
       { sdmn: domain },
       { info_taskId: { $exists: false } },
       {
-        $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: "" } }],
+        $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: '' } }],
       },
       {
         ...(hasEan
@@ -301,17 +301,17 @@ export const countPendingProductsLookupInfoQuery = (
                 {
                   $or: eanExistsQuery,
                 },
-                { asin: { $exists: true, $ne: "" } },
+                { asin: { $exists: true, $ne: '' } },
               ],
             }
-          : { asin: { $exists: true, $ne: "" } }),
+          : { asin: { $exists: true, $ne: '' } }),
       },
     ],
   };
 };
 export const countTotalProductsForLookupInfoQuery = (
   domain: string,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
   return {
     sdmn: domain,
@@ -321,10 +321,10 @@ export const countTotalProductsForLookupInfoQuery = (
             {
               $or: eanExistsQuery,
             },
-            { asin: { $exists: true, $ne: "" } },
+            { asin: { $exists: true, $ne: '' } },
           ],
         }
-      : { asin: { $exists: true, $ne: "" } }),
+      : { asin: { $exists: true, $ne: '' } }),
   };
 };
 export const lookupInfoTaskQueryFn = (lowerThenStartedAt: string) => {
@@ -343,17 +343,25 @@ export const lockProductsForMatchQuery = (
   domain: string,
   limit: number,
   action: Action,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
   const options: Options = {};
   let query: Query = {};
 
-  if (action === "recover") {
-    query = { taskId: setTaskId(taskId), sdmn: domain };
+  if (action === 'recover') {
+    query = {
+      sdmn: domain,
+      $or: [
+        { azn_taskId: setTaskId(taskId) },
+        {
+          eby_taskId: setTaskId(taskId),
+        },
+      ],
+    };
   } else {
     query = countPendingProductsForMatchQuery(domain, hasEan);
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
@@ -361,49 +369,53 @@ export const lockProductsForMatchQuery = (
 export const setProductsLockedForMatchQuery = (taskId: ObjectId) => {
   return {
     $set: {
-      taskId: setTaskId(taskId),
+      azn_taskId: setTaskId(taskId),
+      eby_taskId: setTaskId(taskId),
     },
   };
 };
 export const countPendingProductsForMatchQuery = (
   domain: string,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
-  const twentyFourAgo = subDateDaysISO(1);
   let query: Query = {
     $and: [
       { sdmn: domain },
-      { taskId: { $exists: false } },
-      { $or: [{ matched: { $exists: false } }, { matched: { $eq: false } }] },
       {
         $or: [
-          { matchedAt: { $exists: false } },
-          { matchedAt: { $lte: twentyFourAgo } },
+          { azn_taskId: { $exists: false } },
+          { eby_taskId: { $exists: false } },
+        ],
+      },
+      {
+        $or: [
+          { azn_prop: { $nin: ['missing', 'complete'] } },
+          { eby_prop: { $nin: ['missing', 'complete'] } },
         ],
       },
     ],
   };
   if (hasEan) {
-    query["$and"].push({ $or: eanExistsQuery });
+    query['$and'].push({ $or: eanExistsQuery });
   }
   return query;
 };
 export const countTotalProductsForMatchQuery = (
   domain: string,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) => {
   let query: Query = {
     sdmn: domain,
   };
 
   if (hasEan) {
-    query["$or"] = eanExistsQuery;
+    query['$or'] = eanExistsQuery;
   }
   return query;
 };
 export const matchTaskQueryFn = (
   lowerThenStartedAt: string,
-  danglingMatchThreshold: number
+  danglingMatchThreshold: number,
 ) => {
   return [
     { type: TASK_TYPES.MATCH_PRODUCTS },
@@ -414,7 +426,7 @@ export const matchTaskQueryFn = (
         {
           progress: { $exists: false },
         },
-        { "progress.pending": { $gt: danglingMatchThreshold } },
+        { 'progress.pending': { $gt: danglingMatchThreshold } },
       ],
     },
   ];
@@ -432,12 +444,12 @@ export const lockProductsForQueryEansOnEbyQuery = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
 
-  if (action === "recover") {
+  if (action === 'recover') {
     query = {
       sdmn: domain,
       eby_taskId: setTaskId(taskId),
@@ -445,7 +457,7 @@ export const lockProductsForQueryEansOnEbyQuery = (
   } else {
     query = countPendingProductsQueryEansOnEbyQuery(domain);
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
@@ -466,7 +478,7 @@ export const countPendingProductsQueryEansOnEbyQuery = (domain: string) => {
         $or: eanExistsQuery,
       },
       {
-        $or: [{ eby_prop: { $exists: false } }, { eby_prop: { $eq: "" } }],
+        $or: [{ eby_prop: { $exists: false } }, { eby_prop: { $eq: '' } }],
       },
     ],
   };
@@ -499,17 +511,17 @@ export const lockProductsForLookupCategoryQuery = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
 
-  if (action === "recover") {
+  if (action === 'recover') {
     query = recoveryLookupCategoryQuery(taskId, domain);
   } else {
     query = countPendingProductsForLookupCategoryQuery(domain);
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
@@ -530,26 +542,26 @@ export const countPendingProductsForLookupCategoryQuery = (domain: string) => {
       {
         $or: [
           { cat_prop: { $exists: false } },
-          { cat_prop: { $in: ["", "timeout"] } },
+          { cat_prop: { $in: ['', 'timeout'] } },
         ],
       },
       {
-        eby_prop: { $exists: true, $eq: "complete" },
+        eby_prop: { $exists: true, $eq: 'complete' },
       },
-      { esin: { $exists: true, $ne: "" } },
+      { esin: { $exists: true, $ne: '' } },
     ],
   };
 };
 export const recoveryLookupCategoryQuery = (
   taskId: ObjectId,
-  domain: string
+  domain: string,
 ) => {
   return { cat_taskId: setTaskId(taskId), sdmn: domain };
 };
 export const countTotalProductsForLookupCategoryQuery = (domain: string) => {
   return {
     sdmn: domain,
-    esin: { $exists: true, $ne: "" },
+    esin: { $exists: true, $ne: '' },
   };
 };
 export const lookupCategoryTaskQueryFn = (lowerThenStartedAt: string) => {
@@ -571,7 +583,7 @@ export const pendingNegMarginAznListingsQuery = (domain: string) => {
       },
       { azn_taskId: { $exists: false } },
       {
-        asin: { $exists: true, $ne: "" },
+        asin: { $exists: true, $ne: '' },
       },
       {
         $or: [
@@ -587,23 +599,23 @@ export const lockProductsForNegMarginAznListingsQuery = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
-  if (action === "recover") {
+  if (action === 'recover') {
     query = recoveryNegMarginAznListingsQuery(taskId, domain);
   } else {
     query = pendingNegMarginAznListingsQuery(domain);
   }
 
-  if (limit && action !== "recover") {
-    options["limit"] = limit;
+  if (limit && action !== 'recover') {
+    options['limit'] = limit;
   }
   return { options, query };
 };
 export const setProductsLockedForNegMarginAznListingsQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   return {
     $set: {
@@ -613,7 +625,7 @@ export const setProductsLockedForNegMarginAznListingsQuery = (
 };
 export const recoveryNegMarginAznListingsQuery = (
   taskId: ObjectId,
-  domain: string
+  domain: string,
 ) => {
   return { azn_taskId: setTaskId(taskId), sdmn: domain };
 };
@@ -622,7 +634,7 @@ export const countCompletedProductsForCrawlAznListingsQuery = () => {
   return {
     $and: [
       {
-        asin: { $exists: true, $ne: "" },
+        asin: { $exists: true, $ne: '' },
       },
       {
         $or: [
@@ -640,7 +652,7 @@ export const countTotalProductsNegMarginAznListingsQuery = (domain: string) => {
       {
         sdmn: domain,
       },
-      { asin: { $exists: true, $ne: "" } },
+      { asin: { $exists: true, $ne: '' } },
       ...totalNegativAmazon.$and,
     ],
   };
@@ -660,24 +672,24 @@ export const crawlAznListingsTaskQueryFn = (lowerThenStartedAt: string) => {
 export const lockProductsForCrawlEbyListingsQuery = (
   limit: number,
   taskId: ObjectId,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
-  if (action === "recover") {
-    query["eby_taskId"] = setTaskId(taskId);
+  if (action === 'recover') {
+    query['eby_taskId'] = setTaskId(taskId);
   } else {
     // @ts-ignore
     query = countPendingProductsForCrawlEbyListingsQuery();
   }
 
-  if (limit && action !== "recover") {
-    options["limit"] = limit;
+  if (limit && action !== 'recover') {
+    options['limit'] = limit;
   }
   return { options, query };
 };
 export const setProductsLockedForNegMarginEbyListingsQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   return {
     $set: {
@@ -690,7 +702,7 @@ export const countPendingProductsForCrawlEbyListingsQuery = () => {
     $and: [
       { eby_taskId: { $exists: false } },
       {
-        esin: { $exists: true, $ne: "" },
+        esin: { $exists: true, $ne: '' },
       },
       {
         ebyCategories: { $exists: true, $ne: [] },
@@ -709,7 +721,7 @@ export const countCompletedProductsForCrawlEbyListingsQuery = () => {
   return {
     $and: [
       {
-        esin: { $exists: true, $ne: "" },
+        esin: { $exists: true, $ne: '' },
       },
       {
         ebyCategories: { $exists: true, $ne: [] },
@@ -726,7 +738,7 @@ export const countCompletedProductsForCrawlEbyListingsQuery = () => {
 export const countTotalProductsCrawlEbyListingsQuery = {
   $and: [
     {
-      esin: { $exists: true, $ne: "" },
+      esin: { $exists: true, $ne: '' },
     },
     {
       ebyCategories: { $exists: true, $ne: [] },
@@ -739,7 +751,7 @@ export const countTotalProductsCrawlEbyListingsQuery = {
 const pendingScrapeEbyListingsMatchStage = [
   { eby_taskId: { $exists: false } },
   {
-    esin: { $exists: true, $ne: "" },
+    esin: { $exists: true, $ne: '' },
   },
   {
     ebyCategories: { $exists: true, $ne: [] },
@@ -756,10 +768,10 @@ export const lockProductsForNegMarginEbyListings = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let agg = [];
-  if (action === "recover") {
+  if (action === 'recover') {
     agg.push({ $match: recoveryScrapeEbyListingsQuery(taskId) });
   } else {
     agg = countPendingProductsForNetMarginEbyListingsAgg({
@@ -785,7 +797,7 @@ export const countPendingProductsForNetMarginEbyListingsAgg = ({
     },
   ];
   if (returnTotal) {
-    agg.push({ $count: "total" });
+    agg.push({ $count: 'total' });
   }
   if (limit) {
     agg.push({ $limit: limit });
@@ -802,7 +814,7 @@ export const countTotalProductsNegMarginEbyListingsAgg = (domain: string) => [
     $match: {
       $and: [
         {
-          esin: { $exists: true, $ne: "" },
+          esin: { $exists: true, $ne: '' },
         },
         {
           ebyCategories: { $exists: true, $ne: [] },
@@ -811,7 +823,7 @@ export const countTotalProductsNegMarginEbyListingsAgg = (domain: string) => [
       ],
     },
   },
-  { $count: "total" },
+  { $count: 'total' },
 ];
 
 export const negMarginEbyListingsTaskQueryFn = (lowerThenStartedAt: string) => {
@@ -835,58 +847,58 @@ const scanTaskQuery = [
 /*               Queries: Wholesale Azn  (6)                         */
 
 export const countPendingProductsForWholesaleSearchQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   const query = {
     taskIds: taskId.toString(),
-    target: "a",
+    target: 'a',
     sdmn: wholeSaleColname,
     a_lookup_pending: true,
   };
   return query;
 };
 export const countCompletedProductsForWholesaleSearchQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   return {
     taskIds: taskId.toString(),
-    target: "a",
+    target: 'a',
     sdmn: wholeSaleColname,
-    a_status: { $in: ["complete", "not found"] },
+    a_status: { $in: ['complete', 'not found'] },
   };
 };
 const wholesaleTaskQuery = [
   { type: TASK_TYPES.WHOLESALE_SEARCH },
-  { "progress.pending": { $gt: 0 } },
+  { 'progress.pending': { $gt: 0 } },
 ];
 
 /*               Queries: Wholesale Eby (6.1)                         */
 
 export const countPendingProductsForWholesaleEbySearchQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   const query = {
     taskIds: taskId.toString(),
-    target: "e",
+    target: 'e',
     sdmn: wholeSaleColname,
     e_lookup_pending: true,
   };
   return query;
 };
 export const countCompletedProductsForWholesaleEbySearchQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   return {
     taskIds: taskId.toString(),
-    target: "e",
+    target: 'e',
     sdmn: wholeSaleColname,
-    e_status: { $in: ["complete", "not found"] },
+    e_status: { $in: ['complete', 'not found'] },
   };
 };
 
 const wholesaleEbyTaskQuery = [
   { type: TASK_TYPES.WHOLESALE_EBY_SEARCH },
-  { "progress.pending": { $gt: 0 } },
+  { 'progress.pending': { $gt: 0 } },
 ];
 
 /*               Daily Sales (7)                            */
@@ -915,10 +927,10 @@ export const lockProductsForDealsOnEbyAgg = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let agg = [];
-  if (action === "recover") {
+  if (action === 'recover') {
     agg.push({ $match: { dealEbyTaskId: setTaskId(taskId) } });
   } else {
     agg = countPendingProductsForDealsOnEbyAgg({
@@ -943,11 +955,11 @@ export const countPendingProductsForDealsOnEbyAgg = ({
           {
             $or: [
               { dealEbyTaskId: { $exists: false } },
-              { dealEbyTaskId: { $eq: "" } },
+              { dealEbyTaskId: { $eq: '' } },
             ],
           },
           {
-            esin: { $exists: true, $ne: "" },
+            esin: { $exists: true, $ne: '' },
           },
           {
             ebyCategories: { $exists: true, $ne: [] },
@@ -965,7 +977,7 @@ export const countPendingProductsForDealsOnEbyAgg = ({
   ];
 
   if (returnTotal) {
-    agg.push({ $count: "total" });
+    agg.push({ $count: 'total' });
   }
 
   if (limit) {
@@ -984,7 +996,7 @@ export const countCompletedProductsForDealsOnEbyAgg = (domain: string) => [
     $match: {
       $and: [
         {
-          esin: { $exists: true, $ne: "" },
+          esin: { $exists: true, $ne: '' },
         },
         {
           ebyCategories: { $exists: true, $ne: [] },
@@ -999,7 +1011,7 @@ export const countCompletedProductsForDealsOnEbyAgg = (domain: string) => [
       ],
     },
   },
-  { $count: "total" },
+  { $count: 'total' },
 ];
 export const setProductsLockedForDealsOnEbyQuery = (taskId: ObjectId) => {
   return {
@@ -1015,7 +1027,7 @@ export const countTotalProductsDealsOnEbyAgg = (domain: string) => [
     $match: {
       $and: [
         {
-          esin: { $exists: true, $ne: "" },
+          esin: { $exists: true, $ne: '' },
         },
         {
           ebyCategories: { $exists: true, $ne: [] },
@@ -1024,7 +1036,7 @@ export const countTotalProductsDealsOnEbyAgg = (domain: string) => [
       ],
     },
   },
-  { $count: "total" },
+  { $count: 'total' },
 ];
 export const dealsOnEbyTaskQueryFn = (lowerThenStartedAt: string) => {
   return [
@@ -1050,11 +1062,11 @@ export const pendingDealsOnAznQuery = (domain: string) => {
       {
         $or: [
           { dealAznTaskId: { $exists: false } },
-          { dealAznTaskId: { $eq: "" } },
+          { dealAznTaskId: { $eq: '' } },
         ],
       },
       {
-        asin: { $exists: true, $ne: "" },
+        asin: { $exists: true, $ne: '' },
       },
       {
         $or: [
@@ -1073,18 +1085,18 @@ export const lockProductsForDealsOnAznQuery = (
   taskId: ObjectId,
   domain: string,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
-  if (action === "recover") {
-    query["dealAznTaskId"] = setTaskId(taskId);
+  if (action === 'recover') {
+    query['dealAznTaskId'] = setTaskId(taskId);
   } else {
     query = pendingDealsOnAznQuery(domain);
   }
 
-  if (limit && action !== "recover") {
-    options["limit"] = limit;
+  if (limit && action !== 'recover') {
+    options['limit'] = limit;
   }
   return { options, query };
 };
@@ -1102,7 +1114,7 @@ export const countTotalProductsDealsOnAznQuery = (domain: string) => {
   return {
     $and: [
       { sdmn: domain },
-      { asin: { $exists: true, $ne: "" } },
+      { asin: { $exists: true, $ne: '' } },
       ...totalPositivAmazon.$and,
     ],
   };
@@ -1121,24 +1133,24 @@ export const dealsOnAznTaskQueryFn = (lowerThenStartedAt: string) => {
 export const lockProductsForUpdateProductinfoQuery = (
   taskId: ObjectId,
   limit: number,
-  action: Action
+  action: Action,
 ) => {
   let query: Query = {};
   let options: Options = {};
 
-  if (action === "recover") {
-    query["availTaskId"] = setTaskId(taskId);
+  if (action === 'recover') {
+    query['availTaskId'] = setTaskId(taskId);
   } else {
     // @ts-ignore
     query = countPendingProductsUpdateProductinfoAgg;
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
   return { query, options };
 };
 export const setProductsLockedForUpdateProductinfoQuery = (
-  taskId: ObjectId
+  taskId: ObjectId,
 ) => {
   return {
     $set: {
@@ -1155,7 +1167,7 @@ const availTaskPendingStages = [
     ],
   },
   {
-    $or: [{ availTaskId: { $exists: false } }, { availTaskId: "" }],
+    $or: [{ availTaskId: { $exists: false } }, { availTaskId: '' }],
   },
 ];
 const availTaskCompletedStage = [
@@ -1175,7 +1187,7 @@ export const countTotalProductsForUpdateProductinfoAgg = [
         {
           $match: { $and: [...totalPositivEbay.$and] },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
       amazon: [
         {
@@ -1183,7 +1195,7 @@ export const countTotalProductsForUpdateProductinfoAgg = [
             $and: [...totalPositivAmazon.$and],
           },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
     },
   },
@@ -1198,7 +1210,7 @@ export const countPendingProductsUpdateProductinfoAgg = [
             $and: [...totalPositivEbay.$and, ...availTaskPendingStages],
           },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
       amazon: [
         {
@@ -1206,7 +1218,7 @@ export const countPendingProductsUpdateProductinfoAgg = [
             $and: [...totalPositivAmazon.$and, ...availTaskPendingStages],
           },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
     },
   },
@@ -1221,7 +1233,7 @@ export const countCompletedProductsUpdateProductinfoAgg = [
             $and: [...totalPositivEbay.$and, ...availTaskCompletedStage],
           },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
       amazon: [
         {
@@ -1229,7 +1241,7 @@ export const countCompletedProductsUpdateProductinfoAgg = [
             $and: [...totalPositivAmazon.$and, ...availTaskCompletedStage],
           },
         },
-        { $count: "total" },
+        { $count: 'total' },
       ],
     },
   },
@@ -1247,10 +1259,10 @@ export const findTasksQuery = () => {
   oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
   const danglingLookupThreshold =
-    process.env.TEST === "endtoend" ? 1 : DANGLING_LOOKUP_THRESHOLD;
+    process.env.TEST === 'endtoend' ? 1 : DANGLING_LOOKUP_THRESHOLD;
 
   const danglingMatchThreshold =
-    process.env.TEST === "endtoend" ? 1 : DANGLING_MATCH_THRESHOLD;
+    process.env.TEST === 'endtoend' ? 1 : DANGLING_MATCH_THRESHOLD;
 
   const lowerThenStartedAt = oneMinuteAgo.toISOString();
 
@@ -1279,7 +1291,7 @@ export const findTasksQuery = () => {
   const matchTaskQuery = matchTaskQueryFn(
     // (3.2)
     lowerThenStartedAt,
-    danglingMatchThreshold
+    danglingMatchThreshold,
   );
   const crawlAznListingsTaskQuery =
     crawlAznListingsTaskQueryFn(lowerThenStartedAt); // (4)

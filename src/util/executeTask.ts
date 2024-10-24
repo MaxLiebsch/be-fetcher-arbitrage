@@ -1,4 +1,3 @@
-import match from "../services/match.js";
 import scrapeShop from "../services/scrapeShop.js";
 import scan from "../services/scan.js";
 import crawlEan from "../services/crawlEan.js";
@@ -32,6 +31,7 @@ import { MissingTaskError, TaskErrors } from "../errors.js";
 import { TaskCompletedStatus } from "../status.js";
 import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
 import { wholeSaleEby } from "../services/wholesaleEbay.js";
+import matchProducts from "../services/matchProducts.js";
 
 export async function executeTask(
   task: Tasks
@@ -59,7 +59,7 @@ export async function executeTask(
     return scan(task as ScanTask);
   }
   if (type === TASK_TYPES.MATCH_PRODUCTS) {
-    return match(task as MatchProductsTask);
+    return matchProducts(task as MatchProductsTask);
   }
   if (type === TASK_TYPES.NEG_AZN_DEALS) {
     return negAznDeals(task as NegAznDealTask);

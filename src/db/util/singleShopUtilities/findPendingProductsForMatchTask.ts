@@ -1,9 +1,9 @@
-import { ObjectId, TaskTypes } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks.js";
-import { log } from "../../../util/logger.js";
-import { lockProducts } from "../multiShopUtilities/lockProducts.js";
-import { findProducts } from "../crudProducts.js";
-import { setTaskId } from "../queries.js";
+import { ObjectId, TaskTypes } from '@dipmaxtech/clr-pkg';
+import { Action } from '../../../types/tasks/Tasks.js';
+import { log } from '../../../util/logger.js';
+import { lockProducts } from '../multiShopUtilities/lockProducts.js';
+import { findProducts } from '../crudProducts.js';
+import { setTaskId } from '../queries.js';
 
 export async function findPendingProductsForMatchTask(
   taskType: TaskTypes,
@@ -11,23 +11,26 @@ export async function findPendingProductsForMatchTask(
   taskId: ObjectId,
   action: Action,
   productLimit: number,
-  hasEan?: boolean
+  hasEan?: boolean,
 ) {
-  if (action === "recover") {
+  if (action === 'recover') {
     const products = await findProducts(
-      { taskId: setTaskId(taskId), sdmn: shopDomain },
-      productLimit
+      {
+        sdmn: shopDomain,
+        $or: [{ azn_taskId: setTaskId(taskId), eby_taskId: setTaskId(taskId) }],
+      },
+      productLimit,
     );
     log(`Missing ${taskType}: ${shopDomain}: p: ${products.length} `);
     return products;
   } else {
     const products = await lockProducts(
-      "MATCH_PRODUCTS",
+      'MATCH_PRODUCTS',
       shopDomain,
       productLimit,
-      action || "none",
+      action || 'none',
       taskId,
-      Boolean(hasEan)
+      Boolean(hasEan),
     );
 
     return products;
