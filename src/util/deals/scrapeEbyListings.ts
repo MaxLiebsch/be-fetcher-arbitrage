@@ -1,10 +1,22 @@
-import { AddProductInfoProps, DbProductRecord, NotFoundCause, ProductRecord, queryProductPageQueue, QueryQueue, Shop, uuid } from "@dipmaxtech/clr-pkg";
-import { TaskStats } from "../../types/taskStats/TasksStats";
-import { defaultEbyDealTask, defaultQuery } from "../../constants";
-import { handleEbyListingNotFound, handleEbyListingProductInfo } from "../scrapeEbyListingsHelper";
-import { DealsOnEbyStats } from "../../types/taskStats/DealsOnEbyStats";
-import { updateProductWithQuery } from "../../db/util/crudProducts";
-import { log } from "../logger";
+import {
+  AddProductInfoProps,
+  DbProductRecord,
+  NotFoundCause,
+  ProductRecord,
+  queryProductPageQueue,
+  QueryQueue,
+  Shop,
+  uuid,
+} from '@dipmaxtech/clr-pkg';
+import { TaskStats } from '../../types/taskStats/TasksStats.js';
+import { defaultEbyDealTask, defaultQuery } from '../../constants.js';
+import {
+  handleEbyListingNotFound,
+  handleEbyListingProductInfo,
+} from '../scrapeEbyListingsHelper.js';
+import { DealsOnEbyStats } from '../../types/taskStats/DealsOnEbyStats.js';
+import { updateProductWithQuery } from '../../db/util/crudProducts.js';
+import { log } from '../logger.js';
 
 export async function scrapeEbyListings(
   queue: QueryQueue,
@@ -13,7 +25,7 @@ export async function scrapeEbyListings(
   targetLink: string,
   product: DbProductRecord,
   infos: TaskStats,
-  processProps = defaultEbyDealTask
+  processProps = defaultEbyDealTask,
 ) {
   return new Promise((res, rej) => {
     const { taskIdProp } = processProps;
@@ -31,25 +43,25 @@ export async function scrapeEbyListings(
         { productInfo, url },
         product,
         queue,
-        processProps
+        processProps,
       );
-      res("done");
+      res('done');
     };
     const handleNotFound = async (cause: NotFoundCause) => {
       infos.notFound++;
       infos.total++;
       queue.total++;
-      if (cause === "exceedsLimit") {
+      if (cause === 'exceedsLimit') {
         const result = await updateProductWithQuery(productId, {
           $unset: {
-            [taskIdProp]: "",
+            [taskIdProp]: '',
           },
         });
         log(`Exceeds Limit: ${shopDomain}-${productId} - ${cause}`, result);
       } else {
         await handleEbyListingNotFound(shopDomain, productId);
       }
-      res("done");
+      res('done');
     };
 
     queue.pushTask(queryProductPageQueue, {

@@ -1,35 +1,20 @@
 import {
-  AddProductInfoProps,
-  DbProductRecord,
-  NotFoundCause,
-  ProductRecord,
-  queryProductPageQueue,
   QueryQueue,
   Shop,
-  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { differenceInHours } from "date-fns";
 import { getShop } from "../../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import {
-  defaultEbyDealTask,
-  defaultQuery,
   proxyAuth,
 } from "../../../constants.js";
 import {
-  handleEbyListingNotFound,
-  handleEbyListingProductInfo,
-} from "../../../util/scrapeEbyListingsHelper.js";
-import {
   deleteProduct,
-  updateProductWithQuery,
 } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
 import { NegEbyDealTask } from "../../../types/tasks/Tasks.js";
-import { TaskStats } from "../../../types/taskStats/TasksStats.js";
-import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats.js";
 import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby.js";
 import { MissingShopError } from "../../../errors.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
