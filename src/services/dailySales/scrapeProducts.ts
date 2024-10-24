@@ -71,9 +71,8 @@ export const scrapeProducts = async (
       notFound: 0,
       elapsedTime: "",
     };
-    task.actualProductLimit = productLimit;
     const queue = new CrawlerQueue(concurrency, proxyAuth, task);
-    queue.total = 0;
+    queue.actualProductLimit = productLimit;
 
     const eventEmitter = globalEventEmitter;
 

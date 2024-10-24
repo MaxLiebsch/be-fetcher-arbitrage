@@ -75,18 +75,17 @@ export default async function queryEansOnEby(
     );
     const remaining = await countRemainingProducts(shops, taskId, type);
     log(`Product limit: ${_productLimit}, Remaining products: ${remaining}`);
-    task.actualProductLimit = _productLimit;
-
+    
     infos.locked = productsWithShop.length;
-
+    
     const startTime = Date.now();
-
+    
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
-    queue.total = 0;
+    queue.actualProductLimit = _productLimit;
     await queue.connect();
 
     const toolInfo = await getShop("ebay.de");

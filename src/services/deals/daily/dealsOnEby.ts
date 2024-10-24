@@ -5,7 +5,6 @@ import { TaskCompletedStatus } from "../../../status.js";
 import { proxyAuth } from "../../../constants.js";
 import { deleteProduct } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import { scrapeEbyListings } from "../weekly/negEbyDeals.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
 import { DealOnEbyTask } from "../../../types/tasks/Tasks.js";
@@ -15,6 +14,7 @@ import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
 import { log } from "../../../util/logger.js";
 import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js";
+import { scrapeEbyListings } from "../../../util/deals/scrapeEbyListings.js";
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
@@ -69,12 +69,12 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
       productLimit
     );
     log("Product limit " + _productLimit);
-    task.actualProductLimit = _productLimit;
     infos.locked = productsWithShop.length;
-
+    
     await updateProgressDealsOnEbyTasks();
-
+    
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = _productLimit;
     await queue.connect();
 
     await Promise.all(

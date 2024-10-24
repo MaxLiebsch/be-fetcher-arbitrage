@@ -80,12 +80,12 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
 
     const _productLimit = getProductLimitMulti(products.length, productLimit);
     log(`Product limit: ${_productLimit}`);
-    task.actualProductLimit = _productLimit;
     infos.locked = products.length;
-
+    
     await updateProgressNegDealAznTasks();
-
+    
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = _productLimit;
     await queue.connect();
 
     await Promise.all(

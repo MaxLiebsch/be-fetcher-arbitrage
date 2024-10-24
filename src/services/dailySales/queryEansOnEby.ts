@@ -38,8 +38,8 @@ export const queryEansOnEby = async (
     const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
-    task.actualProductLimit = task.queryEansOnEby.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = task.queryEansOnEby.length;
 
     const eventEmitter = globalEventEmitter;
 

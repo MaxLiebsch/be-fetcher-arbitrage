@@ -47,8 +47,8 @@ export const lookupCategory = async (
       elapsedTime: "",
     };
 
-    task.actualProductLimit = task.lookupCategory && task.lookupCategory.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = task.lookupCategory && task.lookupCategory.length;
     const eventEmitter = globalEventEmitter;
 
     eventEmitter.on(

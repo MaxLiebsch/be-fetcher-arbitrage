@@ -58,7 +58,6 @@ export const lookupInfo = async (
     const eventEmitter = globalEventEmitter;
     const queryQueues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
-    task.actualProductLimit = task.lookupInfo.length;
     await Promise.all(
       Array.from({ length: browserConcurrency || 1 }, (v, k) => k + 1).map(
         async () => {
@@ -129,6 +128,7 @@ export const lookupInfo = async (
       task.progress.lookupInfo.pop();
       if (!product) continue;
       const queue = queueIterator.next().value as QueryQueue;
+      queue.actualProductLimit++
       const hasEan = Boolean(origin.hasEan || origin?.ean);
       const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);

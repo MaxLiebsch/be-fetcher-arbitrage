@@ -72,18 +72,17 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
 
     const _productLimit = getProductLimitMulti(products.length, productLimit);
     log(`Product limit: ${_productLimit}`);
-    task.actualProductLimit = _productLimit;
-
+    
     infos.locked = products.length;
-
+    
     const startTime = Date.now();
-
+    
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
-    queue.total = 0;
+    queue.actualProductLimit = _productLimit;
     await queue.connect();
 
     let completed = false;

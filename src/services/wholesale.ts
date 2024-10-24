@@ -71,30 +71,29 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     );
     log(`Product limit: ${_productLimit}`);
 
-    task.actualProductLimit = _productLimit;
-
+    
     infos.locked = wholeSaleProducts.length;
-
+    
     //Update task progress
     await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
-
+    
     const startTime = Date.now();
-
+    
     const toolInfo = await getShop("sellercentral.amazon.de");
-
+    
     if (!toolInfo) {
       return reject(
         new MissingShopError(`No shop found for sellercentral.amazon.de`, task)
       );
     }
-
+    
     const queues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
     await multiQueueInitializer(task, queuesWithId, queues, eventEmitter);
-
+    
     const queueIterator = yieldQueues(queues);
-
+    
     const isCompleted = async () => {
       const isDone = queues.every((q) => q.workload() === 0);
       if (isDone) {
@@ -118,14 +117,15 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
       }
       await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
     };
-
+    
     const interval = setInterval(
       async () => await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
-
+    
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
+      queue.actualProductLimit++;
       const wholesaleProduct = wholeSaleProducts[index];
       const {
         ean,

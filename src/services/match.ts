@@ -32,7 +32,6 @@ import { TaskReturnType } from "../types/TaskReturnType.js";
 import { getProductLimitMulti } from "../util/getProductLimit.js";
 import { log } from "../util/logger.js";
 import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
-import { lockProducts } from "../db/util/multiShopUtilities/lockProducts.js";
 import { findPendingProductsForMatchTask } from "../db/util/singleShopUtilities/findPendingProductsForMatchTask.js";
 
 export default async function match(task: MatchProductsTask): TaskReturnType {
@@ -85,32 +84,32 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
       productLimit
     );
     log(`Product limit: ${_productLimit}`);
-    task.actualProductLimit = _productLimit;
-
+    
     infos.locked = lockedProducts.length;
-
+    
     //Update task progress
     await updateMatchProgress(shopDomain, hasEan);
-
+    
     const startTime = Date.now();
-
+    
     let targetShops = standardTargetRetailerList;
-
+    
     if (startShops && startShops.length) {
       targetShops = [...targetShops, ...startShops];
     }
-
+    
     const shops = await getShops(targetShops);
-
+    
     if (shops === null) return reject(new MissingShopError("", task));
-
+    
     const queue = new QueryQueue(
       concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
+    queue.actualProductLimit = _productLimit;
     await queue.connect();
-
+    
     const procProductsPromiseArr = [];
 
     let completed = false;
@@ -136,8 +135,6 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         handleResult(check, resolve, reject);
       }else if (check !== undefined && completed) {
         log(`Task already completed ${completed}`);
-      }else {
-
       }
     }
     const interval = setInterval(
@@ -171,6 +168,7 @@ export default async function match(task: MatchProductsTask): TaskReturnType {
         productUpdate["a_qty"] = a_qty || 1;
         productUpdate["a_uprc"] = a_prc;
         productUpdate["asin"] = asin;
+        productUpdate['a_lnk'] = a_lnk!.split("?")[0];
         productUpdate["bsr"] = [];
       }
       productUpdate["matched"] = true;

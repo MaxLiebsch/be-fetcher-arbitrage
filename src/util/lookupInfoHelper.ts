@@ -20,10 +20,7 @@ export async function handleLookupInfoProductInfo(
   product: DbProductRecord,
   infos: LookupInfoStats
 ) {
-  const {
-    prc: buyPrice,
-    a_qty: sellQty,
-    qty: buyQty,
+  const { 
     ean,
     a_vrfd,
     _id: productId,

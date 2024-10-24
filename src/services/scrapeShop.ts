@@ -90,13 +90,13 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       notFound: 0,
     };
 
-    task.actualProductLimit = productLimit;
     log(`Product limit: ${productLimit}`);
     const queue = new CrawlerQueue(
       concurrency ? concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
+    queue.actualProductLimit = productLimit;
 
     const interval = setInterval(
       async () => await isCompleted(),

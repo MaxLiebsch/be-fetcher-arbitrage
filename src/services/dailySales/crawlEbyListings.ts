@@ -51,8 +51,8 @@ export const crawlEbyListings = (
     const {proxyType} = ebay;
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
-    task.actualProductLimit = task.ebyListings.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = task.ebyListings.length;
 
     const eventEmitter = globalEventEmitter;
 

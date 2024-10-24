@@ -55,8 +55,8 @@ export const scrapeAznListingsDailyDeals = (
       elapsedTime: "",
     };
 
-    task.actualProductLimit = task.aznListings.length;
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = task.aznListings.length;
     await queue.connect();
     const eventEmitter = globalEventEmitter;
 

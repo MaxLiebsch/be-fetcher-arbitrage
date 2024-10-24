@@ -49,9 +49,9 @@ export const crawlEans = async (
       },
       elapsedTime: "",
     };
-
-    task.actualProductLimit = task.crawlEan.length;
+    
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    queue.actualProductLimit = task.crawlEan.length;
     const eventEmitter = globalEventEmitter;
 
     eventEmitter.on(
