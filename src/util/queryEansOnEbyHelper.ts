@@ -7,17 +7,40 @@ import {
   replaceAllHiddenCharacters,
   roundToTwoDecimals,
   resetEbyProductQuery,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
-import { updateProductWithQuery } from "../db/util/crudProducts.js";
-import { createHash } from "./hash.js";
-import { calculateMinMaxMedian } from "./calculateMinMaxMedian.js";
-import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
-import { DailySalesTask } from "../types/tasks/DailySalesTask.js";
-import { log } from "./logger.js";
-import { WholeSaleEbyTask } from "../types/tasks/Tasks.js";
-import { TASK_TYPES } from "./taskTypes.js";
-import { wholeSaleNotFoundQuery } from "./wholeSales.js";
+import {
+  updateProducts,
+  updateProductWithQuery,
+} from '../db/util/crudProducts.js';
+import { createHash } from './hash.js';
+import { calculateMinMaxMedian } from './calculateMinMaxMedian.js';
+import { QueryEansOnEbyStats } from '../types/taskStats/QueryEansOnEbyStats.js';
+import { DailySalesTask } from '../types/tasks/DailySalesTask.js';
+import { log } from './logger.js';
+import { WholeSaleEbyTask } from '../types/tasks/Tasks.js';
+import { TASK_TYPES } from './taskTypes.js';
+import { wholeSaleNotFoundQuery } from './wholeSales.js';
+import { getEanFromProduct } from './getEanFromProduct.js';
+
+const handleOtherProducts = async (
+  ean: string,
+  update: any,
+  errorMessage: string,
+) => {
+  const result = await updateProducts(
+    {
+      eanList: ean,
+    },
+    {
+      ...update,
+    },
+  );
+
+  if (result.modifiedCount > 0) {
+    log(errorMessage);
+  }
+};
 
 export async function handleQueryEansOnEbyIsFinished(
   collection: string,
@@ -25,7 +48,7 @@ export async function handleQueryEansOnEbyIsFinished(
   product: DbProductRecord,
   infos: QueryEansOnEbyStats,
   foundProducts: Product[],
-  task: DailySalesTask | WholeSaleEbyTask | null = null
+  task: DailySalesTask | WholeSaleEbyTask | null = null,
 ) {
   const {
     e_qty: sellQty,
@@ -54,33 +77,33 @@ export async function handleQueryEansOnEbyIsFinished(
       return cheapest;
     },
 
-    null as Product | null
+    null as Product | null,
   );
   if (foundProduct) {
     const { image, price: sellPrice, name, link } = foundProduct;
-    const shortLink = foundProduct.link.split("?")[0];
-    const esin = new URL(link).pathname.split("/")[2];
+    const shortLink = foundProduct.link.split('?')[0];
+    const esin = new URL(link).pathname.split('/')[2];
 
     if (priceRange.min && priceRange.max) {
-      update["e_pRange"] = priceRange;
+      update['e_pRange'] = priceRange;
     }
 
-    update["e_totalOfferCount"] = foundProducts.length;
-    update["e_img"] = image;
-    update["e_lnk"] = shortLink;
-    update["e_hash"] = createHash(shortLink);
-    update["e_orgn"] = "e";
-    update["e_pblsh"] = false;
-    update["esin"] = esin;
-    update["e_prc"] = sellPrice;
-    update["e_nm"] = replaceAllHiddenCharacters(name);
+    update['e_totalOfferCount'] = foundProducts.length;
+    update['e_img'] = image;
+    update['e_lnk'] = shortLink;
+    update['e_hash'] = createHash(shortLink);
+    update['e_orgn'] = 'e';
+    update['e_pblsh'] = false;
+    update['esin'] = esin;
+    update['e_prc'] = sellPrice;
+    update['e_nm'] = replaceAllHiddenCharacters(name);
 
     if (sellQty) {
-      update["e_qty"] = sellQty;
-      update["e_uprc"] = roundToTwoDecimals(sellPrice / sellQty);
+      update['e_qty'] = sellQty;
+      update['e_uprc'] = roundToTwoDecimals(sellPrice / sellQty);
     } else {
-      update["e_qty"] = 1;
-      update["e_uprc"] = sellPrice;
+      update['e_qty'] = 1;
+      update['e_uprc'] = sellPrice;
     }
 
     if (ebyCategories && ebyCategories.length > 0 && e_costs) {
@@ -88,13 +111,13 @@ export async function handleQueryEansOnEbyIsFinished(
         ebyCategories!.reduce<number[]>((acc, curr) => {
           acc.push(curr.id);
           return acc;
-        }, [])
+        }, []),
       );
       if (mappedCategory) {
         const ebyArbitrage = calculateEbyArbitrage(
           mappedCategory,
           sellPrice, //VK
-          buyPrice * (sellQty! / buyQty) //EK  //QTY Zielshop/QTY Herkunftsshop
+          buyPrice * (sellQty! / buyQty), //EK  //QTY Zielshop/QTY Herkunftsshop
         );
         if (ebyArbitrage) {
           Object.entries(ebyArbitrage).forEach(([key, val]) => {
@@ -104,14 +127,36 @@ export async function handleQueryEansOnEbyIsFinished(
       }
     }
 
+    update = {
+      ...update,
+      qEbyUpdatedAt: new Date().toISOString(),
+      eby_prop: 'complete',
+    };
+    const ean = getEanFromProduct(product);
+
+    if (ean) {
+      await handleOtherProducts(
+        ean,
+        {
+          $set: {
+            ...update,
+            qEbyUpdatedAt: new Date().toISOString(),
+            eby_prop: 'complete',
+          },
+          $unset: {
+            eby_taskId: '',
+          },
+        },
+        `Updated multipe products ${collection}-${productId}`,
+      );
+    }
+
     const result = await updateProductWithQuery(productId, {
       $set: {
         ...update,
-        qEbyUpdatedAt: new Date().toISOString(),
-        eby_prop: "complete",
       },
       $unset: {
-        eby_taskId: "",
+        eby_taskId: '',
       },
     });
     log(`Updated: ${collection}-${productId}`, result);
@@ -121,12 +166,17 @@ export async function handleQueryEansOnEbyIsFinished(
     if (isWholeSaleEbyTask) {
       query = wholeSaleNotFoundQuery;
     } else {
-      query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
+      query = resetEbyProductQuery({ eby_prop: 'missing', cat_prop: '' });
+      const ean = getEanFromProduct(product);
+      if (ean) {
+        await handleOtherProducts(
+          ean,
+          query,
+          `Updated multipe products ${collection}-${productId}`,
+        );
+      }
     }
-    const result = await updateProductWithQuery(
-      productId,
-      query
-    );
+    const result = await updateProductWithQuery(productId, query);
     log(`No product found for ${collection}-${productId}`, result);
   }
   infos.shops[collection]++;
@@ -137,19 +187,25 @@ export async function handleQueryEansOnEbyIsFinished(
 export async function handleQueryEansOnEbyNotFound(
   collection: string,
   product: DbProductRecord,
-  isWholeSaleEby?: boolean
+  isWholeSaleEby?: boolean,
 ) {
   const { _id: productId } = product;
   let query = {};
   if (isWholeSaleEby) {
     query = wholeSaleNotFoundQuery;
   } else {
-    query = resetEbyProductQuery({ eby_prop: "missing", cat_prop: "" });
+    query = resetEbyProductQuery({ eby_prop: 'missing', cat_prop: '' });
+
+    const ean = getEanFromProduct(product);
+    if (ean) {
+      await handleOtherProducts(
+        ean,
+        query,
+        `Updated multipe products ${collection}-${productId}`,
+      );
+    }
   }
 
-  const result = await updateProductWithQuery(
-    productId,
-    query
-  );
+  const result = await updateProductWithQuery(productId, query);
   log(`No product info: ${collection}-${productId}`, result);
 }

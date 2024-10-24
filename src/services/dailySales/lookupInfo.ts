@@ -152,7 +152,7 @@ export const lookupInfo = async (
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         completedProducts.push(productId);
-        await handleLookupInfoNotFound(salesDbName, productId);
+        await handleLookupInfoNotFound(salesDbName, productId, asin);
         infos.notFound++;
         infos.total++;
         queue.total++;

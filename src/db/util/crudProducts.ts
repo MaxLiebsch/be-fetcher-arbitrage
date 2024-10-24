@@ -20,6 +20,14 @@ export const findProducts = async (
     .toArray();
 };
 
+export const updateProducts = async (
+  query: Filter<DbProductRecord>,
+  update: { [key: string]: any }
+) => {
+  const productsCol = await getProductsCol();
+  return productsCol.updateMany({ ...query }, { ...update });
+};
+
 export const findProductByHash = async (hash: string) => {
   const collection = await getProductsCol();
   return collection.findOne({ s_hash: hash });

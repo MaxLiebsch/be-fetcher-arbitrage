@@ -189,7 +189,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       };
       const handleNotFound = async (cause: NotFoundCause) => {
         infos.notFound++;
-        await handleLookupInfoNotFound(shopDomain, productId);
+        await handleLookupInfoNotFound(shopDomain, productId, asin);
         infos.shops[shopDomain]++;
         infos.total++;
         queue.total++;
