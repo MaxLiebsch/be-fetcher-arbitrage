@@ -10,7 +10,7 @@ import {
   uuid,
   yieldQueues,
 } from '@dipmaxtech/clr-pkg';
-import _ from 'underscore';
+import _, { max } from 'underscore';
 import { handleResult } from '../handleResult.js';
 import { CONCURRENCY, defaultQuery, proxyAuth } from '../constants.js';
 import { checkProgress } from '../util/checkProgress.js';
@@ -111,6 +111,10 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       } else if (check !== undefined && completed) {
         cnt++;
         log(`Completed: ${completed} ${cnt}`);
+      } else {
+        log(
+          `${queryQueues.map((q) => `Q: ${q.queueId.slice(0, 5)} L:${q.workload()}`).join(',')}`,
+        );
       }
     };
 
@@ -129,10 +133,12 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
               const maxQueue = getMaxLoadQueue(queryQueues);
               const tasks = maxQueue.pullTasksFromQueue();
               if (tasks) {
+                maxQueue.actualProductLimit -= tasks.length;
                 log(
                   `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`,
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
+                queuesWithId[queueId].actualProductLimit += tasks.length;
               } else {
                 log('No more tasks to distribute. Closing ' + queueId);
                 await queuesWithId[queueId].disconnect(true);

@@ -9,31 +9,31 @@ import {
   Shop,
   uuid,
   yieldQueues,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
-} from "../../constants.js";
+} from '../../constants.js';
 
-import { updateTask } from "../../db/util/tasks.js";
+import { updateTask } from '../../db/util/tasks.js';
 import {
   handleLookupInfoNotFound,
   handleLookupInfoProductInfo,
-} from "../../util/lookupInfoHelper.js";
-import { getEanFromProduct } from "../../util/getEanFromProduct.js";
-import { salesDbName } from "../../db/mongo.js";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
-import { getMaxLoadQueue } from "../../util/getMaxLoadQueue.js";
-import { LookupInfoStats } from "../../types/taskStats/LookupInfoStats.js";
-import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
-import { combineQueueStats } from "../../util/combineQueueStats.js";
-import { log } from "../../util/logger.js";
+} from '../../util/lookupInfoHelper.js';
+import { getEanFromProduct } from '../../util/getEanFromProduct.js';
+import { salesDbName } from '../../db/mongo.js';
+import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
+import { getMaxLoadQueue } from '../../util/getMaxLoadQueue.js';
+import { LookupInfoStats } from '../../types/taskStats/LookupInfoStats.js';
+import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
+import { combineQueueStats } from '../../util/combineQueueStats.js';
+import { log } from '../../util/logger.js';
 
 export const lookupInfo = async (
   sellerCentral: Shop,
   origin: Shop,
-  task: DailySalesTask
+  task: DailySalesTask,
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
@@ -52,7 +52,7 @@ export const lookupInfo = async (
         costs: 0,
         infos: 0,
       },
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     const eventEmitter = globalEventEmitter;
@@ -67,40 +67,37 @@ export const lookupInfo = async (
           eventEmitter.on(
             `${queue.queueId}-finished`,
             async function lookupInfoCallback({ queueId }) {
-              console.log("Emitter: Queue completed ", queueId);
+              console.log('Emitter: Queue completed ', queueId);
               const maxQueue = getMaxLoadQueue(queryQueues);
               const tasks = maxQueue.pullTasksFromQueue();
               if (tasks) {
-                console.log(
-                  "adding",
-                  tasks.length,
-                  " tasks from ",
-                  maxQueue.queueId,
-                  "to ",
-                  queueId
+                maxQueue.actualProductLimit -= tasks.length; // decrement the actualProductLimit
+                log(
+                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`,
                 );
+                queuesWithId[queueId].actualProductLimit += tasks.length;
                 queuesWithId[queueId].addTasksToQueue(tasks);
               } else {
-                console.log("no more tasks to distribute. Closing ", queueId);
+                console.log('no more tasks to distribute. Closing ', queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
                 if (isDone) {
-                  log("LookupInfo: All queues are done");
+                  log('LookupInfo: All queues are done');
                   interval && clearInterval(interval);
                   await updateTask(taskId, {
                     $set: { progress: task.progress },
                   });
                   const queueStats = combineQueueStats(
-                    queryQueues.map((q) => q.queueStats)
+                    queryQueues.map((q) => q.queueStats),
                   );
                   res({ infos, queueStats });
                 }
               }
-            }
+            },
           );
           return queue.connect();
-        }
-      )
+        },
+      ),
     );
 
     async function isProcessComplete(queue: QueryQueue) {
@@ -118,7 +115,7 @@ export const lookupInfo = async (
     let interval = setInterval(async () => {
       await updateTask(taskId, {
         $pull: {
-          "progress.lookupInfo": { _id: { $in: completedProducts } },
+          'progress.lookupInfo': { _id: { $in: completedProducts } },
         },
       });
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
@@ -128,7 +125,7 @@ export const lookupInfo = async (
       task.progress.lookupInfo.pop();
       if (!product) continue;
       const queue = queueIterator.next().value as QueryQueue;
-      queue.actualProductLimit++
+      queue.actualProductLimit++;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
       const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
@@ -146,7 +143,7 @@ export const lookupInfo = async (
           hasEan,
           { productInfo, url },
           product,
-          infos
+          infos,
         );
         await isProcessComplete(queue);
       };
@@ -165,7 +162,7 @@ export const lookupInfo = async (
         s_hash,
         proxyType: sellerCentral.proxyType,
         targetShop: {
-          prefix: "",
+          prefix: '',
           d: shopDomain,
           name: shopDomain,
         },
@@ -177,8 +174,8 @@ export const lookupInfo = async (
         query: {
           ...defaultQuery,
           product: {
-            value: hasEan ? asin || ean || "" : asin || "",
-            key: hasEan ? asin || ean || "" : asin || "",
+            value: hasEan ? asin || ean || '' : asin || '',
+            key: hasEan ? asin || ean || '' : asin || '',
           },
         },
         prio: 0,
