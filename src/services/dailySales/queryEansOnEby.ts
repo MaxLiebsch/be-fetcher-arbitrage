@@ -8,12 +8,14 @@ import {
   QueryQueue,
   queryURLBuilder,
   Shop,
+  sleep,
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
+  STANDARD_SETTLING_TIME,
 } from "../../constants.js";
 import { updateTask } from "../../db/util/tasks.js";
 import {
@@ -27,6 +29,7 @@ import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
+import { log } from "../../util/logger.js";
 
 export const queryEansOnEby = async (
   collection: string,
@@ -34,7 +37,7 @@ export const queryEansOnEby = async (
   task: DailySalesTask | WholeSaleEbyTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
-    const { browserConfig, _id: taskId, shopDomain } = task;
+    const { browserConfig, _id: taskId, shopDomain, id } = task;
     const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
@@ -43,9 +46,14 @@ export const queryEansOnEby = async (
 
     const eventEmitter = globalEventEmitter;
 
+    let done = false;
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function queryEansOnEbyCallback() {
+        if (done) return;
+        done = true;
+        log(`Settling time for Query eans on Eby ${id}...`);
+        await sleep(STANDARD_SETTLING_TIME);
         interval && clearInterval(interval);
         if (isWholeSaleEbyTask) {
           await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");

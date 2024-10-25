@@ -157,10 +157,10 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         }
         if (infos.total > 1) {
           retry++;
-        } else if (infos.total === 1 && retry < MAX_TASK_RETRIES) {
+        } else if (infos.total === 0 && retry < MAX_TASK_RETRIES) {
           retry++;
-        } else if (infos.total === 1 && retry === MAX_TASK_RETRIES) {
-          log(`Total products 1 after ${retry} retries. Failed.`);
+        } else if (infos.total === 0 && retry === MAX_TASK_RETRIES) {
+          log(`Total products 0 after ${retry} retries. Failed.`);
           return res(
             new TaskCompletedStatus("DAILY_DEALS FAILED", task, {
               taskStats: infos,

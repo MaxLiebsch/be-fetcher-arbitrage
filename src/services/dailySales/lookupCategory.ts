@@ -7,12 +7,14 @@ import {
   queryProductPageQueue,
   QueryQueue,
   Shop,
+  sleep,
   uuid,
 } from "@dipmaxtech/clr-pkg";
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
+  STANDARD_SETTLING_TIME,
 } from "../../constants.js";
 import { updateTask } from "../../db/util/tasks.js";
 import {
@@ -25,6 +27,7 @@ import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
 import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
+import { log } from "../../util/logger.js";
 
 export const lookupCategory = async (
   collection: string,
@@ -50,10 +53,15 @@ export const lookupCategory = async (
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = task.lookupCategory && task.lookupCategory.length;
     const eventEmitter = globalEventEmitter;
-
+    
+    let done = false;
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function lookupCategoryCallback() {
+        if (done) return;
+        done = true;
+        log(`Settling time for lookupCategory ${taskId}`);
+        await sleep(STANDARD_SETTLING_TIME);
         if (isWholeSaleEbyTask) {
           await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
         } else {

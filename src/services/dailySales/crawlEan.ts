@@ -9,28 +9,31 @@ import {
   QueryQueue,
   Shop,
   uuid,
-  removeSearchParams 
-} from "@dipmaxtech/clr-pkg";
-import { updateTask } from "../../db/util/tasks.js";
+  removeSearchParams,
+  sleep,
+} from '@dipmaxtech/clr-pkg';
+import { updateTask } from '../../db/util/tasks.js';
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   MAX_RETRIES_SCRAPE_EAN,
+  ONE_MINUTE,
   proxyAuth,
-} from "../../constants.js";
+  STANDARD_SETTLING_TIME,
+} from '../../constants.js';
 import {
   handleCrawlEanNotFound,
   handleCrawlEanProductInfo,
-} from "../../util/crawlEanHelper.js";
+} from '../../util/crawlEanHelper.js';
 
-import { salesDbName } from "../../db/mongo.js";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
-import { ScrapeEanStats } from "../../types/taskStats/ScrapeEanStats.js";
-import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
+import { salesDbName } from '../../db/mongo.js';
+import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
+import { ScrapeEanStats } from '../../types/taskStats/ScrapeEanStats.js';
+import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
 
 export const crawlEans = async (
   shop: Shop,
-  task: DailySalesTask
+  task: DailySalesTask,
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
@@ -47,37 +50,41 @@ export const crawlEans = async (
           image: 0,
         },
       },
-      elapsedTime: "",
+      elapsedTime: '',
     };
-    
+
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = task.crawlEan.length;
     const eventEmitter = globalEventEmitter;
 
+    let done = false;
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function crawlEanCallback() {
+        if (done) return;
+        done = true;
+        await sleep(STANDARD_SETTLING_TIME);
         await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
         res({ infos, queueStats: queue.queueStats });
-      }
+      },
     );
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
       await updateTask(taskId, {
         $pull: {
-          "progress.crawlEan": { _id: { $in: completedProducts } },
+          'progress.crawlEan': { _id: { $in: completedProducts } },
         },
         $addToSet: {
-          "progress.queryEansOnEby": { $each: task.progress.queryEansOnEby },
-          "progress.lookupInfo": { $each: task.progress.lookupInfo },
+          'progress.queryEansOnEby': { $each: task.progress.queryEansOnEby },
+          'progress.lookupInfo': { $each: task.progress.lookupInfo },
         },
       });
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
-        console.log("product limit reached");
+        console.log('product limit reached');
         interval && clearInterval(interval);
         await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
@@ -106,7 +113,7 @@ export const crawlEans = async (
           queue,
           product,
           infos,
-          task
+          task,
         );
         await isProcessComplete();
       };
@@ -129,7 +136,7 @@ export const crawlEans = async (
         proxyType,
         targetShop: {
           name: shopDomain,
-          prefix: "",
+          prefix: '',
           d: shopDomain,
         },
         onNotFound: handleNotFound,

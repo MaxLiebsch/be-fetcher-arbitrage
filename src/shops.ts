@@ -4712,22 +4712,22 @@ export const shops: { [key: string]: Shop } = {
           details: [
             {
               content: 'link',
-              sel: 'div.damn-product a',
+              sel: 'div.img a',
               type: 'href',
             },
             {
               content: 'image',
-              sel: 'div.damn-product img',
+              sel: 'div.img img',
               type: 'data-src',
             },
             {
               content: 'name',
-              sel: 'div.damn-product span[data-minddeal-name]',
+              sel: 'span[data-minddeal-name]',
               type: 'text',
             },
             {
               content: 'price',
-              sel: 'div.damn-product span[data-minddeal-price]',
+              sel: 'span[data-minddeal-price]',
               type: 'text',
             },
           ],

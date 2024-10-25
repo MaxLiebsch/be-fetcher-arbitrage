@@ -17,6 +17,7 @@ import {
   MAX_RETIRES_SCRAPE_SHOP,
   proxyAuth,
   RECHECK_EAN_EBY_AZN_INTERVAL,
+  STANDARD_SETTLING_TIME,
 } from "../../constants.js";
 import {
   findProductByHash,
@@ -34,7 +35,7 @@ export const scrapeProducts = async (
   task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
-    const { categories, browserConfig, _id: taskId, productLimit} = task;
+    const { categories, browserConfig, _id: taskId,id, productLimit} = task;
     const { d: shopDomain, hasEan, ean, proxyType } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];
@@ -76,9 +77,15 @@ export const scrapeProducts = async (
 
     const eventEmitter = globalEventEmitter;
 
+    let done = false;
     eventEmitter.on(
       `${queue.queueId}-finished`,
       async function crawlProductsCallback() {
+        if (done) return;
+        done = true;
+        log(`Settling time for Scrape Shop ${id}...`);
+        await sleep(STANDARD_SETTLING_TIME);
+        console.log("FINISHED!")
         interval && clearInterval(interval);
         await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
@@ -88,7 +95,7 @@ export const scrapeProducts = async (
 
     const interval = setInterval(async () => {
       if (queue.workload() === 0) {
-        await sleep(20000);
+        await sleep(STANDARD_SETTLING_TIME);
         if (queue.workload() === 0) {
           interval && clearInterval(interval);
           await queue.disconnect(true);
