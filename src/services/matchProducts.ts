@@ -103,7 +103,10 @@ export default async function matchProducts(
 
     const eventEmitter = globalEventEmitter;
 
+    let done = false
     eventEmitter.on(`${queue.queueId}-finished`, async () => {
+      if(done) return;
+      done = true;
       await isProcessComplete();
     });
 
