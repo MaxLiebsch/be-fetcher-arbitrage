@@ -175,7 +175,9 @@ export default async function matchProducts(
           updateOne: {
             filter: { _id: productId },
             update: {
-              azn_taskId: '',
+              $set: {
+                azn_taskId: '',
+              }
             },
           },
         });
@@ -196,7 +198,9 @@ export default async function matchProducts(
           updateOne: {
             filter: { _id: productId },
             update: {
-              eby_taskId: '',
+              $set: {
+                eby_taskId: '',
+              }
             },
           },
         });
