@@ -103,10 +103,11 @@ export default async function matchProducts(
 
     const eventEmitter = globalEventEmitter;
 
-    let done = false
+    let done = false;
     eventEmitter.on(`${queue.queueId}-finished`, async () => {
-      if(done) return;
+      if (done) return;
       done = true;
+      log(`Emitter: Queue completed ${queue.queueId}`);
       await isProcessComplete();
     });
 
@@ -131,6 +132,8 @@ export default async function matchProducts(
         handleResult(check, resolve, reject);
       } else if (check !== undefined && completed) {
         log(`Task already completed ${completed}`);
+      } else {
+        log(`${queue.queueId.slice(0, 5)} L:${queue.workload()}`);
       }
     }
     const interval = setInterval(
@@ -180,7 +183,7 @@ export default async function matchProducts(
             update: {
               $set: {
                 azn_taskId: '',
-              }
+              },
             },
           },
         });
@@ -203,7 +206,7 @@ export default async function matchProducts(
             update: {
               $set: {
                 eby_taskId: '',
-              }
+              },
             },
           },
         });

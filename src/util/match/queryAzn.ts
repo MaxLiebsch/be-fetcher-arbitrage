@@ -55,6 +55,8 @@ export default async function queryAzn({
     };
 
     const isFinished = async () => {
+      infos.total++;
+      queue.total++;
       if (foundProducts.length === 0) {
         const result = await updateProductWithQuery(productId, {
           $set: {
@@ -68,6 +70,7 @@ export default async function queryAzn({
           `No products found: ${shopDomain}-${productId} in ${toolInfoDomain}`,
           result,
         );
+        infos.notFound++;
         resolve('done-azn');
         return;
       }
@@ -130,8 +133,7 @@ export default async function queryAzn({
           result,
         );
       }
-      infos.total++;
-      queue.total++;
+      
       resolve('done-azn');
     };
 
