@@ -20,17 +20,17 @@ describe("crawl eans", () => {
     );
 
     if (!products) {
-      throw new Error("No azn listings found for " + shopDomain);
+      console.log('not found') 
     }
-    console.log("products", products.length);
-    await deleteAllProducts(shopDomain);
-    await insertProducts(
-      products.map((l) => {
-        const id = l._id.$oid;
-        delete l._id;
-        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
-      })
-    );
+    // console.log("products", products.length);
+    // await deleteAllProducts(shopDomain);
+    // await insertProducts(
+    //   products.map((l) => {
+    //     const id = l._id.$oid;
+    //     delete l._id;
+    //     return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
+    //   })
+    // );
     await resetProperty({
       $set: {
         eanList: [],

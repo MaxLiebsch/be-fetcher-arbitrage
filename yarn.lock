@@ -2728,11 +2728,11 @@ bcrypt-pbkdf@^1.0.0:
     tweetnacl "^0.14.3"
 
 "be-fetcher-arbitrage@file:.":
-  version "0.0.142"
+  version "0.0.144"
   dependencies:
     "@date-fns/utc" "^1.2.0"
     axios "^1.7.2"
-    be-fetcher-arbitrage "file:../../AppData/Local/Yarn/Cache/v6/npm-be-fetcher-arbitrage-0.0.142-8797abf1-2d34-46e6-850f-d9ac3fcd2b0c-1729583514194/node_modules/be-fetcher-arbitrage"
+    be-fetcher-arbitrage "file:../../AppData/Local/Yarn/Cache/v6/npm-be-fetcher-arbitrage-0.0.144-1bd5325f-aedc-466e-830b-1cf68955549a-1729950817376/node_modules/be-fetcher-arbitrage"
     concurrently "^8.2.2"
     convert-units "^2.3.4"
     cross-env "^7.0.3"
@@ -2946,6 +2946,15 @@ chromium-bidi@0.6.5:
   version "0.6.5"
   resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.6.5.tgz#31be98f9ee5c93fa99d240c680518c9293d8c6bb"
   integrity sha512-RuLrmzYrxSb0s9SgpB+QN5jJucPduZQ/9SIe76MDxYJuecPW5mxMdacJ1f4EtgiV+R0p3sCkznTMvH0MPGFqjA==
+  dependencies:
+    mitt "3.0.1"
+    urlpattern-polyfill "10.0.0"
+    zod "3.23.8"
+
+chromium-bidi@0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.8.0.tgz#ffd79dad7db1fcc874f1c55fcf46ded05a884269"
+  integrity sha512-uJydbGdTw0DEUjhoogGveneJVWX/9YuqkWePzMmkBYwtdAqo5d3J/ovNKFr+/2hWXYmYCr6it8mSSTIj6SS6Ug==
   dependencies:
     mitt "3.0.1"
     urlpattern-polyfill "10.0.0"
@@ -3200,7 +3209,7 @@ date-fns@^3.6.0:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.6.0.tgz#f20ca4fe94f8b754951b24240676e8618c0206bf"
   integrity sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==
 
-debug@4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, debug@^4.3.6:
+debug@4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, debug@^4.3.6, debug@^4.3.7:
   version "4.3.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.7.tgz#87945b4151a011d76d95a198d7111c865c360a52"
   integrity sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==
@@ -3263,6 +3272,11 @@ devtools-protocol@0.0.1330662:
   version "0.0.1330662"
   resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1330662.tgz#400fe703c2820d6b2d9ebdd1785934310152373e"
   integrity sha512-pzh6YQ8zZfz3iKlCvgzVCu22NdpZ8hNmwU6WnQjNVquh0A9iVosPtNLWDwaWVGyrntQlltPFztTMK5Cg6lfCuw==
+
+devtools-protocol@0.0.1354347:
+  version "0.0.1354347"
+  resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1354347.tgz#5cb509610b8f61fc69a31e5c810d5bed002d85ea"
+  integrity sha512-BlmkSqV0V84E2WnEnoPnwyix57rQxAM5SKJjf4TbYOCGLAWtz8CDH8RIaGOjPgPCXo2Mce3kxSY497OySidY3Q==
 
 diff-sequences@^29.6.3:
   version "29.6.3"
@@ -5642,6 +5656,18 @@ puppeteer-core@23.3.0:
     typed-query-selector "^2.12.0"
     ws "^8.18.0"
 
+"puppeteer-core@npm:rebrowser-puppeteer-core@~23.6.101":
+  version "23.6.101"
+  resolved "https://registry.yarnpkg.com/rebrowser-puppeteer-core/-/rebrowser-puppeteer-core-23.6.101.tgz#b610e2100a8a7f2d2d500d69be785237b19272c7"
+  integrity sha512-nSrIg0Uv50RkFwQWxd1v9Kq0J2P1zcG5+xUSUzs2YIJCiRb8I3YUTN5wytt7i/P0HRFBxLyBy+RRGIMDFZf2yg==
+  dependencies:
+    "@puppeteer/browsers" "2.4.0"
+    chromium-bidi "0.8.0"
+    debug "^4.3.7"
+    devtools-protocol "0.0.1354347"
+    typed-query-selector "^2.12.0"
+    ws "^8.18.0"
+
 puppeteer@23.3.0:
   version "23.3.0"
   resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-23.3.0.tgz#f2a3b28c05c17504adf1a903247e01f93e27d6b5"
@@ -5733,6 +5759,18 @@ real-require@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/real-require/-/real-require-0.2.0.tgz#209632dea1810be2ae063a6ac084fee7e33fba78"
   integrity sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==
+
+rebrowser-puppeteer@^23.6.101:
+  version "23.6.101"
+  resolved "https://registry.yarnpkg.com/rebrowser-puppeteer/-/rebrowser-puppeteer-23.6.101.tgz#f1513984a3460a91bd41b3e3cfdd2b8b97d66f03"
+  integrity sha512-bCv+c0irK62Q3JzegLg+wm+U+5PzBXF+4eTgNBT8K+6s6S/4ec8lx2xVGRbbneUmwfoeb1o9xerzPHsf/3eV7A==
+  dependencies:
+    "@puppeteer/browsers" "2.4.0"
+    chromium-bidi "0.8.0"
+    cosmiconfig "^9.0.0"
+    devtools-protocol "0.0.1354347"
+    puppeteer-core "npm:rebrowser-puppeteer-core@~23.6.101"
+    typed-query-selector "^2.12.0"
 
 rechoir@^0.8.0:
   version "0.8.0"

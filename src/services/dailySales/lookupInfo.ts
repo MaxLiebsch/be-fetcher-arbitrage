@@ -77,7 +77,7 @@ export const lookupInfo = async (
                 );
                 queuesWithId[queueId].actualProductLimit += tasks.length;
                 queuesWithId[queueId].addTasksToQueue(tasks);
-              } else {
+              } else if(queuesWithId[queueId].workload() === 0) {
                 console.log('no more tasks to distribute. Closing ', queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
@@ -92,6 +92,8 @@ export const lookupInfo = async (
                   );
                   res({ infos, queueStats });
                 }
+              }else{
+                log(`${queuesWithId[queueId].workload()} tasks left in ${queueId}`);
               }
             },
           );

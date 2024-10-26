@@ -1,29 +1,72 @@
-import { proxyAuth } from "../src/constants.js";
+import { proxyAuth } from '../src/constants.js';
 import {
   notifyProxyChange,
   getPage,
-  mainBrowser,
   registerRequest,
   uuid,
   terminateConnection,
   registerRequestv3,
   CHROME_VERSIONS,
-} from "@dipmaxtech/clr-pkg";
-import { getShop } from "../src/db/util/shops.js";
+} from '@dipmaxtech/clr-pkg';
+import { getShop } from '../src/db/util/shops.js';
+import puppeteer from 'rebrowser-puppeteer'
+import { VersionProvider, Versions } from '@dipmaxtech/clr-pkg/lib/util/versionProvider.js';
+
+export const mainBrowser = async (
+  version: Versions,
+  proxyAuth?: { host: string },
+) => {
+  const args = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--lang=de',
+    '--disable-gpu',
+    '--disable-webrtc',
+    '--disable-blink-features=AutomationControlled',
+    '--webrtc-ip-handling-policy=disable_non_proxied_udp',
+    '--force-webrtc-ip-handling-policy',
+    '--start-maximized',
+  ];
+
+  if (proxyAuth) {
+    const proxySetting = '--proxy-server=' + proxyAuth.host;
+    args.push(proxySetting);
+  }
+
+  const provider = VersionProvider.getSingleton();
+  provider.switchVersion(version);
+  
+
+  const options: any = {
+    headless: process.env.HEADLESS === 'true' ? true : false,
+    devtools: process.env.DEV_TOOLS === 'true' ? true : false,
+    args,
+    defaultViewport: null,
+    timeout: 600000,
+    protocolTimeout: 60000,
+  };
+  options['executablePath'] = provider.currentPuppeteer.executablePath();
+  const browser = await puppeteer.launch(options);
+
+  console.log('Browser Version: ', await browser.version());
+  return browser;
+};
 
 const secureMode = async () => {
-  const browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
-  const shopDomain = "dm.de";
+  const sleep = (delay: number) =>
+    new Promise((resolve) => setTimeout(resolve, delay));
+  
+  const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
+  const shopDomain = "mindfactory.de";
 
   const shop = await getShop(shopDomain);
   if (!shop) return;
 
   const { exceptions } = shop;
-  const lnk = "https://www.amazon.de/dp/product/B00ZETXNAQ?language=de_DE";
-  // const lnk =
-  //   "http://www.dm.de/lavera-shampoo-volumen-und-kraft-p4021457655113.html";
+  const lnk = "https://demo.fingerprint.com/playground";
   const requestId = uuid();
   const { page } = await getPage({
+    //@ts-ignore
     browser,
     shop,
     host: shopDomain,
@@ -46,18 +89,7 @@ const secureMode = async () => {
     }
     return originalGoto.apply(this, [url, options]);
   };
-  // await page.goto("https://bot-detector.rebrowser.net/");
-
-  // const page = await browser.newPage();
   await page.goto(lnk, {timeout: 60000});
-  await page
-  .evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  })
-  .catch((e) => {
-    console.error('Failed to clear storage:', e?.message);
-  });
   // const status = result?.status();
   // if (status !== 200) {
   //   const response = await page.reload();
@@ -66,4 +98,4 @@ const secureMode = async () => {
   // await browser.close()
 };
 
-secureMode().then(() => console.log("Secure mode test passed"));
+secureMode().then(() => console.log('Secure mode test passed'));
