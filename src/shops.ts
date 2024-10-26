@@ -4773,7 +4773,6 @@ export const shops: { [key: string]: Shop } = {
         'image',
         'xhr',
         'fetch',
-
         'script',
         'other',
       ],

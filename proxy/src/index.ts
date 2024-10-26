@@ -1,15 +1,15 @@
-import http from "http";
-import url from "url";
-import net from "net";
-import "dotenv/config";
-import { config } from "dotenv";
-import { allowed, ProxyType, uuid } from "@dipmaxtech/clr-pkg";
-import { getProxyForwardUrl } from "./util/proxy/getProxyForwardUrl";
-import { generateProxyConnectRequest } from "./util/proxy/generateProxyConnectRequest";
-import { handleForbidden } from "./util/proxy/handleForbidden";
-import { handleClientsocketError } from "./util/proxy/handleClientsocketError";
-import { handleServerError } from "./util/proxy/handleServerError";
-import UpcomingRequestCachev2 from "./util/UpcomingRequestCachev2";
+import http from 'http';
+import url from 'url';
+import net from 'net';
+import 'dotenv/config';
+import { config } from 'dotenv';
+import { allowed, ProxyType, uuid } from '@dipmaxtech/clr-pkg';
+import { getProxyForwardUrl } from './util/proxy/getProxyForwardUrl';
+import { generateProxyConnectRequest } from './util/proxy/generateProxyConnectRequest';
+import { handleForbidden } from './util/proxy/handleForbidden';
+import { handleClientsocketError } from './util/proxy/handleClientsocketError';
+import { handleServerError } from './util/proxy/handleServerError';
+import UpcomingRequestCachev2 from './util/UpcomingRequestCachev2';
 import {
   connectionHealth,
   handleCompleted,
@@ -17,15 +17,15 @@ import {
   handleProxyChange,
   handleRegister,
   handleTerminationPrevConnections,
-} from "./util/proxy/proxyServices";
-import path from "path";
+} from './util/proxy/proxyServices';
+import path from 'path';
 
 import {
   Proxies,
   ProxyContext,
   ProxyServiceSearchQuery,
   TypedSocket,
-} from "./types/proxy";
+} from './types/proxy';
 
 const PORT = 8080;
 
@@ -34,21 +34,22 @@ config({
 });
 
 const status = [
-  "connection established",
-  "ok",
-  "200",
-  "200 connection established",
+  'connection established',
+  'ok',
+  '200',
+  '200 connection established',
 ];
 const proxyConnectedStr =
-  "HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n";
+  'HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n';
 
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
-
+let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default de-p proxy request
 
 const proxies: Proxies = {
+  'de-p': de_p_host,
   de: de_host,
   mix: host,
 };
@@ -68,36 +69,36 @@ const server = http.createServer((req, res) => {
   const typedQuery = query as unknown as ProxyServiceSearchQuery; // Cast query to ProxyServiceSearchQuery
 
   const { method } = req;
-  if (method === "GET") {
+  if (method === 'GET') {
     switch (pathname) {
-      case "/change-proxy":
+      case '/change-proxy':
         host = handleProxyChange(typedQuery, res);
         break;
-      case "/notify":
+      case '/notify':
         handleNotify(upReqv2, typedQuery, res);
         break;
-      case "/connection-health":
+      case '/connection-health':
         connectionHealth(upReqv2, typedQuery, res);
         break;
-      case "/terminate-prev-connections":
+      case '/terminate-prev-connections':
         handleTerminationPrevConnections(upReqv2, typedQuery, res);
         break;
-      case "/register":
+      case '/register':
         handleRegister(upReqv2, typedQuery, res);
         break;
-      case "/completed":
+      case '/completed':
         handleCompleted(upReqv2, typedQuery, res);
         break;
 
       default:
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not Found");
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
         break;
     }
   }
 });
 
-server.on("connect", (req, clientSocket: TypedSocket, head) => {
+server.on('connect', (req, clientSocket: TypedSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
   if (!allowed.some((domain) => hostname.includes(domain))) {
     upReqv2.kill(hostname);
@@ -111,11 +112,11 @@ server.on("connect", (req, clientSocket: TypedSocket, head) => {
   const requestHost = upReqv2.getProxyUrl(requestId) || host;
   const proxyType = getType(requestHost);
   upReqv2.setSocket(
-    requestId || "",
+    requestId || '',
     hostname,
     proxyType,
     clientSocket,
-    "client"
+    'client'
   );
   const { forwardProxyUrl, proxyAuth } = getProxyForwardUrl(
     username,
@@ -137,18 +138,18 @@ server.on("connect", (req, clientSocket: TypedSocket, head) => {
     requestHost,
   });
 
-  clientSocket.on("close", () => {
+  clientSocket.on('close', () => {
     upReqv2.removeSocket(socketId);
   });
 
-  clientSocket.on("error", (err) => {
+  clientSocket.on('error', (err) => {
     upReqv2.removeSocket(socketId);
     handleClientsocketError(clientSocket, err);
   });
 });
 
-server.on("error", (err) => {
-  console.log("Proxy Server error", err);
+server.on('error', (err) => {
+  console.log('Proxy Server error', err);
 });
 
 const establishedConnection = ({
@@ -167,10 +168,10 @@ const establishedConnection = ({
   const proxySocketId = uuid();
   proxySocket.id = proxySocketId;
 
-  proxySocket.once("connect", () => {
+  proxySocket.once('connect', () => {
     proxySocket.write(proxyConnectRequest);
 
-    proxySocket.once("data", (chunk) => {
+    proxySocket.once('data', (chunk) => {
       const chunkStr = chunk.toString().toLowerCase();
       if (status.some((s) => chunkStr.includes(s))) {
         clientSocket.write(proxyConnectedStr);
@@ -178,11 +179,11 @@ const establishedConnection = ({
         proxySocket.pipe(clientSocket);
         clientSocket.pipe(proxySocket);
         console.log(
-          "Connected: RequestId:",
+          'Connected: RequestId:',
           requestId,
-          " Host:",
+          ' Host:',
           hostname,
-          " Proxy:",
+          ' Proxy:',
           requestHost
         );
         upReqv2.setSocket(
@@ -190,7 +191,7 @@ const establishedConnection = ({
           hostname,
           getType(requestHost),
           proxySocket,
-          "proxy"
+          'proxy'
         );
       } else {
         upReqv2.removeSocket(clientSocket.id);
@@ -199,20 +200,20 @@ const establishedConnection = ({
     });
   });
 
-  proxySocket.on("close", () => {
+  proxySocket.on('close', () => {
     upReqv2.removeSocket(proxySocketId);
   });
 
-  proxySocket.on("error", (err) => {
+  proxySocket.on('error', (err) => {
     handleServerError(clientSocket);
     upReqv2.removeSocket(proxySocketId);
   });
 };
 
-process.on("uncaughtException", function (err) {
-  console.log("Proxy Server uncaught Error", err.stack);
+process.on('uncaughtException', function (err) {
+  console.log('Proxy Server uncaught Error', err.stack);
 });
 
-console.log("Listening on port " + PORT);
+console.log('Listening on port ' + PORT);
 
 server.listen(PORT);

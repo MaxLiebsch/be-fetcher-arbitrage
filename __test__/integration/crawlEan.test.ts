@@ -8,12 +8,15 @@ import {
   deleteAllProducts,
   insertProducts,
 } from "../../src/db/util/crudProducts";
+import { updateShops } from "../../src/db/util/shops";
+import {shops} from "../../src/shops";
 
 const shopDomain = "gamestop.de";
 
 describe("crawl eans", () => {
-  let productLimit = 25;
+  let productLimit = 50;
   beforeAll(async () => {
+    await updateShops(shops)
     const products = read(
       path("__test__/static/collections/arbispotter.gamestop.de.json"),
       "json"
@@ -31,16 +34,16 @@ describe("crawl eans", () => {
     //     return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
     //   })
     // );
-    await resetProperty({
-      $set: {
-        eanList: [],
-      },
-      $unset: {
-        ean: "",
-        ean_prop: "",
-        ean_taskId: "",
-      },
-    });
+    // await resetProperty({
+    //   $set: {
+    //     eanList: [],
+    //   },
+    //   $unset: {
+    //     ean: "",
+    //     ean_prop: "",
+    //     ean_taskId: "",
+    //   },
+    // });
   }, 100000);
 
   test("crawl eans", async () => {

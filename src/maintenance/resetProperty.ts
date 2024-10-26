@@ -1,4 +1,5 @@
 //@ts-nocheck
+import { get } from "underscore";
 import { getArbispotterDb, getProductsCol } from "../db/mongo";
 import {
   getActiveShops,
@@ -9,7 +10,7 @@ import {
 export const resetProperty = async (query) => {
   const spotter = await getArbispotterDb();
   const productCol = await getProductsCol();
-  const shops = await getActiveShops();
+  const shops = await getAllShopsAsArray(); 
   const activeShops = shops.filter((shop) => shop.active);
   console.log(
     "activeShops:",

@@ -4,11 +4,10 @@ import {
   getPage,
   registerRequest,
   uuid,
-  terminateConnection,
-  registerRequestv3,
   CHROME_VERSIONS,
 } from '@dipmaxtech/clr-pkg';
-import { getShop } from '../src/db/util/shops.js';
+import { getShop, updateShops } from '../src/db/util/shops.js';
+import { shops } from '../src/shops.js';
 import puppeteer from 'rebrowser-puppeteer'
 import { VersionProvider, Versions } from '@dipmaxtech/clr-pkg/lib/util/versionProvider.js';
 
@@ -55,7 +54,7 @@ export const mainBrowser = async (
 const secureMode = async () => {
   const sleep = (delay: number) =>
     new Promise((resolve) => setTimeout(resolve, delay));
-  
+  await updateShops(shops)
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
   const shopDomain = "mindfactory.de";
 
@@ -63,7 +62,7 @@ const secureMode = async () => {
   if (!shop) return;
 
   const { exceptions } = shop;
-  const lnk = "https://demo.fingerprint.com/playground";
+  const lnk = "https://www.mindfactory.de/product_info.php/Terra-PC-Micro-6000-Core-i5-1240P-Mini-PC_1513207.html"
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -78,9 +77,9 @@ const secureMode = async () => {
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
     await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
-    if (shop.proxyType === 'de') {
+    if (shop.proxyType !== 'mix') {
       await notifyProxyChange(
-        "de",
+        shop.proxyType,
         url,
         requestId,
         Date.now(),

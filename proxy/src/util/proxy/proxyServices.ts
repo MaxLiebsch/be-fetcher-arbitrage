@@ -1,10 +1,10 @@
-import { ServerResponse } from "http";
-import "dotenv/config";
-import { config } from "dotenv";
-import UpcomingRequestCachev2 from "../UpcomingRequestCachev2";
-import { Proxies, ProxyServiceSearchQuery } from "../../types/proxy";
-import { ProxyType } from "@dipmaxtech/clr-pkg";
-import path from "path";
+import { ServerResponse } from 'http';
+import 'dotenv/config';
+import { config } from 'dotenv';
+import UpcomingRequestCachev2 from '../UpcomingRequestCachev2';
+import { Proxies, ProxyServiceSearchQuery } from '../../types/proxy';
+import { ProxyType } from '@dipmaxtech/clr-pkg';
+import path from 'path';
 
 config({
   path: [path.resolve(__dirname, `../../../.env.${process.env.NODE_ENV}`)],
@@ -12,8 +12,10 @@ config({
 
 let mix_host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
+let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default de-p proxy request
 
 const proxies: Proxies = {
+  'de-p': de_p_host,
   de: de_host,
   mix: mix_host,
 };
@@ -23,7 +25,7 @@ function handleErrors(
   statusCode: number,
   message: string
 ) {
-  res.writeHead(statusCode, { "Content-Type": "text/plain" });
+  res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
   return res.end(message);
 }
 
@@ -32,7 +34,7 @@ function handleSuccess(
   statusCode: number,
   message: string
 ) {
-  res.writeHead(statusCode, { "Content-Type": "text/plain" });
+  res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
   return res.end(message);
 }
 function handleBadRequest(res: ServerResponse, message: string) {
@@ -44,8 +46,11 @@ export function handleProxyChange(
   res: ServerResponse
 ) {
   handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
-  if (query.proxy === "de") {
+  if (query.proxy === 'de') {
     return de_host;
+  }
+  if(query.proxy === 'de-p') {
+    return de_p_host;
   }
   return mix_host;
 }
@@ -56,15 +61,18 @@ export function handleNotify(
   res: ServerResponse
 ) {
   if (!query) {
-    return handleBadRequest(res, "Bad Request");
+    return handleBadRequest(res, 'Bad Request');
   }
   const { de, mix } = proxies;
   const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   switch (true) {
-    case proxy === "de":
+    case proxy === 'de':
       upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
+      break;
+    case proxy === 'de-p':
+      upReqv2.setProxy(requestId, host, parsedHosts, de_p_host, parsedTime);
       break;
     default:
       upReqv2.setProxy(requestId, host, parsedHosts, mix, parsedTime);
@@ -80,7 +88,7 @@ export function handleTerminationPrevConnections(
 ) {
   const { requestId, host, hosts, prevProxyType } = query;
   if (!requestId) {
-    return handleBadRequest(res, "Bad Request");
+    return handleBadRequest(res, 'Bad Request');
   }
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   upReqv2.terminatePrevConnections(requestId, host, parsedHosts, prevProxyType);
@@ -94,7 +102,7 @@ export function connectionHealth(
 ) {
   const { host, hosts, requestId } = query;
   if (!host) {
-    return handleBadRequest(res, "Bad Request");
+    return handleBadRequest(res, 'Bad Request');
   }
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   const health = upReqv2.connectionHealth(requestId, host, parsedHosts);
@@ -108,7 +116,7 @@ export function handleRegister(
 ) {
   const { requestId, time, host, hosts } = query;
   if (!requestId) {
-    return handleBadRequest(res, "Bad Request");
+    return handleBadRequest(res, 'Bad Request');
   }
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
   const parsedTime = Number(time);
@@ -128,7 +136,7 @@ export function handleCompleted(
 ) {
   const { requestId } = query;
   if (!requestId) {
-    return handleBadRequest(res, "Bad Request");
+    return handleBadRequest(res, 'Bad Request');
   }
   upReqv2.kill(requestId);
   handleSuccess(res, 200, `Request completed`);
