@@ -139,7 +139,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
                 queuesWithId[queueId].actualProductLimit += tasks.length;
-              } else {
+              } else if(queuesWithId[queueId].workload() === 0) {
                 log('No more tasks to distribute. Closing ' + queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
@@ -157,6 +157,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
                   log('All queues are done');
                   await isCompleted();
                 }
+              }else{
+                log(`${queuesWithId[queueId].workload()} tasks left in ${queueId}`);
               }
             },
           );

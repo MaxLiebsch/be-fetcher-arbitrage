@@ -29,13 +29,17 @@ export async function multiQueueInitializer(
             const maxQueue = getMaxLoadQueue(queues);
             const tasks = maxQueue.pullTasksFromQueue();
             if (tasks) {
+              maxQueue.actualProductLimit -= tasks.length;
               log(
                 `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`,
               );
+              queuesWithId[queueId].actualProductLimit += tasks.length;
               queuesWithId[queueId].addTasksToQueue(tasks);
-            } else {
+            } else if(queuesWithId[queueId].workload() === 0) {
               log('No more tasks to distribute. Closing ' + queueId);
               await queuesWithId[queueId].disconnect(true);
+            }else {
+              log(`${queuesWithId[queueId].workload()} tasks left in ${queueId}`);
             }
           },
         );
