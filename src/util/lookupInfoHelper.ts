@@ -6,6 +6,7 @@ import {
   ObjectId,
   replaceAllHiddenCharacters,
   LookupInfoProps,
+  LookupInfoCause,
 } from '@dipmaxtech/clr-pkg';
 import { upsertAsin } from '../db/util/asinTable.js';
 import { LookupInfoStats } from '../types/taskStats/LookupInfoStats.js';
@@ -64,6 +65,12 @@ const handleUpdate = async (
   log(`Updated infos: ${collection}-${productId.toString()} ${cause}`, result);
 };
 
+const causeToInfoPropMap: { [key in LookupInfoCause]: LookupInfoProps } = {
+  completeInfo: 'complete',
+  missingSellerRank: 'no_bsr',
+  incompleteInfo: 'incomplete',
+};
+
 export async function handleLookupInfoProductInfo(
   collection: string,
   hasEan: boolean,
@@ -82,17 +89,7 @@ export async function handleLookupInfoProductInfo(
 
   let infoProp: LookupInfoProps = 'complete';
 
-  switch (cause) {
-    case 'completeInfo':
-      infoProp = 'complete';
-      break;
-    case 'missingSellerRank':
-      infoProp = 'no_bsr';
-      break;
-    case 'incompleteInfo':
-      infoProp = 'incomplete';
-      break;
-  }
+  infoProp = cause ? causeToInfoPropMap[cause] : infoProp;
 
   if (productInfo) {
     try {
