@@ -33,7 +33,7 @@ import { log } from '../../util/logger.js';
 export const lookupInfo = async (
   sellerCentral: Shop,
   origin: Shop,
-  task: DailySalesTask,
+  task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
@@ -73,11 +73,11 @@ export const lookupInfo = async (
               if (tasks) {
                 maxQueue.actualProductLimit -= tasks.length; // decrement the actualProductLimit
                 log(
-                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`,
+                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`
                 );
                 queuesWithId[queueId].actualProductLimit += tasks.length;
                 queuesWithId[queueId].addTasksToQueue(tasks);
-              } else if(queuesWithId[queueId].workload() === 0) {
+              } else if (queuesWithId[queueId].workload() === 0) {
                 console.log('no more tasks to distribute. Closing ', queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
@@ -88,18 +88,20 @@ export const lookupInfo = async (
                     $set: { progress: task.progress },
                   });
                   const queueStats = combineQueueStats(
-                    queryQueues.map((q) => q.queueStats),
+                    queryQueues.map((q) => q.queueStats)
                   );
                   res({ infos, queueStats });
                 }
-              }else{
-                log(`${queuesWithId[queueId].workload()} tasks left in ${queueId}`);
+              } else {
+                log(
+                  `${queuesWithId[queueId].workload()} tasks left in ${queueId}`
+                );
               }
-            },
+            }
           );
           return queue.connect();
-        },
-      ),
+        }
+      )
     );
 
     async function isProcessComplete(queue: QueryQueue) {
@@ -133,19 +135,16 @@ export const lookupInfo = async (
       const ean = getEanFromProduct(product);
 
       const addProduct = async (product: ProductRecord) => {};
-      const addProductInfo = async ({
-        productInfo,
-        url,
-      }: AddProductInfoProps) => {
+      const addProductInfo = async (props: AddProductInfoProps) => {
         completedProducts.push(productId);
         infos.total++;
         queue.total++;
         await handleLookupInfoProductInfo(
           salesDbName,
           hasEan,
-          { productInfo, url },
+          props,
           product,
-          infos,
+          infos
         );
         await isProcessComplete(queue);
       };

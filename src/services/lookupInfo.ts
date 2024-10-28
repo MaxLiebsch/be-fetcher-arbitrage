@@ -62,7 +62,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       'LOOKUP_INFO',
       taskId,
       action || 'none',
-      productLimit,
+      productLimit
     );
     log(`Found ${products.length} products`);
 
@@ -80,7 +80,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
 
     if (!toolInfo) {
       return reject(
-        new MissingShopError(`No shop found for sellercentral.amazon.de`, task),
+        new MissingShopError(`No shop found for sellercentral.amazon.de`, task)
       );
     }
 
@@ -113,7 +113,9 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         log(`Completed: ${completed} ${cnt}`);
       } else {
         log(
-          `${queryQueues.map((q) => `Q: ${q.queueId.slice(0, 5)} L:${q.workload()}`).join(',')}`,
+          `${queryQueues
+            .map((q) => `Q: ${q.queueId.slice(0, 5)} L:${q.workload()}`)
+            .join(',')}`
         );
       }
     };
@@ -124,7 +126,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           const queue = new QueryQueue(
             concurrency ? concurrency : CONCURRENCY,
             proxyAuth,
-            task,
+            task
           );
           queuesWithId[queue.queueId] = queue;
           eventEmitter.on(
@@ -135,11 +137,11 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
               if (tasks) {
                 maxQueue.actualProductLimit -= tasks.length;
                 log(
-                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`,
+                  `Adding ${tasks.length} tasks from ${maxQueue.queueId} to ${queueId}`
                 );
                 queuesWithId[queueId].addTasksToQueue(tasks);
                 queuesWithId[queueId].actualProductLimit += tasks.length;
-              } else if(queuesWithId[queueId].workload() === 0) {
+              } else if (queuesWithId[queueId].workload() === 0) {
                 log('No more tasks to distribute. Closing ' + queueId);
                 await queuesWithId[queueId].disconnect(true);
                 const isDone = queryQueues.every((q) => q.workload() === 0);
@@ -147,25 +149,27 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
                   const remaining = await countRemainingProducts(
                     shops,
                     taskId,
-                    type,
+                    type
                   );
                   log(
                     `Eventemitter: Remaining products: ${remaining}, taskId ${setTaskId(
-                      taskId,
-                    )}`,
+                      taskId
+                    )}`
                   );
                   log('All queues are done');
                   await isCompleted();
                 }
-              }else{
-                log(`${queuesWithId[queueId].workload()} tasks left in ${queueId}`);
+              } else {
+                log(
+                  `${queuesWithId[queueId].workload()} tasks left in ${queueId}`
+                );
               }
-            },
+            }
           );
           queryQueues.push(queue);
           return queue.connect();
-        },
-      ),
+        }
+      )
     );
 
     const queueIterator = yieldQueues(queryQueues);
@@ -179,16 +183,13 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       const { asin, _id: productId, s_hash, prc } = product;
       const ean = getEanFromProduct(product);
       const addProduct = async (product: ProductRecord) => {};
-      const addProductInfo = async ({
-        productInfo,
-        url,
-      }: AddProductInfoProps) => {
+      const addProductInfo = async (props: AddProductInfoProps) => {
         await handleLookupInfoProductInfo(
           shopDomain,
           hasEan,
-          { productInfo, url },
+          props,
           product,
-          infos,
+          infos
         );
         infos.shops[shopDomain]++;
         infos.total++;
@@ -206,7 +207,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
 
       const { avgPrice, a_useCurrPrice, a_prc } = getAznAvgPrice(
         product,
-        product.a_prc || 0,
+        product.a_prc || 0
       );
 
       const query: Query = {
@@ -217,8 +218,8 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           price: a_useCurrPrice
             ? priceToString(a_prc)
             : avgPrice > 0
-              ? priceToString(avgPrice)
-              : priceToString(prc),
+            ? priceToString(avgPrice)
+            : priceToString(prc),
         },
       };
       queue.pushTask(querySellerInfosQueue, {

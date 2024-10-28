@@ -15,7 +15,7 @@ export const findEan = async (ean: string) => {
   return collection.findOne({ eans: ean });
 };
 
-export const upsertAsin = async (asin: string, eanList: string[], costs: Costs) => {
+export const upsertAsin = async (asin: string, eanList: string[], costs?: Costs) => {
   const db = await getCrawlDataDb();
   const collection = db.collection(collectionName);
 

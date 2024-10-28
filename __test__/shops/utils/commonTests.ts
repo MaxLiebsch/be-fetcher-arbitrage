@@ -500,7 +500,9 @@ export const extractProductInfos = async (addProductInfo: any, lnk?: string) => 
 
 export const querySellerInfos = async (
   addProductInfo: any,
-  product: DbProductRecord
+  onNotFound: any,
+  product: DbProductRecord,
+  {lookupRetryLimit, retries}: {lookupRetryLimit: number,retries: number }
 ) => {
   if (page && shops && shops[shopDomain]) {
     const { eanList, asin, prc } = product;
@@ -518,6 +520,9 @@ export const querySellerInfos = async (
     return await querySellerInfosQueue(page, {
       shop: shops[shopDomain],
       addProductInfo,
+      onNotFound,
+      lookupRetryLimit,
+      retries,
       query: {
         brand: { key: "", value: "" },
         year: { min: 0, max: 0 },

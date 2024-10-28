@@ -8,27 +8,27 @@ import {
   AddProductInfoProps,
   ProductRecord,
   NotFoundCause,
-} from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
-import { handleResult } from "../handleResult.js";
-import { MissingProductsError, MissingShopError } from "../errors.js";
-import { getShop } from "../db/util/shops.js";
-import { DEFAULT_CHECK_PROGRESS_INTERVAL } from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
-import { lockWholeSaleProducts } from "../db/util/wholesaleSearch/lockWholeSaleProducts.js";
-import { updateWholesaleProgress } from "../util/updateProgressInTasks.js";
-import { upsertAsin } from "../db/util/asinTable.js";
-import { WholeSaleTask } from "../types/tasks/Tasks.js";
-import { WholeSaleStats } from "../types/taskStats/WholeSaleStats.js";
-import { TaskReturnType } from "../types/TaskReturnType.js";
-import { getProductLimitMulti } from "../util/getProductLimit.js";
-import { log } from "../util/logger.js";
-import { multiQueueInitializer } from "../util/multiQueueInitializer.js";
-import { TaskCompletedStatus } from "../status.js";
-import { countRemainingProductsShop } from "../util/countRemainingProducts.js";
-import { hostname, wholeSaleColname } from "../db/mongo.js";
-import { updateProductWithQuery } from "../db/util/crudProducts.js";
-import { priceToString } from "../util/lookupInfoHelper.js";
+} from '@dipmaxtech/clr-pkg';
+import _ from 'underscore';
+import { handleResult } from '../handleResult.js';
+import { MissingProductsError, MissingShopError } from '../errors.js';
+import { getShop } from '../db/util/shops.js';
+import { DEFAULT_CHECK_PROGRESS_INTERVAL } from '../constants.js';
+import { checkProgress } from '../util/checkProgress.js';
+import { lockWholeSaleProducts } from '../db/util/wholesaleSearch/lockWholeSaleProducts.js';
+import { updateWholesaleProgress } from '../util/updateProgressInTasks.js';
+import { upsertAsin } from '../db/util/asinTable.js';
+import { WholeSaleTask } from '../types/tasks/Tasks.js';
+import { WholeSaleStats } from '../types/taskStats/WholeSaleStats.js';
+import { TaskReturnType } from '../types/TaskReturnType.js';
+import { getProductLimitMulti } from '../util/getProductLimit.js';
+import { log } from '../util/logger.js';
+import { multiQueueInitializer } from '../util/multiQueueInitializer.js';
+import { TaskCompletedStatus } from '../status.js';
+import { countRemainingProductsShop } from '../util/countRemainingProducts.js';
+import { hostname, wholeSaleColname } from '../db/mongo.js';
+import { updateProductWithQuery } from '../db/util/crudProducts.js';
+import { priceToString } from '../util/lookupInfoHelper.js';
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -37,11 +37,11 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     const wholeSaleProducts = await lockWholeSaleProducts(
       productLimit,
       taskId,
-      action || "none",
-      "WHOLESALE_SEARCH"
+      action || 'none',
+      'WHOLESALE_SEARCH'
     );
 
-    if (action === "recover") {
+    if (action === 'recover') {
       log(`Recovering ${type} and found ${wholeSaleProducts.length} products`);
     } else {
       log(`Starting ${type} with ${wholeSaleProducts.length} products`);
@@ -58,7 +58,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         infos: 0,
       },
       notFound: 0,
-      elapsedTime: "",
+      elapsedTime: '',
       failedSave: 0,
     };
 
@@ -71,29 +71,28 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     );
     log(`Product limit: ${_productLimit}`);
 
-    
     infos.locked = wholeSaleProducts.length;
-    
+
     //Update task progress
-    await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
-    
+    await updateWholesaleProgress(taskId, 'WHOLESALE_SEARCH');
+
     const startTime = Date.now();
-    
-    const toolInfo = await getShop("sellercentral.amazon.de");
-    
+
+    const toolInfo = await getShop('sellercentral.amazon.de');
+
     if (!toolInfo) {
       return reject(
         new MissingShopError(`No shop found for sellercentral.amazon.de`, task)
       );
     }
-    
+
     const queues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
     await multiQueueInitializer(task, queuesWithId, queues, eventEmitter);
-    
+
     const queueIterator = yieldQueues(queues);
-    
+
     const isCompleted = async () => {
       const isDone = queues.every((q) => q.workload() === 0);
       if (isDone) {
@@ -115,14 +114,14 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           handleResult(check, resolve, reject);
         }
       }
-      await updateWholesaleProgress(taskId, "WHOLESALE_SEARCH");
+      await updateWholesaleProgress(taskId, 'WHOLESALE_SEARCH');
     };
-    
+
     const interval = setInterval(
       async () => await isCompleted(),
       DEFAULT_CHECK_PROGRESS_INTERVAL
     );
-    
+
     for (let index = 0; index < wholeSaleProducts.length; index++) {
       const queue = queueIterator.next().value;
       queue.actualProductLimit++;
@@ -145,21 +144,18 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         queue.total++;
         if (productInfo) {
           try {
-            const productUpdate = generateUpdate(
-              productInfo,
-              wholesaleProduct
-            );
+            const productUpdate = generateUpdate(productInfo, wholesaleProduct);
 
             let reducedCosts = { ...productUpdate.costs };
             delete reducedCosts.azn;
-            await upsertAsin(productUpdate.asin, [ean], reducedCosts);
+            if (productUpdate.asin) await upsertAsin(productUpdate.asin, [ean]);
             const result = await updateProductWithQuery(productId, {
               $set: {
                 ...productUpdate,
-                a_status: "complete",
+                a_status: 'complete',
                 a_lookup_pending: false,
               },
-              $unset: { a_locked: "" },
+              $unset: { a_locked: '' },
               $pull: { clrName: hostname },
             });
             log(`Updated: ${ean}`, result);
@@ -171,18 +167,18 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             }
           } catch (error) {
             if (error instanceof Error) {
-              if (error.message === "a_prc is 0") {
+              if (error.message === 'a_prc is 0') {
                 infos.missingProperties.price++;
               }
-              if (error.message === "costs.azn is 0") {
+              if (error.message === 'costs.azn is 0') {
                 infos.missingProperties.costs++;
               }
               const result = await updateProductWithQuery(productId, {
                 $set: {
-                  a_status: "not found",
+                  a_status: 'not found',
                   a_lookup_pending: false,
                 },
-                $unset: { a_locked: "" },
+                $unset: { a_locked: '' },
                 $pull: { clrName: hostname },
               });
               log(`Not found: ${ean}`, result);
@@ -197,10 +193,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         } else {
           const result = await updateProductWithQuery(productId, {
             $set: {
-              a_status: "not found",
+              a_status: 'not found',
               a_lookup_pending: false,
             },
-            $unset: { a_locked: "" },
+            $unset: { a_locked: '' },
             $pull: { clrName: hostname },
           });
           log(`Product info missing: ${ean}`, result);
@@ -220,10 +216,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         queue.total++;
         const result = await updateProductWithQuery(productId, {
           $set: {
-            a_status: "not found",
+            a_status: 'not found',
             a_lookup_pending: false,
           },
-          $unset: { a_locked: "" },
+          $unset: { a_locked: '' },
           $pull: { clrName: hostname },
         });
         log(`Not found: ${ean} - ${cause}`, result);
@@ -243,7 +239,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         s_hash: productId.toString(),
         addProduct,
         targetShop: {
-          prefix: "",
+          prefix: '',
           d: `UserId: ${userId}`,
           name: `UserId: ${userId}`,
         },
@@ -254,7 +250,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           product: {
             value: ean,
             key: ean,
-            price: priceToString(prc)
+            price: priceToString(prc),
           },
         },
         prio: 0,

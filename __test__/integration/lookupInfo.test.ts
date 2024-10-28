@@ -14,29 +14,29 @@ const shopDomain = "gamestop.de";
 describe("lookup info", () => {
   let productLimit = 45;
   beforeAll(async () => {
-    const aznListings = read(
-      path("__test__/static/collections/arbispotter.gamestop.de-with-ean.json"),
-      "json"
-    );
+    // const aznListings = read(
+    //   path("__test__/static/collections/arbispotter.gamestop.de-with-ean.json"),
+    //   "json"
+    // );
 
-    if (!aznListings) {
-      throw new Error("No lookup info listings found for " + shopDomain);
-    }
-    console.log("lookup info listings", aznListings.length);
-    await deleteAllProducts(shopDomain);
-    await insertProducts(
-      aznListings.map((l) => {
-        const id = l._id.$oid;
-        delete l._id;
-        return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
-      })
-    );
-    // await resetProperty({
-    //   $unset: {
-    //     info_prop: "",
-    //     info_taskId: "",
-    //   },
-    // });
+    // if (!aznListings) {
+    //   throw new Error("No lookup info listings found for " + shopDomain);
+    // }
+    // console.log("lookup info listings", aznListings.length);
+    // await deleteAllProducts(shopDomain);
+    // await insertProducts(
+    //   aznListings.map((l) => {
+    //     const id = l._id.$oid;
+    //     delete l._id;
+    //     return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
+    //   })
+    // );
+    await resetProperty({
+      $unset: {
+        info_prop: "",
+        info_taskId: "",
+      },
+    });
   }, 100000);
 
   test("lookup info listings", async () => {

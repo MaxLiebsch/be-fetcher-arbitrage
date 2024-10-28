@@ -1604,8 +1604,7 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     hasEan: false,
-    manualCategories: [
-    ],
+    manualCategories: [],
     mimic: 'svg.cpHeaderLogo__svg',
     paginationEl: [
       {
@@ -1740,8 +1739,8 @@ export const shops: { [key: string]: Shop } = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 700,
-      max: 900,
+      min: 1500,
+      max: 1800,
     },
     product: [
       {
@@ -6093,66 +6092,129 @@ export const shops: { [key: string]: Shop } = {
         parent: 'div[id=product-detail-left]',
         type: 'src',
         content: 'a_img',
-        step: 1,
+        step: 0,
       },
       {
         sel: 'thead tr td kat-link',
         parent: 'table.product-detail-table-left',
         type: 'label',
         content: 'name',
-        step: 1,
+        step: 0,
       },
       {
         sel: 'tbody tr td:nth-child(2)',
         parent: 'table.product-detail-table-left',
         type: 'text',
         content: 'asin',
-        step: 1,
-      },
-      {
-        sel: 'tbody tr:nth-child(4) td:nth-child(2)',
-        parent: 'table.product-detail-table-right',
-        type: 'text',
-        content: 'totalOfferCount',
-        step: 1,
-      },
-      {
-        sel: 'span[part=label-text]',
-        parent:
-          'kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency',
-        type: 'text',
-        shadowRoot: true,
-        content: 'a_prc',
-        step: 1,
+        step: 0,
       },
       {
         sel: 'tbody tr:nth-child(3) td:nth-child(2)',
         parent: 'table.product-detail-table-right',
         type: 'text',
         content: 'sellerRank',
-        step: 1,
+        step: 0,
+      },
+      {
+        sel: 'tbody tr:nth-child(4) td:nth-child(2)',
+        parent: 'table.product-detail-table-right',
+        type: 'text',
+        content: 'totalOfferCount',
+        step: 0,
       },
       {
         sel: 'tbody tr:nth-child(5) td:nth-child(2) kat-star-rating',
         parent: 'table.product-detail-table-right',
         type: 'value',
         content: 'a_rating',
-        step: 1,
+        step: 0,
       },
       {
         sel: 'tbody tr:nth-child(5) td:nth-child(2) span.paddedLittle',
         parent: 'table.product-detail-table-right',
         type: 'text',
         content: 'a_reviewcnt',
-        step: 1,
+        step: 0,
+      },
+      {
+        sel: 'tr:nth-child(2) td:nth-child(5)',
+        parent: 'table.product-detail-table-right tbody',
+        type: 'text',
+        content: 'a_prc',
+        step: 0,
       },
       {
         sel: 'tbody tr:nth-child(5) td:nth-child(5)',
         parent: 'table.product-detail-table-right',
         type: 'text',
         content: 'buyBoxIsAmazon',
-        step: 1,
+        step: 0,
       },
+      // {
+      //   sel: 'img',
+      //   parent: 'div[id=product-detail-left]',
+      //   type: 'src',
+      //   content: 'a_img',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'thead tr td kat-link',
+      //   parent: 'table.product-detail-table-left',
+      //   type: 'label',
+      //   content: 'name',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr td:nth-child(2)',
+      //   parent: 'table.product-detail-table-left',
+      //   type: 'text',
+      //   content: 'asin',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr:nth-child(4) td:nth-child(2)',
+      //   parent: 'table.product-detail-table-right',
+      //   type: 'text',
+      //   content: 'totalOfferCount',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'span[part=label-text]',
+      //   parent:
+      //     'kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency',
+      //   type: 'text',
+      //   shadowRoot: true,
+      //   content: 'a_prc',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr:nth-child(3) td:nth-child(2)',
+      //   parent: 'table.product-detail-table-right',
+      //   type: 'text',
+      //   content: 'sellerRank',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr:nth-child(5) td:nth-child(2) kat-star-rating',
+      //   parent: 'table.product-detail-table-right',
+      //   type: 'value',
+      //   content: 'a_rating',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr:nth-child(5) td:nth-child(2) span.paddedLittle',
+      //   parent: 'table.product-detail-table-right',
+      //   type: 'text',
+      //   content: 'a_reviewcnt',
+      //   step: 1,
+      // },
+      // {
+      //   sel: 'tbody tr:nth-child(5) td:nth-child(5)',
+      //   parent: 'table.product-detail-table-right',
+      //   type: 'text',
+      //   content: 'buyBoxIsAmazon',
+      //   step: 1,
+      // },
       {
         sel: 'kat-label',
         parent: 'kat-expander div.section-expander-content',
@@ -6934,9 +6996,7 @@ export const shops: { [key: string]: Shop } = {
         },
       ],
     },
-    crawlActions: [
-      
-    ],
+    crawlActions: [],
     d: 'pieper.de',
     entryPoints: [
       {
@@ -6951,7 +7011,7 @@ export const shops: { [key: string]: Shop } = {
       {
         type: 'pagination',
         sel: 'a.js--load-more',
-        findPaginationStrategy: "estimate",
+        findPaginationStrategy: 'estimate',
         wait: false,
         visible: false,
         nav: '?p=',
