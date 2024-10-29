@@ -8,7 +8,6 @@ import {
   DbProductRecord,
   ProductRecord,
 } from "@dipmaxtech/clr-pkg";
-import { shuffle } from "underscore";
 import { handleResult } from "../handleResult.js";
 import { MissingProductsError, MissingShopError } from "../errors.js";
 import { getShop, getShops } from "../db/util/shops.js";

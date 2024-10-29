@@ -33,6 +33,7 @@ import { MissingProductsError } from '../errors.js';
 import { MissingShopError } from '../errors.js';
 import { log } from '../util/logger.js';
 import { findPendingProductsForTask } from '../db/util/multiShopUtilities/findPendingProductsForTask.js';
+import { uniqueDocuments } from '../util/uniqueDocuments.js';
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -58,12 +59,19 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       },
     };
 
-    const { products, shops } = await findPendingProductsForTask(
+    const productsAndShops = await findPendingProductsForTask(
       'LOOKUP_INFO',
       taskId,
       action || 'none',
       productLimit
     );
+
+    const { products, shops } = await uniqueDocuments(
+      'LOOKUP_INFO',
+      productsAndShops,
+      taskId
+    );
+    
     log(`Found ${products.length} products`);
 
     shops.forEach(async (info) => {

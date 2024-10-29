@@ -2,15 +2,16 @@ import {
   DbProductRecord,
   getMainDomainFromUrl,
   Shop,
-} from "@dipmaxtech/clr-pkg";
-import { salesDbName } from "../mongo.js";
-import { ShopPick } from "../../types/shops.js";
+} from '@dipmaxtech/clr-pkg';
+import { salesDbName } from '../mongo.js';
+import { ShopPick } from '../../types/shops.js';
+import { ProductsWithShop } from '../../types/products.js';
 
 export function getProductsWithShop(
   products: DbProductRecord[],
   shop: ShopPick,
   shops: Shop[]
-) {
+): ProductsWithShop {
   const { d: shopDomain } = shop;
   return products
     .map((product) => {

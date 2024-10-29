@@ -1,12 +1,12 @@
-import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { Action } from "../../../types/tasks/Tasks.js";
-import { getProductsCol } from "../../mongo.js";
-import { progressAggs } from "./progressQueryFns.js";
+import { DbProductRecord, ObjectId } from '@dipmaxtech/clr-pkg';
+import { Action } from '../../../types/tasks/Tasks.js';
+import { getProductsCol } from '../../mongo.js';
+import { progressAggs } from './progressQueryFns.js';
 import {
   LockProductTaskTypes,
   MultiShopTaskTypesWithAgg,
-} from "../../../util/taskTypes.js";
-import { lockProductQueries } from "./lockProductsQueryFns.js";
+} from '../../../util/taskTypes.js';
+import { lockProductQueries } from './lockProductsQueryFns.js';
 
 export const lockProducts = async (
   taskType: LockProductTaskTypes,
@@ -27,7 +27,7 @@ export const lockProducts = async (
     .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
-  if (action !== "recover") {
+  if (action !== 'recover') {
     const query = set(taskId);
     await productCol.updateMany(
       { _id: { $in: documents.map((doc) => doc._id) } },
@@ -57,7 +57,7 @@ export const lockProductsWithAgg = async (
     .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
-  if (action !== "recover") {
+  if (action !== 'recover') {
     const query = set(taskId);
     await productCol.updateMany(
       { _id: { $in: documents.map((doc) => doc._id) } },

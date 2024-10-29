@@ -1,5 +1,3 @@
-// Update the stats of the database
-
 import { getCrawlDataDb, getProductsCol } from '../mongo.js';
 
 export function reduceCount(res: any, prop: string) {
@@ -248,7 +246,13 @@ export async function updateStats() {
     .collection('stats')
     .updateOne(
       { name: 'processStats' },
-      { $set: { name: 'processStats', ...stats } },
+      {
+        $set: {
+          name: 'processStats',
+          ...stats,
+          updatedAt: new Date().toISOString(),
+        },
+      },
       { upsert: true }
     );
 }
