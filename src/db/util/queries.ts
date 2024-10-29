@@ -229,7 +229,14 @@ export const countPendingProductsForCrawlEanQuery = (domain: string) => {
       {
         $or: [
           { ean_prop: { $exists: false } },
-          { ean_prop: { $eq: CrawlEanProps.timeout } },
+          {
+            $and: [
+              {
+                ean_prop: { $eq: CrawlEanProps.timeout },
+                eanUpdatedAt: { $lt: subDateDaysISO(1) },
+              },
+            ],
+          },
         ],
       },
     ],

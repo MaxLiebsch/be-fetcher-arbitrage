@@ -1,14 +1,14 @@
-import { MultiShopTaskTypes } from "../../util/taskTypes";
-import { ShopPick } from "../../types/shops";
+import { MultiShopTaskTypes } from '../../util/taskTypes';
+import { ShopPick } from '../../types/shops';
 
 export const shopFilter = (shop: ShopPick) =>
   shop.active &&
-  shop.d !== "sales" &&
-  shop.d !== "sellercentral.amazon.de" &&
-  shop.d !== "ebay.de" &&
-  shop.d !== "amazon.de";
+  shop.d !== 'sales' &&
+  shop.d !== 'sellercentral.amazon.de' &&
+  shop.d !== 'ebay.de' &&
+  shop.d !== 'amazon.de';
 
-export const crawlEanFilter = (shop: ShopPick) => shop.hasEan && shop.active;
+export const crawlEanFilter = (shop: ShopPick) => shop.active && shop.hasEan;
 export const lookupInfoFilter = (shop: ShopPick) => shop.active;
 export const lookupCategoryFilter = (shop: ShopPick) => shop.active;
 export const queryEansOnEbyFilter = (shop: ShopPick) =>

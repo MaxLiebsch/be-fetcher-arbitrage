@@ -46,10 +46,10 @@ const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
-let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default de-p proxy request
+let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default des proxy request
 
 const proxies: Proxies = {
-  'de-p': de_p_host,
+  des: de_p_host,
   de: de_host,
   mix: host,
 };

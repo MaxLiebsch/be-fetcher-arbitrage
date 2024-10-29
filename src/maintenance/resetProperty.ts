@@ -11,6 +11,7 @@ export const resetProperty = async (query) => {
   const spotter = await getArbispotterDb();
   const productCol = await getProductsCol();
   const shops = await getAllShopsAsArray(); 
+  console.log('shops:', shops.length)
   const activeShops = shops.filter((shop) => shop.active);
   console.log(
     "activeShops:",

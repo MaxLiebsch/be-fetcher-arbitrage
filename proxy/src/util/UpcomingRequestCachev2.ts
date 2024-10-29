@@ -1,8 +1,8 @@
-import { LRUCache } from "lru-cache";
-import { isSocketHealthy } from "./proxy/isSocketHealthy";
-import { TypedSocket, UpcomingRequest } from "../types/proxy";
-import { ProxyType } from "@dipmaxtech/clr-pkg";
-import { TTL_UPCOMING_REQUEST } from "../constants";
+import { LRUCache } from 'lru-cache';
+import { isSocketHealthy } from './proxy/isSocketHealthy';
+import { TypedSocket, UpcomingRequest } from '../types/proxy';
+import { ProxyType } from '@dipmaxtech/clr-pkg';
+import { TTL_UPCOMING_REQUEST } from '../constants';
 
 class UpcomingRequestCachev2 {
   cache;
@@ -109,7 +109,7 @@ class UpcomingRequestCachev2 {
           sockets.splice(index, 1);
           this.sockets.set(key, sockets);
         } catch (error) {
-          console.error("Failed to destroy socket", error);
+          console.error('Failed to destroy socket', error);
         }
       }
     }
@@ -123,11 +123,11 @@ class UpcomingRequestCachev2 {
         return !isSocketHealthy(socket);
       });
       if (checkHealth) {
-        return "sockets-not-healthy";
+        return 'sockets-not-healthy';
       }
-      return "sockets-healthy";
+      return 'sockets-healthy';
     } else {
-      return "no-sockets-found";
+      return 'no-sockets-found';
     }
   }
 
@@ -163,7 +163,7 @@ class UpcomingRequestCachev2 {
   ) {
     let request = this.cache.get(requestId);
     if (request) {
-      request["time"] = time;
+      request['time'] = time;
       request.proxy = proxy;
       this.cache.set(requestId, request);
     } else {

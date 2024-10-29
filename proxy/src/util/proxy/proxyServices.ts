@@ -12,10 +12,10 @@ config({
 
 let mix_host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
-let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default de-p proxy request
+let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default dep proxy request
 
 const proxies: Proxies = {
-  'de-p': de_p_host,
+  des: de_p_host,
   de: de_host,
   mix: mix_host,
 };
@@ -49,7 +49,7 @@ export function handleProxyChange(
   if (query.proxy === 'de') {
     return de_host;
   }
-  if(query.proxy === 'de-p') {
+  if (query.proxy === 'des') {
     return de_p_host;
   }
   return mix_host;
@@ -63,7 +63,7 @@ export function handleNotify(
   if (!query) {
     return handleBadRequest(res, 'Bad Request');
   }
-  const { de, mix } = proxies;
+  const { de, mix, des } = proxies;
   const { proxy, host, hosts, requestId, time } = query;
   const parsedTime = Number(time);
   const parsedHosts = JSON.parse(decodeURIComponent(hosts));
@@ -71,7 +71,7 @@ export function handleNotify(
     case proxy === 'de':
       upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
       break;
-    case proxy === 'de-p':
+    case proxy === 'des':
       upReqv2.setProxy(requestId, host, parsedHosts, de_p_host, parsedTime);
       break;
     default:

@@ -8,9 +8,23 @@ import { updateAllShopsStats } from "./db/util/updateShopStats.js";
 import pkg from "fs-jetpack";
 const { write } = pkg;
 import { exec } from "child_process";
+import { updateStats } from "./db/util/updateStats.js";
 
 const logger = new LocalLogger().createLogger("GLOBAL");
 setTaskLogger(logger, "GLOBAL"); // DEFAULT logger
+
+if(hostname === 'clr2'){
+  scheduleJob("30 *  * * *", async () => {
+    try {
+      logGlobal(`Scheduled job: updateAll Process Stats...`);
+      await updateStats();
+      logGlobal(`Scheduled job: updateAll Process Stats done...`);
+    } catch (error) {
+      logGlobal(`Scheduled job: updateAll Process Stats failed: ${error}`);
+    }
+  });
+}
+
 
 if (hostname === "clr1") {
   scheduleJob("42 * * * *", async () => {

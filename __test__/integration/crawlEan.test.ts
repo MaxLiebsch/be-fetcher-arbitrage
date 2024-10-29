@@ -17,14 +17,14 @@ describe("crawl eans", () => {
   let productLimit = 50;
   beforeAll(async () => {
     await updateShops(shops)
-    const products = read(
-      path("__test__/static/collections/arbispotter.gamestop.de.json"),
-      "json"
-    );
+    // const products = read(
+    //   path("__test__/static/collections/arbispotter.gamestop.de.json"),
+    //   "json"
+    // );
 
-    if (!products) {
-      console.log('not found') 
-    }
+    // if (!products) {
+    //   console.log('not found') 
+    // }
     // console.log("products", products.length);
     // await deleteAllProducts(shopDomain);
     // await insertProducts(
@@ -34,16 +34,14 @@ describe("crawl eans", () => {
     //     return { ...l, _id: new ObjectId(id), sdmn: shopDomain };
     //   })
     // );
-    // await resetProperty({
-    //   $set: {
-    //     eanList: [],
-    //   },
-    //   $unset: {
-    //     ean: "",
-    //     ean_prop: "",
-    //     ean_taskId: "",
-    //   },
-    // });
+    await resetProperty({
+      $unset: {
+        ean: "",
+        eanList: '',
+        ean_prop: "",
+        ean_taskId: "",
+      },
+    });
   }, 100000);
 
   test("crawl eans", async () => {
