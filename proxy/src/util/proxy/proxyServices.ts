@@ -10,16 +10,17 @@ config({
   path: [path.resolve(__dirname, `../../../.env.${process.env.NODE_ENV}`)],
 });
 
-let mix_host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
-let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
-let de_p_host = process.env.PROXY_GATEWAY_URL_DE_P!; // Default dep proxy request
+const mix_host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
+const de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
+const des_host = process.env.PROXY_GATEWAY_URL_DES!; // Default dep proxy request
 
 const proxies: Proxies = {
-  des: de_p_host,
+  des: '89.58.0.149:8083',
   de: de_host,
   mix: mix_host,
 };
 
+console.log('des_host:', des_host);
 console.log('proxies:', JSON.stringify(proxies, null, 2));
 
 function handleErrors(
@@ -47,14 +48,15 @@ export function handleProxyChange(
   query: { proxy: ProxyType },
   res: ServerResponse
 ) {
+  const { de, mix, des } = proxies;
   handleSuccess(res, 200, `Proxy changed to ${query.proxy}`);
   if (query.proxy === 'de') {
-    return de_host;
+    return de;
   }
   if (query.proxy === 'des') {
-    return de_p_host;
+    return des;
   }
-  return mix_host;
+  return mix;
 }
 
 export function handleNotify(

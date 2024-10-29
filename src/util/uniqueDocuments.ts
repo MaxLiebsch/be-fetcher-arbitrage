@@ -35,7 +35,7 @@ export async function uniqueDocuments(
       { $unset: { [id]: '' } }
     );
     log(
-      `Task ${taskType} ${taskId} has ${idsToReturn.length} duplicate eanList[0] documents. ${result.modifiedCount} reseted.`
+      `Task ${taskType} ${taskId} has ${idsToReturn.length} duplicate eanList[0] documents in ${productAndShops.products.length} total products. ${result.modifiedCount} reseted.`
     );
   }
 
