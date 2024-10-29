@@ -8,6 +8,7 @@ import {
   AddProductInfoProps,
   ProductRecord,
   NotFoundCause,
+  DbProductRecord,
 } from '@dipmaxtech/clr-pkg';
 import _ from 'underscore';
 import { handleResult } from '../handleResult.js';
@@ -30,16 +31,20 @@ import { hostname, wholeSaleColname } from '../db/mongo.js';
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
 import { priceToString } from '../util/lookupInfoHelper.js';
 
+interface DbProductRecordWithEan extends DbProductRecord {
+  ean: string;
+}
+
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id: taskId, action, userId, type } = task;
 
-    const wholeSaleProducts = await lockWholeSaleProducts(
+    const wholeSaleProducts = (await lockWholeSaleProducts(
       productLimit,
       taskId,
       action || 'none',
       'WHOLESALE_SEARCH'
-    );
+    )) as unknown as DbProductRecordWithEan[];
 
     if (action === 'recover') {
       log(`Recovering ${type} and found ${wholeSaleProducts.length} products`);

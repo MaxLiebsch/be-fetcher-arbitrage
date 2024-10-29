@@ -10,26 +10,26 @@ import {
   Shop,
   sleep,
   uuid,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   proxyAuth,
   STANDARD_SETTLING_TIME,
-} from "../../constants.js";
-import { updateTask } from "../../db/util/tasks.js";
+} from '../../constants.js';
+import { updateTask } from '../../db/util/tasks.js';
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
-} from "../../util/queryEansOnEbyHelper.js";
-import { wholeSaleColname } from "../../db/mongo.js";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
-import { QueryEansOnEbyStats } from "../../types/taskStats/QueryEansOnEbyStats.js";
-import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
-import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
-import { TASK_TYPES } from "../../util/taskTypes.js";
-import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
-import { log } from "../../util/logger.js";
+} from '../../util/queryEansOnEbyHelper.js';
+import { wholeSaleColname } from '../../db/mongo.js';
+import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
+import { QueryEansOnEbyStats } from '../../types/taskStats/QueryEansOnEbyStats.js';
+import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
+import { WholeSaleEbyTask } from '../../types/tasks/Tasks.js';
+import { TASK_TYPES } from '../../util/taskTypes.js';
+import { updateWholesaleProgress } from '../../util/updateProgressInTasks.js';
+import { log } from '../../util/logger.js';
 
 export const queryEansOnEby = async (
   collection: string,
@@ -56,7 +56,7 @@ export const queryEansOnEby = async (
         await sleep(STANDARD_SETTLING_TIME);
         interval && clearInterval(interval);
         if (isWholeSaleEbyTask) {
-          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+          await updateWholesaleProgress(taskId, 'WHOLESALE_EBY_SEARCH');
         } else {
           await updateTask(taskId, { $set: { progress: task.progress } });
         }
@@ -68,14 +68,14 @@ export const queryEansOnEby = async (
     const completedProducts: ObjectId[] = [];
     let interval = setInterval(async () => {
       if (isWholeSaleEbyTask) {
-        await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+        await updateWholesaleProgress(taskId, 'WHOLESALE_EBY_SEARCH');
       } else {
         await updateTask(taskId, {
           $pull: {
-            "progress.queryEansOnEby": { _id: { $in: completedProducts } },
+            'progress.queryEansOnEby': { _id: { $in: completedProducts } },
           },
           $addToSet: {
-            "progress.lookupCategory": { $each: task.progress.lookupCategory },
+            'progress.lookupCategory': { $each: task.progress.lookupCategory },
           },
         });
       }
@@ -95,14 +95,14 @@ export const queryEansOnEby = async (
           image: 0,
         },
       },
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     async function isProcessComplete() {
       if (infos.total === productLimit && !queue.idle()) {
         interval && clearInterval(interval);
         if (isWholeSaleEbyTask) {
-          await updateWholesaleProgress(taskId, "WHOLESALE_EBY_SEARCH");
+          await updateWholesaleProgress(taskId, 'WHOLESALE_EBY_SEARCH');
         } else {
           await updateTask(taskId, { $set: { progress: task.progress } });
         }
@@ -117,7 +117,7 @@ export const queryEansOnEby = async (
 
       if (!product) continue;
 
-      const { ean, s_hash, _id: productId } = product;
+      const { s_hash, _id: productId, eanList } = product;
       const foundProducts: Product[] = [];
 
       const addProduct = async (
@@ -154,14 +154,14 @@ export const queryEansOnEby = async (
       const query = {
         ...defaultQuery,
         product: {
-          value: ean,
-          key: ean,
+          value: eanList[0],
+          key: eanList[0],
         },
-        category: "default",
+        category: 'default',
       };
 
-      if(!ebay.queryUrlSchema) {
-        return rej(new Error("No queryUrlSchema found for ebay.de"));
+      if (!ebay.queryUrlSchema) {
+        return rej(new Error('No queryUrlSchema found for ebay.de'));
       }
       const queryLink = queryURLBuilder(ebay.queryUrlSchema, query).url;
       queue.pushTask(queryEansOnEbyQueue, {
@@ -171,7 +171,7 @@ export const queryEansOnEby = async (
         shop: ebay,
         proxyType: ebay.proxyType,
         targetShop: {
-          prefix: "",
+          prefix: '',
           d: collection,
           name: collection,
         },

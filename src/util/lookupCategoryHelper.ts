@@ -11,17 +11,18 @@ import {
   roundToTwoDecimals,
   resetEbyProductQuery,
   safeParsePrice,
-} from "@dipmaxtech/clr-pkg";
+  LookupCategoryProps,
+} from '@dipmaxtech/clr-pkg';
 
 import {
   deleteProduct,
   updateProductWithQuery,
-} from "../db/util/crudProducts.js";
-import { getEanFromProduct } from "./getEanFromProduct.js";
-import { LookupCategoryStats } from "../types/taskStats/LookupCategoryStats.js";
-import { log } from "./logger.js";
-import { hostname } from "../db/mongo.js";
-import { wholeSaleNotFoundQuery } from "./wholeSales.js";
+} from '../db/util/crudProducts.js';
+import { getEanFromProduct } from './getEanFromProduct.js';
+import { LookupCategoryStats } from '../types/taskStats/LookupCategoryStats.js';
+import { log } from './logger.js';
+import { hostname } from '../db/mongo.js';
+import { wholeSaleNotFoundQuery } from './wholeSales.js';
 
 export async function handleLookupCategoryProductInfo(
   collection: string,
@@ -41,9 +42,9 @@ export async function handleLookupCategoryProductInfo(
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
-    const ean = infoMap.get("ean");
-    const ebyListingPrice = infoMap.get("e_prc");
-    const categories = infoMap.get("categories");
+    const ean = infoMap.get('ean');
+    const ebyListingPrice = infoMap.get('e_prc');
+    const categories = infoMap.get('categories');
 
     if (hasEan) {
       if (!ean) {
@@ -51,7 +52,10 @@ export async function handleLookupCategoryProductInfo(
           productId,
           isWholeSaleEbyTask
             ? wholeSaleNotFoundQuery
-            : resetEbyProductQuery({ cat_prop: "ean_missing", eby_prop: "" })
+            : resetEbyProductQuery({
+                cat_prop: LookupCategoryProps.ean_missing,
+                eby_prop: '',
+              })
         );
         log(`No ean: ${collection}-${productId}`, result);
       } else if (formatEan(ean) !== formatEan(exisitingEan)) {
@@ -60,8 +64,8 @@ export async function handleLookupCategoryProductInfo(
           isWholeSaleEbyTask
             ? wholeSaleNotFoundQuery
             : resetEbyProductQuery({
-                cat_prop: "ean_missmatch",
-                eby_prop: "",
+                cat_prop: LookupCategoryProps.ean_missmatch,
+                eby_prop: '',
               })
         );
         log(`Ean missmatch: ${collection}-${productId}`, result);
@@ -88,7 +92,10 @@ export async function handleLookupCategoryProductInfo(
       productId,
       isWholeSaleEbyTask
         ? wholeSaleNotFoundQuery
-        : resetEbyProductQuery({ cat_prop: "missing", eby_prop: "" })
+        : resetEbyProductQuery({
+            cat_prop: LookupCategoryProps.timeout,
+            eby_prop: '',
+          })
     );
     log(`No product info: ${collection}-${productId}`, result);
   }
@@ -107,29 +114,29 @@ export async function handleLookupCategoryNotFound(
   infos.total++;
   queue.total++;
 
-  if (cause === "exceedsLimit" || cause === "timeout") {
+  if (cause === 'exceedsLimit' || cause === 'timeout') {
     const result = await updateProductWithQuery(
       productId,
       isWholeSaleEby
         ? wholeSaleNotFoundQuery
         : {
             $set: {
-              cat_prop: "timeout",
+              cat_prop: LookupCategoryProps.timeout,
             },
             $unset: {
-              cat_taskId: "",
+              cat_taskId: '',
             },
           }
     );
     log(`Exceeds limit: ${collection}-${productId}`, result);
-  } else if (cause === "notFound") {
+  } else if (cause === 'notFound') {
     const result = await deleteProduct(productId);
     log(`Deleted: ${collection}-${productId}`, result);
   }
 }
 
 function formatEan(ean: any): string {
-  return ean.toString().trim().padStart(13, "0");
+  return ean.toString().trim().padStart(13, '0');
 }
 
 export const handleCategoryAndUpdate = async (
@@ -149,8 +156,8 @@ export const handleCategoryAndUpdate = async (
   } = product;
 
   if (categories) {
-    const sellPrice = safeParsePrice(ebyListingPrice || "0");
-    const currency = detectCurrency(ebyListingPrice || "");
+    const sellPrice = safeParsePrice(ebyListingPrice || '0');
+    const currency = detectCurrency(ebyListingPrice || '');
     const sellUnitPrice = roundToTwoDecimals(sellPrice / sellQty!);
     const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
     let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
@@ -172,7 +179,7 @@ export const handleCategoryAndUpdate = async (
             flag_cnt: 0,
           },
         }),
-        cat_prop: "complete",
+        cat_prop: LookupCategoryProps.complete,
         catUpdatedAt: new Date().toISOString(),
         e_prc: sellPrice,
         e_uprc: sellUnitPrice,
@@ -191,17 +198,17 @@ export const handleCategoryAndUpdate = async (
       if (isWholeSaleEbyTask) {
         query = {
           $set: {
-            e_status: "complete",
+            e_status: 'complete',
             e_lookup_pending: false,
             ...productUpdate,
           },
-          $unset: { e_locked: "" },
+          $unset: { e_locked: '' },
           $pull: { clrName: hostname },
         };
       } else {
         query = {
           $set: { ...productUpdate },
-          $unset: { cat_taskId: "" },
+          $unset: { cat_taskId: '' },
         };
       }
       const result = await updateProductWithQuery(productId, query);
@@ -212,8 +219,8 @@ export const handleCategoryAndUpdate = async (
         isWholeSaleEbyTask
           ? wholeSaleNotFoundQuery
           : resetEbyProductQuery({
-              cat_prop: "category_not_found",
-              eby_prop: "",
+              cat_prop: LookupCategoryProps.category_not_found,
+              eby_prop: '',
             })
       );
 
@@ -224,7 +231,10 @@ export const handleCategoryAndUpdate = async (
       productId,
       isWholeSaleEbyTask
         ? wholeSaleNotFoundQuery
-        : resetEbyProductQuery({ cat_prop: "categories_missing", eby_prop: "" })
+        : resetEbyProductQuery({
+            cat_prop: LookupCategoryProps.categories_missing,
+            eby_prop: '',
+          })
     );
     log(`No categories parsed: ${shopDomain}-${productId}`, result);
   }

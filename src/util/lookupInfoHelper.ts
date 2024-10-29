@@ -5,8 +5,8 @@ import {
   generateMinimalUpdate,
   ObjectId,
   replaceAllHiddenCharacters,
-  LookupInfoProps,
   LookupInfoCause,
+  LookupInfoPropType,
 } from '@dipmaxtech/clr-pkg';
 import { upsertAsin } from '../db/util/asinTable.js';
 import { LookupInfoStats } from '../types/taskStats/LookupInfoStats.js';
@@ -65,7 +65,7 @@ const handleUpdate = async (
   log(`Updated infos: ${collection}-${productId.toString()} ${cause}`, result);
 };
 
-const causeToInfoPropMap: { [key in LookupInfoCause]: LookupInfoProps } = {
+const causeToInfoPropMap: { [key in LookupInfoCause]: LookupInfoPropType } = {
   completeInfo: 'complete',
   missingSellerRank: 'no_bsr',
   incompleteInfo: 'incomplete',
@@ -85,9 +85,9 @@ export async function handleLookupInfoProductInfo(
     'ProductInfo:',
     productInfo
   );
-  const { ean, a_vrfd, _id: productId } = product;
+  const { a_vrfd, _id: productId, eanList } = product;
 
-  let infoProp: LookupInfoProps = 'complete';
+  let infoProp: LookupInfoPropType = 'complete';
 
   infoProp = cause ? causeToInfoPropMap[cause] : infoProp;
 
@@ -101,7 +101,7 @@ export async function handleLookupInfoProductInfo(
         update['a_orgn'] = 'a';
         update['a_pblsh'] = true;
         if (hasEan && asin) {
-          await upsertAsin(asin, [ean], costs);
+          await upsertAsin(asin, eanList, costs);
         }
 
         if (!a_vrfd) {
@@ -139,7 +139,7 @@ export async function handleLookupInfoProductInfo(
         update['info_prop'] = infoProp;
 
         if (hasEan && update.asin) {
-          await upsertAsin(update.asin, [ean]);
+          await upsertAsin(update.asin, eanList);
         }
 
         if (!a_vrfd) {

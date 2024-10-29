@@ -10,7 +10,11 @@ import {
   DANGLING_MATCH_THRESHOLD,
 } from '../../constants.js';
 import {
-  LookupInfoProps,
+  CrawlEanProps,
+  LookupCategoryProps,
+  LookupInfoPropType,
+  MatchProductsProps,
+  QueryEansOnEbyProps,
   totalPositivAmazon,
   totalPositivEbay,
 } from '@dipmaxtech/clr-pkg';
@@ -168,18 +172,8 @@ export const ebayMarginCalculationAggregationStep = [
 ];
 /*               General                                    */
 
-const eanExistsQuery = [
-  { ean: { $exists: true, $ne: '' } },
-  { eanList: { $size: 1 } },
-];
-const eanNotExistsQuery = {
-  $and: [
-    {
-      $or: [{ ean: { $exists: false } }, { ean: { $exists: true, $eq: '' } }],
-    },
-    { $or: [{ eanList: { $exists: false } }, { eanList: { $size: 0 } }] },
-  ],
-};
+const eanExistsQuery = { eanList: { $size: 1 } };
+const eanNotExistsQuery = { eanList: { $exists: false } };
 
 /*               Queries Crawl (1)                            */
 
@@ -231,9 +225,12 @@ export const countPendingProductsForCrawlEanQuery = (domain: string) => {
     $and: [
       { sdmn: domain },
       { ean_taskId: { $exists: false } },
-      { ...eanNotExistsQuery },
+      eanNotExistsQuery,
       {
-        $or: [{ ean_prop: { $exists: false } }, { ean_prop: { $eq: '' } }],
+        $or: [
+          { ean_prop: { $exists: false } },
+          { ean_prop: { $eq: CrawlEanProps.timeout } },
+        ],
       },
     ],
   };
@@ -287,7 +284,7 @@ export const recoveryLookupInfoQuery = (taskId: ObjectId, domain: string) => {
   return { info_taskId: setTaskId(taskId), sdmn: domain };
 };
 export const lookupInfoStandardUpdate = (props?: {
-  info_prop: LookupInfoProps;
+  info_prop: LookupInfoPropType;
 }) => {
   if (props) {
     return {
@@ -318,18 +315,11 @@ export const countPendingProductsLookupInfoQuery = (
     $and: [
       { sdmn: domain },
       { info_taskId: { $exists: false } },
-      {
-        $or: [{ info_prop: { $exists: false } }, { info_prop: { $eq: '' } }],
-      },
+      { info_prop: { $exists: false } },
       {
         ...(hasEan
           ? {
-              $or: [
-                {
-                  $or: eanExistsQuery,
-                },
-                { asin: { $exists: true, $ne: '' } },
-              ],
+              $or: [eanExistsQuery, { asin: { $exists: true, $ne: '' } }],
             }
           : { asin: { $exists: true, $ne: '' } }),
       },
@@ -344,12 +334,7 @@ export const countTotalProductsForLookupInfoQuery = (
     sdmn: domain,
     ...(hasEan
       ? {
-          $or: [
-            {
-              $or: eanExistsQuery,
-            },
-            { asin: { $exists: true, $ne: '' } },
-          ],
+          $or: [eanExistsQuery, { asin: { $exists: true, $ne: '' } }],
         }
       : { asin: { $exists: true, $ne: '' } }),
   };
@@ -416,14 +401,22 @@ export const countPendingProductsForMatchQuery = (
       },
       {
         $or: [
-          { azn_prop: { $nin: ['missing', 'complete'] } },
-          { eby_prop: { $nin: ['missing', 'complete'] } },
+          {
+            azn_prop: {
+              $nin: [MatchProductsProps.missing, MatchProductsProps.complete],
+            },
+          },
+          {
+            eby_prop: {
+              $nin: [MatchProductsProps.missing, MatchProductsProps.complete],
+            },
+          },
         ],
       },
     ],
   };
   if (hasEan) {
-    query['$and'].push({ $or: eanExistsQuery });
+    query['$and'].push(eanExistsQuery);
   }
   return query;
 };
@@ -436,7 +429,10 @@ export const countTotalProductsForMatchQuery = (
   };
 
   if (hasEan) {
-    query['$or'] = eanExistsQuery;
+    query = {
+      ...query,
+      ...eanExistsQuery,
+    };
   }
   return query;
 };
@@ -501,12 +497,9 @@ export const countPendingProductsQueryEansOnEbyQuery = (domain: string) => {
     $and: [
       { sdmn: domain },
       { eby_taskId: { $exists: false } },
-      {
-        $or: eanExistsQuery,
-      },
-      {
-        $or: [{ eby_prop: { $exists: false } }, { eby_prop: { $eq: '' } }],
-      },
+      eanExistsQuery,
+      { ean_prop: { $exists: true, $eq: CrawlEanProps.found } },
+      { eby_prop: { $exists: false } },
     ],
   };
 };
@@ -516,7 +509,7 @@ export const recoveryQueryEansOnEby = (taskId: ObjectId, domain: string) => {
 export const countTotalProductsForQueryEansOnEbyQuery = (domain: string) => {
   return {
     sdmn: domain,
-    $or: eanExistsQuery,
+    ...eanExistsQuery,
   };
 };
 export const queryEansOnEbyTaskQueryFn = (lowerThenStartedAt: string) => {
@@ -553,7 +546,6 @@ export const lockProductsForLookupCategoryQuery = (
   }
   return { query, options };
 };
-
 export const setProductsLockedForLookupCategoryQuery = (taskId: ObjectId) => {
   return {
     $set: {
@@ -569,11 +561,11 @@ export const countPendingProductsForLookupCategoryQuery = (domain: string) => {
       {
         $or: [
           { cat_prop: { $exists: false } },
-          { cat_prop: { $in: ['', 'timeout'] } },
+          { cat_prop: LookupCategoryProps.timeout },
         ],
       },
       {
-        eby_prop: { $exists: true, $eq: 'complete' },
+        eby_prop: { $exists: true, $eq: QueryEansOnEbyProps.complete },
       },
       { esin: { $exists: true, $ne: '' } },
     ],
