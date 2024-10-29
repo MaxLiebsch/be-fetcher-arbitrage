@@ -20,6 +20,8 @@ const proxies: Proxies = {
   mix: mix_host,
 };
 
+console.log('proxies:', JSON.stringify(proxies, null, 2));
+
 function handleErrors(
   res: ServerResponse,
   statusCode: number,
@@ -72,7 +74,7 @@ export function handleNotify(
       upReqv2.setProxy(requestId, host, parsedHosts, de, parsedTime);
       break;
     case proxy === 'des':
-      upReqv2.setProxy(requestId, host, parsedHosts, de_p_host, parsedTime);
+      upReqv2.setProxy(requestId, host, parsedHosts, des, parsedTime);
       break;
     default:
       upReqv2.setProxy(requestId, host, parsedHosts, mix, parsedTime);
