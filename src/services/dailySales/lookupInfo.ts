@@ -134,6 +134,14 @@ export const lookupInfo = async (
       const { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
 
+      if (!ean) {
+        completedProducts.push(productId);
+        infos.total++;
+        queue.total++;
+        log(`EAN not found for product ${productId}`);
+        continue;
+      }
+
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async (props: AddProductInfoProps) => {
         completedProducts.push(productId);

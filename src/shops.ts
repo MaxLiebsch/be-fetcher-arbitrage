@@ -1739,8 +1739,8 @@ export const shops: { [key: string]: Shop } = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 1500,
-      max: 1800,
+      min: 3000,
+      max: 4000,
     },
     product: [
       {
@@ -2441,7 +2441,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     hasEan: false,
     manualCategories: [],
-    mimic: 'svg[data-dmid=dm-brand];',
+    mimic: 'div[data-dmid=upper-header-container];',
     paginationEl: [
       {
         type: 'recursive-more-button',
@@ -2564,6 +2564,12 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
+    // javascript: {
+    //   sharedWorker: 'enabled',
+    //   webWorker: 'enabled',
+    //   serviceWorker: 'enabled',
+    //   webSocket: 'enabled',
+    // },
     proxyType: 'mix',
     queryActions: [],
     queryUrlSchema: [],
@@ -2571,12 +2577,7 @@ export const shops: { [key: string]: Shop } = {
       crawl: [
         'media',
         'font',
-        // "stylesheet",
-        'ping',
         'image',
-        // "fetch",
-
-        'other',
       ],
     },
     waitUntil: {
@@ -3206,6 +3207,7 @@ export const shops: { [key: string]: Shop } = {
       sharedWorker: 'enabled',
       webWorker: 'enabled',
       serviceWorker: 'disabled',
+      webSocket: 'disabled',
     },
     manualCategories: [],
     mimic: 'a[id=header-logo]',

@@ -6,28 +6,28 @@ import {
   queryEansOnEbyQueue,
   queryURLBuilder,
   uuid,
-} from "@dipmaxtech/clr-pkg";
-import _ from "underscore";
+} from '@dipmaxtech/clr-pkg';
+import _ from 'underscore';
 
-import { handleResult } from "../handleResult.js";
-import { MissingProductsError, MissingShopError } from "../errors.js";
-import { CONCURRENCY, defaultQuery, proxyAuth } from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
-import { getShop } from "../db/util/shops.js";
+import { handleResult } from '../handleResult.js';
+import { MissingProductsError, MissingShopError } from '../errors.js';
+import { CONCURRENCY, defaultQuery, proxyAuth } from '../constants.js';
+import { checkProgress } from '../util/checkProgress.js';
+import { getShop } from '../db/util/shops.js';
 import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
-} from "../util/queryEansOnEbyHelper.js";
-import { getProductLimitMulti } from "../util/getProductLimit.js";
-import { getEanFromProduct } from "../util/getEanFromProduct.js";
-import { updateProductWithQuery } from "../db/util/crudProducts.js";
-import { TaskCompletedStatus } from "../status.js";
-import { QueryEansOnEbyTask } from "../types/tasks/Tasks.js";
-import { QueryEansOnEbyStats } from "../types/taskStats/QueryEansOnEbyStats.js";
-import { TaskReturnType } from "../types/TaskReturnType.js";
-import { log } from "../util/logger.js";
-import { countRemainingProducts } from "../util/countRemainingProducts.js";
-import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
+} from '../util/queryEansOnEbyHelper.js';
+import { getProductLimitMulti } from '../util/getProductLimit.js';
+import { getEanFromProduct } from '../util/getEanFromProduct.js';
+import { updateProductWithQuery } from '../db/util/crudProducts.js';
+import { TaskCompletedStatus } from '../status.js';
+import { QueryEansOnEbyTask } from '../types/tasks/Tasks.js';
+import { QueryEansOnEbyStats } from '../types/taskStats/QueryEansOnEbyStats.js';
+import { TaskReturnType } from '../types/TaskReturnType.js';
+import { log } from '../util/logger.js';
+import { countRemainingProducts } from '../util/countRemainingProducts.js';
+import { findPendingProductsForTask } from '../db/util/multiShopUtilities/findPendingProductsForTask.js';
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask
@@ -41,18 +41,18 @@ export default async function queryEansOnEby(
       locked: 0,
       shops: {},
       missingProperties: {},
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     const { products: productsWithShop, shops } =
       await findPendingProductsForTask(
-        "QUERY_EANS_EBY",
+        'QUERY_EANS_EBY',
         taskId,
-        action || "none",
+        action || 'none',
         productLimit
       );
 
-    if (action === "recover") {
+    if (action === 'recover') {
       log(`Recovering ${type} and found ${productsWithShop.length} products`);
     } else {
       log(`Starting ${type} with ${productsWithShop.length} products`);
@@ -75,11 +75,11 @@ export default async function queryEansOnEby(
     );
     const remaining = await countRemainingProducts(shops, taskId, type);
     log(`Product limit: ${_productLimit}, Remaining products: ${remaining}`);
-    
+
     infos.locked = productsWithShop.length;
-    
+
     const startTime = Date.now();
-    
+
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
@@ -88,7 +88,7 @@ export default async function queryEansOnEby(
     queue.actualProductLimit = _productLimit;
     await queue.connect();
 
-    const toolInfo = await getShop("ebay.de");
+    const toolInfo = await getShop('ebay.de');
 
     if (!toolInfo) {
       return reject(new MissingShopError(`No shop found for ebay.de`, task));
@@ -129,6 +129,19 @@ export default async function queryEansOnEby(
       const srcShopDomain = shop.d;
       const ean = getEanFromProduct(product);
 
+      if (!ean) {
+        infos.missingProperties[srcShopDomain].ean++;
+        infos.total++;
+        const result = await updateProductWithQuery(productId, {
+          $unset: {
+            ean_prop: 'missing',
+            eby_taskId: '',
+          },
+        });
+        log(`Missing EAN: ${srcShopDomain}-${productId}`, result);
+        continue;
+      }
+
       const foundProducts: Product[] = [];
 
       const addProduct = async (
@@ -147,10 +160,10 @@ export default async function queryEansOnEby(
         await isProcessComplete();
       };
       const handleNotFound = async (cause: NotFoundCause) => {
-        if (cause === "exceedsLimit" || cause === "timeout") {
+        if (cause === 'exceedsLimit' || cause === 'timeout') {
           const result = await updateProductWithQuery(productId, {
             $unset: {
-              eby_taskId: "",
+              eby_taskId: '',
             },
           });
           log(`ExceedsLimit: ${srcShopDomain}-${productId}`, result);
@@ -169,10 +182,10 @@ export default async function queryEansOnEby(
           value: ean,
           key: ean,
         },
-        category: "default",
+        category: 'default',
       };
       if (!toolInfo.queryUrlSchema) {
-        return reject(new Error("No queryUrlSchema found for ebay.de"));
+        return reject(new Error('No queryUrlSchema found for ebay.de'));
       }
       const queryLink = queryURLBuilder(toolInfo.queryUrlSchema, query).url;
 
@@ -183,7 +196,7 @@ export default async function queryEansOnEby(
         proxyType,
         shop: toolInfo,
         targetShop: {
-          prefix: "",
+          prefix: '',
           d: srcShopDomain,
           name: srcShopDomain,
         },

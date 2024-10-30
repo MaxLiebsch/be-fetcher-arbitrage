@@ -1,4 +1,4 @@
-import { updateTask } from "../../db/util/tasks.js";
+import { updateTask } from '../../db/util/tasks.js';
 import {
   CrawlerQueue,
   crawlSubpage,
@@ -10,32 +10,32 @@ import {
   sleep,
   transformProduct,
   uuid,
-} from "@dipmaxtech/clr-pkg";
-import { parseISO } from "date-fns";
+} from '@dipmaxtech/clr-pkg';
+import { parseISO } from 'date-fns';
 
 import {
   MAX_RETIRES_SCRAPE_SHOP,
   proxyAuth,
   RECHECK_EAN_EBY_AZN_INTERVAL,
   STANDARD_SETTLING_TIME,
-} from "../../constants.js";
+} from '../../constants.js';
 import {
   findProductByHash,
   insertProduct,
   updateProductWithQuery,
-} from "../../db/util/crudProducts.js";
-import { salesDbName } from "../../db/mongo.js";
-import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
-import { ScrapeShopStats } from "../../types/taskStats/ScrapeShopStats.js";
-import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
-import { log } from "../../util/logger.js";
+} from '../../db/util/crudProducts.js';
+import { salesDbName } from '../../db/mongo.js';
+import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
+import { ScrapeShopStats } from '../../types/taskStats/ScrapeShopStats.js';
+import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
+import { log } from '../../util/logger.js';
 
 export const scrapeProducts = async (
   shop: Shop,
   task: DailySalesTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
-    const { categories, browserConfig, _id: taskId,id, productLimit} = task;
+    const { categories, browserConfig, _id: taskId, id, productLimit } = task;
     const { d: shopDomain, hasEan, ean, proxyType } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];
@@ -47,20 +47,20 @@ export const scrapeProducts = async (
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       missingProperties: {
         nm: 0,
@@ -70,7 +70,7 @@ export const scrapeProducts = async (
       },
       locked: 0,
       notFound: 0,
-      elapsedTime: "",
+      elapsedTime: '',
     };
     const queue = new CrawlerQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = productLimit;
@@ -85,7 +85,7 @@ export const scrapeProducts = async (
         done = true;
         log(`Settling time for Scrape Shop ${id}...`);
         await sleep(STANDARD_SETTLING_TIME);
-        console.log("FINISHED!")
+        console.log('FINISHED!');
         interval && clearInterval(interval);
         await updateTask(taskId, { $set: { progress: task.progress } });
         await queue.disconnect(true);
@@ -109,7 +109,7 @@ export const scrapeProducts = async (
     categories.map((category) => {
       const handleCrawledProduct = async (product: ProductRecord) => {
         if (infos.total === productLimit && !queue.idle()) {
-          console.log("product limit reached");
+          console.log('product limit reached');
           await updateTask(taskId, { $set: { progress: task.progress } });
           await queue.disconnect(true);
           res({ infos, queueStats: queue.queueStats });
@@ -127,12 +127,11 @@ export const scrapeProducts = async (
               uniqueLinks.push(lnk);
               infos.total++;
               queue.total++;
-              transformedProduct["qty"] = buyQty || 1;
-              transformedProduct["uprc"] = roundToTwoDecimals(
-                buyPrice / transformedProduct["qty"]
+              transformedProduct['qty'] = buyQty || 1;
+              transformedProduct['uprc'] = roundToTwoDecimals(
+                buyPrice / transformedProduct['qty']
               );
-              transformedProduct["availUpdatedAt"] =
-                new Date().toISOString();
+              transformedProduct['availUpdatedAt'] = new Date().toISOString();
               const existingProduct = await findProductByHash(productHash);
               if (existingProduct) {
                 const {
@@ -146,7 +145,7 @@ export const scrapeProducts = async (
                   $set: {
                     sdmn: salesDbName,
                     shop: shopDomain,
-                    availUpdatedAt: transformedProduct["availUpdatedAt"],
+                    availUpdatedAt: transformedProduct['availUpdatedAt'],
                   },
                 });
                 log(
@@ -170,10 +169,10 @@ export const scrapeProducts = async (
                 //ean_prop can have the following values: missing, found
                 if (
                   !ean_prop ||
-                  (ean_prop !== "missing" &&
-                    ean_prop !== "invalid" &&
-                    ean_prop !== "timeout" &&
-                    ean_prop !== "found")
+                  (ean_prop !== 'missing' &&
+                    ean_prop !== 'invalid' &&
+                    ean_prop !== 'timeout' &&
+                    ean_prop !== 'found')
                 ) {
                   task.progress.crawlEan.push(productId);
                   return;
@@ -183,45 +182,49 @@ export const scrapeProducts = async (
                 // info_prop can have the following values: missing, complete
                 if (
                   new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === "found" &&
+                  (ean_prop === 'found' &&
                     (!info_prop ||
-                      (info_prop !== "missing" && info_prop !== "complete")))
+                      (info_prop !== 'missing' &&
+                        info_prop !== 'no_bsr' &&
+                        info_prop !== 'not_found' &&
+                        info_prop !== 'incomplete' &&
+                        info_prop !== 'complete')))
                 ) {
                   task.progress.lookupInfo.push(productId);
                 }
 
                 if (
                   new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === "found" &&
+                  (ean_prop === 'found' &&
                     (!eby_prop ||
-                      (eby_prop !== "missing" && eby_prop !== "complete")))
+                      (eby_prop !== 'missing' && eby_prop !== 'complete')))
                 ) {
                   task.progress.queryEansOnEby.push(productId);
                 }
 
                 if (
-                  eby_prop === "complete" &&
+                  eby_prop === 'complete' &&
                   (!cat_prop ||
-                    (cat_prop !== "complete" &&
-                      cat_prop !== "timeout" &&
-                      cat_prop !== "ean_missing" &&
-                      cat_prop !== "ean_missmatch" &&
-                      cat_prop !== "categories_missing" &&
-                      cat_prop !== "category_not_found"))
+                    (cat_prop !== 'complete' &&
+                      cat_prop !== 'timeout' &&
+                      cat_prop !== 'ean_missing' &&
+                      cat_prop !== 'ean_missmatch' &&
+                      cat_prop !== 'categories_missing' &&
+                      cat_prop !== 'category_not_found'))
                 ) {
                   task.progress.lookupCategory.push(productId);
                 }
 
-                if (cat_prop === "complete" && eby_prop === "complete") {
+                if (cat_prop === 'complete' && eby_prop === 'complete') {
                   task.progress.ebyListings.push(productId);
                 }
 
-                if (info_prop === "complete") {
+                if (info_prop === 'complete') {
                   task.progress.aznListings.push(productId);
                 }
               } else {
-                transformedProduct["sdmn"] = salesDbName;
-                transformedProduct["shop"] = shopDomain;
+                transformedProduct['sdmn'] = salesDbName;
+                transformedProduct['shop'] = shopDomain;
                 const result = await insertProduct(transformedProduct);
                 log(
                   `Product inserted: ${salesDbName}-${result.insertedId}`,
@@ -239,8 +242,8 @@ export const scrapeProducts = async (
             }
           } else {
             const properties: Array<
-              keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
-            > = ["nm", "prc", "lnk", "img"];
+              keyof Pick<DbProductRecord, 'nm' | 'prc' | 'lnk' | 'img'>
+            > = ['nm', 'prc', 'lnk', 'img'];
             properties.forEach((prop) => {
               if (!(product as unknown as DbProductRecord)[prop]) {
                 infos.missingProperties[prop]++;
