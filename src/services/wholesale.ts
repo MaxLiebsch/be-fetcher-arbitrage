@@ -172,6 +172,9 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             }
           } catch (error) {
             if (error instanceof Error) {
+              if (error.message === 'Asin mismatch') {
+                infos.missingProperties.infos++;
+              }
               if (error.message === 'a_prc is 0') {
                 infos.missingProperties.price++;
               }

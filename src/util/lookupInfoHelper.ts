@@ -161,6 +161,10 @@ export async function handleLookupInfoProductInfo(
     } catch (error) {
       if (error instanceof Error) {
         let loggerMessage = '';
+        if (error.message === 'Asin mismatch') {
+          loggerMessage = `Asin mismatch: ${collection}-${productId.toString()}`;
+          infos.missingProperties.infos++;
+        }
         if (error.message === 'a_prc is 0') {
           loggerMessage = `Price 0: ${collection}-${productId.toString()}`;
           infos.missingProperties.price++;
