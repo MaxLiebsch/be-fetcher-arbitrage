@@ -87,20 +87,18 @@ export async function handleLookupInfoProductInfo(
   );
   const { a_vrfd, _id: productId, eanList } = product;
 
-  let infoProp: LookupInfoPropType = 'complete';
-
-  infoProp = cause ? causeToInfoPropMap[cause] : infoProp;
-
   if (productInfo) {
     try {
       if (cause === 'completeInfo') {
-        let update = generateUpdate(productInfo, product);
+        let { update, infoProp } = generateUpdate(productInfo, product);
 
         const { costs, a_nm, asin } = update;
 
         update['a_orgn'] = 'a';
         update['a_pblsh'] = true;
-        if (hasEan && asin) {
+
+
+        if (hasEan && asin && eanList && eanList.length > 0) {
           await upsertAsin(asin, eanList, costs);
         }
 
@@ -125,10 +123,8 @@ export async function handleLookupInfoProductInfo(
         await handleUpdate(productId, collection, infoProp, asin, update);
       }
       if (cause === 'incompleteInfo' || cause === 'missingSellerRank') {
-        let update: Partial<DbProductRecord> = generateMinimalUpdate(
-          productInfo,
-          product
-        );
+        const infoProp = causeToInfoPropMap[cause];
+        let { update } = generateMinimalUpdate(productInfo, product);
         update = {
           ...update,
           aznUpdatedAt: new Date().toISOString(),
@@ -138,7 +134,7 @@ export async function handleLookupInfoProductInfo(
         update['a_pblsh'] = cause === 'incompleteInfo' ? false : true;
         update['info_prop'] = infoProp;
 
-        if (hasEan && update.asin) {
+        if (hasEan && update.asin &&  eanList && eanList.length > 0) {
           await upsertAsin(update.asin, eanList);
         }
 
@@ -165,22 +161,14 @@ export async function handleLookupInfoProductInfo(
           loggerMessage = `Asin mismatch: ${collection}-${productId.toString()}`;
           infos.missingProperties.infos++;
         }
-        if (error.message === 'a_prc is 0') {
-          loggerMessage = `Price 0: ${collection}-${productId.toString()}`;
-          infos.missingProperties.price++;
-        }
-        if (error.message === 'costs.azn is 0') {
-          loggerMessage = `Azn Costs 0: ${collection}-${productId.toString()}`;
-          infos.missingProperties.costs++;
-        }
         const result = await updateProductWithQuery(
           productId,
-          lookupInfoStandardUpdate({ info_prop: 'incomplete' })
+          lookupInfoStandardUpdate({ info_prop: 'missing' })
         );
         if (product.asin) {
           await handleOtherProducts(
             product.asin,
-            lookupInfoStandardUpdate({ info_prop: 'incomplete' }),
+            lookupInfoStandardUpdate({ info_prop: 'missing' }),
             `Asin found: ${product.asin}`
           );
         }

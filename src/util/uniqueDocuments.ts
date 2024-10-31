@@ -10,7 +10,7 @@ export async function uniqueDocuments(
   taskId: ObjectId
 ): Promise<ProductsAndShop> {
   const idsToReturn: ObjectId[] = [];
-  // Filter unique documents based on eanList[0]zz
+  // Filter unique documents based on eanList[0]
   const uniqueEanSet = new Set<string>();
   const uniqueDocuments = productAndShops.products.filter((doc) => {
     if (!doc.product.eanList || doc.product.eanList.length === 0) {

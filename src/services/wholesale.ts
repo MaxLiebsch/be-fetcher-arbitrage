@@ -149,15 +149,18 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         queue.total++;
         if (productInfo) {
           try {
-            const productUpdate = generateUpdate(productInfo, wholesaleProduct);
+            const { update, infoProp } = generateUpdate(
+              productInfo,
+              wholesaleProduct
+            );
 
-            let reducedCosts = { ...productUpdate.costs };
+            let reducedCosts = { ...update.costs };
             delete reducedCosts.azn;
-            if (productUpdate.asin) await upsertAsin(productUpdate.asin, [ean]);
+            if (update.asin) await upsertAsin(update.asin, [ean]);
             const result = await updateProductWithQuery(productId, {
               $set: {
-                ...productUpdate,
-                a_status: 'complete',
+                ...update,
+                a_status: infoProp === 'incomplete' ? 'not found' : 'complete',
                 a_lookup_pending: false,
               },
               $unset: { a_locked: '' },
@@ -174,12 +177,6 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             if (error instanceof Error) {
               if (error.message === 'Asin mismatch') {
                 infos.missingProperties.infos++;
-              }
-              if (error.message === 'a_prc is 0') {
-                infos.missingProperties.price++;
-              }
-              if (error.message === 'costs.azn is 0') {
-                infos.missingProperties.costs++;
               }
               const result = await updateProductWithQuery(productId, {
                 $set: {

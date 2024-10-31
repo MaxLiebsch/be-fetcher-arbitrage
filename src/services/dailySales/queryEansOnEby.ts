@@ -120,13 +120,13 @@ export const queryEansOnEby = async (
       const { s_hash, _id: productId, eanList } = product;
 
       const ean = getEanFromProduct(product);
-      
-      if(!ean){
+
+      if (!ean) {
         completedProducts.push(productId);
         infos.missingProperties[collection].ean++;
         infos.total++;
         queue.total++;
-        continue
+        continue;
       }
       const foundProducts: Product[] = [];
 
@@ -164,8 +164,8 @@ export const queryEansOnEby = async (
       const query = {
         ...defaultQuery,
         product: {
-          value: eanList[0],
-          key: eanList[0],
+          value: ean,
+          key: ean,
         },
         category: 'default',
       };

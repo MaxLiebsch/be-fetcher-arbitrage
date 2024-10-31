@@ -47,10 +47,9 @@ const password = process.env.BASIC_AUTH_PASSWORD;
 let host = process.env.PROXY_GATEWAY_URL!; // Default proxy request
 let de_host = process.env.PROXY_GATEWAY_URL_DE!; // Default de proxy request
 let des_host = process.env.PROXY_GATEWAY_URL_DES!; // Default des proxy request
-console.log('des_host:', des_host)
 
 const proxies: Proxies = {
-  des: '89.58.0.149:8083',
+  des: des_host,
   de: de_host,
   mix: host,
 };

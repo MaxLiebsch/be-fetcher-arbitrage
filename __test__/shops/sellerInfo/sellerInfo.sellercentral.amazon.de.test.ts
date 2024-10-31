@@ -7,6 +7,7 @@ import {
 import {
   AddProductInfo,
   DbProductRecord,
+  generateMinimalUpdate,
   generateUpdate,
   NotFoundCause,
 } from '@dipmaxtech/clr-pkg';
@@ -116,7 +117,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   // }, 200000);
 
   test('Not found', async () => {
-    const product = await findProduct({ eanList: '3423222106300' });
+    const product = await findProduct({ eanList: '0753759296650' });
     if (!product) {
       throw new Error('Product not found');
     }
@@ -130,19 +131,27 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     };
     const addProductInfo = async ({
       productInfo,
+      cause,
       url,
     }: {
       productInfo: any[] | null;
+      cause: any;
       url: string;
     }) => {
       console.log('productInfo:', productInfo);
       if (productInfo) {
         try {
-          const update = generateUpdate(
-            productInfo,
-            product as unknown as DbProductRecord
-          );
-          console.log(update);
+          if (cause === 'completeInfo') {
+            const { update } = generateUpdate(
+              productInfo,
+              product as unknown as DbProductRecord
+            );
+            console.log(update);
+          }
+          if (cause === 'incompleteInfo' || cause === 'missingSellerRank') {
+            let { update } = generateMinimalUpdate(productInfo, product);
+            console.log('update:', update);
+          }
         } catch (error) {
           console.log('error:', error);
           console.log('error in generateUpdate');

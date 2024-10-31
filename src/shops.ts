@@ -1868,7 +1868,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: ['media', 'font', 'ping', 'image', 'other'],
+      crawl: ['media', 'font', 'image'],
     },
     waitUntil: {
       product: 'load',
@@ -6180,15 +6180,15 @@ export const shops: { [key: string]: Shop } = {
       //   content: 'totalOfferCount',
       //   step: 1,
       // },
-      // {
-      //   sel: 'span[part=label-text]',
-      //   parent:
-      //     'kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency',
-      //   type: 'text',
-      //   shadowRoot: true,
-      //   content: 'a_prc',
-      //   step: 1,
-      // },
+      {
+        sel: 'span[part=label-text]',
+        parent:
+          'kat-box[id=ProgramCard]:nth-child(2) div.revenue-section kat-label.subsection-content-currency',
+        type: 'text',
+        shadowRoot: true,
+        content: 'a_prc',
+        step: 1,
+      },
       // {
       //   sel: 'tbody tr:nth-child(3) td:nth-child(2)',
       //   parent: 'table.product-detail-table-right',
