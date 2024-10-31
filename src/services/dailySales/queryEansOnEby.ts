@@ -22,7 +22,6 @@ import {
   handleQueryEansOnEbyIsFinished,
   handleQueryEansOnEbyNotFound,
 } from '../../util/queryEansOnEbyHelper.js';
-import { wholeSaleColname } from '../../db/mongo.js';
 import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
 import { QueryEansOnEbyStats } from '../../types/taskStats/QueryEansOnEbyStats.js';
 import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
@@ -30,6 +29,7 @@ import { WholeSaleEbyTask } from '../../types/tasks/Tasks.js';
 import { TASK_TYPES } from '../../util/taskTypes.js';
 import { updateWholesaleProgress } from '../../util/updateProgressInTasks.js';
 import { log } from '../../util/logger.js';
+import { getEanFromProduct } from '../../util/getEanFromProduct.js';
 
 export const queryEansOnEby = async (
   collection: string,
@@ -118,6 +118,16 @@ export const queryEansOnEby = async (
       if (!product) continue;
 
       const { s_hash, _id: productId, eanList } = product;
+
+      const ean = getEanFromProduct(product);
+      
+      if(!ean){
+        completedProducts.push(productId);
+        infos.missingProperties[collection].ean++;
+        infos.total++;
+        queue.total++;
+        continue
+      }
       const foundProducts: Product[] = [];
 
       const addProduct = async (

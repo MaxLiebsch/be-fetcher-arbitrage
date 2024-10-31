@@ -36,7 +36,7 @@ export async function handleCrawlEanProductInfo(
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
-    let ean = infoMap.get('ean') ?? '';
+    let ean = infoMap.get('ean');
     let isEan =
       ean && /\b[0-9]{12,13}\b/.test(ean) && !ean.toString().startsWith('99');
 
