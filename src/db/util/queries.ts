@@ -299,14 +299,14 @@ export const lookupInfoStandardUpdate = (props?: {
         info_taskId: '',
       },
       $set: {
-        infoUpdateAt: new Date().toISOString(),
+        infoUpdatedAt: new Date().toISOString(),
         info_prop: props.info_prop,
       },
     };
   } else {
     return {
       $set: {
-        infoUpdateAt: new Date().toISOString(),
+        infoUpdatedAt: new Date().toISOString(),
       },
       $unset: {
         info_taskId: '',
