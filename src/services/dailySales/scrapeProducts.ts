@@ -186,6 +186,8 @@ export const scrapeProducts = async (
                     (!info_prop ||
                       (info_prop !== 'missing' &&
                         info_prop !== 'no_bsr' &&
+                        info_prop !== 'no_offer' &&
+                        info_prop !== 'error' &&
                         info_prop !== 'not_found' &&
                         info_prop !== 'incomplete' &&
                         info_prop !== 'complete')))
