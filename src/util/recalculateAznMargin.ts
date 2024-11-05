@@ -7,7 +7,7 @@ import {
 
 export const recalculateAznMargin = (
   p: DbProductRecord,
-  spotterSet: Partial<DbProductRecord>,
+  spotterSet: Partial<DbProductRecord>
 ) => {
   const {
     prc: buyPrice,
@@ -20,18 +20,15 @@ export const recalculateAznMargin = (
   } = p;
 
   if (costs && costs.azn > 0 && sellPrice && buyPrice && sellQty && buyQty) {
-    const { a_prc, a_uprc, avgPrice } = getAznAvgPrice(
-      p,
-      sellPrice,
-    );
+    const { a_prc, a_uprc, avgPrice } = getAznAvgPrice(p, sellPrice);
     if (a_useCurrPrice === false) {
       costs.azn = roundToTwoDecimals((costs.azn / sellPrice) * avgPrice);
     }
     const arbitrage = calculateAznArbitrage(
-      buyPrice * (sellQty! / buyQty), // EK
+      buyPrice * (sellQty || 1 / buyQty), // EK
       sellPrice!, // VK
       costs!,
-      tax,
+      tax
     );
     Object.entries(arbitrage).forEach(([key, val]) => {
       (spotterSet as any)[key] = val;

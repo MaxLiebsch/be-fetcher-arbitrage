@@ -91,8 +91,6 @@ export default async function queryAzn({
           );
           productUpdate['a_prc'] = prc;
           productUpdate['asin'] = asin;
-          productUpdate['a_lnk'] = 'https://www.amazon.de/dp/product/' + asin;
-          productUpdate['a_hash'] = createHash(productUpdate['a_lnk']);
           productUpdate['bsr'] = [];
           productUpdate['azn_prop'] = 'complete';
           const result = await updateProductWithQuery(productId, {

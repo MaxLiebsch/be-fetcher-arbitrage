@@ -67,7 +67,6 @@ export async function handleEbyListingProductInfo(
       log(`Product expired: ${collection}-${productId}`, result);
     } else {
       let productUpdate: Partial<DbProductRecord> = {
-        e_lnk: url.split("?")[0],
       };
       if (rawSellPrice) {
         const parsedSellPrice = safeParsePrice(rawSellPrice);

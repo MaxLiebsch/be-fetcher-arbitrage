@@ -81,7 +81,6 @@ export async function handleQueryEansOnEbyIsFinished(
   );
   if (foundProduct) {
     const { image, price: sellPrice, name, link } = foundProduct;
-    const shortLink = foundProduct.link.split('?')[0];
     const esin = new URL(link).pathname.split('/')[2];
 
     if (priceRange.min && priceRange.max) {
@@ -90,8 +89,6 @@ export async function handleQueryEansOnEbyIsFinished(
 
     update['e_totalOfferCount'] = foundProducts.length;
     update['e_img'] = image;
-    update['e_lnk'] = shortLink;
-    update['e_hash'] = createHash(shortLink);
     update['e_orgn'] = 'e';
     update['e_pblsh'] = false;
     update['esin'] = esin;

@@ -91,8 +91,6 @@ export default async function queryEby({
             prc / productUpdate['e_qty'],
           );
           productUpdate['e_prc'] = prc;
-          productUpdate['e_lnk'] = lnk!.split('?')[0];
-          productUpdate['e_hash'] = createHash(productUpdate['e_lnk']);
           productUpdate['esin'] = esin;
           productUpdate['eby_prop'] = 'complete';
 
