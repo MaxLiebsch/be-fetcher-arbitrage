@@ -131,7 +131,7 @@ export async function handleLookupInfoProductInfo(
           infoUpdatedAt: new Date().toISOString(),
         };
         update['a_orgn'] = 'a';
-        update['a_pblsh'] = cause === 'incompleteInfo' ? false : true;
+        update['a_pblsh'] = true;
         update['info_prop'] = infoProp;
 
         if (hasEan && update.asin &&  eanList && eanList.length > 0) {
