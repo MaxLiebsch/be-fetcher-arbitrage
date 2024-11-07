@@ -242,7 +242,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
           name: shopDomain,
         },
         addProduct,
-        lookupRetryLimit: 2,
+        lookupRetryLimit: 1,
         onNotFound: handleNotFound,
         addProductInfo,
         queue,
