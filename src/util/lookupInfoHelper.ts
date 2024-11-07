@@ -10,7 +10,6 @@ import {
   getAznAvgPrice,
   calcAznCosts,
   safeParsePrice,
-  getNumber,
 } from '@dipmaxtech/clr-pkg';
 import { upsertAsin } from '../db/util/asinTable.js';
 import { LookupInfoStats } from '../types/taskStats/LookupInfoStats.js';
@@ -43,10 +42,8 @@ const handleOtherProducts = async (
   }
 };
 
-const handleProductUpdate = async (
+const handleProductsUpdate = async (
   productId: ObjectId,
-  collection: string,
-  cause: string,
   asin: string | undefined,
   update: Partial<DbProductRecord>
 ) => {
@@ -80,6 +77,7 @@ const handleProductUpdate = async (
           productUpdate['costs'] = product['costs'];
           productUpdate = {
             ...productUpdate,
+            bsr: update.bsr || product.bsr || [],
             a_qty: update.a_qty,
             a_nm: update.a_nm,
             a_useCurrPrice,
@@ -103,6 +101,7 @@ const handleProductUpdate = async (
           costs: newCosts,
           a_prc: newSellPrice,
           a_uprc: update.a_uprc,
+          bsr: update.bsr || product.bsr || [],
           a_qty,
           a_nm: update.a_nm,
           a_img: update.a_img,
@@ -137,6 +136,15 @@ const handleProductUpdate = async (
       log(`Updated other products: ${asin}`, result);
     }
   }
+};
+
+const handleProductUpdate = async (
+  productId: ObjectId,
+  cause: string,
+  asin: string | undefined,
+  update: Partial<DbProductRecord>
+) => {
+  await handleProductsUpdate(productId, asin, update);
 
   const result = await updateProductWithQuery(productId, {
     $set: {
@@ -144,7 +152,7 @@ const handleProductUpdate = async (
     },
     $unset: { info_taskId: '' },
   });
-  log(`Updated infos: ${collection}-${productId.toString()} ${cause}`, result);
+  log(`Updated infos: ${productId.toString()} ${cause}`, result);
 };
 
 const causeToInfoPropMap: { [key in LookupInfoCause]: LookupInfoPropType } = {
@@ -201,13 +209,7 @@ export async function handleLookupInfoProductInfo(
           aznUpdatedAt: new Date().toISOString(),
           infoUpdatedAt: new Date().toISOString(),
         };
-        await handleProductUpdate(
-          productId,
-          collection,
-          infoProp,
-          asin,
-          update
-        );
+        await handleProductUpdate(productId, infoProp, asin, update);
       }
       if (cause === 'incompleteInfo' || cause === 'missingSellerRank') {
         const infoProp = causeToInfoPropMap[cause];
@@ -233,13 +235,7 @@ export async function handleLookupInfoProductInfo(
             flag_cnt: 0,
           };
         }
-        await handleProductUpdate(
-          productId,
-          collection,
-          infoProp,
-          update.asin,
-          update
-        );
+        await handleProductUpdate(productId, infoProp, update.asin, update);
       }
     } catch (error) {
       if (error instanceof Error) {
