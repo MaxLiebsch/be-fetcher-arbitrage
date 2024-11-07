@@ -3,7 +3,9 @@ import {
   DeleteResult,
   InsertOneResult,
   UpdateResult,
+  BulkWriteResult,
 } from "@dipmaxtech/clr-pkg";
+
 import pino from "pino";
 
 type LOGGER = "TASK_LOGGER" | "GLOBAL";
@@ -36,6 +38,7 @@ export function log(
   result?:
     | UpdateResult<DbProductRecord>
     | InsertOneResult<Document>
+    | BulkWriteResult
     | DeleteResult
 ) {
   const logger = getTaskLogger("TASK_LOGGER");

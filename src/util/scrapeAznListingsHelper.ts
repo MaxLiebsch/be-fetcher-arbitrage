@@ -1,6 +1,5 @@
 import {
   AddProductInfoProps,
-  calculateAznArbitrage,
   DbProductRecord,
   detectCurrency,
   ObjectId,
@@ -9,7 +8,7 @@ import {
   resetAznProductQuery,
   replaceAllHiddenCharacters,
   getAznAvgPrice,
-  roundToTwoDecimals,
+  retrieveAznArbitrage,
 } from '@dipmaxtech/clr-pkg';
 
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
@@ -24,11 +23,11 @@ export async function handleAznListingProductInfo(
   { productInfo, url }: AddProductInfoProps,
   infos: NegDealsOnAznStats | DealsOnAznStats,
   queue: QueryQueue,
-  processProps = defaultAznDealTask,
+  processProps = defaultAznDealTask
 ) {
   let {
     costs,
-    a_qty: sellQty,
+    a_qty: sellQty = 1,
     qty: buyQty,
     prc: buyPrice,
     tax,
@@ -50,23 +49,24 @@ export async function handleAznListingProductInfo(
 
     const { a_useCurrPrice, a_prc, a_uprc, avgPrice } = getAznAvgPrice(
       product,
-      parsedPrice,
+      parsedPrice
     );
 
     if (a_prc > 0) {
       if (costs && costs.azn > 0) {
         const currency = detectCurrency(price);
-        
-        if(!a_useCurrPrice){
-          costs.azn = roundToTwoDecimals((costs.azn / a_prc) * avgPrice);
-        }
 
-        const arbitrage = calculateAznArbitrage(
-          buyPrice * (sellQty! / buyQty),
-          a_useCurrPrice ? a_prc : avgPrice,
+        const arbitrage = retrieveAznArbitrage({
+          listingPrice: a_prc,
+          sellQty,
+          avgPrice,
+          buyPrice,
+          buyQty,
+          a_useCurrPrice,
           costs,
           tax,
-        );
+        });
+
         const productUpdate: { [key in keyof DbProductRecord]: any } = {
           [timestamp]: new Date().toISOString(),
           a_prc,
@@ -95,7 +95,7 @@ export async function handleAznListingProductInfo(
         infos.missingProperties.aznCostNeg++;
         const result = await updateProductWithQuery(
           productId,
-          resetAznProductQuery(),
+          resetAznProductQuery()
         );
         log(`Costs 0: ${collection}-${productId}`, result);
       }
@@ -103,7 +103,7 @@ export async function handleAznListingProductInfo(
       infos.missingProperties.price++;
       const result = await updateProductWithQuery(
         productId,
-        resetAznProductQuery(),
+        resetAznProductQuery()
       );
       log(`Price 0: ${collection}-${productId}`, result);
     }
@@ -111,14 +111,14 @@ export async function handleAznListingProductInfo(
     infos.missingProperties.infos++;
     const result = await updateProductWithQuery(
       productId,
-      resetAznProductQuery(),
+      resetAznProductQuery()
     );
     log(`No product info: ${collection}-${productId}`, result);
   }
 }
 export async function handleAznListingNotFound(
   collection: string,
-  id: ObjectId,
+  id: ObjectId
 ) {
   const result = await updateProductWithQuery(id, resetAznProductQuery());
   log(`Not found: ${collection}-${id}`, result);

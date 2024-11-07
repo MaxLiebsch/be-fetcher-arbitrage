@@ -180,10 +180,17 @@ export const deleteProduct = async (id: ObjectId) => {
   return productsCol.deleteOne({ _id: id });
 };
 
+
 export const deleteAllProducts = async (domain: string) => {
   const productsCol = await getProductsCol();
   return productsCol.deleteMany({ sdmn: domain });
 };
+
+export const emptyProductDb = async () => {
+  const productsCol = await getProductsCol();
+  return productsCol.deleteMany({});
+};
+
 
 export const insertProducts = async (products: DbProductRecord[]) => {
   try {

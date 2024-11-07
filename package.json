@@ -1,6 +1,6 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.155",
+  "version": "0.0.156",
   "description": "",
   "type": "module",
   "scripts": {
@@ -37,7 +37,7 @@
     "prod:match": "cross-env NODE_ENV=production PROXY_TYPE=request concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "prod:match:debug": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
     "prod:match:debug:gb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently --raw --kill-others-on-fail \"yarn proxy\" \"yarn match\"",
-    "mio": "cross-env NODE_ENV=production PROXY_TYPE=request DEBUG=true yarn proxy",
+    "mio": "cross-env NODE_ENV=development DEBUG=true yarn proxy",
     "miogb": "cross-env NODE_ENV=production PROXY_TYPE=gb DEBUG=true concurrently \"yarn proxy\"",
     "test:endtoend": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./__test__/endtoend.js\"",
     "test:securemode": "cross-env NODE_ENV=development TEST=endtoend PROXY_TYPE=request concurrently --kill-others --restart-tries -1 --raw \"yarn proxy\" \"node ./__test__/secureMode.js\"",

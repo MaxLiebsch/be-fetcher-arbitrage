@@ -1,8 +1,7 @@
 import {
-  calculateAznArbitrage,
   DbProductRecord,
   getAznAvgPrice,
-  roundToTwoDecimals,
+  retrieveAznArbitrage,
 } from '@dipmaxtech/clr-pkg';
 
 export const recalculateAznMargin = (
@@ -16,20 +15,21 @@ export const recalculateAznMargin = (
     a_prc: sellPrice,
     costs,
     tax,
-    a_useCurrPrice,
   } = p;
 
   if (costs && costs.azn > 0 && sellPrice && buyPrice && sellQty && buyQty) {
-    const { a_prc, a_uprc, avgPrice } = getAznAvgPrice(p, sellPrice);
-    if (a_useCurrPrice === false) {
-      costs.azn = roundToTwoDecimals((costs.azn / sellPrice) * avgPrice);
-    }
-    const arbitrage = calculateAznArbitrage(
-      buyPrice * (sellQty || 1 / buyQty), // EK
-      sellPrice!, // VK
-      costs!,
-      tax
-    );
+    const { a_prc, avgPrice, a_useCurrPrice } = getAznAvgPrice(p, sellPrice);
+    const arbitrage = retrieveAznArbitrage({
+      listingPrice: a_prc,
+      sellQty,
+      avgPrice,
+      buyPrice,
+      buyQty,
+      a_useCurrPrice,
+      costs,
+      tax,
+    });
+
     Object.entries(arbitrage).forEach(([key, val]) => {
       (spotterSet as any)[key] = val;
     });

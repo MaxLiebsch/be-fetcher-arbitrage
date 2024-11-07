@@ -7,15 +7,22 @@ import {
   replaceAllHiddenCharacters,
   LookupInfoCause,
   LookupInfoPropType,
+  getAznAvgPrice,
+  calcAznCosts,
+  safeParsePrice,
+  getNumber,
 } from '@dipmaxtech/clr-pkg';
 import { upsertAsin } from '../db/util/asinTable.js';
 import { LookupInfoStats } from '../types/taskStats/LookupInfoStats.js';
 import {
+  findProducts,
   updateProducts,
   updateProductWithQuery,
 } from '../db/util/crudProducts.js';
 import { log } from './logger.js';
 import { lookupInfoStandardUpdate } from '../db/util/queries.js';
+import { getProductsCol } from '../db/mongo.js';
+import { recalculateAznMargin } from './recalculateAznMargin.js';
 
 const handleOtherProducts = async (
   asin: string,
@@ -36,24 +43,99 @@ const handleOtherProducts = async (
   }
 };
 
-const handleUpdate = async (
+const handleProductUpdate = async (
   productId: ObjectId,
   collection: string,
   cause: string,
   asin: string | undefined,
   update: Partial<DbProductRecord>
 ) => {
-  if (asin) {
-    await handleOtherProducts(
-      asin,
-      {
-        $set: {
-          ...update,
-        },
-        $unset: { info_taskId: '' },
-      },
-      `Asin found: ${asin}`
-    );
+  const { costs: newCosts, a_prc: newSellPrice } = update;
+
+  if (asin && newCosts && newCosts?.azn > 0 && newSellPrice) {
+    const products = await findProducts({
+      asin: asin,
+      _id: { $ne: productId },
+    });
+    let bulks: any = [];
+    for (const product of products) {
+      const { _id, costs, a_prc } = product;
+      let productUpdate: Partial<DbProductRecord> = {};
+      if (a_prc) {
+        // recalculate azn costs for existing listing
+        const { avgPrice, a_useCurrPrice } = getAznAvgPrice(product, a_prc);
+        const aznCosts = calcAznCosts(
+          newCosts,
+          newSellPrice,
+          a_useCurrPrice ? a_prc : avgPrice
+        );
+
+        if (aznCosts) {
+          product['costs'] = {
+            ...newCosts,
+            ...costs,
+            azn: aznCosts,
+          };
+          recalculateAznMargin(product, productUpdate);
+          productUpdate['costs'] = product['costs'];
+          productUpdate = {
+            ...productUpdate,
+            a_qty: update.a_qty,
+            a_nm: update.a_nm,
+            a_useCurrPrice,
+          };
+        }
+      } else {
+        product.costs = newCosts;
+        product.a_prc = newSellPrice;
+        recalculateAznMargin(product, productUpdate);
+        const {
+          a_rating,
+          a_reviewcnt,
+          tax,
+          a_qty,
+          totalOfferCount,
+          buyBoxIsAmazon,
+        } = update;
+
+        productUpdate = {
+          ...productUpdate,
+          costs: newCosts,
+          a_prc: newSellPrice,
+          a_uprc: update.a_uprc,
+          a_qty,
+          a_nm: update.a_nm,
+          a_img: update.a_img,
+          ...(a_rating && { a_rating: safeParsePrice(a_rating) }),
+          ...(a_reviewcnt && { a_reviewcnt: safeParsePrice(a_reviewcnt) }),
+          ...(tax && { tax: Number(tax) }),
+          ...(totalOfferCount && {
+            totalOfferCount,
+          }),
+          ...(buyBoxIsAmazon !== undefined && {
+            buyBoxIsAmazon,
+          }),
+        };
+      }
+      if (Object.keys(productUpdate).length > 0) {
+        console.log(product.sdmn, 'productUpdate:', productUpdate);
+        const _update = {
+          $set: {
+            ...productUpdate,
+            info_prop: update.info_prop,
+            aznUpdatedAt: new Date().toISOString(),
+            infoUpdatedAt: new Date().toISOString(),
+          },
+          $unset: { info_taskId: '' },
+        };
+        bulks.push({ updateOne: { filter: { _id }, update: _update } });
+      }
+    }
+    if (bulks.length > 0) {
+      const col = await getProductsCol();
+      const result = await col.bulkWrite(bulks);
+      log(`Updated other products: ${asin}`, result);
+    }
   }
 
   const result = await updateProductWithQuery(productId, {
@@ -97,7 +179,6 @@ export async function handleLookupInfoProductInfo(
         update['a_orgn'] = 'a';
         update['a_pblsh'] = true;
 
-
         if (hasEan && asin && eanList && eanList.length > 0) {
           await upsertAsin(asin, eanList, costs);
         }
@@ -120,7 +201,13 @@ export async function handleLookupInfoProductInfo(
           aznUpdatedAt: new Date().toISOString(),
           infoUpdatedAt: new Date().toISOString(),
         };
-        await handleUpdate(productId, collection, infoProp, asin, update);
+        await handleProductUpdate(
+          productId,
+          collection,
+          infoProp,
+          asin,
+          update
+        );
       }
       if (cause === 'incompleteInfo' || cause === 'missingSellerRank') {
         const infoProp = causeToInfoPropMap[cause];
@@ -134,7 +221,7 @@ export async function handleLookupInfoProductInfo(
         update['a_pblsh'] = true;
         update['info_prop'] = infoProp;
 
-        if (hasEan && update.asin &&  eanList && eanList.length > 0) {
+        if (hasEan && update.asin && eanList && eanList.length > 0) {
           await upsertAsin(update.asin, eanList);
         }
 
@@ -146,7 +233,7 @@ export async function handleLookupInfoProductInfo(
             flag_cnt: 0,
           };
         }
-        await handleUpdate(
+        await handleProductUpdate(
           productId,
           collection,
           infoProp,

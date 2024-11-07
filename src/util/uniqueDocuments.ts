@@ -11,17 +11,22 @@ export async function uniqueDocuments(
 ): Promise<ProductsAndShop> {
   const idsToReturn: ObjectId[] = [];
   // Filter unique documents based on eanList[0]
-  const uniqueEanSet = new Set<string>();
+  const uniqueSet = new Set<string>();
   const uniqueDocuments = productAndShops.products.filter((doc) => {
-    if (!doc.product.eanList || doc.product.eanList.length === 0) {
-      return true;
+    const eanIsMissing =
+      !doc.product.eanList || doc.product.eanList.length === 0;
+    if (eanIsMissing) {
+      idsToReturn.push(doc.product._id);
+      return false;
     }
     const ean = doc.product.eanList[0];
-    if (uniqueEanSet.has(ean)) {
+    const asin = doc.product.asin;
+    if (uniqueSet.has(ean) || (asin && uniqueSet.has(asin))) {
       idsToReturn.push(doc.product._id);
       return false;
     } else {
-      uniqueEanSet.add(ean);
+      if (asin) uniqueSet.add(asin);
+      uniqueSet.add(ean);
       return true;
     }
   });
