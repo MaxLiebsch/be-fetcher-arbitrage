@@ -2,13 +2,13 @@ import { getArbispotterDb } from "../db/mongo.js";
 import { findProducts } from "../db/util/crudProducts.js";
 import { getAllShopsAsArray } from "../db/util/shops.js";
 import { countTotal } from "./countProducts.js";
-import { recalculateAznMargin } from "../util/recalculateAznMargin.js";
 import { recalculateEbyMargin } from "../util/recalculateEbyMargin.js";
 import {
   DbProductRecord,
   reduceSalesRankArray,
   resetEbyProductQuery,
   resetAznProductQuery,
+  recalculateAznMargin,
 } from "@dipmaxtech/clr-pkg";
 
 function isArrayOfNumberPairs(arr: any[]) {

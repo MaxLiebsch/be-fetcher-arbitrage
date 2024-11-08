@@ -1,5 +1,5 @@
+import { recalculateAznMargin } from '@dipmaxtech/clr-pkg';
 import { getProductsCol } from '../db/mongo.js';
-import { recalculateAznMargin } from '../util/recalculateAznMargin.js';
 
 async function recalculateMargin() {
   const col = await getProductsCol();
