@@ -22,7 +22,7 @@ export async function uniqueDocuments(
     const ean = doc.product.eanList[0];
     const asin = doc.product.asin;
     if (uniqueSet.has(ean) || (asin && uniqueSet.has(asin))) {
-      idsToReturn.push(doc.product._id);
+      if (ean) idsToReturn.push(doc.product._id);
       return false;
     } else {
       if (asin) uniqueSet.add(asin);

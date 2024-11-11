@@ -100,7 +100,7 @@ export async function syncAznListings(
         const _update = {
           $set: {
             ...productUpdate,
-            info_prop,
+            ...(info_prop && { info_prop }),
             [taskUpdatedProp]: new Date().toISOString(),
             infoUpdatedAt: new Date().toISOString(),
           },
