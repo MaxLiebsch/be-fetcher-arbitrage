@@ -33,9 +33,11 @@ async function migrateAnything() {
 
     for (const product of products) {
       let spotterSet: Partial<DbProductRecord> = {};
-
+      if (!product.a_qty) {
+        product.a_qty = 1;
+        spotterSet['a_qty'] = 1;
+      }
       recalculateAznMargin(product, product.a_prc!, spotterSet);
-
       if (Object.keys(spotterSet).length > 0) {
         const update = {
           $set: { ...spotterSet },
@@ -50,6 +52,10 @@ async function migrateAnything() {
         `Bulk write result: ${result.modifiedCount}/${result.matchedCount}`
       );
     }
+    if (products.length === 0) {
+      break;
+    }
+
     cnt += products.length;
     console.log(`Processed ${cnt}/${total}`);
   }
