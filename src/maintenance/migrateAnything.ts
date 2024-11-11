@@ -4,20 +4,19 @@ import { getProductsCol } from '../db/mongo';
 const query = {
   $or: [
     { 'costs.prvsn': { $exists: true } },
-    { 'costs.azn': { $exists: true } },
+    // { 'costs.azn': { $exists: true } },
   ],
   a_mrgn: { $gt: 0 },
 };
 
 // const query = {
-//   $and: [
-//     {sdmn: "idealo.de"},
-//     {asin: "B00029MNTU"},
-
-//   ]
-
-// };
-
+//     $and: [
+//       {sdmn: "voelkner.de"},
+//       {asin: "B079Q4QP4Z"},
+//     ]
+  
+//   };
+  
 let countFalsePositives = 0;
 
 async function migrateAnything() {
@@ -36,6 +35,10 @@ async function migrateAnything() {
       if (!product.a_qty) {
         product.a_qty = 1;
         spotterSet['a_qty'] = 1;
+      }
+      if(!product.qty){
+        product.qty = 1;
+        spotterSet['qty'] = 1;
       }
       recalculateAznMargin(product, product.a_prc!, spotterSet);
       if (Object.keys(spotterSet).length > 0) {

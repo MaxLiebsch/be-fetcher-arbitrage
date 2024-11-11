@@ -49,7 +49,7 @@ export async function syncAznListings(
           a_pblsh: true,
           bsr: update.bsr || product.bsr || [],
           a_qty: update.a_qty || product.a_qty || 1,
-          a_nm: update.a_nm,
+          ...(update.a_nm && { a_nm: update.a_nm }),
           a_prc: newSellPrice,
           a_uprc: update.a_uprc,
         };

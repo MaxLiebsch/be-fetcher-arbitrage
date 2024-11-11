@@ -84,6 +84,7 @@ export async function handleAznListingProductInfo(
           [taskUpdatedProp]: new Date().toISOString(),
           ...arbitrageAndCosts,
           a_prc: newUsedListingPrice,
+          a_qty: sellQty,
           a_uprc,
           ...(typeof a_rating === 'string' && {
             a_rating: safeParsePrice(a_rating),
