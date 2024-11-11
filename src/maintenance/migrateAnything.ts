@@ -1,22 +1,22 @@
 import { DbProductRecord, recalculateAznMargin } from '@dipmaxtech/clr-pkg';
 import { getProductsCol } from '../db/mongo';
 
-// const query = {
-//   $or: [
-//     { 'costs.prvsn': { $exists: true } },
-//     { 'costs.azn': { $exists: true } },
-//   ],
-//   a_mrgn: { $gt: 0 },
-// };
-
 const query = {
-  $and: [
-    {sdmn: "idealo.de"},
-    {asin: "B00029MNTU"},
-
-  ]
-
+  $or: [
+    { 'costs.prvsn': { $exists: true } },
+    { 'costs.azn': { $exists: true } },
+  ],
+  a_mrgn: { $gt: 0 },
 };
+
+// const query = {
+//   $and: [
+//     {sdmn: "idealo.de"},
+//     {asin: "B00029MNTU"},
+
+//   ]
+
+// };
 
 let countFalsePositives = 0;
 
@@ -33,18 +33,18 @@ async function migrateAnything() {
     for (const product of products) {
       let spotterSet: Partial<DbProductRecord> = {};
 
-      recalculateAznMargin(product, spotterSet);
-      console.log('spotterSet:', spotterSet)
+      recalculateAznMargin(product, product.a_prc!, spotterSet);
+      console.log('spotterSet:', spotterSet);
 
-      // if (Object.keys(spotterSet).length > 0) {
-      //   const update = {
-      //     $set: { ...spotterSet },
-      //     $unset: {
-      //       info_updateAt: '',
-      //     },
-      //   };
-      //   bulks.push({ updateOne: { filter: { _id: product._id }, update } });
-      // }
+      if (Object.keys(spotterSet).length > 0) {
+        const update = {
+          $set: { ...spotterSet },
+          $unset: {
+            info_updateAt: '',
+          },
+        };
+        bulks.push({ updateOne: { filter: { _id: product._id }, update } });
+      }
     }
 
     if (bulks.length > 0) {

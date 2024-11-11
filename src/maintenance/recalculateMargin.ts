@@ -5,24 +5,22 @@ async function recalculateMargin() {
   const col = await getProductsCol();
 
   const products = await col
-    .find(
-      {
-        a_useCurrPrice: false,
-        a_mrgn: { $gt: 0 },
-        costs: { $exists: true },
-      },
-    )
+    .find({
+      a_useCurrPrice: false,
+      a_mrgn: { $gt: 0 },
+      costs: { $exists: true },
+    })
     .toArray();
 
   for (let i = 0; i < products.length; i++) {
     const spotterUpdate = {};
-    recalculateAznMargin(products[i], spotterUpdate);
+    recalculateAznMargin(products[i], products[i].a_prc || 0, spotterUpdate);
 
     const result = await col.updateOne(
       { _id: products[i]._id },
-      { $set: { ...spotterUpdate } },
+      { $set: { ...spotterUpdate } }
     );
-    console.log('result: ',products[i]._id,'... ' ,result.modifiedCount);
+    console.log('result: ', products[i]._id, '... ', result.modifiedCount);
   }
 }
 

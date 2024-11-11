@@ -121,7 +121,6 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               infos.total++;
               await deleteProduct(productId);
               log(`Deleted: ${shopDomain}-${productId}`);
-              //DELETE PRODUCT
             }
           } else {
             await scrapeAznListings(

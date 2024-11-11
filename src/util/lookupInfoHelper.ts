@@ -7,19 +7,17 @@ import {
   replaceAllHiddenCharacters,
   LookupInfoCause,
   LookupInfoPropType,
-  safeParsePrice,
-  recalculateAznMargin,
+  LookupInfoProps,
 } from '@dipmaxtech/clr-pkg';
 import { upsertAsin } from '../db/util/asinTable.js';
 import { LookupInfoStats } from '../types/taskStats/LookupInfoStats.js';
 import {
-  findProducts,
   updateProducts,
   updateProductWithQuery,
 } from '../db/util/crudProducts.js';
 import { log } from './logger.js';
 import { lookupInfoStandardUpdate } from '../db/util/queries.js';
-import { getProductsCol } from '../db/mongo.js';
+import { syncAznListings } from './syncAznListings.js';
 
 const handleOtherProducts = async (
   asin: string,
@@ -40,107 +38,13 @@ const handleOtherProducts = async (
   }
 };
 
-const handleProductsUpdate = async (
-  productId: ObjectId,
-  asin: string | undefined,
-  update: Partial<DbProductRecord>
-) => {
-  const { costs: newCosts, a_prc: newSellPrice } = update;
-
-  if (asin && newCosts && newCosts?.azn > 0 && newSellPrice) {
-    const products = await findProducts({
-      asin: asin,
-      _id: { $ne: productId },
-    });
-    let bulks: any = [];
-    for (const product of products) {
-      const { _id, costs, a_prc: existingSellPrice } = product;
-      let productUpdate: Partial<DbProductRecord> = {};
-      if (existingSellPrice) {
-        // recalculate azn costs for existing listing
-
-        product['costs'] = {
-          ...costs,
-          ...newCosts,
-        };
-        product['a_prc'] = newSellPrice;
-        recalculateAznMargin(product, productUpdate);
-        productUpdate['costs'] = product['costs'];
-        productUpdate = {
-          ...productUpdate,
-          bsr: update.bsr || product.bsr || [],
-          a_qty: update.a_qty,
-          a_nm: update.a_nm,
-          a_prc: newSellPrice,
-          a_uprc: update.a_uprc,
-        };
-      } else {
-        product['costs'] = newCosts;
-        product['a_prc'] = newSellPrice;
-        recalculateAznMargin(product, productUpdate);
-        const {
-          a_rating,
-          a_reviewcnt,
-          tax,
-          a_qty,
-          totalOfferCount,
-          buyBoxIsAmazon,
-        } = update;
-
-        productUpdate = {
-          ...productUpdate,
-          costs: newCosts,
-          a_prc: newSellPrice,
-          a_uprc: update.a_uprc,
-          bsr: update.bsr || product.bsr || [],
-          a_qty,
-          a_nm: update.a_nm,
-          a_img: update.a_img,
-          ...(a_rating && { a_rating: safeParsePrice(a_rating) }),
-          ...(a_reviewcnt && { a_reviewcnt: safeParsePrice(a_reviewcnt) }),
-          ...(tax && { tax: Number(tax) }),
-          ...(totalOfferCount && {
-            totalOfferCount,
-          }),
-          ...(buyBoxIsAmazon !== undefined && {
-            buyBoxIsAmazon,
-          }),
-        };
-      }
-      if (Object.keys(productUpdate).length > 0) {
-        let taskUpdatedProp = 'aznUpdatedAt';
-
-        if (update.a_mrgn && update.a_mrgn > 0) {
-          taskUpdatedProp = 'dealAznUpdatedAt';
-        }
-
-        const _update = {
-          $set: {
-            ...productUpdate,
-            info_prop: update.info_prop,
-            [taskUpdatedProp]: new Date().toISOString(),
-            infoUpdatedAt: new Date().toISOString(),
-          },
-          $unset: { info_taskId: '' },
-        };
-        bulks.push({ updateOne: { filter: { _id }, update: _update } });
-      }
-    }
-    if (bulks.length > 0) {
-      const col = await getProductsCol();
-      const result = await col.bulkWrite(bulks);
-      log(`Updated other products: ${asin}`, result);
-    }
-  }
-};
-
 const handleProductUpdate = async (
   productId: ObjectId,
   cause: string,
   asin: string | undefined,
   update: Partial<DbProductRecord>
 ) => {
-  await handleProductsUpdate(productId, asin, update);
+  await syncAznListings(productId, asin, update);
 
   const result = await updateProductWithQuery(productId, {
     $set: {
@@ -171,12 +75,15 @@ export async function handleLookupInfoProductInfo(
     'ProductInfo:',
     productInfo
   );
-  const { a_vrfd, _id: productId, eanList } = product;
+  const { a_vrfd, _id: productId, eanList, a_prc, costs, a_mrgn } = product;
+
+  const isComplete = a_mrgn && a_prc && costs?.azn;
 
   if (productInfo) {
     try {
       if (cause === 'completeInfo') {
         let { update, infoProp } = generateUpdate(productInfo, product);
+        const info_prop = isComplete ? LookupInfoProps.complete : infoProp;
 
         const { costs, a_nm, asin } = update;
 
@@ -207,23 +114,31 @@ export async function handleLookupInfoProductInfo(
           ...(a_nm && typeof a_nm === 'string'
             ? { a_nm: replaceAllHiddenCharacters(a_nm) }
             : {}),
-          info_prop: infoProp,
+          info_prop,
           [taskUpdatedProp]: new Date().toISOString(),
           infoUpdatedAt: new Date().toISOString(),
         };
-        await handleProductUpdate(productId, infoProp, asin, update);
+        await handleProductUpdate(productId, cause, asin, update);
       }
       if (cause === 'incompleteInfo' || cause === 'missingSellerRank') {
-        const infoProp = causeToInfoPropMap[cause];
+        const info_prop = isComplete
+          ? LookupInfoProps.complete
+          : causeToInfoPropMap[cause];
         let { update } = generateMinimalUpdate(productInfo, product);
+
+        let taskUpdatedProp = 'aznUpdatedAt';
+
+        if (update.a_mrgn && update.a_mrgn > 0) {
+          taskUpdatedProp = 'dealAznUpdatedAt';
+        }
         update = {
           ...update,
-          aznUpdatedAt: new Date().toISOString(),
+          [taskUpdatedProp]: new Date().toISOString(),
           infoUpdatedAt: new Date().toISOString(),
         };
         update['a_orgn'] = 'a';
         update['a_pblsh'] = true;
-        update['info_prop'] = infoProp;
+        update['info_prop'] = info_prop;
 
         if (hasEan && update.asin && eanList && eanList.length > 0) {
           await upsertAsin(update.asin, eanList);
@@ -237,7 +152,7 @@ export async function handleLookupInfoProductInfo(
             flag_cnt: 0,
           };
         }
-        await handleProductUpdate(productId, infoProp, update.asin, update);
+        await handleProductUpdate(productId, info_prop, update.asin, update);
       }
     } catch (error) {
       if (error instanceof Error) {

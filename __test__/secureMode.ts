@@ -8,12 +8,15 @@ import {
 } from '@dipmaxtech/clr-pkg';
 import { getShop, updateShops } from '../src/db/util/shops.js';
 import { shops } from '../src/shops.js';
-import puppeteer from 'rebrowser-puppeteer'
-import { VersionProvider, Versions } from '@dipmaxtech/clr-pkg/lib/util/versionProvider.js';
+import puppeteer from 'rebrowser-puppeteer';
+import {
+  VersionProvider,
+  Versions,
+} from '@dipmaxtech/clr-pkg/lib/util/versionProvider.js';
 
 export const mainBrowser = async (
   version: Versions,
-  proxyAuth?: { host: string },
+  proxyAuth?: { host: string }
 ) => {
   const args = [
     '--no-sandbox',
@@ -34,7 +37,6 @@ export const mainBrowser = async (
 
   const provider = VersionProvider.getSingleton();
   provider.switchVersion(version);
-  
 
   const options: any = {
     headless: process.env.HEADLESS === 'true' ? true : false,
@@ -54,15 +56,16 @@ export const mainBrowser = async (
 const secureMode = async () => {
   const sleep = (delay: number) =>
     new Promise((resolve) => setTimeout(resolve, delay));
-  await updateShops(shops)
+  await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = "mindfactory.de";
+  const shopDomain = 'mindfactory.de';
 
   const shop = await getShop(shopDomain);
   if (!shop) return;
 
   const { exceptions } = shop;
-  const lnk = "https://www.mindfactory.de/product_info.php/Terra-PC-Micro-6000-Core-i5-1240P-Mini-PC_1513207.html"
+  const lnk =
+    'https://www.mindfactory.de/product_info.php/Google-Pixel-8a-128GB-Black-6-1Zoll-5G--8GB--Android_1536154.html';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -70,6 +73,7 @@ const secureMode = async () => {
     shop,
     host: shopDomain,
     requestCount: 1,
+    proxyType: 'de',
     disAllowedResourceTypes: [],
     exceptions,
   });
@@ -77,18 +81,18 @@ const secureMode = async () => {
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
     await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
+    await notifyProxyChange(
+      'de',
+      url,
+      requestId,
+      Date.now(),
+      shop.allowedHosts
+    );
     if (shop.proxyType !== 'mix') {
-      await notifyProxyChange(
-        shop.proxyType,
-        url,
-        requestId,
-        Date.now(),
-        shop.allowedHosts
-      );
     }
     return originalGoto.apply(this, [url, options]);
   };
-  await page.goto(lnk, {timeout: 60000});
+  await page.goto(lnk, { timeout: 60000 });
   // const status = result?.status();
   // if (status !== 200) {
   //   const response = await page.reload();

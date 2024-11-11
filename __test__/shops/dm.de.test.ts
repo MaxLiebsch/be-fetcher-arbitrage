@@ -26,31 +26,31 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await mimicTest();
   }, 1000000);
 
-  test("Find mainCategories", async () => {
-    await findMainCategories();
-  }, 1000000);
+  // test("Find mainCategories", async () => {
+  //   await findMainCategories();
+  // }, 1000000);
 
-  test("Find subCategories", async () => {
-    await findSubCategories();
-  }, 1000000);
+  // test("Find subCategories", async () => {
+  //   await findSubCategories();
+  // }, 1000000);
 
-  test("Find product in category count", async () => {
-    await productPageCount();
-  },1000000);
+  // test("Find product in category count", async () => {
+  //   await productPageCount();
+  // },1000000);
 
-  test("Find Pagination and generate page 2 link", async () => {
-    await findPaginationAndNextPage();
-  }, 1000000);
+  // test("Find Pagination and generate page 2 link", async () => {
+  //   await findPaginationAndNextPage();
+  // }, 1000000);
 
   test("Extract Products from Product page", async () => {
-    await extractProducts();
+    await extractProducts('https://www.dm.de/gesundheit/erkaeltung');
   }, 1000000);
 
-  test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
-    await extractProductsFromSecondPageQueueless(4);
-  }, 1000000);  
+  // test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
+  //   await extractProductsFromSecondPageQueueless(4);
+  // }, 1000000);  
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

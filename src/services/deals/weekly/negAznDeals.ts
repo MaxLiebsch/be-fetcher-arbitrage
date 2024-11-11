@@ -1,36 +1,22 @@
 import {
-  AddProductInfoProps,
-  DbProductRecord,
-  NotFoundCause,
-  ProductRecord,
-  queryProductPageQueue,
   QueryQueue,
   Shop,
-  uuid,
 } from "@dipmaxtech/clr-pkg";
 import { differenceInHours } from "date-fns";
 import { getShop } from "../../../db/util/shops.js";
 import { TaskCompletedStatus } from "../../../status.js";
 import {
-  defaultAznDealTask,
-  defaultQuery,
   proxyAuth,
 } from "../../../constants.js";
 import {
   deleteProduct,
-  updateProductWithQuery,
 } from "../../../db/util/crudProducts.js";
 import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import {
-  handleAznListingNotFound,
-  handleAznListingProductInfo,
-} from "../../../util/scrapeAznListingsHelper.js";
 import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
 import { updateProgressNegDealAznTasks } from "../../../util/updateProgressInTasks.js";
 import { NegAznDealTask } from "../../../types/tasks/Tasks.js";
 import { NegDealsOnAznStats } from "../../../types/taskStats/NegDealsOnAzn.js";
 import { MissingShopError, TaskErrors } from "../../../errors.js";
-import { TaskStats } from "../../../types/taskStats/TasksStats.js";
 import { TaskReturnType } from "../../../types/TaskReturnType.js";
 import { log } from "../../../util/logger.js";
 import { countRemainingProducts } from "../../../util/countRemainingProducts.js";

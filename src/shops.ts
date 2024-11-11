@@ -2044,22 +2044,22 @@ export const shops: { [key: string]: Shop } = {
         sel: 'div[id=searchResults]',
         productCntSel: ['div.header-count'],
         product: {
-          sel: 'div.product-card',
+          sel: 'article.product__card',
           type: 'not_link',
           details: [
             {
               content: 'link',
-              sel: 'div.product-cards__thumbnail a',
+              sel: 'div.product-cards__details a',
               type: 'href',
             },
             {
               content: 'image',
-              sel: 'div.product-cards__thumbnail a img',
+              sel: 'figure img',
               type: 'srcset',
             },
             {
               content: 'name',
-              sel: 'div.product-cards__title',
+              sel: 'h3.product__card-title',
               type: 'text',
             },
             {
@@ -2432,7 +2432,7 @@ export const shops: { [key: string]: Shop } = {
     },
     crawlActions: [],
     d: 'dm.de',
-    ean: 'p[0-9]{12,13}',
+    ean: 'p[0-9]{11,13}',
     entryPoints: [
       {
         url: 'https://www.dm.de',
@@ -2574,11 +2574,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        'media',
-        'font',
-        'image',
-      ],
+      crawl: ['media', 'font', 'image'],
     },
     waitUntil: {
       product: 'load',
@@ -3307,7 +3303,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: ['media', 'font', 'stylesheet', 'ping', 'image', 'other'],
+      crawl: ['media', 'font', 'stylesheet', 'image'],
     },
     waitUntil: {
       product: 'load',
