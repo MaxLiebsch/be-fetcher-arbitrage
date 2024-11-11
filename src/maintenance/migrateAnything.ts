@@ -23,10 +23,11 @@ let countFalsePositives = 0;
 async function migrateAnything() {
   const col = await getProductsCol();
   let total = await col.countDocuments(query);
+  console.log('total:', total);
 
   const batch = 2000;
   let cnt = 0;
-  while (cnt <= total) {
+  while (cnt < total) {
     const bulks: any = [];
     const products = await col.find(query).limit(batch).skip(cnt).toArray();
 
@@ -34,14 +35,10 @@ async function migrateAnything() {
       let spotterSet: Partial<DbProductRecord> = {};
 
       recalculateAznMargin(product, product.a_prc!, spotterSet);
-      console.log('spotterSet:', spotterSet);
 
       if (Object.keys(spotterSet).length > 0) {
         const update = {
           $set: { ...spotterSet },
-          $unset: {
-            info_updateAt: '',
-          },
         };
         bulks.push({ updateOne: { filter: { _id: product._id }, update } });
       }

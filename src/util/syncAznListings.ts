@@ -5,9 +5,9 @@ import {
   recalculateAznMargin,
   safeParsePrice,
 } from '@dipmaxtech/clr-pkg';
-import { getProductsCol } from '../db/mongo';
-import { findProducts } from '../db/util/crudProducts';
-import { log } from './logger';
+import { getProductsCol } from '../db/mongo.js';
+import { findProducts } from '../db/util/crudProducts.js';
+import { log } from './logger.js';
 
 export async function syncAznListings(
   productId: ObjectId,
