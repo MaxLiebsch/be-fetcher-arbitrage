@@ -11,7 +11,7 @@ async function runTests(retries = 0) {
   const result = await runCLI(
     //@ts-ignore
     {
-      testMatch: ["**/otto.de.test.*"],
+      testMatch: ["**/conrad.de.test.*"],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
       verbose: true

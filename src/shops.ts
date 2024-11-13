@@ -1739,7 +1739,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 3000,
+      min: 2000,
       max: 4000,
     },
     product: [
@@ -7145,7 +7145,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'quelle.de': {
     actions: [],
-    active: false,
+    active: true,
     categories: {
       exclude: ['mode', 'arbeitskleidung', 'herren', 'damen', 'kinder'],
       sel: 'nav li a',
