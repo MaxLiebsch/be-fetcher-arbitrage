@@ -7,26 +7,26 @@ import {
   roundToTwoDecimals,
   transformProduct,
   uuid,
-} from "@dipmaxtech/clr-pkg";
-import { getShop } from "../db/util/shops.js";
+} from '@dipmaxtech/clr-pkg';
+import { getShop } from '../db/util/shops.js';
 import {
   CONCURRENCY,
   DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
+} from '../constants.js';
+import { checkProgress } from '../util/checkProgress.js';
 import {
   updateMatchProgress,
   updateProgressInCrawlEanTask,
-} from "../util/updateProgressInTasks.js";
-import { upsertProduct } from "../db/util/upsertProduct.js";
-import { ScrapeShopStats } from "../types/taskStats/ScrapeShopStats.js";
-import { ScrapeShopTask } from "../types/tasks/Tasks.js";
-import { TaskCompletedStatus } from "../status.js";
-import { TaskReturnType } from "../types/TaskReturnType.js";
-import { MissingShopError } from "../errors.js";
-import { log } from "../util/logger.js";
-import { updateTask } from "../db/util/tasks.js";
+} from '../util/updateProgressInTasks.js';
+import { upsertProduct } from '../db/util/upsertProduct.js';
+import { ScrapeShopStats } from '../types/taskStats/ScrapeShopStats.js';
+import { ScrapeShopTask } from '../types/tasks/Tasks.js';
+import { TaskCompletedStatus } from '../status.js';
+import { TaskReturnType } from '../types/TaskReturnType.js';
+import { MissingShopError } from '../errors.js';
+import { log } from '../util/logger.js';
+import { updateTask } from '../db/util/tasks.js';
 
 async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -60,26 +60,26 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       new: 0,
       old: 0,
       total: 0,
-      elapsedTime: "",
+      elapsedTime: '',
       locked: productLimit,
       failedSave: 0,
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       missingProperties: {
         nm: 0,
@@ -137,25 +137,28 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           uniqueLinks.push(lnk);
           infos.total++;
           queue.total++;
-          transformedProduct["qty"] = qty || 1;
-          transformedProduct["uprc"] = roundToTwoDecimals(
-            prc / transformedProduct["qty"]
+          transformedProduct['qty'] = qty || 1;
+          transformedProduct['uprc'] = roundToTwoDecimals(
+            prc / transformedProduct['qty']
           );
-          transformedProduct["sdmn"] = shopDomain;
+          transformedProduct['sdmn'] = shopDomain;
           const result = await upsertProduct(transformedProduct);
 
           log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
           if (result?.acknowledged) {
-            if ("insertedId" in result) infos.new++;
+            if ('insertedId' in result) infos.new++;
             else infos.old++;
           } else {
             infos.failedSave++;
           }
+          if (infos.total >= productLimit) {
+            await isCompleted();
+          }
         }
       } else {
         const properties: Array<
-          keyof Pick<DbProductRecord, "nm" | "prc" | "lnk" | "img">
-        > = ["nm", "prc", "lnk", "img"];
+          keyof Pick<DbProductRecord, 'nm' | 'prc' | 'lnk' | 'img'>
+        > = ['nm', 'prc', 'lnk', 'img'];
 
         properties.forEach((prop) => {
           if (!transformedProduct[prop]) {
@@ -201,7 +204,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         pageInfo: {
           entryCategory: shopDomain,
           link,
-          name: shopDomain.split(".")[0],
+          name: shopDomain.split('.')[0],
         },
       });
     }

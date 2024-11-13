@@ -94,9 +94,9 @@ export const scrapeProducts = async (
     );
 
     const interval = setInterval(async () => {
-      if (queue.workload() === 0) {
+      if (queue.empty()) {
         await sleep(STANDARD_SETTLING_TIME);
-        if (queue.workload() === 0) {
+        if (queue.empty()) {
           interval && clearInterval(interval);
           await queue.disconnect(true);
           res({ infos, queueStats: queue.queueStats });

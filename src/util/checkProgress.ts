@@ -4,16 +4,16 @@ import {
   ScanQueue,
   sleep,
   TaskTypes,
-} from "@dipmaxtech/clr-pkg";
-import { TaskCompletedStatus } from "../status.js";
-import { MATCH_TIME_LIMIT, STANDARD_SETTLING_TIME } from "../constants.js";
-import { getElapsedTime } from "./dates.js";
-import { TASK_RESULT } from "./TaskResult.js";
-import { Tasks } from "../types/tasks/Tasks.js";
-import { TaskStats } from "../types/taskStats/TasksStats.js";
-import { combineQueueStats } from "./combineQueueStats.js";
-import { TaskResultEvent } from "../types/tasks/TaskResult.js";
-import { log } from "./logger.js";
+} from '@dipmaxtech/clr-pkg';
+import { TaskCompletedStatus } from '../status.js';
+import { MATCH_TIME_LIMIT, STANDARD_SETTLING_TIME } from '../constants.js';
+import { getElapsedTime } from './dates.js';
+import { TASK_RESULT } from './TaskResult.js';
+import { Tasks } from '../types/tasks/Tasks.js';
+import { TaskStats } from '../types/taskStats/TasksStats.js';
+import { combineQueueStats } from './combineQueueStats.js';
+import { TaskResultEvent } from '../types/tasks/TaskResult.js';
+import { log } from './logger.js';
 
 interface CheckProgressArgs {
   queue: QueryQueue[] | QueryQueue | CrawlerQueue | ScanQueue;
@@ -46,7 +46,7 @@ const handleSingleQueue = async (
 };
 
 // Tasks that should be considered successful before reaching the product limit
-const preSuccessTasks: TaskTypes[] = ["DAILY_SALES", "CRAWL_SHOP"];
+const preSuccessTasks: TaskTypes[] = ['DAILY_SALES', 'CRAWL_SHOP'];
 
 export const checkProgress = async ({
   queue,
@@ -58,7 +58,7 @@ export const checkProgress = async ({
   const { elapsedTime, elapsedTimeStr } = getElapsedTime(startTime);
   let status: TaskResultEvent = TASK_RESULT.TASK_COMPLETED;
 
-  taskStats["elapsedTime"] = elapsedTimeStr;
+  taskStats['elapsedTime'] = elapsedTimeStr;
 
   const { total } = taskStats;
 
@@ -134,9 +134,8 @@ export const checkProgress = async ({
         queueStats: queue.queueStats,
       });
     }
-
     if (
-      queue.workload() === 0 &&
+      queue.empty() &&
       (total >= productLimit || preSuccessTasks.includes(task.type))
     ) {
       await sleep(STANDARD_SETTLING_TIME);

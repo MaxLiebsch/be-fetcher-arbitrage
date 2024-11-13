@@ -3,7 +3,7 @@ import { Query } from "@dipmaxtech/clr-pkg";
 export const MATCH_TIME_LIMIT = 480;
 export const CONCURRENCY = 4;
 export const DEFAULT_CHECK_PROGRESS_INTERVAL = 5 * 60 * 1000;
-export const DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL = 15 * 60 * 1000;
+export const DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL = 7 * 60 * 1000;
 export const STANDARD_SETTLING_TIME = 2 * 60 * 1000;
 export const ONE_MINUTE = 60 * 1000;
 export const COOLDOWN = 30 * 60 * 1000;

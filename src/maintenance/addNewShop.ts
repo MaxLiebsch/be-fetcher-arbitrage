@@ -17,16 +17,16 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "thalia.de",
-    ne: "Thalia.de",
-    maxProducts: 60000,
+    d: "otto.de",
+    ne: "Otto.de",
+    maxProducts: 80000,
     productLimit: 500,
-    salesProductLimit: 4000,
+    salesProductLimit: 1000,
     categories: [],
     dailySalesCategories: [
       {
         name: "Sales",
-        link: "https://www.thalia.de/themenwelten/sale/#/list",
+        link: "https://www.otto.de/sale/",
       },
     ],
   },

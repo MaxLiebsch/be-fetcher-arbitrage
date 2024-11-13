@@ -6833,7 +6833,7 @@ export const shops: { [key: string]: Shop } = {
   'otto.de': {
     actions: [],
     active: false,
-    allowedHosts: ['static.otto.de'], 
+    allowedHosts: ['static.otto.de'],
     categories: {
       exclude: [
         'marken',
@@ -6856,12 +6856,12 @@ export const shops: { [key: string]: Shop } = {
       ],
     },
     crawlActions: [
-        {
-          type: 'scroll',
-          sel: 'none',
-          name: 'Scroll to bottom',
-          action: 'scroll',
-        },
+      {
+        type: 'scroll',
+        sel: 'none',
+        name: 'Scroll to bottom',
+        action: 'scroll',
+      },
     ],
     d: 'otto.de',
     entryPoints: [
