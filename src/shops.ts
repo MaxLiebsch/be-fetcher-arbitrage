@@ -6833,6 +6833,7 @@ export const shops: { [key: string]: Shop } = {
   'otto.de': {
     actions: [],
     active: false,
+    allowedHosts: ['static.otto.de'], 
     categories: {
       exclude: [
         'marken',
@@ -6845,14 +6846,23 @@ export const shops: { [key: string]: Shop } = {
       ],
       sel: 'ul.nav_desktop-global-navigation__content a',
       type: 'href',
+      visible: false,
       subCategories: [
         {
           sel: 'ul.nav_local-links a.ts-link',
+          visible: false,
           type: 'href',
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+        {
+          type: 'scroll',
+          sel: 'none',
+          name: 'Scroll to bottom',
+          action: 'scroll',
+        },
+    ],
     d: 'otto.de',
     entryPoints: [
       {
@@ -6863,6 +6873,11 @@ export const shops: { [key: string]: Shop } = {
     manualCategories: [],
     mimic: 'div.find_ottoLogo svg.pl_logo',
     hasEan: true,
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
     paginationEl: [
       {
         type: 'pagination',
@@ -6903,12 +6918,12 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'name',
-              sel: 'p.find_tile__name',
+              sel: 'a.find_tile__productLink p.find_tile__name',
               type: 'text',
             },
             {
               content: 'mnfctr',
-              sel: 'p.find_tile__brand',
+              sel: 'a.find_tile__productLink p.find_tile__brand',
               type: 'text',
             },
             {
@@ -6965,13 +6980,13 @@ export const shops: { [key: string]: Shop } = {
       crawl: [
         'media',
         'font',
-        'stylesheet',
-        'ping',
+        // 'stylesheet',
+        // 'ping',
         'image',
         'xhr',
-        'fetch',
-        'script',
-        'other',
+        // 'fetch',
+        // 'script',
+        // 'other',
       ],
     },
     waitUntil: {

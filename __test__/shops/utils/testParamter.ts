@@ -409,8 +409,8 @@ const testParameters = {
     productPageUrl:"https://www.otto.de/p/bauknecht-einbaubackofen-bar2-kn5v2-in-mit-2-fach-teleskopauszug-C1735919991/",
     productsPerPage: 120,
     productsPerPageAfterLoadMore: 96,
-    subCategoriesCount: 18,
-    mainCategoriesCount: 4,
+    subCategoriesCount: 78,
+    mainCategoriesCount: 11,
     initialProductPageUrl:
       "https://www.otto.de/haushalt/haushaltsgeraete/",
     subCategoryUrl:

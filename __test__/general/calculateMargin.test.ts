@@ -1,26 +1,26 @@
-import { calculateAznArbitrage } from "@dipmaxtech/clr-pkg";
+import { calculateAznArbitrage, getAznAvgPrice } from "@dipmaxtech/clr-pkg";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 //@ts-ignore
-import { getArbispotterDb } from "../../src/db/mongo.js";
+import { getArbispotterDb, getProductsCol } from "../../src/db/mongo.js";
 
 describe("calculate arbitrage", () => {
   let product: null | any = null;
-  let ean = "8012335000138";
+  let ean = "3035542004206";
   beforeAll(async () => {
-    const db = await getArbispotterDb();
-    const shopDomain = "sales";
-    const col = db.collection(shopDomain);
-    product = await col.findOne({ eanList: ean }, { limit: 1 });
+    const col = await getProductsCol();
+    product = await col.findOne({ eanList: ean, sdmn: 'idealo.de' }, { limit: 1 });
   }, 1000000);
   test("#1", () => {
     const expected = {
       a_mrgn: -7.35,
       a_mrgn_pct: -14.7,
     };
-    const { a_prc, prc, qty, a_qty, nm, a_nm, costs, tax } = product;
+    const { a_prc: sellPrice, prc, qty, a_qty, nm, a_nm, costs, tax } = product;
+    const {avgPrice, a_useCurrPrice }= getAznAvgPrice(product, sellPrice) 
+    const weightedsellPrice = a_useCurrPrice ? sellPrice : avgPrice;
     const result = calculateAznArbitrage(
       prc * (a_qty / qty), // EK
-      a_prc, // VK
+      weightedsellPrice, // VK
       costs,
       tax
     );
@@ -28,7 +28,11 @@ describe("calculate arbitrage", () => {
     console.log(
       JSON.stringify(
         {
-          a_prc,
+          a_prc: sellPrice,
+          a_useCurrPrice,
+          weightedsellPrice,
+          avgPrice,
+          costs,
           prc,
           qty,
           a_qty,

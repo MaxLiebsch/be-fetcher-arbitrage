@@ -59,13 +59,13 @@ const secureMode = async () => {
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
   const shopDomain = 'mindfactory.de';
-
+  const proxyType = 'de'
   const shop = await getShop(shopDomain);
   if (!shop) return;
-
+  
   const { exceptions } = shop;
   const lnk =
-    'https://www.mindfactory.de/product_info.php/Google-Pixel-8a-128GB-Black-6-1Zoll-5G--8GB--Android_1536154.html';
+    'https://www.quelle.de/p/aeg-akku-hand-und-stielstaubsauger-cx7-2-45moe-flexible-2in1-funktion-mit-buerstenreinigungsfunktion/AKLBB1225033665?nav-c=102649&p=1&sku=8864466879-0';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -73,7 +73,7 @@ const secureMode = async () => {
     shop,
     host: shopDomain,
     requestCount: 1,
-    proxyType: 'de',
+    proxyType,
     disAllowedResourceTypes: [],
     exceptions,
   });
@@ -82,7 +82,7 @@ const secureMode = async () => {
   page.goto = async function (url, options) {
     await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
     await notifyProxyChange(
-      'de',
+      proxyType,
       url,
       requestId,
       Date.now(),

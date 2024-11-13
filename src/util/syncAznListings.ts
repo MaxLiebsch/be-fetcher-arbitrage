@@ -14,11 +14,11 @@ export async function syncAznListings(
   asin: string | undefined,
   update: Partial<DbProductRecord>
 ) {
-  const { costs: newCosts, a_prc: newSellPrice } = update;
+  const { costs: newCosts, a_prc: syncedSellPrice } = update;
 
   if (!asin) return;
 
-  if (newCosts && newCosts?.azn > 0 && newSellPrice) {
+  if (newCosts && newCosts?.azn > 0 && syncedSellPrice) {
     const products = await findProducts({
       asin: asin,
       _id: { $ne: productId },
@@ -41,8 +41,8 @@ export async function syncAznListings(
           ...costs,
           ...newCosts,
         };
-        product['a_prc'] = newSellPrice;
-        recalculateAznMargin(product, newSellPrice, productUpdate);
+        product['a_prc'] = syncedSellPrice;
+        recalculateAznMargin(product, syncedSellPrice, productUpdate);
         productUpdate = {
           ...productUpdate,
           costs: product['costs'],
@@ -50,13 +50,13 @@ export async function syncAznListings(
           bsr: update.bsr || product.bsr || [],
           a_qty: update.a_qty || product.a_qty || 1,
           ...(update.a_nm && { a_nm: update.a_nm }),
-          a_prc: newSellPrice,
+          a_prc: syncedSellPrice,
           a_uprc: update.a_uprc,
         };
       } else {
         product['costs'] = newCosts;
-        product['a_prc'] = newSellPrice;
-        recalculateAznMargin(product, newSellPrice, productUpdate);
+        product['a_prc'] = syncedSellPrice;
+        recalculateAznMargin(product, syncedSellPrice, productUpdate);
         const {
           a_rating,
           a_reviewcnt,
@@ -72,7 +72,7 @@ export async function syncAznListings(
             ...costs,
             ...newCosts,
           },
-          a_prc: newSellPrice,
+          a_prc: syncedSellPrice,
           ...(update.a_uprc && { a_uprc: update.a_uprc }),
           bsr: update.bsr || product.bsr || [],
           a_qty: a_qty || product.a_qty || 1,
