@@ -3971,8 +3971,8 @@ export const shops: { [key: string]: Shop } = {
     ],
     pauseOnProductPage: {
       pause: true,
-      min: 700,
-      max: 900,
+      min: 900,
+      max: 1200,
     },
     product: [
       {
@@ -4018,6 +4018,11 @@ export const shops: { [key: string]: Shop } = {
         path: 'image[0].url',
       },
     ],
+    javascript: {
+      webWorker: 'enabled',
+      serviceWorker: 'disabled',
+      sharedWorker: 'disabled',
+    },
     productList: [
       {
         sel: 'div[data-testid=item-list]',
@@ -4033,17 +4038,17 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'image',
-              sel: 'div[class*=al-ui-cardImgWrapper] img',
+              sel: 'img[data-testId=article-image]',
               type: 'src',
             },
             {
               content: 'name',
-              sel: 'a[class*=al-ui-product_name]',
-              type: 'title',
+              sel: 'h4[data-testid="article-title"]',
+              type: 'text',
             },
             {
               content: 'price',
-              sel: 'div[class*=al-ui-cardInfoInnerWrapper] span[class*=al-ui-UnstyledDisplayPrice]',
+              sel: 'div > div > div > div > div>  span',
               type: 'text',
             },
           ],
@@ -4063,7 +4068,7 @@ export const shops: { [key: string]: Shop } = {
         'script',
         'fetch',
         'xhr',
-        'stylesheet',
+        // 'stylesheet',
       ],
     },
     waitUntil: {
@@ -6832,7 +6837,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'otto.de': {
     actions: [],
-    active: false,
+    active: true,
     allowedHosts: ['static.otto.de'],
     categories: {
       exclude: [
@@ -6998,10 +7003,15 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ['wohntrends', 'marken'],
+      exclude: ['wohntrends', 'marken', 'x-mas', 'pieper-rabattcode'],
       sel: 'div.navigation--list-wrapper ul li a',
       type: 'href',
       subCategories: [
+        {
+          visible: false,
+          sel: 'div.emotion--html table a',
+          type: 'href',
+        },
         {
           visible: false,
           sel: 'li.navigation--entry.is--active ul.sidebar--navigation li a.navigation--link.link--go-forward',
@@ -7088,7 +7098,7 @@ export const shops: { [key: string]: Shop } = {
     productList: [
       {
         sel: 'div.listing--container',
-        productCntSel: ['div.category--headline span.category--headline-text'],
+        productCntSel: ['div.category--headline span.category--headline-text', 'div.category--headline-text'],
         product: {
           sel: 'div.product--box',
           type: 'not_link',
@@ -7149,6 +7159,7 @@ export const shops: { [key: string]: Shop } = {
     categories: {
       exclude: ['mode', 'arbeitskleidung', 'herren', 'damen', 'kinder'],
       sel: 'nav li a',
+      visible: false,
       type: 'href',
       subCategories: [
         {
@@ -7171,7 +7182,7 @@ export const shops: { [key: string]: Shop } = {
         link: 'https://www.quelle.de/themen-aktionen/sale/deals-des-monats',
       },
     ],
-    mimic: 'header > a > svg',
+    mimic: 'header > div > a > svg',
     hasEan: true,
     paginationEl: [
       {
