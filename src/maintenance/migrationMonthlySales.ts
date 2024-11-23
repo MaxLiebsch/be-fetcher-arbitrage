@@ -1,45 +1,45 @@
-import { getArbispotterDb } from "../db/mongo.js";
-import { findProducts } from "../db/util/crudProducts.js";
-import { getActiveShops, getAllShopsAsArray } from "../db/util/shops.js";
-import { calculateMonthlySales } from "@dipmaxtech/clr-pkg";
-import { countTotal } from "./countProducts.js";
+import { getArbispotterDb, getProductsCol } from '../db/mongo.js';
+import { getActiveShops, getAllShopsAsArray } from '../db/util/shops.js';
+import { calculateMonthlySales } from '@dipmaxtech/clr-pkg';
+import { countTotal } from './countProducts.js';
+
+const query = (sdmn: string) => {
+  return {
+    $and: [
+      { sdmn },
+      { categories: { $exists: true, $ne: null } },
+      { salesRanks: { $exists: true, $ne: null } },
+      { categoryTree: { $exists: true, $ne: null } },
+    ],
+  };
+};
 
 const migrationMonthlySold = async () => {
-  const spotter = await getArbispotterDb();
   const shops = await getActiveShops();
+  const col = await getProductsCol();
 
   if (!shops) return;
 
   const activeShops = shops.filter((shop) => shop.active);
 
   let count = 0;
-  let sampleSize = await countTotal();
+
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
-
-    console.log("Processing shop:", shop.d);
+    const total = await col.countDocuments(query(shop.d));
+    console.log('Processing shop:', shop.d);
     let cnt = 0;
     const batchSize = 250;
-    let hasMoreProducts = true;
-    let complete = false;
-    while (!complete) {
+    while (cnt < total) {
       const spotterBulkWrites: any = [];
-      const products = await findProducts(
-        {
-          $and: [
-            { sdmn: shop.d },
-            { categories: { $exists: true, $ne: null } },
-            { salesRanks: { $exists: true, $ne: null } },
-            { categoryTree: { $exists: true, $ne: null } },
-          ],
-        },
-        batchSize,
-        cnt
-      );
+      const products = await col
+        .find(query(shop.d), { limit: batchSize, skip: cnt })
+        .toArray();
       if (products.length) {
         products.map((p) => {
           count++;
           const set: any = {};
+          const unset: any = {};
 
           if (p.categories && p.salesRanks && p.categoryTree) {
             const monthlySold = calculateMonthlySales(
@@ -47,41 +47,41 @@ const migrationMonthlySold = async () => {
               p.salesRanks,
               p.categoryTree
             );
-            monthlySold !== null &&
-              monthlySold > 0 &&
-              console.log("Monthly sold: ", monthlySold);
             if (monthlySold) {
-              set["monthlySold"] = monthlySold;
+              set['monthlySold'] = monthlySold;
+            } else {
+              unset['monthlySold'] = '';
             }
           }
 
-          let spotterBulk = {
+          let spotterBulk: any = {
             updateOne: {
               filter: { _id: p._id },
               update: { $set: { ...set } },
             },
           };
 
+          if (Object.keys(unset).length) {
+            spotterBulk.updateOne.update['$unset'] = { ...unset };
+          }
+
+          p.asin === 'B001EBWLME' && console.log('spotterBulk', spotterBulk);
           spotterBulkWrites.push(spotterBulk);
         });
-        await spotter.collection(shop.d).bulkWrite(spotterBulkWrites);
+        if (spotterBulkWrites.length) await col.bulkWrite(spotterBulkWrites);
       } else {
         console.log(`Done ${shop.d}`);
       }
 
       console.log(
-        "Processing batch:",
+        'Processing batch:',
         cnt,
-        "count:",
-        count,
-        "hasMoreProducts: ",
+        'count:',
+        total,
+        'hasMoreProducts: ',
         products.length === batchSize
       );
-      hasMoreProducts = products.length === batchSize;
-      if (count >= sampleSize || !hasMoreProducts) {
-        complete = true;
-      }
-      cnt++;
+      cnt += products.length;
     }
   }
 };

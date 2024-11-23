@@ -104,7 +104,7 @@ export const scrapeProducts = async (
       }
     }, 2 * 60 * 1000);
 
-    await queue.connect();
+    await queue.connect(shop.csp);
 
     categories.map((category) => {
       const handleCrawledProduct = async (product: ProductRecord) => {

@@ -127,7 +127,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       }
     };
 
-    await queue.connect();
+    await queue.connect(shop.csp);
     const startTime = Date.now();
     const addProduct = async (product: ProductRecord) => {
       const transformedProduct = transformProduct(product, shopDomain);

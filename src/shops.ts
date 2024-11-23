@@ -819,6 +819,18 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'image'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -1709,6 +1721,7 @@ export const shops: { [key: string]: Shop } = {
       ],
     },
     crawlActions: [],
+    csp: false,
     d: 'conrad.de',
     entryPoints: [
       {
@@ -1869,6 +1882,17 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'image'],
+      product: [
+        'media',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'preflight',
+        'prefetch'
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -5583,6 +5607,18 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'ping', 'image', 'xhr', 'other'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -6993,6 +7029,18 @@ export const shops: { [key: string]: Shop } = {
         // 'script',
         // 'other',
       ],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -7098,7 +7146,10 @@ export const shops: { [key: string]: Shop } = {
     productList: [
       {
         sel: 'div.listing--container',
-        productCntSel: ['div.category--headline span.category--headline-text', 'div.category--headline-text'],
+        productCntSel: [
+          'div.category--headline span.category--headline-text',
+          'div.category--headline-text',
+        ],
         product: {
           sel: 'div.product--box',
           type: 'not_link',
