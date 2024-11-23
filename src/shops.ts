@@ -3291,7 +3291,7 @@ export const shops: { [key: string]: Shop } = {
         sel: 'div.grid-container.product-grid',
         productCntSel: ['div.pl-actions div.divider > div'],
         product: {
-          sel: 'div.grid-container.product-grid div.product-teaser',
+          sel: 'div.grid-container.product-grid div.grid-item--product',
           type: 'not_link',
           details: [
             {
@@ -3316,7 +3316,7 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'price',
-              sel: 'div.p-price',
+              sel: 'span.p-regular-price-value',
               type: 'text',
             },
           ],
@@ -4940,6 +4940,16 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'ping', 'image', 'other'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'other',
+        'ping',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -7192,11 +7202,19 @@ export const shops: { [key: string]: Shop } = {
         'font',
         'ping',
         'image',
+        'other' 
+      ],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
         'other',
-        // "script",
-        // "fetch",
-        // "xhr",
-        // "stylesheet",
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
       ],
     },
     waitUntil: {
