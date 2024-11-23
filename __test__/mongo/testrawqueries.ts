@@ -8,266 +8,368 @@ async function main() {
   const col = await getProductsCol();
   console.time('query');
   const result = await col
-    .aggregate([
-      {
-        $match: {
-          a_pblsh: true,
-          'costs.azn': { $exists: true },
-          a_prc: {
-            $gt: 0,
-          },
-          aznUpdatedAt: {
-            $gt: '2024-11-05T09:32:17.570Z',
-          },
-          $or: [
-            {
-              avg30_ahsprcs: {
-                $exists: true,
-                $gt: 0,
-              },
-            },
-            {
-              avg30_ansprcs: {
-                $exists: true,
-                $gt: 0,
-              },
-            },
-            {
-              avg90_ahsprcs: {
-                $exists: true,
-                $gt: 0,
-              },
-            },
-            {
-              avg90_ansprcs: {
-                $exists: true,
-                $gt: 0,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          a_avg_prc: {
-            $divide: [
-              {
-                $cond: {
-                  if: {
-                    $gt: ['$avg30_ahsprcs', -1],
-                  },
-                  then: '$avg30_ahsprcs',
-                  else: {
-                    $cond: {
-                      if: {
-                        $gt: ['$avg30_ansprcs', -1],
-                      },
-                      then: '$avg30_ansprcs',
-                      else: {
-                        $cond: {
-                          if: {
-                            $gt: ['$avg90_ahsprcs', -1],
-                          },
-                          then: '$avg90_ahsprcs',
-                          else: '$avg90_ansprcs',
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              100,
-            ],
-          },
-        },
-      },
-      {
-        $addFields: {
-          'costs.azn': {
-            $round: [
-              {
-                $multiply: [
-                  {
-                    $divide: ['$costs.azn', '$a_prc'],
-                  },
-                  '$a_avg_prc',
-                ],
-              },
-              2,
-            ],
-          },
-        },
-      },
-      {
-        $addFields: {
-          a_w_mrgn: {
-            $round: [
-              {
-                $subtract: [
-                  '$a_avg_prc',
-                  {
-                    $add: [
-                      {
-                        $divide: [
-                          '$a_prc',
-                          {
-                            $add: [
-                              1,
-                              {
-                                $divide: [
-                                  {
-                                    $ifNull: ['$tax', 19],
-                                  },
-                                  100,
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        $subtract: [
-                          '$a_avg_prc',
-                          {
-                            $divide: [
-                              '$a_avg_prc',
-                              {
-                                $add: [
-                                  1,
-                                  {
-                                    $divide: [
-                                      {
-                                        $ifNull: ['$tax', 19],
-                                      },
-                                      100,
-                                    ],
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      '$costs.tpt',
-                      '$costs.varc',
-                      '$costs.strg_2_hy',
-                      '$costs.azn',
-                    ],
-                  },
-                ],
-              },
-              2,
-            ],
-          },
-        },
-      },
-      {
-        $addFields: {
-          a_w_mrgn_pct: {
-            $round: [
-              {
-                $multiply: [
-                  {
-                    $divide: ['$a_w_mrgn', '$a_avg_prc'],
-                  },
-                  100,
-                ],
-              },
-              2,
-            ],
-          },
-        },
-      },
-      {
-        $match: {
-          a_pblsh: true,
-          $and: [
-            {
-              a_prc: {
-                $gt: 0,
-              },
-            },
-            {
-              a_w_mrgn: {
-                $gt: 0,
-              },
-            },
-            {
-              a_w_mrgn_pct: {
-                $gt: 0,
-              },
-            },
-            {
-              $or: [
-                {
-                  $and: [
-                    {
-                      'a_vrfd.vrfd': true,
-                    },
-                    {
-                      'a_vrfd.vrfn_pending': false,
-                    },
-                  ],
-                },
-                {
-                  $and: [
-                    {
-                      'a_vrfd.vrfd': false,
-                    },
-                    {
-                      'a_vrfd.vrfn_pending': true,
-                    },
-                  ],
-                },
-                {
-                  'a_vrfd.flag_cnt': {
-                    $lt: {
-                      $size: 3,
-                    },
-                  },
-                },
-              ],
-            },
-            {
-              $or: [
-                {
-                  buyBoxIsAmazon: true,
-                },
-                {
-                  buyBoxIsAmazon: false,
-                },
-                {
-                  buyBoxIsAmazon: null,
-                },
-              ],
-            },
-            {
-              $and: [
-                {
-                  bsr: {
-                    $size: 1,
-                  },
-                },
-                {
-                  'bsr.number': {
-                    $lte: 1000000,
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      },
-      {
-        $count: 'productCount',
-      },
-    ])
-    .toArray();
+    .aggregate(aznAggregationCntv3)
+    .explain('executionStats');
+  // .toArray();
   console.timeEnd('query');
-  console.log('result:', JSON.stringify(result.length));
+  console.log('result:', JSON.stringify(result));
 }
 
 main().then(() => {
   console.log('done');
   process.exit(0);
 });
+
+const ebyAggregationCnt = [
+  {
+    $match: {
+      e_pblsh: true,
+      sdmn: 'idealo.de',
+      e_prc: { $gt: 0 },
+    },
+  },
+  {
+    $addFields: {
+      e_mrgn: {
+        $round: [
+          {
+            $subtract: [
+              '$e_prc',
+              {
+                $add: [
+                  {
+                    $divide: [
+                      { $multiply: ['$prc', { $divide: ['$e_qty', '$qty'] }] },
+                      {
+                        $add: [
+                          1,
+                          { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
+                        ],
+                      },
+                    ],
+                  },
+                  '$e_tax',
+                  4.95,
+                  0,
+                  0,
+                  '$e_costs',
+                ],
+              },
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+  {
+    $addFields: {
+      e_mrgn_pct: {
+        $round: [{ $multiply: [{ $divide: ['$e_mrgn', '$e_prc'] }, 100] }, 2],
+      },
+    },
+  },
+  {
+    $match: {
+      e_mrgn: { $gt: 0 },
+    },
+  },
+  { $count: 'productCount' },
+];
+const ebyAggregationCntv2 = [
+  { $match: { e_pblsh: true, e_prc: { $gt: 0 }, sdmn: 'idealo.de' } },
+  {
+    $addFields: {
+      e_mrgn: {
+        $round: [
+          {
+            $subtract: [
+              '$e_prc',
+              {
+                $add: [
+                  {
+                    $divide: [
+                      { $multiply: ['$prc', { $divide: ['$e_qty', '$qty'] }] },
+                      {
+                        $add: [
+                          1,
+                          { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
+                        ],
+                      },
+                    ],
+                  },
+                  '$e_tax',
+                  4.95,
+                  0,
+                  0,
+                  '$e_costs',
+                ],
+              },
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+  {
+    $addFields: {
+      e_mrgn_pct: {
+        $round: [{ $multiply: [{ $divide: ['$e_mrgn', '$e_prc'] }, 100] }, 2],
+      },
+    },
+  },
+  { $match: { e_mrgn: { $gt: 0 } } },
+  { $count: 'productCount' },
+];
+
+const aznOriginal = [
+  {
+    $match: {
+      sdmn: 'sales',
+      a_pblsh: true,
+      a_prc: { $gt: 0 },
+      buyBoxIsAmazon: { $in: [true, false, null] },
+      $and: [
+        { bsr: { $size: 1 } },
+        { 'bsr.number': { $gt: 0, $lte: 1000000 } },
+      ],
+    },
+  },
+  {
+    $facet: {
+      totalProducts: [
+        {
+          $match: {
+            sdmn: 'sales',
+            a_pblsh: true,
+            $and: [
+              { a_w_mrgn: { $gt: 0 } },
+              {
+                $or: [
+                  { buyBoxIsAmazon: true },
+                  { buyBoxIsAmazon: false },
+                  { buyBoxIsAmazon: null },
+                ],
+              },
+              {
+                $and: [
+                  { bsr: { $size: 1 } },
+                  { 'bsr.number': { $gt: 0, $lte: 1000000 } },
+                ],
+              },
+            ],
+          },
+        },
+        { $count: 'count' },
+      ],
+      totalProductsToday: [
+        {
+          $match: {
+            createdAt: {
+              $gte: '2024-11-17T23:00:00.000Z',
+              $lt: '2024-11-18T23:00:00.000Z',
+            },
+            a_pblsh: true,
+            $and: [
+              { a_w_mrgn: { $gt: 0 } },
+              {
+                $or: [
+                  { buyBoxIsAmazon: true },
+                  { buyBoxIsAmazon: false },
+                  { buyBoxIsAmazon: null },
+                ],
+              },
+              {
+                $and: [
+                  { bsr: { $size: 1 } },
+                  { 'bsr.number': { $gt: 0, $lte: 1000000 } },
+                ],
+              },
+            ],
+          },
+        },
+        { $count: 'count' },
+      ],
+    },
+  },
+  {
+    $project: {
+      productCount: { $arrayElemAt: ['$totalProducts.count', 0] },
+      totalProductsToday: { $arrayElemAt: ['$totalProductsToday.count', 0] },
+    },
+  },
+];
+
+const aznAggregationCntv3 = [
+  {
+    $match: {
+      sdmn: 'idealo.de',
+      a_pblsh: true,
+      a_w_mrgn: { $gt: 0 },
+      buyBoxIsAmazon: { $in: [true, false, null] },
+      $and: [
+        { bsr: { $size: 1 } },
+        { 'bsr.number': { $gt: 0, $lte: 1000000 } },
+      ],
+    },
+  },
+  {
+    $addFields: {
+      a_w_mrgn: {
+        $round: [
+          {
+            $subtract: [
+              '$a_prc',
+              {
+                $add: [
+                  {
+                    $divide: [
+                      { $multiply: ['$prc', { $divide: ['$a_qty', '$qty'] }] },
+                      {
+                        $add: [
+                          1,
+                          { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    $subtract: [
+                      '$a_prc',
+                      {
+                        $divide: [
+                          '$a_prc',
+                          {
+                            $add: [
+                              1,
+                              { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  2.97,
+                  0,
+                  1.5,
+                  '$costs.azn',
+                ],
+              },
+            ],
+          },
+          2,
+        ],
+      },
+    },
+  },
+  { $match: { a_w_mrgn: { $gt: 0 } } },
+  {
+    $addFields: {
+      a_w_mrgn_pct: {
+        $round: [{ $multiply: [{ $divide: ['$a_w_mrgn', '$a_prc'] }, 100] }, 2],
+      },
+    },
+  },
+  {
+    $project: {
+      prc: 1,
+      uprc: 1,
+      lnk: 1,
+      img: 1,
+      nm: 1,
+      eanList: 1,
+      s: 1,
+      qty_v: 1,
+      nm_v: 1,
+      ean: 1,
+      availUpdatedAt: 1,
+      qty: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      tax: 1,
+      shop: 1,
+      _id: 1,
+      mnfctr: 1,
+      sdmn: 1,
+      a_pblsh: 1,
+      a_nm: 1,
+      a_useCurrPrice: 1,
+      a_cur: 1,
+      a_rating: 1,
+      a_reviewcnt: 1,
+      bsr: 1,
+      a_img: 1,
+      a_avg_prc: 1,
+      dealAznUpdatedAt: 1,
+      asin: 1,
+      a_prc: 1,
+      costs: 1,
+      a_uprc: 1,
+      a_qty: 1,
+      a_orgn: 1,
+      a_mrgn: 1,
+      a_mrgn_pct: 1,
+      a_w_mrgn: 1,
+      a_w_mrgn_pct: 1,
+      a_p_w_mrgn: 1,
+      a_p_w_mrgn_pct: 1,
+      a_p_mrgn: 1,
+      a_vrfd: 1,
+      a_p_mrgn_pct: 1,
+      drops30: 1,
+      drops90: 1,
+      categories: 1,
+      numberOfItems: 1,
+      availabilityAmazon: 1,
+      categoryTree: 1,
+      salesRanks: 1,
+      monthlySold: 1,
+      ahstprcs: 1,
+      anhstprcs: 1,
+      auhstprcs: 1,
+      curr_ahsprcs: 1,
+      curr_ansprcs: 1,
+      curr_ausprcs: 1,
+      curr_salesRank: 1,
+      avg30_ahsprcs: 1,
+      avg30_ansprcs: 1,
+      avg30_ausprcs: 1,
+      avg30_salesRank: 1,
+      avg90_ahsprcs: 1,
+      avg90_ansprcs: 1,
+      avg90_ausprcs: 1,
+      avg90_salesRank: 1,
+      buyBoxIsAmazon: 1,
+      stockAmount: 1,
+      stockBuyBox: 1,
+      totalOfferCount: 1,
+    },
+  },
+  { $sort: { 'bsr.number': 1, a_w_mrgn_pct: -1 } },
+  { $skip: 0 },
+  { $limit: 20 },
+  {
+    $lookup: {
+      from: 'users',
+      let: { productId: '$_id', target: 'a' },
+      pipeline: [
+        { $match: { userId: '6630990d0021e4c6bce4' } },
+        { $unwind: '$bookmarks' },
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$bookmarks.productId', '$$productId'] },
+                { $eq: ['$bookmarks.target', '$$target'] },
+              ],
+            },
+          },
+        },
+        { $project: { _id: 1 } },
+      ],
+      as: 'isBookmarked',
+    },
+  },
+  { $addFields: { isBookmarked: { $gt: [{ $size: '$isBookmarked' }, 0] } } },
+];

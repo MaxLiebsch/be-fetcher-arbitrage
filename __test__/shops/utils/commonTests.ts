@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { expect } from '@jest/globals';
 import {
   CHROME_VERSIONS,
   DbProductRecord,
@@ -25,28 +25,27 @@ import {
   queryURLBuilder,
   registerRequest,
   uuid,
-} from "@dipmaxtech/clr-pkg";
-import { Page } from "puppeteer";
-import { MockQueue } from "./MockQueue.js";
-import { Browser } from "puppeteer";
-import testParameters from "./testParamter.js";
-import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination";
-import { updateShops } from "../../../src/db/util/shops.js";
-import { proxyAuth } from "../../../src/constants.js";
-import { shops } from "../../../src/shops.js";
-import { priceToString } from "../../../src/util/lookupInfoHelper.js";
+} from '@dipmaxtech/clr-pkg';
+import { Page, Browser } from 'rebrowser-puppeteer';
+import { MockQueue } from './MockQueue.js';
+import testParameters from './testParamter.js';
+import findPagination from '@dipmaxtech/clr-pkg/lib/util/crawl/findPagination';
+import { updateShops } from '../../../src/db/util/shops.js';
+import { proxyAuth } from '../../../src/constants.js';
+import { shops } from '../../../src/shops.js';
+import { priceToString } from '../../../src/util/lookupInfoHelper.js';
 
 let browser: Browser | null = null;
 let page: Page | null = null;
 const pageNo = 2;
-let shopDomain = "";
+let shopDomain = '';
 
 export const visitPage = async (page: Page, url: string, shop: Shop) => {
   const requestId = uuid();
   const { proxyType, allowedHosts, waitUntil } = shop;
   const originalGoto = page.goto;
   page.goto = async function (url, options) {
-    if (proxyType && proxyType !== "mix") {
+    if (proxyType && proxyType !== 'mix') {
       await notifyProxyChange(
         proxyType,
         url,
@@ -61,14 +60,18 @@ export const visitPage = async (page: Page, url: string, shop: Shop) => {
   };
 
   return page.goto(url, {
-    waitUntil: waitUntil ? waitUntil.entryPoint : "networkidle2",
+    waitUntil: waitUntil ? waitUntil.entryPoint : 'networkidle2',
     timeout: 60000,
   });
 };
 
-export const createPage = async (browser: Browser, shop: Shop) => {
+export const createPage = async (
+  browser: Browser,
+  shop: Shop,
+  resourceType: 'product' | 'crawl' = 'crawl'
+) => {
   const { proxyType, resourceTypes } = shop;
-  const disAllowedResourceTypes = resourceTypes["crawl"];
+  const disAllowedResourceTypes = resourceTypes[resourceType];
 
   initFingerPrintForHost(`www.${shop.d}`, true, proxyType);
 
@@ -79,7 +82,7 @@ export const createPage = async (browser: Browser, shop: Shop) => {
     requestCount: Math.floor(Math.random() * 1000) * 11,
     disAllowedResourceTypes: disAllowedResourceTypes
       ? disAllowedResourceTypes
-      : shop.resourceTypes["crawl"],
+      : shop.resourceTypes['crawl'],
     exceptions: shop.exceptions,
     rules: shop.rules,
     proxyType,
@@ -104,7 +107,7 @@ export const newPage = async (
     requestCount: Math.floor(Math.random() * 1000) * 11,
     disAllowedResourceTypes: disAllowedResourceTypes
       ? disAllowedResourceTypes
-      : shop.resourceTypes["crawl"],
+      : shop.resourceTypes['crawl'],
     exceptions: shop.exceptions,
     rules: shop.rules,
     proxyType: shop.proxyType,
@@ -121,7 +124,7 @@ export const newPage = async (
 
 export const myBeforeAll = async (_shopDomain: string) => {
   shopDomain = _shopDomain;
-
+  // @ts-ignore
   browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
   await updateShops(shops);
   const shop = shops[shopDomain];
@@ -156,7 +159,7 @@ export const mimicTest = async () => {
       page,
       true,
       shops[shopDomain].mimic,
-      "test.de"
+      'test.de'
     );
 
     expect(blocked).toBe(false);
@@ -170,20 +173,20 @@ export const findMainCategories = async () => {
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       shop: shops[shopDomain],
     });
@@ -210,20 +213,20 @@ export const findSubCategories = async () => {
           categoriesHeuristic: {
             subCategories: {
               0: 0,
-              "1-9": 0,
-              "10-19": 0,
-              "20-29": 0,
-              "30-39": 0,
-              "40-49": 0,
-              "+50": 0,
+              '1-9': 0,
+              '10-19': 0,
+              '20-29': 0,
+              '30-39': 0,
+              '40-49': 0,
+              '+50': 0,
             },
             mainCategories: 0,
           },
           productPageCountHeuristic: {
             0: 0,
-            "1-9": 0,
-            "10-49": 0,
-            "+50": 0,
+            '1-9': 0,
+            '10-49': 0,
+            '+50': 0,
           },
           shop: shops[shopDomain],
         },
@@ -239,12 +242,12 @@ export const findSubCategories = async () => {
         expect(1).toBe(2);
       }
     } catch (error) {
-      console.log("Error in findSubCategories", error);
+      console.log('Error in findSubCategories', error);
       expect(1).toBe(2);
     }
   }
 };
-export const productPageCount = async (url = "") => {
+export const productPageCount = async (url = '') => {
   if (page && shops[shopDomain]) {
     await page.goto(
       url ? url : testParameters[shopDomain].initialProductPageUrl
@@ -316,13 +319,13 @@ export const extractProducts = async (url?: string) => {
       shop,
       addProductCb,
       {
-        name: "",
-        link: "",
+        name: '',
+        link: '',
       },
       2
     );
   }
-  const properties = ["name", "price", "link"];
+  const properties = ['name', 'price', 'link'];
   const missingProperties: { [key: string]: any } = {
     name: 0,
     price: 0,
@@ -332,9 +335,9 @@ export const extractProducts = async (url?: string) => {
 
   if (products.length > 0)
     console.log(
-      "extractProducts: Products cnt ",
+      'extractProducts: Products cnt ',
       products.length,
-      "Product: ",
+      'Product: ',
       JSON.stringify(
         products[Math.floor(Math.random() * products.length - 1)],
         null,
@@ -343,18 +346,18 @@ export const extractProducts = async (url?: string) => {
     );
   const validProductCount = products.reduce((count, product) => {
     const isValid = properties.every((prop) => {
-      if (product[prop] === "") missingProperties[prop]++;
-      return product[prop] !== "";
+      if (product[prop] === '') missingProperties[prop]++;
+      return product[prop] !== '';
     });
     return count + (isValid ? 1 : 0);
   }, 0);
-  console.log("missingProperties:", missingProperties);
+  console.log('missingProperties:', missingProperties);
 
   const totalProducts = products.length;
   const validPercentage = (validProductCount / totalProducts) * 100;
 
   const isAtLeast90PercentValid = validPercentage >= 90;
-  console.log("isAtLeast90PercentValid:", isAtLeast90PercentValid);
+  console.log('isAtLeast90PercentValid:', isAtLeast90PercentValid);
 
   expect(isAtLeast90PercentValid).toBe(true);
   expect(products.length).toBe(productsPerPage);
@@ -376,8 +379,8 @@ export const extractProductsFromSecondPage = async () => {
       queue: new MockQueue(),
       addProduct: addProductCb,
       pageInfo: {
-        name: "",
-        link: "",
+        name: '',
+        link: '',
       },
       limit: {
         pages: 5,
@@ -387,20 +390,20 @@ export const extractProductsFromSecondPage = async () => {
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       shop: shops[shopDomain],
     });
@@ -408,7 +411,7 @@ export const extractProductsFromSecondPage = async () => {
       productsPerPageAfterLoadMore
     );
     if (products.length > 0)
-      console.log("extractProductsFromSecondPage: ", products[0]);
+      console.log('extractProductsFromSecondPage: ', products[0]);
   }
 };
 
@@ -431,8 +434,8 @@ export const extractProductsFromSecondPageQueueless = async (
       shops[shopDomain],
       addProductCb,
       {
-        name: "",
-        link: "",
+        name: '',
+        link: '',
       },
       {
         pages,
@@ -440,16 +443,16 @@ export const extractProductsFromSecondPageQueueless = async (
         subCategory: 0,
       }
     );
-    if (result === "crawled") {
-      console.log("Loaded more products:", products.length);
+    if (result === 'crawled') {
+      console.log('Loaded more products:', products.length);
       expect(products.length).toBeGreaterThanOrEqual(
         productsPerPageAfterLoadMore
       );
       if (products.length > 0)
         console.log(
-          "Total products: ",
+          'Total products: ',
           products.length,
-          "extractProductsFromSecondPageQueueless: ",
+          'extractProductsFromSecondPageQueueless: ',
           products[Math.floor(Math.random() * products.length - 1)]
         );
     } else {
@@ -458,9 +461,19 @@ export const extractProductsFromSecondPageQueueless = async (
   }
 };
 
-export const extractProductInfos = async (addProductInfo: any, lnk?: string) => {
-  if (page && shops && shops[shopDomain]) {
-    const productPageUrl = lnk?lnk:testParameters[shopDomain].productPageUrl;
+export const extractProductInfos = async (
+  addProductInfo: any,
+  lnk?: string
+) => {
+  if (page && shops && shops[shopDomain] && browser) {
+    const productPageUrl = lnk
+      ? lnk
+      : testParameters[shopDomain].productPageUrl;
+    page = await createPage(
+      browser,
+      shops[shopDomain],
+      shops[shopDomain].resourceTypes['product'] ? 'product' : 'crawl'
+    );
     await page.goto(productPageUrl);
     return await queryProductPageQueue(page, {
       shop: shops[shopDomain],
@@ -470,23 +483,23 @@ export const extractProductInfos = async (addProductInfo: any, lnk?: string) => 
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       pageInfo: {
-        name: "",
+        name: '',
         link: productPageUrl,
       },
       limit: {
@@ -502,7 +515,7 @@ export const querySellerInfos = async (
   addProductInfo: any,
   onNotFound: any,
   product: DbProductRecord,
-  {lookupRetryLimit, retries}: {lookupRetryLimit: number,retries: number }
+  { lookupRetryLimit, retries }: { lookupRetryLimit: number; retries: number }
 ) => {
   if (page && shops && shops[shopDomain]) {
     const { eanList, asin, prc } = product;
@@ -524,10 +537,10 @@ export const querySellerInfos = async (
       lookupRetryLimit,
       retries,
       query: {
-        brand: { key: "", value: "" },
+        brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
-        model: { key: "", value: "" },
-        category: "",
+        model: { key: '', value: '' },
+        category: '',
         product: {
           value: asin || eanList[0],
           key: asin || eanList[0],
@@ -539,23 +552,23 @@ export const querySellerInfos = async (
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       pageInfo: {
-        name: "",
+        name: '',
         link: shops[shopDomain].entryPoints[0].url,
       },
       limit: {
@@ -575,10 +588,10 @@ export const queryEansOnEby = async (
 ) => {
   if (page && shops && shops[shopDomain]) {
     const query = {
-      brand: { key: "", value: "" },
+      brand: { key: '', value: '' },
       year: { min: 0, max: 0 },
-      model: { key: "", value: "" },
-      category: "",
+      model: { key: '', value: '' },
+      category: '',
       product: {
         value: ean,
         key: ean,
@@ -598,23 +611,23 @@ export const queryEansOnEby = async (
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       pageInfo: {
-        name: "",
+        name: '',
         link: shops[shopDomain].entryPoints[0].url,
       },
       limit: {
@@ -632,10 +645,10 @@ export const queryEbayCategory = async (addProductInfo: any, ean: string) => {
       shop: shops[shopDomain],
       addProductInfo,
       query: {
-        brand: { key: "", value: "" },
+        brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
-        model: { key: "", value: "" },
-        category: "",
+        model: { key: '', value: '' },
+        category: '',
         product: {
           value: ean,
           key: ean,
@@ -646,23 +659,23 @@ export const queryEbayCategory = async (addProductInfo: any, ean: string) => {
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       pageInfo: {
-        name: "",
+        name: '',
         link: shops[shopDomain].entryPoints[0].url,
       },
       limit: {
@@ -681,13 +694,13 @@ export const queryAznListing = async (addProductInfo: any, offer: string) => {
       shop: shops[shopDomain],
       addProductInfo,
       query: {
-        brand: { key: "", value: "" },
+        brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
-        model: { key: "", value: "" },
-        category: "",
+        model: { key: '', value: '' },
+        category: '',
         product: {
-          value: "",
-          key: "",
+          value: '',
+          key: '',
         },
       },
       // @ts-ignore
@@ -695,23 +708,23 @@ export const queryAznListing = async (addProductInfo: any, offer: string) => {
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       pageInfo: {
-        name: "",
+        name: '',
         link: offer,
       },
       limit: {

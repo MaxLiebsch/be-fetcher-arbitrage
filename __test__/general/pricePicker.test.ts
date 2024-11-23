@@ -2,6 +2,7 @@ import { safeParsePrice, detectCurrency } from "@dipmaxtech/clr-pkg";
 import { describe, expect, test, beforeAll } from "@jest/globals";
 describe("Price Picker", () => {
   const examples = [
+    { str: "77,95 €*", expect: 77.95, currency: "EUR" },
     { str: '€50,56 + 4,58', expect: 50.56, currency: "EUR" },
     { str: '€210,56 + 0', expect: 210.56, currency: "EUR" },
     { str: "4,3", expect: 4.3, currency: null },
