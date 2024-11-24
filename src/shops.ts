@@ -2744,7 +2744,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     allowedHosts: ['cdn.euronics.de'],
-    ean: '-[0-9]{12,13}',
+    ean: '-[0-9]{11,13}',
     categories: {
       exclude: ['marken'],
       sel: 'ul.main-categories li a',
@@ -3563,7 +3563,7 @@ export const shops: { [key: string]: Shop } = {
   'galeria.de': {
     actions: [],
     active: true,
-    ean: '-[0-9]{12,13}',
+    ean: '-[0-9]{11,13}',
     categories: {
       exclude: [
         'kleidung',
@@ -5998,7 +5998,7 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     hasEan: false,
-    ean: 'p/[0-9]{12,13}',
+    ean: 'p/[0-9]{11,13}',
     manualCategories: [],
     mimic: 'div[class*=rm-icon__signet--desktop] img.rm-icon-signet',
     paginationEl: [

@@ -38,9 +38,10 @@ export async function handleCrawlEanProductInfo(
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
     let ean = infoMap.get('ean');
     let isEan =
-      ean && /\b[0-9]{12,13}\b/.test(ean) && !ean.toString().startsWith('99');
+      ean && /\b[0-9]{11,13}\b/.test(ean) && !ean.toString().startsWith('99');
 
     if (isEan) {
+      ean = ean.padStart(13, '0');
       const rawPrice = infoMap.get('price');
       const prc = safeParsePrice(rawPrice || 0);
       const currency = detectCurrency(rawPrice);
