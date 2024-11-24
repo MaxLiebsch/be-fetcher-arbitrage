@@ -6,6 +6,7 @@ import {
   uuid,
   CHROME_VERSIONS,
 } from '@dipmaxtech/clr-pkg';
+import os from 'os';
 import { getShop, updateShops } from '../src/db/util/shops.js';
 import { shops } from '../src/shops.js';
 import puppeteer from 'rebrowser-puppeteer';
@@ -45,8 +46,16 @@ export const mainBrowser = async (
     defaultViewport: null,
     timeout: 600000,
     protocolTimeout: 60000,
+    ignoreDefaultArgs: ['--enable-automation'],
   };
-  options['executablePath'] = provider.currentPuppeteer.executablePath();
+
+  if (os.platform() === 'win32') {
+    options['executablePath'] =
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+  } else if (os.platform() === 'linux') {
+    options['executablePath'] = '/usr/bin/google-chrome';
+  }
+
   const browser = await puppeteer.launch(options);
 
   console.log('Browser Version: ', await browser.version());
@@ -59,10 +68,10 @@ const secureMode = async () => {
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
   const shopDomain = 'mindfactory.de';
-  const proxyType = 'de'
+  const proxyType = 'de';
   const shop = await getShop(shopDomain);
   if (!shop) return;
-  
+
   const { exceptions } = shop;
   const lnk =
     'https://www.quelle.de/p/aeg-akku-hand-und-stielstaubsauger-cx7-2-45moe-flexible-2in1-funktion-mit-buerstenreinigungsfunktion/AKLBB1225033665?nav-c=102649&p=1&sku=8864466879-0';

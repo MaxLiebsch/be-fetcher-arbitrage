@@ -57,9 +57,22 @@ libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libnss3 li
 libvulkan1 xdg-utils && \
 rm -rf /var/lib/apt/lists/*
 
-# RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_122.0.6261.94-1_amd64.deb \
-#     && apt install -y /tmp/chrome.deb \
-#     && rm /tmp/chrome.deb
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    gnupg \
+    ca-certificates \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libxkbcommon0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add Google Chrome repository key and install Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update \
 && apt-get install -y vim
