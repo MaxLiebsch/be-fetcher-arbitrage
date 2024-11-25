@@ -683,7 +683,7 @@ export const shops: { [key: string]: Shop } = {
     allowedHosts: ['cdn.alza.cz', '1603811301.rsc.cdn77.org'],
     categories: {
       visible: false,
-      exclude: ['wie-baue'],
+      exclude: ['wie-baue', 'unsere-marken'],
       sel: 'div.js-left-category-menu li a.l0-catLink',
       type: 'href',
       subCategories: [
@@ -710,7 +710,7 @@ export const shops: { [key: string]: Shop } = {
     exceptions: ['https://cdn.alza.cz/Foto/ImgGalery/boxImgPlaceholder-f1.png'],
     hasEan: true,
     manualCategories: [],
-    mimic: 'a.header-alz-42 img',
+    mimic: 'header a[class*=header-] img',
     paginationEl: [
       {
         type: 'pagination',
@@ -814,7 +814,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'mix',
+    proxyType: 'de',
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {

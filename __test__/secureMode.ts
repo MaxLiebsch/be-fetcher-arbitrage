@@ -9,7 +9,7 @@ import {
 import os from 'os';
 import { getShop, updateShops } from '../src/db/util/shops.js';
 import { shops } from '../src/shops.js';
-import puppeteer from 'rebrowser-puppeteer';
+import puppeteer from 'puppeteer-core';
 import {
   VersionProvider,
   Versions,
@@ -68,13 +68,13 @@ const secureMode = async () => {
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
   const shopDomain = 'mindfactory.de';
-  const proxyType = 'de';
+  const proxyType = 'des';
   const shop = await getShop(shopDomain);
   if (!shop) return;
 
   const { exceptions } = shop;
   const lnk =
-    'https://www.quelle.de/p/aeg-akku-hand-und-stielstaubsauger-cx7-2-45moe-flexible-2in1-funktion-mit-buerstenreinigungsfunktion/AKLBB1225033665?nav-c=102649&p=1&sku=8864466879-0';
+    'https://bot-detector.rebrowser.net/';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
