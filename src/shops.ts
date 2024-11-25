@@ -1449,6 +1449,7 @@ export const shops: { [key: string]: Shop } = {
       type: 'href',
       subCategories: [
         {
+          visible: false,
           sel: 'div.list-box a.cat-title-link',
           type: 'href',
         },
