@@ -2,41 +2,41 @@ import {
   LocalLogger,
   ProcessTimeTracker,
   TaskTypes,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
-import { executeTask } from "./executeTask.js";
-import { handleTask } from "./taskHandler.js";
-import { checkForNewTask } from "./checkForNewTask.js";
-import { updateTask } from "../db/util/tasks.js";
-import { sendMail } from "../email.js";
-import { TaskCompletedStatus, TimeLimitReachedStatus } from "../status.js";
-import { MissingProductsError } from "../errors.js";
+import { executeTask } from './executeTask.js';
+import { handleTask } from './taskHandler.js';
+import { checkForNewTask } from './checkForNewTask.js';
+import { updateTask } from '../db/util/tasks.js';
+import { sendMail } from '../email.js';
+import { TaskCompletedStatus, TimeLimitReachedStatus } from '../status.js';
+import { MissingProductsError } from '../errors.js';
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   NEW_TASK_CHECK_INTERVAL,
-} from "../constants.js";
+} from '../constants.js';
 
-import { hostname } from "../db/mongo.js";
-import clientPool from "../db/mongoPool.js";
-import { TASK_TYPES } from "./taskTypes.js";
-import { Task, Tasks } from "../types/tasks/Tasks.js";
-import { logGlobal, setTaskLogger } from "./logger.js";
+import { hostname } from '../db/mongo.js';
+import clientPool from '../db/mongoPool.js';
+import { TASK_TYPES } from './taskTypes.js';
+import { Task, Tasks } from '../types/tasks/Tasks.js';
+import { logGlobal, setTaskLogger } from './logger.js';
 
 const timeTracker = ProcessTimeTracker.getSingleton(
   hostname,
-  clientPool["crawler-data"]
+  clientPool['crawler-data']
 );
 
 function destroyLogger(type: TaskTypes) {
   logGlobal(`Destroying logger for task ${type} after execution`);
   LocalLogger.instance.destroy(type);
-  setTaskLogger(null, "TASK_LOGGER");
+  setTaskLogger(null, 'TASK_LOGGER');
 }
 
 function createLogger(type: TaskTypes) {
   logGlobal(`Creating logger for task ${type}`);
   const logger = new LocalLogger().createLogger(type);
-  setTaskLogger(logger, "TASK_LOGGER");
+  setTaskLogger(logger, 'TASK_LOGGER');
 }
 
 async function executeTaskWithLogging(task: Tasks) {
@@ -58,7 +58,7 @@ async function executeTaskWithLogging(task: Tasks) {
     destroyLogger(type);
     return taskResult;
   } catch (error) {
-    console.log("error:", error);
+    console.log('error:', error);
     timeTracker.markInactive();
     logGlobal(
       `Hostname: ${hostname} TaskId: ${taskId} Type: ${type} Error: ${
@@ -67,7 +67,7 @@ async function executeTaskWithLogging(task: Tasks) {
     );
 
     if (error instanceof MissingProductsError) {
-      const update: Pick<Task, "executing"> & Partial<Pick<Task, "cooldown">> =
+      const update: Pick<Task, 'executing'> & Partial<Pick<Task, 'cooldown'>> =
         {
           executing: false,
         };
@@ -76,7 +76,7 @@ async function executeTaskWithLogging(task: Tasks) {
         $pull: { lastCrawler: hostname },
       });
     } else if (error instanceof Error) {
-      const update: Pick<Task, "executing"> & Partial<Pick<Task, "cooldown">> =
+      const update: Pick<Task, 'executing'> & Partial<Pick<Task, 'cooldown'>> =
         {
           executing: false,
         };
@@ -86,7 +86,7 @@ async function executeTaskWithLogging(task: Tasks) {
       });
       const htmlBody = `\n<h1>Summary</h1>\n<pre>${error?.message}</pre>\n${error?.stack}\n${type}\n${taskId}\n\n`;
       await sendMail({
-        priority: "high",
+        priority: 'high',
         subject: `🚱 ${hostname}: Error: ${error?.name}`,
         html: htmlBody,
       });
@@ -115,11 +115,7 @@ export async function monitorAndProcessTasks() {
           taskResult,
           task
         );
-        if (
-          priority === "high" ||
-          task.type === TASK_TYPES.CRAWL_SHOP ||
-          task.type === TASK_TYPES.DAILY_SALES
-        ) {
+        if (priority === 'high') {
           await sendMail({
             priority,
             subject,
