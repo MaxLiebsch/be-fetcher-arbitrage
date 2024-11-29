@@ -228,8 +228,10 @@ export async function updateStats() {
   if (last24hStats.length > 0) {
     const reducedLast24hStats = Object.keys(last24hStats[0]).reduce(
       (acc, key) => {
-        const value = last24hStats[0][key][0].count;
-        acc[key] = value;
+        if(last24hStats[0][key].length){
+          const value = last24hStats[0][key][0].count;
+          acc[key] = value;
+        }
         return acc;
       },
       {} as { [key: string]: number }

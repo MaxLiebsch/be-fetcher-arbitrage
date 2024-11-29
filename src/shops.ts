@@ -1892,7 +1892,7 @@ export const shops: { [key: string]: Shop } = {
         'ping',
         'fetch',
         'preflight',
-        'prefetch'
+        'prefetch',
       ],
     },
     waitUntil: {
@@ -3429,12 +3429,24 @@ export const shops: { [key: string]: Shop } = {
         parent: 'head',
       },
       {
+        sel: 'meta[property="product:price:amount"]',
+        parent: 'head',
+        type: 'content',
+        content: 'price',
+      },
+      {
         sel: "script[type='application/ld+json']",
         type: 'parse_json_element',
         content: 'instock',
         path: 'offers.availability',
         multiple: true,
         parent: 'head',
+      },
+      {
+        sel: 'meta[property="og:availability"]',
+        parent: 'head',
+        type: 'content',
+        content: 'instock',
       },
       {
         sel: "script[type='application/ld+json']",
@@ -3445,12 +3457,24 @@ export const shops: { [key: string]: Shop } = {
         parent: 'head',
       },
       {
+        sel: 'meta[property=gtin]',
+        parent: 'head',
+        type: 'content',
+        content: 'ean',
+      },
+      {
         sel: "script[type='application/ld+json']",
         type: 'parse_json_element',
         content: 'image',
         path: 'image[0]',
         multiple: true,
         parent: 'head',
+      },
+      {
+        sel: 'meta[property="og:image"]',
+        parent: 'head',
+        type: 'content',
+        content: 'image',
       },
       {
         sel: "script[type='application/ld+json']",
@@ -3460,6 +3484,12 @@ export const shops: { [key: string]: Shop } = {
         multiple: true,
         parent: 'head',
       },
+      {
+        sel: 'meta[property="og:brand"]',
+        parent: 'head',
+        type: 'content',
+        content: 'mnfctr',
+      },
       // {
       //   sel: "script[type='application/ld+json']",
       //   type: "parse_json_element",
@@ -3468,6 +3498,12 @@ export const shops: { [key: string]: Shop } = {
       //   multiple: true,
       //   parent: "head",
       // },
+      {
+        sel: 'meta[property="og:title"]',
+        parent: 'head',
+        type: 'content',
+        content: 'name',
+      },
       {
         sel: "script[type='application/ld+json']",
         type: 'parse_json_element',
@@ -3555,6 +3591,18 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'ping', 'image', 'other'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -3724,6 +3772,18 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [],
     resourceTypes: {
       crawl: ['media', 'font', 'stylesheet', 'ping', 'image', 'other'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     waitUntil: {
       product: 'load',
@@ -4356,6 +4416,18 @@ export const shops: { [key: string]: Shop } = {
     ],
     resourceTypes: {
       crawl: ['media', 'font', 'stylesheet', 'ping', 'image', 'xhr', 'other'],
+      product: [
+        'media',
+        'manifest',
+        'font',
+        'image',
+        'xhr',
+        'other',
+        'ping',
+        'fetch',
+        'script',
+        'stylesheet',
+      ],
     },
     rules: [
       {
@@ -7198,13 +7270,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: [
-        'media',
-        'font',
-        'ping',
-        'image',
-        'other' 
-      ],
+      crawl: ['media', 'font', 'ping', 'image', 'other'],
       product: [
         'media',
         'manifest',
