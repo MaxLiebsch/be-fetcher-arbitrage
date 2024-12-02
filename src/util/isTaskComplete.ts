@@ -1,6 +1,6 @@
 import { TaskTypes } from "@dipmaxtech/clr-pkg";
 import {
-  CRAWL_THRESHOLD,
+  SCRAPE_THRESHOLD,
   MATCH_LOOKUP_THRESHOLD,
   SMALL_LOCKED_PRODUCT_CNT_THRESHOLD,
 } from "../constants.js";
@@ -42,7 +42,7 @@ const isTaskComplete = (
     type === TASK_TYPES.DAILY_SALES
   ) {
     completionPercentage = total / productLimit;
-    taskCompleted = completionPercentage >= CRAWL_THRESHOLD;
+    taskCompleted = completionPercentage >= SCRAPE_THRESHOLD;
   } else if (type === TASK_TYPES.SCAN_SHOP) {
     taskCompleted = total > 3;
     if (taskCompleted) {
