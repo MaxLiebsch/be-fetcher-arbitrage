@@ -10,22 +10,29 @@ import {
   safeParsePrice,
   resetEbyProductQuery,
   replaceAllHiddenCharacters,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
-import { updateProductWithQuery } from "../db/util/crudProducts.js";
-import { defaultEbyDealTask } from "../constants.js";
-import { DealsOnEbyStats } from "../types/taskStats/DealsOnEbyStats.js";
-import { log } from "./logger.js";
+import { updateProductWithQuery } from '../db/util/crudProducts.js';
+import { defaultEbyDealTask } from '../constants.js';
+import { DealsOnEbyStats } from '../types/taskStats/DealsOnEbyStats.js';
+import { log } from './logger.js';
 
-export const expiredIndicatorStrs = [
-  "beendet",
-  "nicht mehr verfügbar",
-  "Dieses Angebot wurde vom Verkäufer",
-  "nicht vorrätig",
-  "out of stock",
-  "This listing was ended by the seller",
-  "no longer available",
+export const LISTING_EXPIRED_STRINGS = [
+  'beendet',
+  'nicht mehr verfügbar',
+  'Dieses Angebot wurde vom Verkäufer',
+  'Dieses Angebot wurde verkauft',
+  'This listing sold',
+  'nicht vorrätig',
+  'out of stock',
+  'This listing was ended by the seller',
+  'no longer available',
 ];
+
+const isListingExpired = (instock: string) =>
+  LISTING_EXPIRED_STRINGS.some((str) =>
+    instock.toLowerCase().includes(str.toLowerCase())
+  );
 
 export async function handleEbyListingProductInfo(
   collection: string,
@@ -49,25 +56,19 @@ export async function handleEbyListingProductInfo(
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
-    const rawSellPrice = infoMap.get("e_prc");
-    const rawName = infoMap.get("name");
-    const image = infoMap.get("image");
-    const instock = infoMap.get("instock");
+    const rawSellPrice = infoMap.get('e_prc');
+    const rawName = infoMap.get('name');
+    const image = infoMap.get('image');
+    const instock = infoMap.get('instock');
 
-    if (
-      instock &&
-      expiredIndicatorStrs.some((str) =>
-        instock.toLowerCase().includes(str.toLowerCase())
-      )
-    ) {
+    if (instock && isListingExpired(instock)) {
       const result = await updateProductWithQuery(
         productId,
         resetEbyProductQuery()
       );
       log(`Product expired: ${collection}-${productId}`, result);
     } else {
-      let productUpdate: Partial<DbProductRecord> = {
-      };
+      let productUpdate: Partial<DbProductRecord> = {};
       if (rawSellPrice) {
         const parsedSellPrice = safeParsePrice(rawSellPrice);
         const currency = detectCurrency(rawSellPrice);
@@ -81,13 +82,13 @@ export async function handleEbyListingProductInfo(
         };
 
         if (sellPriceRange && parsedSellPrice >= sellPriceRange?.max) {
-          productUpdate["e_pRange"] = {
+          productUpdate['e_pRange'] = {
             ...sellPriceRange,
             max: parsedSellPrice,
           };
         }
         if (sellPriceRange && parsedSellPrice <= sellPriceRange?.min) {
-          productUpdate["e_pRange"] = {
+          productUpdate['e_pRange'] = {
             ...sellPriceRange,
             min: parsedSellPrice,
           };
@@ -117,7 +118,7 @@ export async function handleEbyListingProductInfo(
             };
             const query = {
               $set: productUpdate,
-              $unset: { [taskIdProp]: "" },
+              $unset: { [taskIdProp]: '' },
             };
 
             const result = await updateProductWithQuery(productId, query);

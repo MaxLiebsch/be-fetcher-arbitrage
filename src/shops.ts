@@ -288,12 +288,12 @@ export const shops: { [key: string]: Shop } = {
     ],
     productList: [
       {
-        sel: 'div.product-card-list',
+        sel: 'section.product-card-list',
         productCntSel: ['span.js-filter-results-text'],
         waitProductCntSel: 4000,
         awaitProductCntSel: true,
         product: {
-          sel: 'div.product-card-list div.product-item',
+          sel: 'section.product-card-list article.product-item',
           type: 'not_link',
           details: [
             {
@@ -4405,7 +4405,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'mix',
+    proxyType: 'de',
     queryActions: [],
     queryUrlSchema: [
       {
