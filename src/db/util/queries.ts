@@ -8,6 +8,7 @@ import { subDateDaysISO } from '../../util/dates.js';
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
+  RECHECK_NEG_LISTINGS_INTERVAL,
 } from '../../constants.js';
 import {
   CrawlEanProps,
@@ -614,7 +615,7 @@ export const pendingNegMarginAznListingsQuery = (domain: string) => {
       {
         $or: [
           { aznUpdatedAt: { $exists: false } },
-          { aznUpdatedAt: { $lt: subDateDaysISO(7) } },
+          { aznUpdatedAt: { $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
         ],
       },
       { ...totalNegativAmazon },
@@ -665,7 +666,7 @@ export const countCompletedProductsForCrawlAznListingsQuery = () => {
       {
         $or: [
           { aznUpdatedAt: { $exists: true } },
-          { aznUpdatedAt: { $gte: subDateDaysISO(7) } },
+          { aznUpdatedAt: { $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
         ],
       },
       { ...totalNegativAmazon },
@@ -736,7 +737,7 @@ export const countPendingProductsForCrawlEbyListingsQuery = () => {
       {
         $or: [
           { ebyUpdatedAt: { $exists: false } },
-          { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
+          { ebyUpdatedAt: { $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
         ],
       },
     ],
@@ -755,7 +756,7 @@ export const countCompletedProductsForCrawlEbyListingsQuery = () => {
       {
         $or: [
           { ebyUpdatedAt: { $exists: true } },
-          { ebyUpdatedAt: { $gte: subDateDaysISO(7) } },
+          { ebyUpdatedAt: { $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
         ],
       },
     ],
@@ -785,7 +786,7 @@ const pendingScrapeEbyListingsMatchStage = [
   {
     $or: [
       { ebyUpdatedAt: { $exists: false } },
-      { ebyUpdatedAt: { $lt: subDateDaysISO(7) } },
+      { ebyUpdatedAt: { $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
     ],
   },
   ...totalNegativEbay.$and,
@@ -1011,7 +1012,6 @@ export const countPendingProductsForDealsOnEbyAgg = ({
   }
   return agg;
 };
-
 export const recoveryDealsOnEbyQuery = (taskId: ObjectId, domain: string) => {
   return { dealEbyTaskId: setTaskId(taskId), sdmn: domain };
 };
