@@ -26,6 +26,7 @@ export const scrapeAznListingsDailyDeals = (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId } = task;
+    if ('currentStep' in task) task.currentStep = 'CRAWL_AZN_LISTINGS'
     const {proxyType} = amazon;
     const { concurrency, productLimit } = browserConfig.crawlAznListings;
 

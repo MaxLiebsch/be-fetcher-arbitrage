@@ -20,7 +20,7 @@ describe('Daily Sales', () => {
     const logger = new LocalLogger().createLogger('DAILY_SALES');
     setTaskLogger(logger, 'TASK_LOGGER');
 
-    const task = await findTask({ id: 'daily_sales_mindfactory.de' });
+    const task = await findTask({ id: 'daily_sales_conrad.de' });
 
     if (!task) {
       throw new Error('Task not found');

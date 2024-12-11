@@ -38,6 +38,7 @@ export const queryEansOnEby = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain, id } = task;
+    if ('currentStep' in task) task.currentStep = 'QUERY_EANS_EBY';
     const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 

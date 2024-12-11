@@ -36,6 +36,7 @@ export const scrapeProducts = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { categories, browserConfig, _id: taskId, id, productLimit } = task;
+    task.currentStep = 'CRAWL_SHOP'
     const { d: shopDomain, hasEan, ean, proxyType } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];

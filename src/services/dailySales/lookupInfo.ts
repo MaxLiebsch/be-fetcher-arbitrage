@@ -37,6 +37,7 @@ export const lookupInfo = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
+    task.currentStep = 'LOOKUP_INFO'
     const { concurrency, productLimit, browserConcurrency } =
       browserConfig.lookupInfo;
 

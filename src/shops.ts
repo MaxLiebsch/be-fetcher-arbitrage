@@ -324,6 +324,43 @@ export const shops: { [key: string]: Shop } = {
           ],
         },
       },
+      {
+        sel: 'div.product-overview',
+        productCntSel: ['span.js-filter-results-text'],
+        waitProductCntSel: 4000,
+        awaitProductCntSel: true,
+        product: {
+          sel: 'div.product-overview article.product-item',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: 'a.card-action',
+              type: 'href',
+            },
+            {
+              content: 'mnfctr',
+              sel: 'span.product-item__brand-name',
+              type: 'text',
+            },
+            {
+              content: 'image',
+              sel: 'div.product-item__media__image-wrapper img',
+              type: 'src',
+            },
+            {
+              content: 'name',
+              sel: 'em.product-item__product-name',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              sel: 'span.price__main',
+              type: 'text',
+            },
+          ],
+        },
+      },
     ],
     proxyType: 'mix',
     queryActions: [],
@@ -1851,7 +1888,7 @@ export const shops: { [key: string]: Shop } = {
         productCntSel: ['span[id=totalResultCount]'],
         awaitProductCntSel: true,
         product: {
-          sel: 'li.cmsRecommendation__teaserList__item',
+          sel: 'div[id=skiplink-main] div.columncontrol li.cmsRecommendation__teaserList__item',
           type: 'not_link',
           details: [
             {
@@ -3339,7 +3376,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     active: true,
     categories: {
-      exclude: ['voucher', 'community', 'magazin', 'gutscheine', 'gebraucht'],
+      exclude: ['gesamtsortiment','voucher', 'community', 'magazin', 'gutscheine', 'gebraucht'],
       sel: 'nav[id=mainNavigation] ul li a',
       visible: false,
       type: 'href',
@@ -3523,63 +3560,28 @@ export const shops: { [key: string]: Shop } = {
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
         product: {
-          sel: 'article',
+          sel: 'main[id=pageContent] article',
           type: 'not_link',
           details: [
             {
               content: 'link',
-              sel: 'a',
+              sel: 'a[class*=overlayLink_OverlayLink]',
               type: 'href',
-            },
-            {
-              content: 'name',
-              sel: 'img',
-              type: 'alt',
             },
             {
               content: 'image',
               sel: 'img',
               type: 'srcset',
+            },
+            {
+              content: 'name',
+              sel: 'p[class*=productTileTitle_ProductTileTitleP__]',
+              type: 'text',
             },
             {
               content: 'price',
               sel: 'div:nth-child(5)',
               fallback: 'div:nth-child(4)',
-              type: 'text',
-            },
-          ],
-        },
-      },
-      {
-        sel: 'main[id=pageContent]',
-        productCntSel: [
-          'span[id=product-list] ~ div h2',
-          'span[id=product-list] ~ h2',
-        ],
-        awaitProductCntSel: true,
-        waitProductCntSel: 1000,
-        product: {
-          sel: 'article',
-          type: 'not_link',
-          details: [
-            {
-              content: 'link',
-              sel: 'a',
-              type: 'href',
-            },
-            {
-              content: 'image',
-              sel: 'img',
-              type: 'srcset',
-            },
-            {
-              content: 'name',
-              sel: 'img',
-              type: 'alt',
-            },
-            {
-              content: 'price',
-              sel: 'div:nth-child(5)',
               type: 'text',
             },
           ],
@@ -3738,7 +3740,7 @@ export const shops: { [key: string]: Shop } = {
     productList: [
       {
         sel: 'div:is([id=productList], [id=productList-rest])',
-        productCntSel: [],
+        productCntSel: ['span[data-testid=listingHeaderNumberOfProducts]'],
         product: {
           sel: 'div:is([id=productList], [id=productList-rest]) a',
           type: 'link',
@@ -4180,7 +4182,7 @@ export const shops: { [key: string]: Shop } = {
       type: 'href',
       subCategories: [
         {
-          sel: 'div.cn-categoryGrid div.cn-categoryGridItem a:has(div.cn-categoryGridItem__title)',
+          sel: 'div[data-testid="categoryOverview"] div[data-testid="category-grid-item"] a:not([class*="_popularLink"])',
           type: 'href',
         },
       ],
@@ -4405,7 +4407,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'de',
+    proxyType: 'mix',
     queryActions: [],
     queryUrlSchema: [
       {

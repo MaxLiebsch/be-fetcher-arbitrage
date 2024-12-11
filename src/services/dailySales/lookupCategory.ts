@@ -37,6 +37,7 @@ export const lookupCategory = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
+    if ('currentStep' in task) task.currentStep = 'LOOKUP_CATEGORY'
     const isWholeSaleEbyTask = task.type === TASK_TYPES.WHOLESALE_EBY_SEARCH;
 
     const { concurrency, productLimit } = browserConfig.lookupCategory;

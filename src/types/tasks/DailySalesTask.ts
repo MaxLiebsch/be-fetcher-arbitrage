@@ -1,5 +1,5 @@
-import { Task } from "./Tasks.js";
-import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
+import { Task } from './Tasks.js';
+import { DbProductRecord, ObjectId } from '@dipmaxtech/clr-pkg';
 
 export interface Limit {
   subCategories: number;
@@ -11,10 +11,20 @@ export interface Category {
   link: string;
 }
 
+export type CurrentStepDailySales =
+  | 'CRAWL_SHOP'
+  | 'CRAWL_EAN'
+  | 'LOOKUP_INFO'
+  | 'QUERY_EANS_EBY'
+  | 'LOOKUP_CATEGORY'
+  | 'CRAWL_AZN_LISTINGS'
+  | 'CRAWL_EBY_LISTINGS';
+
 export interface DailySalesTask extends Task {
   categories: Category[];
   executing: boolean;
   shopDomain: string;
+  currentStep?:CurrentStepDailySales;
   actualProductLimit: number;
   crawlEan: DbProductRecord[];
   lookupInfo: DbProductRecord[];

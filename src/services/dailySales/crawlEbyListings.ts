@@ -48,6 +48,7 @@ export const crawlEbyListings = (
       elapsedTime: "",
     };
     const { browserConfig, _id: taskId } = task;
+     if ('currentStep' in task) task.currentStep = 'CRAWL_EBY_LISTINGS'
     const {proxyType} = ebay;
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
