@@ -20,13 +20,13 @@ describe('Daily Sales', () => {
     const logger = new LocalLogger().createLogger('DAILY_SALES');
     setTaskLogger(logger, 'TASK_LOGGER');
 
-    const task = await findTask({ id: 'daily_sales_conrad.de' });
+    const task = await findTask({ id: 'daily_sales_idealo.de' });
 
     if (!task) {
       throw new Error('Task not found');
     }
 
-    task.productLimit = 40;
+    // task.productLimit = 40;
 
     const infos = await dailySales(task as unknown as DailySalesTask);
     console.log(JSON.stringify(infos, null, 2));

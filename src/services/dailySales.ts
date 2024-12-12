@@ -150,6 +150,7 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
           log(`Limit reached after ${retry} retries. Continuing....`);
           task.productLimit =
             infos.total < MIN_DAILY_SALES ? MIN_DAILY_SALES : infos.total;
+          delete task.action;
           await updateTask(task._id, { $set: { ...task } });
           done = true;
           queueStats.crawlProducts = crawledProductsInfo.queueStats;
@@ -188,6 +189,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.crawlEan.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              crawlEan: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: CrawlEan 0`);
@@ -214,6 +223,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.lookupInfo.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              lookupInfo: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: LookupInfo 0`);
@@ -239,6 +256,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.queryEansOnEby.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              queryEansOnEby: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: QueryEansOnEby 0`);
@@ -269,6 +294,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.lookupCategory.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              lookupCategory: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: LookupCategory 0`);
@@ -297,6 +330,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.aznListings.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              aznListings: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: AznListings 0`);
@@ -320,6 +361,14 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         log(
           `DailySales Progress ${task.progress.ebyListings.length} but no products found`
         );
+        await updateTask(taskId, {
+          $set: {
+            progress: {
+              ...task.progress,
+              ebyListings: [],
+            },
+          },
+        })
       }
     } else {
       log(`DailySales: EbyListings 0`);

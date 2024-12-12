@@ -29,6 +29,7 @@ export const RECHECK_NEG_LISTINGS_INTERVAL = 21; // 30 days
 export const MAX_RETRIES_SCRAPE_EAN = 5;
 export const MAX_RETRIES_SCRAPE_INFO = 8;
 export const MAX_RETIRES_SCRAPE_SHOP = 5;
+export const MAX_RETRIES_DAILY_SALES = 15;
 export const DEFAULT_LIMIT = 500;
 
 export const proxyAuth = {

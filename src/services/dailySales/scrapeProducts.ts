@@ -15,6 +15,7 @@ import { parseISO } from 'date-fns';
 
 import {
   MAX_RETIRES_SCRAPE_SHOP,
+  MAX_RETRIES_DAILY_SALES,
   proxyAuth,
   RECHECK_EAN_EBY_AZN_INTERVAL,
   STANDARD_SETTLING_TIME,
@@ -263,7 +264,7 @@ export const scrapeProducts = async (
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,
         proxyType,
-        retriesOnFail: MAX_RETIRES_SCRAPE_SHOP,
+        retriesOnFail: MAX_RETRIES_DAILY_SALES,
         queue: queue,
         retries: 0,
         prio: 0,

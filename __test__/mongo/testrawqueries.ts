@@ -215,6 +215,7 @@ const aznAggregationCntv3 = [
     },
   },
   {
+  {
     $addFields: {
       a_w_mrgn: {
         $round: [
