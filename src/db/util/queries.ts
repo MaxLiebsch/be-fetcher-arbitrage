@@ -8,6 +8,8 @@ import { subDateDaysISO } from '../../util/dates.js';
 import {
   DANGLING_LOOKUP_THRESHOLD,
   DANGLING_MATCH_THRESHOLD,
+  DEALS_ON_AZN_DAYS,
+  DEALS_ON_EBY_DAYS,
   RECHECK_NEG_LISTINGS_INTERVAL,
 } from '../../constants.js';
 import {
@@ -994,7 +996,7 @@ export const countPendingProductsForDealsOnEbyAgg = ({
           {
             $or: [
               { dealEbyUpdatedAt: { $exists: false } },
-              { dealEbyUpdatedAt: { $lt: subDateDaysISO(1) } },
+              { dealEbyUpdatedAt: { $lt: subDateDaysISO(DEALS_ON_EBY_DAYS) } },
             ],
           },
           ...totalPositivEbay.$and,
@@ -1030,7 +1032,7 @@ export const countCompletedProductsForDealsOnEbyAgg = (domain: string) => [
         {
           $or: [
             { ebyUpdatedAt: { $exists: true } },
-            { ebyUpdatedAt: { $gte: subDateDaysISO(7) } },
+            { ebyUpdatedAt: { $gte: subDateDaysISO(DEALS_ON_EBY_DAYS) } },
           ],
         },
         ...totalPositivEbay.$and,
@@ -1097,7 +1099,7 @@ export const pendingDealsOnAznQuery = (domain: string) => {
       {
         $or: [
           { dealAznUpdatedAt: { $exists: false } },
-          { dealAznUpdatedAt: { $lte: subDateDaysISO(1) } },
+          { dealAznUpdatedAt: { $lte: subDateDaysISO(DEALS_ON_AZN_DAYS) } },
         ],
       },
       ...totalPositivAmazon.$and,

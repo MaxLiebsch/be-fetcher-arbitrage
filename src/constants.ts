@@ -31,6 +31,8 @@ export const MAX_RETRIES_SCRAPE_INFO = 8;
 export const MAX_RETIRES_SCRAPE_SHOP = 5;
 export const MAX_RETRIES_DAILY_SALES = 15;
 export const DEFAULT_LIMIT = 500;
+export const DEALS_ON_EBY_DAYS= 1;
+export const DEALS_ON_AZN_DAYS = 1;
 
 export const proxyAuth = {
   host: "127.0.0.1:8080",
