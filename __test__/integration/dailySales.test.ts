@@ -53,8 +53,8 @@ const errorHandler = (err: any, origin: any) => {
   }
   log(`Error: ${type} on ${hostname} taskId:  error: ${err?.message}`);
 
-  // Run pkill -f puppeteer when an error occurs
-  exec('pkill -f puppeteer', (error, stdout, stderr) => {
+  // Run pkill -f chrome when an error occurs
+  exec('pkill -f chrome', (error, stdout, stderr) => {
     if (error) {
       log(`Error executing pkill: ${error.message}`);
       return;
