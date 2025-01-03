@@ -2780,7 +2780,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'euronics.de': {
     actions: [],
-    active: true,
+    active: false,
     allowedHosts: ['cdn.euronics.de'],
     ean: '-[0-9]{11,13}',
     categories: {
@@ -3556,6 +3556,7 @@ export const shops: { [key: string]: Shop } = {
         productCntSel: [
           'span[id=product-list] ~ div h2',
           'span[id=product-list] ~ h2',
+          'h2[class*=productList_Count__]'
         ],
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
@@ -3581,6 +3582,43 @@ export const shops: { [key: string]: Shop } = {
             {
               content: 'price',
               sel: 'div:nth-child(5)',
+              fallback: 'div:nth-child(4)',
+              type: 'text',
+            },
+          ],
+        },
+      },
+      {
+        sel: 'div[class*=productListProductTiles_]',
+        productCntSel: [
+          'span[id=product-list] ~ div h2',
+          'span[id=product-list] ~ h2',
+          'h2[class*=productList_Count__]'
+        ],
+        awaitProductCntSel: true,
+        waitProductCntSel: 1000,
+        product: {
+          sel: 'div[class*=productListProductTiles_] article',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: 'a[class*=overlayLink_OverlayLink]',
+              type: 'href',
+            },
+            {
+              content: 'image',
+              sel: 'img',
+              type: 'srcset',
+            },
+            {
+              content: 'name',
+              sel: 'p[class*=productTileTitle_ProductTileTitleP__]',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              sel: 'span[class*=productTilePrice_StyledPrice]',
               fallback: 'div:nth-child(4)',
               type: 'text',
             },
@@ -5204,7 +5242,6 @@ export const shops: { [key: string]: Shop } = {
       categoryNameSegmentPos: 0,
       categoryRegexp: '\\/([^\\/]+?)-c\\d+',
       exclude: [
-        'kategorie',
         'gruppen',
         'artikel',
         'filename',
@@ -5213,13 +5250,16 @@ export const shops: { [key: string]: Shop } = {
       ],
       sel: 'a:is(.rootgroups,.rtgrps,.nwmshp,.sale)',
       type: 'href',
+      visible: false,
       subCategories: [
         {
+          visible: false,
           sel: 'ul[id=pictogramm] li.pre[class*=pictogramm_] a',
           type: 'href',
         },
         {
-          sel: 'div[id=gov_groupview] a',
+          visible:false,
+          sel: 'div.category-page a.category__headline',
           type: 'href',
         },
       ],
@@ -5307,8 +5347,8 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'image',
-              sel: 'div.al_artlogo img[data-original]',
-              type: 'data-original',
+              sel: 'div.al_artlogo picture img',
+              type: 'data-src',
             },
             {
               content: 'van',
@@ -5327,8 +5367,8 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'price',
-              sel: 'span[itemprop=price]',
-              type: 'text',
+              sel: 'meta[itemprop=price]',
+              type: 'content',
             },
           ],
         },

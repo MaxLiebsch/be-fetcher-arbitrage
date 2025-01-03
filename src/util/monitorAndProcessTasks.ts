@@ -9,16 +9,14 @@ import { handleTask } from './taskHandler.js';
 import { checkForNewTask } from './checkForNewTask.js';
 import { updateTask } from '../db/util/tasks.js';
 import { sendMail } from '../email.js';
-import { TaskCompletedStatus, TimeLimitReachedStatus } from '../status.js';
+import { TaskCompletedStatus} from '../status.js';
 import { MissingProductsError } from '../errors.js';
 import {
-  DEFAULT_CHECK_PROGRESS_INTERVAL,
   NEW_TASK_CHECK_INTERVAL,
 } from '../constants.js';
 
 import { hostname } from '../db/mongo.js';
 import clientPool from '../db/mongoPool.js';
-import { TASK_TYPES } from './taskTypes.js';
 import { Task, Tasks } from '../types/tasks/Tasks.js';
 import { logGlobal, setTaskLogger } from './logger.js';
 

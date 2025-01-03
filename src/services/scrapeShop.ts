@@ -133,27 +133,26 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       const transformedProduct = transformProduct(product, shopDomain);
       const { lnk, nm, prc, qty } = transformedProduct;
       if (nm && prc && lnk) {
-        if (!uniqueLinks.includes(lnk)) {
-          uniqueLinks.push(lnk);
-          infos.total++;
-          queue.total++;
-          transformedProduct['qty'] = qty || 1;
-          transformedProduct['uprc'] = roundToTwoDecimals(
-            prc / transformedProduct['qty']
-          );
-          transformedProduct['sdmn'] = shopDomain;
-          const result = await upsertProduct(transformedProduct);
+        if (uniqueLinks.includes(lnk)) return;
+        uniqueLinks.push(lnk);
+        infos.total++;
+        queue.total++;
+        transformedProduct['qty'] = qty || 1;
+        transformedProduct['uprc'] = roundToTwoDecimals(
+          prc / transformedProduct['qty']
+        );
+        transformedProduct['sdmn'] = shopDomain;
+        const result = await upsertProduct(transformedProduct);
 
-          log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
-          if (result?.acknowledged) {
-            if ('insertedId' in result) infos.new++;
-            else infos.old++;
-          } else {
-            infos.failedSave++;
-          }
-          if (infos.total >= productLimit) {
-            await isCompleted();
-          }
+        log(`Saved: ${shopDomain}-${transformedProduct.s_hash}`, result);
+        if (result?.acknowledged) {
+          if ('insertedId' in result) infos.new++;
+          else infos.old++;
+        } else {
+          infos.failedSave++;
+        }
+        if (infos.total >= productLimit) {
+          await isCompleted();
         }
       } else {
         const properties: Array<

@@ -1,4 +1,3 @@
-
 import {
   COMPLETE_FAILURE_THRESHOLD,
   COOLDOWN,
@@ -6,17 +5,17 @@ import {
   MAX_TASK_RETRIES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
   SCRAPE_SHOP_COOLDOWN,
-} from "../constants.js";
-import { hostname } from "../db/mongo.js";
-import { updateTask } from "../db/util/tasks.js";
-import calculatePageLimit from "./calculatePageLimit.js";
-import { getTaskSymbol } from "./getTaskSymbol.js";
-import { handleTaskCompleted } from "./handleTaskComplete.js";
-import { handleTaskFailed } from "./handleTaskFailed.js";
-import isTaskComplete from "./isTaskComplete.js";
-import { TASK_TYPES } from "./taskTypes.js";
-import { MatchProductsTask, ScrapeShopTask } from "../types/tasks/Tasks.js";
-import { TaskCompletedStatus } from "../status.js";
+} from '../constants.js';
+import { hostname } from '../db/mongo.js';
+import { updateTask } from '../db/util/tasks.js';
+import calculatePageLimit from './calculatePageLimit.js';
+import { getTaskSymbol } from './getTaskSymbol.js';
+import { handleTaskCompleted } from './handleTaskComplete.js';
+import { handleTaskFailed } from './handleTaskFailed.js';
+import isTaskComplete from './isTaskComplete.js';
+import { TASK_TYPES } from './taskTypes.js';
+import { MatchProductsTask, ScrapeShopTask } from '../types/tasks/Tasks.js';
+import { TaskCompletedStatus } from '../status.js';
 import {
   CrawlEansTaskProps,
   DailySalesTaskProps,
@@ -29,7 +28,7 @@ import {
   ScanTaskProps,
   ScrapeShopTaskProps,
   WholeSaleTaskProps,
-} from "../types/handleTaskProps/HandleTaskProps.js";
+} from '../types/handleTaskProps/HandleTaskProps.js';
 
 async function handleDailySalesTask({
   taskResult,
@@ -44,13 +43,13 @@ async function handleDailySalesTask({
   const { limit } = browserConfig.crawlShop;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
-    subject += " " + taskStats.total;
+    subject += ' ' + taskStats.total;
     await handleTaskCompleted(_id, taskStats, {
       executing: false,
       lastTotal: taskStats.total,
     });
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     const update = {
       executing: false,
       lastTotal: taskStats.total,
@@ -88,38 +87,38 @@ async function handleCrawlTask({
   const { limit, productLimit, retry, _id, id, categories, shopDomain } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
-    subject += " " + total;
+    subject += ' ' + total;
     await handleTaskCompleted(_id, taskStats, {
       executing: false,
       lastTotal: total,
     });
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
-    const update: Pick<ScrapeShopTask, "executing" | "visitedPages"> &
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
+    const update: Pick<ScrapeShopTask, 'executing' | 'visitedPages'> &
       Partial<
         Pick<
           ScrapeShopTask,
-          | "limit"
-          | "productLimit"
-          | "retry"
-          | "completedAt"
-          | "cooldown"
-          | "lastTotal"
+          | 'limit'
+          | 'productLimit'
+          | 'retry'
+          | 'completedAt'
+          | 'cooldown'
+          | 'lastTotal'
         >
       > = {
       executing: false,
       visitedPages: queueStats.visitedPages,
     };
-    update["cooldown"] = new Date(
+    update['cooldown'] = new Date(
       Date.now() + SCRAPE_SHOP_COOLDOWN
     ).toISOString(); // four hours in future
 
-    if (retry < MAX_TASK_RETRIES) {
-      update["retry"] = retry + 1;
-      update["completedAt"] = "";
+    if (retry < MAX_TASK_RETRIES && total === 0) {
+      update['retry'] = retry + 1;
+      update['completedAt'] = '';
     } else {
-      update["completedAt"] = new Date().toISOString();
-      update["retry"] = 0;
+      update['completedAt'] = new Date().toISOString();
+      update['retry'] = 0;
     }
 
     if (
@@ -127,17 +126,18 @@ async function handleCrawlTask({
       limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
     ) {
       const newPageLimit = calculatePageLimit(limit.pages, productLimit, total);
-      update["limit"] = {
+      update['limit'] = {
         ...limit,
         pages: newPageLimit,
       };
     }
 
-    update["lastTotal"] = total;
+    update['lastTotal'] = total;
 
     if (retry === MAX_TASK_RETRIES && total > 0) {
-      update["productLimit"] = total;
+      update['productLimit'] = total;
     }
+    
     await updateTask(_id, {
       $set: update,
       $pull: { lastCrawler: hostname },
@@ -171,7 +171,7 @@ async function handleCrawlEansTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
 
@@ -201,7 +201,7 @@ async function handleLookupInfoTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
 
@@ -230,7 +230,7 @@ async function handleMatchTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
   const emailBody = {
@@ -257,7 +257,7 @@ async function handleQueryEansOnEbyTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
   const emailBody = {
@@ -285,7 +285,7 @@ async function handleCrawlAznListingsTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
 
@@ -314,7 +314,7 @@ async function handleCrawlEbyListingsTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
 
@@ -351,7 +351,7 @@ async function handleScanTask({
       $pull: { lastCrawler: hostname },
     });
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
   const emailBody = {
@@ -386,7 +386,7 @@ async function handleWholesaleTask({
       $pull: { lastCrawler: hostname },
     });
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     const coolDownFactor = process.env.DEBUG ? 1000 * 60 * 2 : COOLDOWN;
     const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 30 min in future
     await handleTaskFailed(_id, retry);
@@ -416,7 +416,7 @@ async function handleLookupCategoryTask({
   if (taskCompleted) {
     await handleTaskCompleted(_id, taskStats);
   } else {
-    subject = "🚱 " + subject + " " + completionPercentage;
+    subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
   }
 
@@ -441,7 +441,7 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     taskResult,
     task,
     subject,
-    priority: completionStatus.taskCompleted ? "normal" : "high",
+    priority: completionStatus.taskCompleted ? 'normal' : 'high',
     completionStatus,
   };
 
@@ -488,5 +488,5 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     return await handleLookupCategoryTask(infos);
   }
 
-  throw new Error("Task type not found");
+  throw new Error('Task type not found');
 }

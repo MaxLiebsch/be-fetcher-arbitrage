@@ -37,7 +37,7 @@ export const scrapeProducts = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { categories, browserConfig, _id: taskId, id, productLimit } = task;
-    task.currentStep = 'CRAWL_SHOP'
+    task.currentStep = 'CRAWL_SHOP';
     const { d: shopDomain, hasEan, ean, proxyType } = shop;
     const { concurrency, limit } = browserConfig.crawlShop;
     const uniqueLinks: string[] = [];
@@ -124,124 +124,122 @@ export const scrapeProducts = async (
             prc: buyPrice,
             qty: buyQty,
           } = transformedProduct;
-          if (nm && buyPrice && lnk) {
-            if (!uniqueLinks.includes(lnk)) {
-              uniqueLinks.push(lnk);
-              infos.total++;
-              queue.total++;
-              transformedProduct['qty'] = buyQty || 1;
-              transformedProduct['uprc'] = roundToTwoDecimals(
-                buyPrice / transformedProduct['qty']
+          if (nm && buyPrice && lnk && !uniqueLinks.includes(lnk)) {
+            uniqueLinks.push(lnk);
+            infos.total++;
+            queue.total++;
+            transformedProduct['qty'] = buyQty || 1;
+            transformedProduct['uprc'] = roundToTwoDecimals(
+              buyPrice / transformedProduct['qty']
+            );
+            transformedProduct['availUpdatedAt'] = new Date().toISOString();
+            const existingProduct = await findProductByHash(productHash);
+            if (existingProduct) {
+              const {
+                _id: productId,
+                ean_prop, //scrape ean
+                info_prop, // scrape info
+                eby_prop, // query ean on eby
+                cat_prop, // lookup category
+              } = existingProduct;
+              const result = await updateProductWithQuery(productId, {
+                $set: {
+                  sdmn: salesDbName,
+                  shop: shopDomain,
+                  availUpdatedAt: transformedProduct['availUpdatedAt'],
+                },
+              });
+              log(
+                `Updating availUpdatedAt: ${salesDbName}-${productId}`,
+                result
               );
-              transformedProduct['availUpdatedAt'] = new Date().toISOString();
-              const existingProduct = await findProductByHash(productHash);
-              if (existingProduct) {
-                const {
-                  _id: productId,
-                  ean_prop, //scrape ean
-                  info_prop, // scrape info
-                  eby_prop, // query ean on eby
-                  cat_prop, // lookup category
-                } = existingProduct;
-                const result = await updateProductWithQuery(productId, {
-                  $set: {
-                    sdmn: salesDbName,
-                    shop: shopDomain,
-                    availUpdatedAt: transformedProduct['availUpdatedAt'],
-                  },
-                });
-                log(
-                  `Updating availUpdatedAt: ${salesDbName}-${productId}`,
-                  result
-                );
-                const xDaysAgo = new Date();
-                xDaysAgo.setDate(
-                  xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
-                );
-                infos.old++;
+              const xDaysAgo = new Date();
+              xDaysAgo.setDate(
+                xDaysAgo.getDate() - RECHECK_EAN_EBY_AZN_INTERVAL
+              );
+              infos.old++;
 
-                // hasEan is a flag to check if the product has an ean in the listing
-                // ean is the ean that was scraped from the product link
+              // hasEan is a flag to check if the product has an ean in the listing
+              // ean is the ean that was scraped from the product link
 
-                if (!hasEan && ean) {
-                  task.progress.lookupInfo.push(productId);
-                  task.progress.queryEansOnEby.push(productId);
-                  return;
-                }
-                //ean_prop can have the following values: missing, found
-                if (
-                  !ean_prop ||
-                  (ean_prop !== 'missing' &&
-                    ean_prop !== 'invalid' &&
-                    ean_prop !== 'timeout' &&
-                    ean_prop !== 'found')
-                ) {
-                  task.progress.crawlEan.push(productId);
-                  return;
-                }
+              if (!hasEan && ean) {
+                task.progress.lookupInfo.push(productId);
+                task.progress.queryEansOnEby.push(productId);
+                return;
+              }
+              //ean_prop can have the following values: missing, found
+              if (
+                !ean_prop ||
+                (ean_prop !== 'missing' &&
+                  ean_prop !== 'invalid' &&
+                  ean_prop !== 'timeout' &&
+                  ean_prop !== 'found')
+              ) {
+                task.progress.crawlEan.push(productId);
+                return;
+              }
 
-                // ean_prop is found and info_prop is missing or completed
-                // info_prop can have the following values: missing, complete
-                if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === 'found' &&
-                    (!info_prop ||
-                      (info_prop !== 'missing' &&
-                        info_prop !== 'no_bsr' &&
-                        info_prop !== 'no_offer' &&
-                        info_prop !== 'error' &&
-                        info_prop !== 'not_found' &&
-                        info_prop !== 'incomplete' &&
-                        info_prop !== 'complete')))
-                ) {
-                  task.progress.lookupInfo.push(productId);
-                }
+              // ean_prop is found and info_prop is missing or completed
+              // info_prop can have the following values: missing, complete
+              if (
+                new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                (ean_prop === 'found' &&
+                  (!info_prop ||
+                    (info_prop !== 'missing' &&
+                      info_prop !== 'no_bsr' &&
+                      info_prop !== 'no_offer' &&
+                      info_prop !== 'error' &&
+                      info_prop !== 'not_found' &&
+                      info_prop !== 'incomplete' &&
+                      info_prop !== 'complete')))
+              ) {
+                task.progress.lookupInfo.push(productId);
+              }
 
-                if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === 'found' &&
-                    (!eby_prop ||
-                      (eby_prop !== 'missing' && eby_prop !== 'complete')))
-                ) {
-                  task.progress.queryEansOnEby.push(productId);
-                }
+              if (
+                new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
+                (ean_prop === 'found' &&
+                  (!eby_prop ||
+                    (eby_prop !== 'missing' && eby_prop !== 'complete')))
+              ) {
+                task.progress.queryEansOnEby.push(productId);
+              }
 
-                if (
-                  eby_prop === 'complete' &&
-                  (!cat_prop ||
-                    (cat_prop !== 'complete' &&
-                      cat_prop !== 'timeout' &&
-                      cat_prop !== 'ean_missing' &&
-                      cat_prop !== 'ean_missmatch' &&
-                      cat_prop !== 'categories_missing' &&
-                      cat_prop !== 'category_not_found'))
-                ) {
-                  task.progress.lookupCategory.push(productId);
-                }
+              if (
+                eby_prop === 'complete' &&
+                (!cat_prop ||
+                  (cat_prop !== 'complete' &&
+                    cat_prop !== 'timeout' &&
+                    cat_prop !== 'ean_missing' &&
+                    cat_prop !== 'ean_missmatch' &&
+                    cat_prop !== 'categories_missing' &&
+                    cat_prop !== 'category_not_found'))
+              ) {
+                task.progress.lookupCategory.push(productId);
+              }
 
-                if (cat_prop === 'complete' && eby_prop === 'complete') {
-                  task.progress.ebyListings.push(productId);
-                }
+              if (cat_prop === 'complete' && eby_prop === 'complete') {
+                task.progress.ebyListings.push(productId);
+              }
 
-                if (info_prop === 'complete') {
-                  task.progress.aznListings.push(productId);
+              if (info_prop === 'complete') {
+                task.progress.aznListings.push(productId);
+              }
+            } else {
+              transformedProduct['sdmn'] = salesDbName;
+              transformedProduct['shop'] = shopDomain;
+              const result = await insertProduct(transformedProduct);
+              log(
+                `Product inserted: ${salesDbName}-${result.insertedId}`,
+                result
+              );
+              if (result.acknowledged) {
+                if (result.insertedId) {
+                  task.progress.crawlEan.push(result.insertedId);
+                  infos.new++;
                 }
               } else {
-                transformedProduct['sdmn'] = salesDbName;
-                transformedProduct['shop'] = shopDomain;
-                const result = await insertProduct(transformedProduct);
-                log(
-                  `Product inserted: ${salesDbName}-${result.insertedId}`,
-                  result
-                );
-                if (result.acknowledged) {
-                  if (result.insertedId) {
-                    task.progress.crawlEan.push(result.insertedId);
-                    infos.new++;
-                  }
-                } else {
-                  infos.failedSave++;
-                }
+                infos.failedSave++;
               }
             }
           } else {
