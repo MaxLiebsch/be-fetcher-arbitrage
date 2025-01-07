@@ -103,10 +103,10 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
               $unset: { azn_taskId: '' },
             });
           } else {
-            infos.total++;
             log(`Deleted: ${shopDomain}-${productId}`);
             await deleteProduct(productId);
           }
+          infos.total++;
         } else {
           const productUpdate: Partial<DbProductRecord> = {};
           recalculateAznMargin(product, product.a_prc || 0, productUpdate);
@@ -118,6 +118,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
             },
             $unset: { azn_taskId: '' },
           });
+          infos.total++
         }
       })
     );
