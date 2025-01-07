@@ -4,6 +4,7 @@ import {
   ProductRecord,
   Query,
   QueryQueue,
+  determineAdjustedSellPrice,
   getAznAvgPrice,
   globalEventEmitter,
   querySellerInfosQueue,
@@ -71,7 +72,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
       productsAndShops,
       taskId
     );
-    
+
     log(`Found ${products.length} products`);
 
     shops.forEach(async (info) => {
@@ -213,7 +214,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         await isCompleted();
       };
 
-      const { avgPrice, a_useCurrPrice, a_prc } = getAznAvgPrice(
+      const { avgPrice, a_useCurrPrice, a_prc } = determineAdjustedSellPrice(
         product,
         product.a_prc || 0
       );

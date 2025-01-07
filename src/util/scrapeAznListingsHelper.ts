@@ -7,9 +7,8 @@ import {
   safeParsePrice,
   resetAznProductQuery,
   replaceAllHiddenCharacters,
-  getAznAvgPrice,
-  calcAznCosts,
   retrieveAznArbitrageAndCosts,
+  determineAdjustedSellPrice,
 } from '@dipmaxtech/clr-pkg';
 
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
@@ -56,7 +55,7 @@ export async function handleAznListingProductInfo(
       a_prc: newUsedListingPrice,
       a_uprc,
       avgPrice,
-    } = getAznAvgPrice(product, newSellPrice);
+    } = determineAdjustedSellPrice(product, newSellPrice);
 
     if (newUsedListingPrice > 0) {
       if (costs && costs.azn > 0 && existingSellPrice) {

@@ -3663,6 +3663,7 @@ export const shops: { [key: string]: Shop } = {
         'socken',
         'aktionen',
         'magazin',
+        'ratgeber',
         'gutscheine',
         'geschenksets',
         'marken',
