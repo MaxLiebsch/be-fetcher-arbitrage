@@ -1,44 +1,51 @@
-import { DbProductRecord, QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
-import { differenceInHours } from "date-fns";
-import { getShop } from "../../../db/util/shops.js";
-import { TaskCompletedStatus } from "../../../status.js";
-import { proxyAuth } from "../../../constants.js";
-import { deleteProduct } from "../../../db/util/crudProducts.js";
-import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { updateProgressDealsOnAznTasks } from "../../../util/updateProgressInTasks.js";
-import { DealsOnAznStats } from "../../../types/taskStats/DealsOnAznStats.js";
-import { DealOnAznTask } from "../../../types/tasks/Tasks.js";
-import { TaskReturnType } from "../../../types/TaskReturnType.js";
-import { MissingShopError } from "../../../errors.js";
-import { log } from "../../../util/logger.js";
-import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
-import { findPendingProductsForTask } from "../../../db/util/multiShopUtilities/findPendingProductsForTask.js";
-import { ShopPick } from "../../../types/shops.js";
-import { scrapeAznListings } from "../../../util/deals/scrapeAznListings.js";
+import {
+  DbProductRecord,
+  QueryQueue,
+  recalculateAznMargin,
+  Shop,
+} from '@dipmaxtech/clr-pkg';
+import { differenceInHours } from 'date-fns';
+import { getShop } from '../../../db/util/shops.js';
+import { TaskCompletedStatus } from '../../../status.js';
+import { MAX_AGE_SHOP_LISTING, proxyAuth } from '../../../constants.js';
+import {
+  deleteProduct,
+  updateProductWithQuery,
+} from '../../../db/util/crudProducts.js';
+import { getProductLimitMulti } from '../../../util/getProductLimit.js';
+import { scrapeProductInfo } from '../../../util/deals/scrapeProductInfo.js';
+import { updateProgressDealsOnAznTasks } from '../../../util/updateProgressInTasks.js';
+import { DealsOnAznStats } from '../../../types/taskStats/DealsOnAznStats.js';
+import { DealOnAznTask } from '../../../types/tasks/Tasks.js';
+import { TaskReturnType } from '../../../types/TaskReturnType.js';
+import { MissingShopError } from '../../../errors.js';
+import { log } from '../../../util/logger.js';
+import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
+import { findPendingProductsForTask } from '../../../db/util/multiShopUtilities/findPendingProductsForTask.js';
+import { ShopPick } from '../../../types/shops.js';
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
-  const { _id: taskId, action,  concurrency, type } = task;
+  const { _id: taskId, action, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await findPendingProductsForTask(
-        "DEALS_ON_AZN",
+        'DEALS_ON_AZN',
         taskId,
-        action || "none",
+        action || 'none',
         productLimit
       );
 
-    if (action === "recover") {
+    if (action === 'recover') {
       log(`Recovering ${type} and found ${productsWithShop.length} products`);
     } else {
       log(`Starting ${type} with ${productsWithShop.length} products`);
     }
 
-    const azn = await getShop("amazon.de");
+    const azn = await getShop('amazon.de');
 
     if (!azn) {
-      return rej(new MissingShopError("amazon.de", task));
+      return rej(new MissingShopError('amazon.de', task));
     }
 
     const infos: DealsOnAznStats = {
@@ -46,13 +53,13 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
       new: 0,
       old: 0,
       notFound: 0,
-      elapsedTime: "",
+      elapsedTime: '',
       locked: 0,
       scrapeProducts: {
-        elapsedTime: "",
+        elapsedTime: '',
       },
       aznListings: {
-        elapsedTime: "",
+        elapsedTime: '',
       },
       missingProperties: {
         bsr: 0,
@@ -71,11 +78,11 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
       productsWithShop.length,
       productLimit
     );
-    log("Product limit " + _productLimit);
+    log('Product limit ' + _productLimit);
     infos.locked = productsWithShop.length;
-    
+
     await updateProgressDealsOnAznTasks();
-    
+
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
@@ -95,55 +102,49 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
             new Date(),
             new Date(product?.availUpdatedAt || product.updatedAt)
           );
-          const aznLink =
-            "https://www.amazon.de/dp/product/" + asin + "?language=de_DE";
-
-          if (diffHours > 24) {
+          if (diffHours > MAX_AGE_SHOP_LISTING) {
             const isValidProduct = await scrapeProductInfo(
               queue,
               source,
-              product,
+              product
             );
             if (isValidProduct) {
-              await scrapeAznListings(
-                queue,
-                azn,
-                source,
-                aznLink,
-                {
-                  ...product,
-                  ...isValidProduct,
+              product.prc = isValidProduct.prc || product.prc;
+              const productUpdate: Partial<DbProductRecord> = {};
+              recalculateAznMargin(product, product.a_prc || 0, productUpdate);
+              // WE DONT NEED TO SCRAPE AZN LISTINGS
+              await updateProductWithQuery(productId, {
+                $set: {
+                  ...productUpdate,
+                  dealAznUpdatedAt: new Date().toISOString(),
                 },
-                infos,
-                { timestamp: "dealAznUpdatedAt", taskIdProp: "dealAznTaskId" }
-              );
+                $unset: { dealAznTaskId: '' },
+              });
             } else {
               infos.total++;
               await deleteProduct(productId);
               log(`Deleted: ${shopDomain}-${productId}`);
             }
           } else {
-            await scrapeAznListings(
-              queue,
-              azn,
-              source,
-              aznLink,
-              product,
-              infos,
-              {
-                timestamp: "dealAznUpdatedAt",
-                taskIdProp: "dealAznTaskId",
-              }
-            );
+            const productUpdate: Partial<DbProductRecord> = {};
+            recalculateAznMargin(product, product.a_prc || 0, productUpdate);
+            // WE DONT NEED TO SCRAPE AZN LISTINGS
+            await updateProductWithQuery(productId, {
+              $set: {
+                dealAznUpdatedAt: new Date().toISOString(),
+                ...productUpdate,
+              },
+              $unset: { dealAznTaskId: '' },
+            });
           }
         }
       )
     );
     const remaining = await countRemainingProducts(shops, taskId, type);
     log(`Remaining products: ${remaining}`);
-    await queue.clearQueue("DEALS_ON_AZN_COMPLETE", infos);
+    await queue.clearQueue('DEALS_ON_AZN_COMPLETE', infos);
     res(
-      new TaskCompletedStatus("DEALS_ON_AZN_COMPLETE", task, {
+      new TaskCompletedStatus('DEALS_ON_AZN_COMPLETE', task, {
         taskStats: infos,
         queueStats: queue.queueStats,
       })

@@ -8,17 +8,17 @@ import {
   AddProductInfoProps,
   uuid,
   removeSearchParams,
-} from "@dipmaxtech/clr-pkg";
-import { handleDealsProductInfo } from "./scrapeProductInfoHelper.js";
-import { defaultQuery, MAX_RETRIES_SCRAPE_INFO } from "../../constants.js";
-import { log } from "../logger.js";
+} from '@dipmaxtech/clr-pkg';
+import { handleDealsProductInfo } from './scrapeProductInfoHelper.js';
+import { defaultQuery, MAX_RETRIES_SCRAPE_INFO } from '../../constants.js';
+import { log } from '../logger.js';
 
 export async function scrapeProductInfo(
   queue: QueryQueue,
   source: Shop,
-  product: DbProductRecord,
+  product: DbProductRecord
 ) {
-  return new Promise((res, rej) => {
+  return new Promise<Partial<DbProductRecord> | null>((res, rej) => {
     let { lnk: productLink, s_hash, _id: productId } = product;
     productLink = removeSearchParams(productLink);
     const { d: shopDomain, proxyType } = source;
@@ -28,7 +28,12 @@ export async function scrapeProductInfo(
       url,
     }: AddProductInfoProps) => {
       res(
-        await handleDealsProductInfo(shopDomain, { productInfo, url }, product, source)
+        await handleDealsProductInfo(
+          shopDomain,
+          { productInfo, url },
+          product,
+          source
+        )
       );
     };
     const handleNotFound = async (cause: NotFoundCause) => {
@@ -45,7 +50,7 @@ export async function scrapeProductInfo(
       addProduct,
       targetShop: {
         name: shopDomain,
-        prefix: "",
+        prefix: '',
         d: shopDomain,
       },
       onNotFound: handleNotFound,

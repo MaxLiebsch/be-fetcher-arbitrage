@@ -17,7 +17,7 @@ export async function handleDealsProductInfo(
   { productInfo, url }: AddProductInfoProps,
   product: DbProductRecord,
   source: Shop
-) {
+): Promise<Partial<DbProductRecord> | null> {
   const { _id: productId, qty: buyQty } = product;
   if (productInfo) {
     const infoMap = new Map();

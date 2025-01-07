@@ -34,6 +34,7 @@ export const MAX_RETRIES_DAILY_SALES = 15;
 export const DEFAULT_LIMIT = 500;
 export const DEALS_ON_EBY_DAYS= 1;
 export const DEALS_ON_AZN_DAYS = 1;
+export const MAX_AGE_SHOP_LISTING = 24;
 
 export const proxyAuth = {
   host: "127.0.0.1:8080",
