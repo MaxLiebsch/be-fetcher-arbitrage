@@ -1,4 +1,4 @@
-import { startOfDay } from 'date-fns';
+import { startOfDay, subWeeks } from 'date-fns';
 import { hostname, wholeSaleColname } from '../mongo.js';
 
 import { TASK_TYPES } from '../../util/taskTypes.js';
@@ -11,6 +11,7 @@ import {
   DEALS_ON_AZN_DAYS,
   DEALS_ON_EBY_DAYS,
   RECHECK_NEG_LISTINGS_INTERVAL,
+  SCRAPE_SHOP_INTERVAL,
 } from '../../constants.js';
 import {
   CrawlEanProps,
@@ -180,10 +181,25 @@ const eanNotExistsQuery = { eanList: { $exists: false } };
 
 /*               Queries Crawl (1)                            */
 
-export const crawlShopTaskQueryFn = (start: string, weekday: number) => {
+export const scrapeShopTaskQueryFn = (interval: string, weekday: number) => {
   return [
     { type: TASK_TYPES.CRAWL_SHOP },
-    { recurrent: { $eq: true } },
+    { executing: { $eq: false } },
+    { initialized: { $eq: true } },
+    { weekday: { $eq: weekday } },
+    {
+      $or: [{ completedAt: '' }, { completedAt: { $lt: interval } }],
+    },
+  ];
+};
+
+export const initialScrapeShopTaskQueryFn = (
+  start: string,
+  weekday: number
+) => {
+  return [
+    { type: TASK_TYPES.CRAWL_SHOP },
+    { initialized: { $eq: false } },
     { executing: { $eq: false } },
     { weekday: { $eq: weekday } },
     {
@@ -617,7 +633,11 @@ export const pendingNegMarginAznListingsQuery = (domain: string) => {
       {
         $or: [
           { aznUpdatedAt: { $exists: false } },
-          { aznUpdatedAt: { $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
+          {
+            aznUpdatedAt: {
+              $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL),
+            },
+          },
         ],
       },
       { ...totalNegativAmazon },
@@ -668,7 +688,11 @@ export const countCompletedProductsForCrawlAznListingsQuery = () => {
       {
         $or: [
           { aznUpdatedAt: { $exists: true } },
-          { aznUpdatedAt: { $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
+          {
+            aznUpdatedAt: {
+              $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL),
+            },
+          },
         ],
       },
       { ...totalNegativAmazon },
@@ -739,7 +763,11 @@ export const countPendingProductsForCrawlEbyListingsQuery = () => {
       {
         $or: [
           { ebyUpdatedAt: { $exists: false } },
-          { ebyUpdatedAt: { $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
+          {
+            ebyUpdatedAt: {
+              $lt: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL),
+            },
+          },
         ],
       },
     ],
@@ -758,7 +786,11 @@ export const countCompletedProductsForCrawlEbyListingsQuery = () => {
       {
         $or: [
           { ebyUpdatedAt: { $exists: true } },
-          { ebyUpdatedAt: { $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL) } },
+          {
+            ebyUpdatedAt: {
+              $gte: subDateDaysISO(RECHECK_NEG_LISTINGS_INTERVAL),
+            },
+          },
         ],
       },
     ],
@@ -1297,6 +1329,10 @@ export const findTasksQuery = () => {
   const weekday = today.getDay();
 
   const start = startOfDay(today).toISOString();
+  const scrapeShopInterval = subWeeks(
+    today,
+    SCRAPE_SHOP_INTERVAL
+  ).toISOString();
   let update = {};
 
   update = {
@@ -1309,7 +1345,14 @@ export const findTasksQuery = () => {
     },
   };
 
-  const crawlShopTaskQuery = crawlShopTaskQueryFn(start, weekday); // (1)
+  const scrapeShopTaskQuery = scrapeShopTaskQueryFn(
+    scrapeShopInterval,
+    weekday
+  ); // (1)
+  const initialScrapeShopTaskQuery = initialScrapeShopTaskQueryFn(
+    start,
+    weekday
+  ); // (1.1)
   const dailySalesTaskQuery = crawlDailySalesQueryFn(start);
   const dealsOnEbyTaskQuery = dealsOnEbyTaskQueryFn(lowerThenStartedAt); // (8)
   const dealsOnAznTaskQuery = dealsOnAznTaskQueryFn(lowerThenStartedAt); // (9)
@@ -1317,10 +1360,9 @@ export const findTasksQuery = () => {
   const crawlEanTaskQuery = crawlEanTaskQueryFn(lowerThenStartedAt); // (2)
   const lookupInfoTaskQuery = lookupInfoTaskQueryFn(lowerThenStartedAt); // (3.1)
   const matchTaskQuery = matchTaskQueryFn(
-    // (3.2)
     lowerThenStartedAt,
     danglingMatchThreshold
-  );
+  ); // (3.2)
   const crawlAznListingsTaskQuery =
     crawlAznListingsTaskQueryFn(lowerThenStartedAt); // (4)
   const crawlEbyListingsTaskQuery =
@@ -1337,7 +1379,13 @@ export const findTasksQuery = () => {
         $or: [
           {
             $and: [
-              ...crawlShopTaskQuery,
+              ...initialScrapeShopTaskQuery,
+              { cooldown: { $lt: new Date().toISOString() } },
+            ],
+          },
+          {
+            $and: [
+              ...scrapeShopTaskQuery,
               { cooldown: { $lt: new Date().toISOString() } },
             ],
           },

@@ -1,20 +1,19 @@
 import {
-  COMPLETE_FAILURE_THRESHOLD,
   COOLDOWN,
-  COOLDOWN_MULTIPLIER,
   MAX_TASK_RETRIES,
-  SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
   SCRAPE_SHOP_COOLDOWN,
 } from '../constants.js';
 import { hostname } from '../db/mongo.js';
 import { updateTask } from '../db/util/tasks.js';
-import calculatePageLimit from './calculatePageLimit.js';
 import { getTaskSymbol } from './getTaskSymbol.js';
 import { handleTaskCompleted } from './handleTaskComplete.js';
 import { handleTaskFailed } from './handleTaskFailed.js';
 import isTaskComplete from './isTaskComplete.js';
 import { TASK_TYPES } from './taskTypes.js';
-import { MatchProductsTask, ScrapeShopTask } from '../types/tasks/Tasks.js';
+import {
+  MatchProductsTask,
+  ScrapeShopTaskUpdate,
+} from '../types/tasks/Tasks.js';
 import { TaskCompletedStatus } from '../status.js';
 import {
   CrawlEansTaskProps,
@@ -29,6 +28,8 @@ import {
   ScrapeShopTaskProps,
   WholeSaleTaskProps,
 } from '../types/handleTaskProps/HandleTaskProps.js';
+import { updateScrapeTaskRetryStatus } from './updateScrapeTaskRetryStatus.js';
+import { updateScrapeTaskPageLimit } from './updateScrapeTaskPageLimit.js';
 
 async function handleDailySalesTask({
   taskResult,
@@ -74,7 +75,7 @@ async function handleDailySalesTask({
 
   return { htmlBody, subject, priority };
 }
-async function handleCrawlTask({
+export async function handleScrapeTask({
   taskResult,
   task,
   completionStatus,
@@ -84,7 +85,16 @@ async function handleCrawlTask({
   const { stats, name, message } = taskResult;
   const { taskStats, queueStats } = stats;
   const { total } = taskStats;
-  const { limit, productLimit, retry, _id, id, categories, shopDomain } = task;
+  const {
+    limit,
+    productLimit,
+    retry,
+    _id,
+    id,
+    categories,
+    shopDomain,
+    initialized,
+  } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
     subject += ' ' + total;
@@ -93,51 +103,33 @@ async function handleCrawlTask({
       lastTotal: total,
     });
   } else {
-    subject = '🚱 ' + subject + ' ' + completionPercentage;
-    const update: Pick<ScrapeShopTask, 'executing' | 'visitedPages'> &
-      Partial<
-        Pick<
-          ScrapeShopTask,
-          | 'limit'
-          | 'productLimit'
-          | 'retry'
-          | 'completedAt'
-          | 'cooldown'
-          | 'lastTotal'
-        >
-      > = {
+    subject =
+      `${initialized ? '' : 'Onboarding'} 🚱 ` +
+      subject +
+      ' ' +
+      completionPercentage;
+    const update: ScrapeShopTaskUpdate = {
       executing: false,
+      lastTotal: total,
       visitedPages: queueStats.visitedPages,
     };
     update['cooldown'] = new Date(
       Date.now() + SCRAPE_SHOP_COOLDOWN
     ).toISOString(); // four hours in future
 
-    if (retry < MAX_TASK_RETRIES && total === 0) {
-      update['retry'] = retry + 1;
-      update['completedAt'] = '';
-    } else {
-      update['completedAt'] = new Date().toISOString();
-      update['retry'] = 0;
-    }
-
-    if (
-      total > COMPLETE_FAILURE_THRESHOLD &&
-      limit.pages <= SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD
-    ) {
-      const newPageLimit = calculatePageLimit(limit.pages, productLimit, total);
-      update['limit'] = {
-        ...limit,
-        pages: newPageLimit,
-      };
-    }
-
-    update['lastTotal'] = total;
+    updateScrapeTaskRetryStatus(
+      retry,
+      total,
+      taskCompleted,
+      update,
+      Boolean(initialized)
+    );
+    updateScrapeTaskPageLimit(total, limit, productLimit, update);
 
     if (retry === MAX_TASK_RETRIES && total > 0) {
       update['productLimit'] = total;
     }
-    
+
     await updateTask(_id, {
       $set: update,
       $pull: { lastCrawler: hostname },
@@ -449,7 +441,7 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     return await handleDailySalesTask(infos);
   }
   if (type === TASK_TYPES.CRAWL_SHOP) {
-    return await handleCrawlTask(infos);
+    return await handleScrapeTask(infos);
   }
   if (type === TASK_TYPES.WHOLESALE_SEARCH) {
     return await handleWholesaleTask(infos);

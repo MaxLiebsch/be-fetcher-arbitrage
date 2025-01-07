@@ -3,12 +3,12 @@ import {
   ObjectId,
   QueueStats,
   TaskTypes,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 import {
   BrowserConfig,
   DailySalesProgress,
   DailySalesTask,
-} from "./DailySalesTask.js";
+} from './DailySalesTask.js';
 
 export interface Category {
   name: string;
@@ -21,7 +21,7 @@ export interface Limit {
   pages: number;
 }
 
-export type Action = "recover" | "none";
+export type Action = 'recover' | 'none';
 
 type WithId<T> = T & { _id: ObjectId };
 
@@ -57,9 +57,27 @@ export interface ScrapeShopTask extends ShopSpecificTask {
   weekday: number;
   visitedPages: any[];
   executing: boolean;
+  initialized?: boolean;
   lastTotal: number;
   estimatedTotal: number;
 }
+
+export type ScrapeShopTaskUpdate = Pick<
+  ScrapeShopTask,
+  'executing' | 'visitedPages'
+> &
+  Partial<
+    Pick<
+      ScrapeShopTask,
+      | 'limit'
+      | 'productLimit'
+      | 'initialized'
+      | 'retry'
+      | 'completedAt'
+      | 'cooldown'
+      | 'lastTotal'
+    >
+  >;
 
 export interface Progress {
   shop: string;
@@ -120,16 +138,16 @@ export interface NegEbyDealTask extends MultipleShopTask {
 
 export interface WholeSaleTask extends MultiShopMultiQueueTask {
   userId: string;
-  clrName: string[]
+  clrName: string[];
 }
 
 export interface WholeSaleEbyTask extends Task {
   shopDomain: string;
-  clrName: string[]
+  clrName: string[];
   queryEansOnEby: DbProductRecord[];
   lookupCategory: DbProductRecord[];
-  progress: Pick<DailySalesProgress, "queryEansOnEby" | "lookupCategory">;
-  browserConfig: Pick<BrowserConfig, "queryEansOnEby" | "lookupCategory">;
+  progress: Pick<DailySalesProgress, 'queryEansOnEby' | 'lookupCategory'>;
+  browserConfig: Pick<BrowserConfig, 'queryEansOnEby' | 'lookupCategory'>;
 }
 
 export interface ScanTask extends ShopSpecificTask {
