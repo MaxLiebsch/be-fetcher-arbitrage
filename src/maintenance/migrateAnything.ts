@@ -1,22 +1,13 @@
-import { DbProductRecord, recalculateAznMargin } from '@dipmaxtech/clr-pkg';
+import { DbProductRecord, getAznAvgPrice } from '@dipmaxtech/clr-pkg';
 import { getProductsCol } from '../db/mongo';
+import { recalculateEbyMargin } from '../util/recalculateEbyMargin';
 
 const query = {
-  $or: [
-    { 'costs.prvsn': { $exists: true } },
-    // { 'costs.azn': { $exists: true } },
-  ],
-  a_mrgn: { $gt: 0 },
+  e_pblsh: true,
+  e_mrgn: { $gt: 0 },
+  'e_pRange.median': { $exists: true },
 };
 
-// const query = {
-//     $and: [
-//       {sdmn: "voelkner.de"},
-//       {asin: "B079Q4QP4Z"},
-//     ]
-  
-//   };
-  
 let countFalsePositives = 0;
 
 async function migrateAnything() {
@@ -24,23 +15,19 @@ async function migrateAnything() {
   let total = await col.countDocuments(query);
   console.log('total:', total);
 
-  const batch = 2000;
+  const batch = 1000;
   let cnt = 0;
-  while (cnt < total) {
+  let hasMore = true;
+  while (hasMore && cnt <= total) {
+    console.log('cnt <= total:', cnt <= total);
     const bulks: any = [];
     const products = await col.find(query).limit(batch).skip(cnt).toArray();
 
     for (const product of products) {
+      const { lnk } = product;
       let spotterSet: Partial<DbProductRecord> = {};
-      if (!product.a_qty) {
-        product.a_qty = 1;
-        spotterSet['a_qty'] = 1;
-      }
-      if(!product.qty){
-        product.qty = 1;
-        spotterSet['qty'] = 1;
-      }
-      recalculateAznMargin(product, product.a_prc!, spotterSet);
+      recalculateEbyMargin(product, spotterSet);
+
       if (Object.keys(spotterSet).length > 0) {
         const update = {
           $set: { ...spotterSet },
@@ -60,6 +47,7 @@ async function migrateAnything() {
     }
 
     cnt += products.length;
+    hasMore = products.length === batch;
     console.log(`Processed ${cnt}/${total}`);
   }
 }
