@@ -2,6 +2,7 @@ import {
   Content,
   NotFoundCause,
   Product,
+  Query,
   QueryQueue,
   queryEansOnEbyQueue,
   queryURLBuilder,
@@ -176,13 +177,13 @@ export default async function queryEansOnEby(
         queue.total++;
         await isProcessComplete();
       };
-      const query = {
+      const query: Query = {
         ...defaultQuery,
         product: {
           value: ean,
           key: ean,
         },
-        category: 'default',
+        category: 'total_listings',
       };
       if (!toolInfo.queryUrlSchema) {
         return reject(new Error('No queryUrlSchema found for ebay.de'));
