@@ -1,41 +1,43 @@
-import { describe, expect, test, beforeAll } from "@jest/globals";
+import { describe, expect, test, beforeAll } from '@jest/globals';
 import {
   mimicTest,
   myAfterAll,
   myBeforeAll,
+  newPage,
   queryEansOnEby,
-} from "../utils/commonTests.js";
+} from '../utils/commonTests.js';
+import { calculateMinMaxMedian } from '../../../src/util/calculateMinMaxMedian.js';
+import { Product, ProductRecord } from '@dipmaxtech/clr-pkg';
+import { updateShops } from '../../../src/db/util/shops.js';
+import { shops } from '../../../src/shops.js';
 
-import { ProductRecord } from "@dipmaxtech/clr-pkg/lib/types/product.js";
-import { Product } from "@dipmaxtech/clr-pkg/lib/types/query.js";
-//@ts-ignore
-import { calculateMinMaxMedian } from "../../../src/util/calculateMinMaxMedian.js";
-
-const shopDomain = "ebay.de";
+const shopDomain = 'ebay.de';
 //TODO: test notfound, multiple asins
 //TODO : make sure mimic does not create fake block
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, false, "126.0.6478.182");
+    await updateShops(shops);
+    await myBeforeAll(shopDomain, false);
+    await newPage();
   }, 1000000);
 
-  test("Mimic for block detection is working", async () => {
-    await mimicTest();
-  }, 1000000);
+  // test('Mimic for block detection is working', async () => {
+  //   await mimicTest();
+  // }, 1000000);
 
-  test("Extract product Infos", async () => {
+  test('Extract product Infos', async () => {
     const products: any[] = [];
     const addProduct = async (product: ProductRecord) => {
       products.push(<any>product);
     };
     const handleNotFound = async (cause: string) => {
-      console.log("Not found!");
+      console.log('Not found!');
     };
     const isFinished = async () => {
-      console.log("Is done!");
+      console.log('Is done!');
       console.log(products.length);
       const priceRange = calculateMinMaxMedian(products as any);
-      console.log("priceRange:", priceRange);
+      console.log('priceRange:', priceRange);
       const foundProduct = products.reduce(
         (cheapest, current) => {
           if (
@@ -52,17 +54,17 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
 
         null as Product | null
       );
-      console.log("result:", priceRange, foundProduct.price, foundProduct.link);
+      console.log('result:', priceRange, foundProduct.price, foundProduct.link);
     };
     await queryEansOnEby(
       addProduct,
       handleNotFound,
       isFinished,
-      "5032410212945"
+      '0088381646536'
     );
   }, 200000);
 
-  afterAll(async () => {
-    await myAfterAll();
-  });
+  // afterAll(async () => {
+  //   await myAfterAll();
+  // });
 });

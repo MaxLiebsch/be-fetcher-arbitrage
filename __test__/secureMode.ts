@@ -21,11 +21,19 @@ export const mainBrowser = async (
 ) => {
   const args = [
     '--no-sandbox',
-    '--disable-setuid-sandbox',
     '--lang=de',
     '--disable-gpu',
     '--disable-webrtc',
-    '--disable-blink-features=AutomationControlled',
+    '--disable-dev-shm-usage',
+    '--no-first-run',
+    '--disable-extensions',
+    '--disable-breakpad',
+    '--safebrowsing-disable-auto-update',
+    '--disable-sync',
+    '--disable-default-apps',
+    '--disable-client-side-phishing-detection',
+    '--metrics-recording-only',
+    '--disable-hang-monitor',
     '--webrtc-ip-handling-policy=disable_non_proxied_udp',
     '--force-webrtc-ip-handling-policy',
     '--start-maximized',
@@ -67,14 +75,13 @@ const secureMode = async () => {
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'mindfactory.de';
-  const proxyType = 'des';
+  const shopDomain = 'otto.de';
+  const proxyType = 'de'
   const shop = await getShop(shopDomain);
   if (!shop) return;
 
   const { exceptions } = shop;
-  const lnk =
-    'https://bot-detector.rebrowser.net/';
+  const lnk = 'https://www.otto.de/p/lomac-hebeanlage-stand-wc-mit-pumpe-gestolette-1010-keramik-wc-mit-hebeanlage-S0R7T083/#variationId=S0R7T083R0FY';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -83,7 +90,7 @@ const secureMode = async () => {
     host: shopDomain,
     requestCount: 1,
     proxyType,
-    disAllowedResourceTypes: [],
+    disAllowedResourceTypes: shop.resourceTypes['product'],
     exceptions,
   });
 

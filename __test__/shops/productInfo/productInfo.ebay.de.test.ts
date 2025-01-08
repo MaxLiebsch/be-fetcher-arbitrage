@@ -6,8 +6,7 @@ import {
   myBeforeAll,
 } from "../utils/commonTests.js";
 import { safeParsePrice } from "@dipmaxtech/clr-pkg";
-//@ts-ignore
-import { expiredIndicatorStrs } from "../../../src/util/scrapeEbyListingsHelper.js";
+import { LISTING_EXPIRED_STRINGS } from "../../../src/util/scrapeEbyListingsHelper.js";
 
 const shopDomain = "ebay.de";
 
@@ -34,7 +33,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
         const instock = map.get("instock");
         if (
           instock &&
-          expiredIndicatorStrs.some((str) =>
+          LISTING_EXPIRED_STRINGS.some((str) =>
             instock.toLowerCase().includes(str.toLowerCase())
           )
         ) {

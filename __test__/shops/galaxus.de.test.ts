@@ -1,5 +1,5 @@
-import { describe, test, beforeAll } from "@jest/globals";
-import testParameters from "./utils/testParamter.js";
+import { describe, test, beforeAll } from '@jest/globals';
+import testParameters from './utils/testParamter.js';
 import {
   extractProductInfos,
   extractProducts,
@@ -12,10 +12,10 @@ import {
   myBeforeAll,
   newPage,
   productPageCount,
-} from "./utils/commonTests.js";
-import { getShop } from "../../src/db/util/shops.js";
+} from './utils/commonTests.js';
+import { getShop } from '../../src/db/util/shops.js';
 
-const shopDomain = "galaxus.de";
+const shopDomain = 'galaxus.de';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
@@ -25,7 +25,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   test("Mimic for block detection is working", async () => {
     await mimicTest();
   }, 1000000);
-  
+
   test("Find mainCategories", async () => {
     const result = await findMainCategories();
     console.log("result:", result);
@@ -49,7 +49,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await findPaginationAndNextPage();
   }, 1000000);
 
-  test("Extract product Infos", async () => {
+  test('Extract product Infos', async () => {
     const addProductInfo = async ({
       productInfo,
       url,
@@ -58,9 +58,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       url: string;
     }) => {
       if (productInfo) {
-        console.log("productInfo:", productInfo);
-        const ean = productInfo.find((info) => info.key === "ean");
-        expect(ean.value).toBe("3253922130387");
+        console.log('productInfo:', productInfo);
+        const ean = productInfo.find((info) => info.key === 'ean');
+        expect(ean.value).toBe(testParameters[shopDomain].ean);
       } else {
         expect(1).toBe(2);
       }
@@ -68,7 +68,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductInfos(addProductInfo);
   }, 60000);
 
-  test("Extract Products from Product page", async () => {
+  test('Extract Products from Product page', async () => {
     await newPage();
     await extractProducts();
   }, 1000000);
@@ -77,7 +77,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductsFromSecondPageQueueless(10);
   }, 1000000);
 
-  test("Extract Products from Sales page", async () => {
+  test('Extract Products from Sales page', async () => {
     const shop = await getShop(shopDomain);
     await newPage();
     if (shop) {

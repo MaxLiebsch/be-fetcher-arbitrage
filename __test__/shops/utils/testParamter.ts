@@ -4,7 +4,7 @@ const testParameters = {
       'https://www.amazon.de/dp/product/B0BZ9NMMW4?language=de_DE',
   },
   'ebay.de': {
-    productPageUrl: 'https://www.ebay.de/itm/256420198915',
+    productPageUrl: 'https://www.ebay.de/itm/304792707624',
   },
   'bergfreunde.de': {
     initialProductPageUrl: 'https://www.bergfreunde.de/kletterschuhe/',
@@ -85,6 +85,7 @@ const testParameters = {
     salesUrl: 'https://www.galeria.de/sale',
     countProductPageUrl: 'https://www.galeria.de/beauty/duefte',
     pages: 20,
+    ean: '8435415091787',
     productPageUrl:
       'https://www.galeria.de/produkt/jean-paul-gaultier-gaultier-divine-le-parfum-eau-de-parfum-intense-refill-8435415091787',
     productsPerPage: 48,
@@ -117,6 +118,7 @@ const testParameters = {
     countProductPageUrl:
       'https://www.galaxus.de/de/s2/producttype/abfalleimer-348',
     pages: 20,
+    ean: "3253922130387",
     productPageUrl:
       'https://www.galaxus.de/de/s2/product/curver-decobin-abfalleimer-40l-mit-druecker-silber-metallic-40-l-abfalleimer-23740383',
     productsPerPage: 98,
@@ -306,6 +308,7 @@ const testParameters = {
     productPageUrl:
       'https://www.idealo.de/preisvergleich/OffersOfProduct/202152796_-echo-dot-5-generation-weiss-amazon.html',
     productsPerPage: 48,
+    ean: '0840080503097',
     productsPerPageAfterLoadMore: 7,
     subCategoriesCount: 6,
     mainCategoriesCount: 9,

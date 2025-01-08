@@ -1,5 +1,5 @@
-import { describe, test, beforeAll } from "@jest/globals";
-import testParameters from "./utils/testParamter.js";
+import { describe, test, beforeAll } from '@jest/globals';
+import testParameters from './utils/testParamter.js';
 import {
   extractProductInfos,
   extractProducts,
@@ -12,64 +12,63 @@ import {
   myBeforeAll,
   newPage,
   productPageCount,
-} from "./utils/commonTests.js";
+} from './utils/commonTests.js';
 
-const shopDomain = "galeria.de";
+const shopDomain = 'galeria.de';
 const proxyType = 'de';
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {
-    await myBeforeAll(shopDomain, proxyType);
+    await myBeforeAll(shopDomain);
   }, 1000000);
 
-  test("Mimic for block detection is working", async () => {
+  test('Mimic for block detection is working', async () => {
     await mimicTest();
   }, 1000000);
 
-  // test("Find mainCategories", async () => {
-  //   const result = await findMainCategories();
-  //   if(result === undefined){
-  //     expect(1).toBe(2);
-  //   }
-  //   console.log("result:", result);
-  // }, 1000000);
+  test("Find mainCategories", async () => {
+    const result = await findMainCategories();
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
+    console.log("result:", result);
+  }, 1000000);
 
+  test("Find subCategories", async () => {
+    const result = await findSubCategories();
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
+    console.log("sub categories", result);
+  }, 1000000);
 
-  // test("Find subCategories", async () => {
-  //   const result = await findSubCategories();
-  //   if(result === undefined){
-  //     expect(1).toBe(2);
-  //   }
-  //   console.log("sub categories", result);
-  // }, 1000000);
+  test("Find Pagination and generate page 2 link", async () => {
+    await findPaginationAndNextPage();
+  }, 1000000);
 
-  // test("Find Pagination and generate page 2 link", async () => {
-  //   await findPaginationAndNextPage();
-  // }, 1000000);
+  test('Extract product Infos', async () => {
+    const addProductInfo = async ({
+      productInfo,
+      url,
+    }: {
+      productInfo: any[] | null;
+      url: string;
+    }) => {
+      if (productInfo) {
+        console.log('productInfo:', productInfo);
+        const ean = productInfo.find((info) => info.key === 'ean');
+        expect(ean.value).toBe(testParameters[shopDomain].ean);
+      } else {
+        expect(1).toBe(2);
+      }
+    };
+    await extractProductInfos(addProductInfo);
+  }, 60000);
 
-  // test("Extract product Infos", async () => {
-  //   const addProductInfo = async ({
-  //     productInfo,
-  //     url,
-  //   }: {
-  //     productInfo: any[] | null;
-  //     url: string;
-  //   }) => {
-  //     if (productInfo) {
-  //       console.log("productInfo:", productInfo);
-  //       const ean = productInfo.find((info) => info.key === "ean");
-  //       expect(ean.value).toBe("8435415091787");
-  //     } else {
-  //       expect(1).toBe(2);
-  //     }
-  //   };
-  //   await extractProductInfos(addProductInfo);
-  // }, 60000);
-
-  // test("Extract Products from Product page", async () => {
-  //   await newPage();
-  //   await extractProducts();
-  // }, 1000000);
+  test("Extract Products from Product page", async () => {
+    await newPage();
+    await extractProducts();
+  }, 1000000);
 
   test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
     await extractProductsFromSecondPageQueueless(5);

@@ -25,6 +25,8 @@ import {
   queryURLBuilder,
   registerRequest,
   uuid,
+  Query,
+  determineAdjustedSellPrice,
 } from '@dipmaxtech/clr-pkg';
 import { Page, Browser } from 'rebrowser-puppeteer';
 import { MockQueue } from './MockQueue.js';
@@ -122,7 +124,10 @@ export const newPage = async (
   return pageAndFingerprint;
 };
 
-export const myBeforeAll = async (_shopDomain: string) => {
+export const myBeforeAll = async (
+  _shopDomain: string,
+  openPage: boolean = true
+) => {
   shopDomain = _shopDomain;
   // @ts-ignore
   browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
@@ -148,8 +153,10 @@ export const myBeforeAll = async (_shopDomain: string) => {
         Date.now()
       );
     }
-    const pageAndFingerprint = await newPage(shop.entryPoints[0].url);
-    if (pageAndFingerprint) console.log(pageAndFingerprint.fingerprint);
+    if (openPage) {
+      const pageAndFingerprint = await newPage(shop.entryPoints[0].url);
+      if (pageAndFingerprint) console.log(pageAndFingerprint.fingerprint);
+    }
   }
 };
 
@@ -520,7 +527,7 @@ export const querySellerInfos = async (
   if (page && shops && shops[shopDomain]) {
     const { eanList, asin, prc } = product;
 
-    const { avgPrice, a_useCurrPrice, a_prc } = getAznAvgPrice(
+    const { avgPrice, a_useCurrPrice, a_prc } = determineAdjustedSellPrice(
       product,
       product.a_prc || 0
     );
@@ -540,7 +547,7 @@ export const querySellerInfos = async (
         brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
         model: { key: '', value: '' },
-        category: '',
+        category: 'default',
         product: {
           value: asin || eanList[0],
           key: asin || eanList[0],
@@ -587,11 +594,11 @@ export const queryEansOnEby = async (
   ean: string
 ) => {
   if (page && shops && shops[shopDomain]) {
-    const query = {
+    const query: Query = {
       brand: { key: '', value: '' },
       year: { min: 0, max: 0 },
       model: { key: '', value: '' },
-      category: '',
+      category: 'total_listings',
       product: {
         value: ean,
         key: ean,
@@ -636,6 +643,8 @@ export const queryEansOnEby = async (
         subCategory: 0,
       },
     });
+  } else {
+    throw new Error('Check config.');
   }
 };
 
@@ -648,7 +657,7 @@ export const queryEbayCategory = async (addProductInfo: any, ean: string) => {
         brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
         model: { key: '', value: '' },
-        category: '',
+        category: 'total_listings',
         product: {
           value: ean,
           key: ean,
@@ -697,7 +706,7 @@ export const queryAznListing = async (addProductInfo: any, offer: string) => {
         brand: { key: '', value: '' },
         year: { min: 0, max: 0 },
         model: { key: '', value: '' },
-        category: '',
+        category: 'default',
         product: {
           value: '',
           key: '',

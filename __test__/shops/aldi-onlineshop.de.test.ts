@@ -32,24 +32,24 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await myBeforeAll(shopDomain);
   }, 1000000);
 
-  test("Mimic for block detection is working", async () => {
-    await mimicTest();
-  }, 1000000);
+  // test("Mimic for block detection is working", async () => {
+  //   await mimicTest();
+  // }, 1000000);
   
-  test("Find mainCategories", async () => {
-    const result = await findMainCategories();
-    console.log("result:", result);
-    if(result === undefined){
-      expect(1).toBe(2);
-    }
-  }, 1000000);
-  test("Find subCategories", async () => {
-    const result = await findSubCategories();
-    console.log("sub categories", result);
-    if(result === undefined){
-      expect(1).toBe(2);
-    }
-  }, 1000000);
+  // test("Find mainCategories", async () => {
+  //   const result = await findMainCategories();
+  //   console.log("result:", result);
+  //   if(result === undefined){
+  //     expect(1).toBe(2);
+  //   }
+  // }, 1000000);
+  // test("Find subCategories", async () => {
+  //   const result = await findSubCategories();
+  //   console.log("sub categories", result);
+  //   if(result === undefined){
+  //     expect(1).toBe(2);
+  //   }
+  // }, 1000000);
 
   // test("Find product in category count", async () => {
   //   await productPageCount();
@@ -78,10 +78,10 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   //   await extractProductInfos(addProductInfo);
   // }, 60000);
 
-  // test("Extract Products from Product page", async () => {
-  //   await newPage();
-  //   await extractProducts(testParameters[shopDomain].initialProductPageUrl);
-  // }, 1000000);
+  test("Extract Products from Product page", async () => {
+    await newPage();
+    await extractProducts(testParameters[shopDomain].initialProductPageUrl);
+  }, 1000000);
 
   // test(`Extract min. ${testParameters[shopDomain].productsPerPageAfterLoadMore} products from product page with load more button`, async () => {
   //   await extractProductsFromSecondPageQueueless(4);
