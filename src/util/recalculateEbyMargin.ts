@@ -3,17 +3,25 @@ import {
   DbProductRecord,
   findMappedCategory,
   roundToTwoDecimals,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
 export const recalculateEbyMargin = (
   p: DbProductRecord,
   spotterSet: Partial<DbProductRecord>
 ) => {
   let mappedCategory = null;
-  if (p.ebyCategories!.every((cat) => typeof cat === "number")) {
-    mappedCategory = findMappedCategory(p.ebyCategories); // { category: "Drogerie", id: 322323, ...}
+  const {
+    e_pRange,
+    ebyCategories,
+    prc: buyPrice,
+    qty: buyQty,
+    e_qty: sellQty,
+  } = p;
+  const sellPrice = e_pRange?.median!;
+  if (ebyCategories!.every((cat) => typeof cat === 'number')) {
+    mappedCategory = findMappedCategory(ebyCategories); // { category: "Drogerie", id: 322323, ...}
     if (mappedCategory) {
-      spotterSet["ebyCategories"] = [
+      spotterSet['ebyCategories'] = [
         {
           id: mappedCategory.id,
           createdAt: new Date().toISOString(),
@@ -21,16 +29,15 @@ export const recalculateEbyMargin = (
         },
       ];
     }
-  } else if (p.ebyCategories!.length > 0) {
-    mappedCategory = findMappedCategory([p.ebyCategories![0].id]);
+  } else if (ebyCategories!.length > 0) {
+    const categories = [ebyCategories![0].id];
+    mappedCategory = findMappedCategory(categories);
   }
-  if (mappedCategory) {
-    const { prc: buyPrice, qty: buyQty, e_qty: sellQty, e_prc: sellPrice } = p;
-
-    spotterSet["e_uprc"] = roundToTwoDecimals(sellPrice! / sellQty!);
+  if (mappedCategory && sellPrice) {
+    spotterSet['e_uprc'] = roundToTwoDecimals(sellPrice / sellQty!);
     let ebyArbitrage = calculateEbyArbitrage(
       mappedCategory,
-      sellPrice!, //VK
+      sellPrice, //VK
       buyPrice * (sellQty! / buyQty) //EK  //QTY Zielshop/QTY Herkunftsshop
     );
     if (ebyArbitrage) {

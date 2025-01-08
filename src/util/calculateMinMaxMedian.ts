@@ -1,4 +1,4 @@
-import { Product } from "@dipmaxtech/clr-pkg";
+import { Product, roundToTwoDecimals } from '@dipmaxtech/clr-pkg';
 
 export function calculateMinMaxMedian(foundProducts: Product[]) {
   // Extract prices from foundProducts
@@ -27,11 +27,10 @@ export function calculateMinMaxMedian(foundProducts: Product[]) {
     (price) => price >= lowerBound && price <= upperBound
   );
 
-  
   if (filteredPrices.length === 0) {
     return { min: null, max: null, median: null };
   }
-  
+
   // Sort the filtered prices array
   filteredPrices.sort((a, b) => a - b);
 
@@ -48,5 +47,9 @@ export function calculateMinMaxMedian(foundProducts: Product[]) {
     median = filteredPrices[mid];
   }
 
-  return { min, max, median };
+  return {
+    min: roundToTwoDecimals(min),
+    max: roundToTwoDecimals(max),
+    median: roundToTwoDecimals(median),
+  };
 }

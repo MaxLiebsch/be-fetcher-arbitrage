@@ -43,7 +43,7 @@ export const proxyAuth = {
 };
 
 export const defaultQuery: Query = {
-  category: "",
+  category: "default",
   brand: {
     key: "",
     value: "",

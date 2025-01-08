@@ -1,20 +1,20 @@
-import { QueryQueue, Shop } from "@dipmaxtech/clr-pkg";
-import { differenceInHours } from "date-fns";
-import { getShop } from "../../../db/util/shops.js";
-import { TaskCompletedStatus } from "../../../status.js";
-import { proxyAuth } from "../../../constants.js";
-import { deleteProduct } from "../../../db/util/crudProducts.js";
-import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { updateProgressDealsOnEbyTasks } from "../../../util/updateProgressInTasks.js";
-import { DealOnEbyTask } from "../../../types/tasks/Tasks.js";
-import { DealsOnEbyStats } from "../../../types/taskStats/DealsOnEbyStats.js";
-import { MissingShopError } from "../../../errors.js";
-import { TaskReturnType } from "../../../types/TaskReturnType.js";
-import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
-import { log } from "../../../util/logger.js";
-import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js";
-import { scrapeEbyListings } from "../../../util/deals/scrapeEbyListings.js";
+import { QueryQueue, Shop } from '@dipmaxtech/clr-pkg';
+import { differenceInHours } from 'date-fns';
+import { getShop } from '../../../db/util/shops.js';
+import { TaskCompletedStatus } from '../../../status.js';
+import { proxyAuth } from '../../../constants.js';
+import { deleteProduct } from '../../../db/util/crudProducts.js';
+import { getProductLimitMulti } from '../../../util/getProductLimit.js';
+import { scrapeProductInfo } from '../../../util/deals/scrapeProductInfo.js';
+import { updateProgressDealsOnEbyTasks } from '../../../util/updateProgressInTasks.js';
+import { DealOnEbyTask } from '../../../types/tasks/Tasks.js';
+import { DealsOnEbyStats } from '../../../types/taskStats/DealsOnEbyStats.js';
+import { MissingShopError } from '../../../errors.js';
+import { TaskReturnType } from '../../../types/TaskReturnType.js';
+import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
+import { log } from '../../../util/logger.js';
+import { findPendingProductsWithAggForTask } from '../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js';
+import { scrapeTotalOffers } from '../../../util/deals/scrapeTotalOffers.js';
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
@@ -22,22 +22,22 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   return new Promise(async (res, rej) => {
     const { products: productsWithShop, shops } =
       await findPendingProductsWithAggForTask(
-        "DEALS_ON_EBY",
+        'DEALS_ON_EBY',
         taskId,
-        action || "none",
+        action || 'none',
         productLimit
       );
 
-    if (action === "recover") {
+    if (action === 'recover') {
       log(`Recovering ${type} and found ${productsWithShop.length} products`);
     } else {
       log(`Starting ${type} with ${productsWithShop.length} products`);
     }
 
-    const eby = await getShop("ebay.de");
+    const eby = await getShop('ebay.de');
 
     if (!eby) {
-      return rej(new MissingShopError("ebay.de", task));
+      return rej(new MissingShopError('ebay.de', task));
     }
 
     const infos: DealsOnEbyStats = {
@@ -47,10 +47,10 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
       new: 0,
       old: 0,
       scrapeProducts: {
-        elapsedTime: "",
+        elapsedTime: '',
       },
       ebyListings: {
-        elapsedTime: "",
+        elapsedTime: '',
       },
       missingProperties: {
         bsr: 0,
@@ -61,18 +61,18 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
         link: 0,
         image: 0,
       },
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     const _productLimit = getProductLimitMulti(
       productsWithShop.length,
       productLimit
     );
-    log("Product limit " + _productLimit);
+    log('Product limit ' + _productLimit);
     infos.locked = productsWithShop.length;
-    
+
     await updateProgressDealsOnEbyTasks();
-    
+
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
@@ -88,16 +88,16 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
           new Date(),
           new Date(product.availUpdatedAt || product.updatedAt)
         );
-        const ebyLink = "https://www.ebay.de/itm/" + esin;
+        const ebyLink = 'https://www.ebay.de/itm/' + esin;
 
         if (diffHours > 24) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
-            product,
+            product
           );
           if (isValidProduct) {
-            await scrapeEbyListings(
+            await scrapeTotalOffers(
               queue,
               eby,
               source,
@@ -107,27 +107,27 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
                 ...isValidProduct,
               },
               infos,
-              { timestamp: "dealEbyUpdatedAt", taskIdProp: "dealEbyTaskId" }
+              { timestamp: 'dealEbyUpdatedAt', taskIdProp: 'dealEbyTaskId' }
             );
           } else {
             infos.total++;
-            await deleteProduct( productId);
+            await deleteProduct(productId);
             log(`Deleted: ${shopDomain}-${productId}`);
             //DELETE PRODUCT
           }
         } else {
-          await scrapeEbyListings(queue, eby, source, ebyLink, product, infos, {
-            timestamp: "dealEbyUpdatedAt",
-            taskIdProp: "dealEbyTaskId",
+          await scrapeTotalOffers(queue, eby, source, ebyLink, product, infos, {
+            timestamp: 'dealEbyUpdatedAt',
+            taskIdProp: 'dealEbyTaskId',
           });
         }
       })
     );
     const remaining = await countRemainingProducts(shops, taskId, type);
     log(`Remaining products: ${remaining}`);
-    await queue.clearQueue("DEALS_ON_EBY_COMPLETE", infos);
+    await queue.clearQueue('DEALS_ON_EBY_COMPLETE', infos);
     return res(
-      new TaskCompletedStatus("DEALS_ON_EBY_COMPLETE", task, {
+      new TaskCompletedStatus('DEALS_ON_EBY_COMPLETE', task, {
         taskStats: infos,
         queueStats: queue.queueStats || {},
       })

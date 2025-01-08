@@ -21,6 +21,8 @@ import { WholeSaleEbyTask } from '../types/tasks/Tasks.js';
 import { TASK_TYPES } from './taskTypes.js';
 import { wholeSaleNotFoundQuery } from './wholeSales.js';
 import { getEanFromProduct } from './getEanFromProduct.js';
+import { TaskStats } from '../types/taskStats/TasksStats.js';
+import { defaultEbyDealTask } from '../constants.js';
 
 const handleOtherProducts = async (
   ean: string,
@@ -41,14 +43,23 @@ const handleOtherProducts = async (
   }
 };
 
-export async function handleQueryEansOnEbyIsFinished(
-  collection: string,
-  queue: QueryQueue,
-  product: DbProductRecord,
-  infos: QueryEansOnEbyStats,
-  foundProducts: Product[],
-  task: DailySalesTask | WholeSaleEbyTask | null = null
-) {
+export async function handleScrapeTotalOffersIsFinished({
+  shopDomain,
+  queue,
+  product,
+  infos,
+  foundProducts,
+  task = null,
+  processProps,
+}: {
+  shopDomain: string;
+  queue: QueryQueue;
+  product: DbProductRecord;
+  infos: TaskStats;
+  foundProducts: Product[];
+  task: DailySalesTask | WholeSaleEbyTask | null;
+  processProps: typeof defaultEbyDealTask;
+}) {
   const {
     e_qty: sellQty,
     ebyCategories,
@@ -79,28 +90,25 @@ export async function handleQueryEansOnEbyIsFinished(
     null as Product | null
   );
   if (foundProduct) {
-    const { image, price: sellPrice, name, link } = foundProduct;
+    const { image, name, link } = foundProduct;
     const esin = new URL(link).pathname.split('/')[2];
 
     if (priceRange.min && priceRange.max) {
       update['e_pRange'] = priceRange;
     }
-    const medianPrice = priceRange.median!;
+    const sellPrice = priceRange.median!; // median price
 
     update['e_totalOfferCount'] = foundProducts.length;
-    update['e_img'] = image;
     update['e_orgn'] = 'e';
-    update['e_pblsh'] = false;
     update['esin'] = esin;
-    update['e_prc'] = sellPrice;
     update['e_nm'] = replaceAllHiddenCharacters(name);
 
     if (sellQty) {
       update['e_qty'] = sellQty;
-      update['e_uprc'] = roundToTwoDecimals(medianPrice / sellQty);
+      update['e_uprc'] = roundToTwoDecimals(sellPrice / sellQty);
     } else {
       update['e_qty'] = 1;
-      update['e_uprc'] = medianPrice;
+      update['e_uprc'] = sellPrice;
     }
 
     if (ebyCategories && ebyCategories.length > 0 && e_costs) {
@@ -110,10 +118,10 @@ export async function handleQueryEansOnEbyIsFinished(
           return acc;
         }, [])
       );
-      if (mappedCategory && medianPrice) {
+      if (mappedCategory) {
         const ebyArbitrage = calculateEbyArbitrage(
           mappedCategory,
-          medianPrice, //VK
+          sellPrice, //VK
           buyPrice * (sellQty! / buyQty) //EK  //QTY Zielshop/QTY Herkunftsshop
         );
         if (ebyArbitrage) {
@@ -126,8 +134,7 @@ export async function handleQueryEansOnEbyIsFinished(
 
     update = {
       ...update,
-      qEbyUpdatedAt: new Date().toISOString(),
-      eby_prop: 'complete',
+      [processProps.timestamp]: new Date().toISOString(),
     };
     const ean = getEanFromProduct(product);
 
@@ -137,14 +144,13 @@ export async function handleQueryEansOnEbyIsFinished(
         {
           $set: {
             ...update,
-            qEbyUpdatedAt: new Date().toISOString(),
-            eby_prop: 'complete',
+            [processProps.timestamp]: new Date().toISOString(),
           },
           $unset: {
-            eby_taskId: '',
+            [processProps.taskIdProp]: '',
           },
         },
-        `Updated multipe products ${collection}-${productId}`
+        `Updated multipe products ${shopDomain}-${productId}`
       );
     }
 
@@ -153,10 +159,10 @@ export async function handleQueryEansOnEbyIsFinished(
         ...update,
       },
       $unset: {
-        eby_taskId: '',
+        [processProps.taskIdProp]: '',
       },
     });
-    log(`Updated: ${collection}-${productId}`, result);
+    log(`Updated: ${shopDomain}-${productId}`, result);
     if (task) task.progress.lookupCategory.push(productId);
   } else {
     let query = {};
@@ -169,40 +175,13 @@ export async function handleQueryEansOnEbyIsFinished(
         await handleOtherProducts(
           ean,
           query,
-          `Updated multipe products ${collection}-${productId}`
+          `Updated multipe products ${shopDomain}-${productId}`
         );
       }
     }
     const result = await updateProductWithQuery(productId, query);
-    log(`No product found for ${collection}-${productId}`, result);
+    log(`No product found for ${shopDomain}-${productId}`, result);
   }
-  infos.shops[collection]++;
   infos.total++;
   queue.total++;
-}
-
-export async function handleQueryEansOnEbyNotFound(
-  collection: string,
-  product: DbProductRecord,
-  isWholeSaleEby?: boolean
-) {
-  const { _id: productId } = product;
-  let query = {};
-  if (isWholeSaleEby) {
-    query = wholeSaleNotFoundQuery;
-  } else {
-    query = resetEbyProductQuery({ eby_prop: 'missing', cat_prop: '' });
-
-    const ean = getEanFromProduct(product);
-    if (ean) {
-      await handleOtherProducts(
-        ean,
-        query,
-        `Updated multipe products ${collection}-${productId}`
-      );
-    }
-  }
-
-  const result = await updateProductWithQuery(productId, query);
-  log(`No product info: ${collection}-${productId}`, result);
 }

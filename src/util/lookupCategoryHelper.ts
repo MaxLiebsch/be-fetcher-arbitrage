@@ -152,8 +152,11 @@ export const handleCategoryAndUpdate = async (
     e_qty: sellQty,
     qty: buyQty,
     e_vrfd,
+    e_pRange,
     _id: productId,
   } = product;
+
+  const medianPrice = e_pRange?.median; // VK
 
   if (categories) {
     const sellPrice = safeParsePrice(ebyListingPrice || '0');
@@ -162,10 +165,10 @@ export const handleCategoryAndUpdate = async (
     const parsedCategories = parseEbyCategories(categories); // [ 322323, 3223323, 122121  ]
     let mappedCategory = findMappedCategory(parsedCategories); // { category: "Drogerie", id: 322323, ...}
 
-    if (mappedCategory) {
+    if (mappedCategory && medianPrice) {
       let ebyArbitrage = calculateEbyArbitrage(
         mappedCategory,
-        sellPrice,
+        medianPrice, // VK
         buyPrice * (sellQty! / buyQty)
       );
       const productUpdate = {

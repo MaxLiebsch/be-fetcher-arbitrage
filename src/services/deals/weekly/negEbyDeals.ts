@@ -1,49 +1,42 @@
-import {
-  QueryQueue,
-  Shop,
-} from "@dipmaxtech/clr-pkg";
-import { differenceInHours } from "date-fns";
-import { getShop } from "../../../db/util/shops.js";
-import { TaskCompletedStatus } from "../../../status.js";
-import {
-  proxyAuth,
-} from "../../../constants.js";
-import {
-  deleteProduct,
-} from "../../../db/util/crudProducts.js";
-import { getProductLimitMulti } from "../../../util/getProductLimit.js";
-import { scrapeProductInfo } from "../../../util/deals/scrapeProductInfo.js";
-import { updateProgressNegDealEbyTasks } from "../../../util/updateProgressInTasks.js";
-import { NegEbyDealTask } from "../../../types/tasks/Tasks.js";
-import { NegDealsOnEbyStats } from "../../../types/taskStats/NegDealsOnEby.js";
-import { MissingShopError } from "../../../errors.js";
-import { TaskReturnType } from "../../../types/TaskReturnType.js";
-import { log } from "../../../util/logger.js";
-import { countRemainingProducts } from "../../../util/countRemainingProducts.js";
-import { findPendingProductsWithAggForTask } from "../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js";
-import { scrapeEbyListings } from "../../../util/deals/scrapeEbyListings.js";
+import { QueryQueue, Shop } from '@dipmaxtech/clr-pkg';
+import { differenceInHours } from 'date-fns';
+import { getShop } from '../../../db/util/shops.js';
+import { TaskCompletedStatus } from '../../../status.js';
+import { proxyAuth } from '../../../constants.js';
+import { deleteProduct } from '../../../db/util/crudProducts.js';
+import { getProductLimitMulti } from '../../../util/getProductLimit.js';
+import { scrapeProductInfo } from '../../../util/deals/scrapeProductInfo.js';
+import { updateProgressNegDealEbyTasks } from '../../../util/updateProgressInTasks.js';
+import { NegEbyDealTask } from '../../../types/tasks/Tasks.js';
+import { NegDealsOnEbyStats } from '../../../types/taskStats/NegDealsOnEby.js';
+import { MissingShopError } from '../../../errors.js';
+import { TaskReturnType } from '../../../types/TaskReturnType.js';
+import { log } from '../../../util/logger.js';
+import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
+import { findPendingProductsWithAggForTask } from '../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js';
+import { scrapeTotalOffers } from '../../../util/deals/scrapeTotalOffers.js';
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
   const { _id: taskId, action, concurrency, type } = task;
   return new Promise(async (res, rej) => {
     const { products, shops } = await findPendingProductsWithAggForTask(
-      "NEG_EBY_DEALS",
+      'NEG_EBY_DEALS',
       taskId,
-      action || "none",
+      action || 'none',
       productLimit
     );
 
-    if (action === "recover") {
+    if (action === 'recover') {
       log(`Recovering ${type} and found ${products.length} products`);
     } else {
       log(`Starting ${type} with ${products.length} products`);
     }
 
-    const eby = await getShop("ebay.de");
+    const eby = await getShop('ebay.de');
 
     if (!eby) {
-      return rej(new MissingShopError("ebay.de", task));
+      return rej(new MissingShopError('ebay.de', task));
     }
 
     const infos: NegDealsOnEbyStats = {
@@ -58,14 +51,14 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
         link: 0,
         image: 0,
       },
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     const _productLimit = getProductLimitMulti(products.length, productLimit);
     log(`Product limit: ${_productLimit}`);
     infos.locked = products.length;
     await updateProgressNegDealEbyTasks();
-    
+
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
@@ -81,7 +74,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
           new Date(),
           new Date(product.availUpdatedAt || product.updatedAt)
         );
-        const ebyLink = "https://www.ebay.de/itm/" + esin;
+        const ebyLink = 'https://www.ebay.de/itm/' + esin;
 
         if (diffHours > 24) {
           const isValidProduct = await scrapeProductInfo(
@@ -90,7 +83,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
             product
           );
           if (isValidProduct) {
-            await scrapeEbyListings(
+            await scrapeTotalOffers(
               queue,
               eby,
               source,
@@ -108,15 +101,15 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
             //DELETE PRODUCT
           }
         } else {
-          await scrapeEbyListings(queue, eby, source, ebyLink, product, infos);
+          await scrapeTotalOffers(queue, eby, source, ebyLink, product, infos);
         }
       })
     );
     const remaining = await countRemainingProducts(shops, taskId, type);
     log(`Remaining products: ${remaining}`);
-    await queue.clearQueue("CRAWL_EBY_LISTINGS_COMPLETE", infos);
+    await queue.clearQueue('CRAWL_EBY_LISTINGS_COMPLETE', infos);
     return res(
-      new TaskCompletedStatus("CRAWL_EBY_LISTINGS_COMPLETE", task, {
+      new TaskCompletedStatus('CRAWL_EBY_LISTINGS_COMPLETE', task, {
         taskStats: infos,
         queueStats: queue.queueStats,
       })
@@ -125,4 +118,3 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
 };
 
 export default negEbyDeals;
-

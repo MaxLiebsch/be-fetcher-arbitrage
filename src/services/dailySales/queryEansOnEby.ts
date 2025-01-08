@@ -4,6 +4,7 @@ import {
   NotFoundCause,
   ObjectId,
   Product,
+  Query,
   queryEansOnEbyQueue,
   QueryQueue,
   queryURLBuilder,
@@ -162,13 +163,13 @@ export const queryEansOnEby = async (
         await isProcessComplete();
       };
 
-      const query = {
+      const query:Query = {
         ...defaultQuery,
         product: {
           value: ean,
           key: ean,
         },
-        category: 'default',
+        category: 'total_listings',
       };
 
       if (!ebay.queryUrlSchema) {

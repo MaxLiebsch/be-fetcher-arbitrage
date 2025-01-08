@@ -2,6 +2,7 @@ import {
   QueryQueue,
   reduceString,
   globalEventEmitter,
+  Query,
 } from '@dipmaxtech/clr-pkg';
 import { handleResult } from '../handleResult.js';
 import { MissingProductsError, MissingShopError } from '../errors.js';
@@ -157,7 +158,7 @@ export default async function matchProducts(
         reducedName = `${mnfctr} ${reducedName}`;
       }
 
-      const query = {
+      const query:Query = {
         ...defaultQuery,
         product: {
           key: reducedName,
