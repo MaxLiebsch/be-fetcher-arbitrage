@@ -1130,8 +1130,8 @@ export const pendingDealsOnAznQuery = (domain: string) => {
       },
       {
         $or: [
-          { dealAznUpdatedAt: { $exists: false } },
-          { dealAznUpdatedAt: { $lte: subDateDaysISO(DEALS_ON_AZN_DAYS) } },
+          { availUpdatedAt: { $exists: false } },
+          { availUpdatedAt: { $lte: subDateDaysISO(DEALS_ON_AZN_DAYS) } },
         ],
       },
       ...totalPositivAmazon.$and,

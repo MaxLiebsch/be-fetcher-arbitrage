@@ -22,7 +22,6 @@ export async function scrapeTotalOffers(
   queue: QueryQueue,
   eby: Shop,
   source: Shop,
-  targetLink: string,
   product: DbProductRecord,
   infos: TaskStats,
   processProps = defaultEbyDealTask

@@ -2,7 +2,7 @@ import { QueryQueue, Shop } from '@dipmaxtech/clr-pkg';
 import { differenceInHours } from 'date-fns';
 import { getShop } from '../../../db/util/shops.js';
 import { TaskCompletedStatus } from '../../../status.js';
-import { proxyAuth } from '../../../constants.js';
+import { MAX_AGE_SHOP_LISTING, proxyAuth } from '../../../constants.js';
 import { deleteProduct } from '../../../db/util/crudProducts.js';
 import { getProductLimitMulti } from '../../../util/getProductLimit.js';
 import { scrapeProductInfo } from '../../../util/deals/scrapeProductInfo.js';
@@ -88,9 +88,8 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
           new Date(),
           new Date(product.availUpdatedAt || product.updatedAt)
         );
-        const ebyLink = 'https://www.ebay.de/itm/' + esin;
 
-        if (diffHours > 24) {
+        if (diffHours >= MAX_AGE_SHOP_LISTING) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
@@ -101,7 +100,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
               queue,
               eby,
               source,
-              ebyLink,
+
               {
                 ...product,
                 ...isValidProduct,
@@ -116,7 +115,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
             //DELETE PRODUCT
           }
         } else {
-          await scrapeTotalOffers(queue, eby, source, ebyLink, product, infos, {
+          await scrapeTotalOffers(queue, eby, source, product, infos, {
             timestamp: 'dealEbyUpdatedAt',
             taskIdProp: 'dealEbyTaskId',
           });

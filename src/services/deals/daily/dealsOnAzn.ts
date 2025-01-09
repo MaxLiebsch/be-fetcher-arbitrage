@@ -102,7 +102,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
             new Date(),
             new Date(product?.availUpdatedAt || product.updatedAt)
           );
-          if (diffHours > MAX_AGE_SHOP_LISTING) {
+          if (diffHours >= MAX_AGE_SHOP_LISTING) {
             const isValidProduct = await scrapeProductInfo(
               queue,
               source,
