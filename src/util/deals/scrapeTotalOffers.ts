@@ -1,13 +1,10 @@
 import {
-  AddProductInfoProps,
   Content,
   DbProductRecord,
   NotFoundCause,
   Product,
-  ProductRecord,
   Query,
   queryEansOnEbyQueue,
-  queryProductPageQueue,
   QueryQueue,
   queryURLBuilder,
   Shop,
@@ -15,7 +12,6 @@ import {
 } from '@dipmaxtech/clr-pkg';
 import { TaskStats } from '../../types/taskStats/TasksStats.js';
 import { defaultEbyDealTask, defaultQuery } from '../../constants.js';
-import { handleEbyListingNotFound } from '../scrapeEbyListingsHelper.js';
 import { updateProductWithQuery } from '../../db/util/crudProducts.js';
 import { log } from '../logger.js';
 import { getEanFromProduct } from '../getEanFromProduct.js';

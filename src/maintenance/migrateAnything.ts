@@ -1,4 +1,8 @@
-import { DbProductRecord, getAznAvgPrice } from '@dipmaxtech/clr-pkg';
+import {
+  DbProductRecord,
+  getAznAvgPrice,
+  roundToTwoDecimals,
+} from '@dipmaxtech/clr-pkg';
 import { getProductsCol } from '../db/mongo';
 import { recalculateEbyMargin } from '../util/recalculateEbyMargin';
 
@@ -24,10 +28,19 @@ async function migrateAnything() {
     const products = await col.find(query).limit(batch).skip(cnt).toArray();
 
     for (const product of products) {
-      const { lnk } = product;
+      const { lnk, e_pRange } = product;
       let spotterSet: Partial<DbProductRecord> = {};
       recalculateEbyMargin(product, spotterSet);
-
+      if (e_pRange && e_pRange.median) {
+        spotterSet = {
+          e_pRange: {
+            ...e_pRange,
+            min: roundToTwoDecimals(e_pRange.min),
+            max: roundToTwoDecimals(e_pRange.max),
+            median: roundToTwoDecimals(e_pRange.median),
+          },
+        };
+      }
       if (Object.keys(spotterSet).length > 0) {
         const update = {
           $set: { ...spotterSet },
