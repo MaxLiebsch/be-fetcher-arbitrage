@@ -38,7 +38,7 @@ export async function scrapeTotalOffers(
       foundProducts.push(product as Product);
     };
     const isFinished = async () => {
-      await handleScrapeTotalOffersIsFinished({
+      res(await handleScrapeTotalOffersIsFinished({
         shopDomain,
         queue,
         product,
@@ -46,7 +46,7 @@ export async function scrapeTotalOffers(
         foundProducts,
         task: null,
         processProps,
-      });
+      }))
     };
 
     const handleNotFound = async (cause: NotFoundCause) => {
