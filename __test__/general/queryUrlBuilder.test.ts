@@ -13,13 +13,14 @@ describe('Query url builder', () => {
       product: {
         value: 'ean',
         key: 'ean',
+        price: "price"
       },
       category: 'total_listings',
     };
     const queryLink = queryURLBuilder(ebay.queryUrlSchema!, query).url;
     console.log('queryLink:', queryLink)
     expect(queryLink).toBe(
-      'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=ean&_sacat=0&LH_BIN=1'
+      'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=ean&_sacat=0&LH_BIN=1&_udhi=price'
     );
   });
 });

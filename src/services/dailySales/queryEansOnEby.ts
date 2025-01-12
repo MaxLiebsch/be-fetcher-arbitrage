@@ -15,6 +15,7 @@ import {
 import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
+  MAX_EBY_MULTIPLE,
   proxyAuth,
   STANDARD_SETTLING_TIME,
 } from '../../constants.js';
@@ -168,6 +169,7 @@ export const queryEansOnEby = async (
         product: {
           value: ean,
           key: ean,
+          price: Math.ceil(product.prc * MAX_EBY_MULTIPLE).toString()
         },
         category: 'total_listings',
       };

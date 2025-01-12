@@ -12,7 +12,7 @@ import _ from 'underscore';
 
 import { handleResult } from '../handleResult.js';
 import { MissingProductsError, MissingShopError } from '../errors.js';
-import { CONCURRENCY, defaultQuery, proxyAuth } from '../constants.js';
+import { CONCURRENCY, defaultQuery, MAX_EBY_MULTIPLE, proxyAuth } from '../constants.js';
 import { checkProgress } from '../util/checkProgress.js';
 import { getShop } from '../db/util/shops.js';
 import {
@@ -182,6 +182,7 @@ export default async function queryEansOnEby(
         product: {
           value: ean,
           key: ean,
+          price: Math.ceil(product.prc * MAX_EBY_MULTIPLE).toString()
         },
         category: 'total_listings',
       };

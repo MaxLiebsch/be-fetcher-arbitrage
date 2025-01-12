@@ -11,7 +11,11 @@ import {
   uuid,
 } from '@dipmaxtech/clr-pkg';
 import { TaskStats } from '../../types/taskStats/TasksStats.js';
-import { defaultEbyDealTask, defaultQuery } from '../../constants.js';
+import {
+  defaultEbyDealTask,
+  defaultQuery,
+  MAX_EBY_MULTIPLE,
+} from '../../constants.js';
 import { updateProductWithQuery } from '../../db/util/crudProducts.js';
 import { log } from '../logger.js';
 import { getEanFromProduct } from '../getEanFromProduct.js';
@@ -38,15 +42,17 @@ export async function scrapeTotalOffers(
       foundProducts.push(product as Product);
     };
     const isFinished = async () => {
-      res(await handleScrapeTotalOffersIsFinished({
-        shopDomain,
-        queue,
-        product,
-        infos,
-        foundProducts,
-        task: null,
-        processProps,
-      }))
+      res(
+        await handleScrapeTotalOffersIsFinished({
+          shopDomain,
+          queue,
+          product,
+          infos,
+          foundProducts,
+          task: null,
+          processProps,
+        })
+      );
     };
 
     const handleNotFound = async (cause: NotFoundCause) => {
@@ -77,6 +83,7 @@ export async function scrapeTotalOffers(
       product: {
         value: ean,
         key: ean,
+        price: Math.ceil(product.prc * MAX_EBY_MULTIPLE).toString(),
       },
       category: 'total_listings',
     };

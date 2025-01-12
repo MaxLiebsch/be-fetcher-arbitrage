@@ -12,6 +12,7 @@ export const COOLDOWN_MULTIPLIER = 3; // 3 hours from now
 export const SCRAPE_SHOP_COOLDOWN = 4 * 60 * 60 * 1000; // 4 hours from now
 export const PRODUCT_LIMIT = 10000;
 export const DANGLING_LOOKUP_THRESHOLD = 20;
+export const MAX_EBY_MULTIPLE = 2.5;
 export const DANGLING_MATCH_THRESHOLD = 0;
 export const MATCH_LOOKUP_THRESHOLD = 0.8;
 export const SMALL_LOCKED_PRODUCT_CNT_THRESHOLD = 10;

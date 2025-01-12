@@ -2755,15 +2755,15 @@ export const shops: { [key: string]: Shop } = {
     queryUrlSchema: [
       {
         baseUrl:
-          'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&_nkw=<query>&_sacat=0&LH_BIN=1&LH_ItemCondition=3&LH_SellerType=2&LH_PrefLoc=3&LH_Sold=1&LH_Complete=1',
+          'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&_nkw=<query>&_sacat=0&LH_BIN=1&LH_ItemCondition=3&LH_SellerType=2&LH_PrefLoc=3&LH_Sold=1&LH_Complete=1&_udhi=<price>',
         category: 'default',
       },
       {
-        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&LH_Complete=1&LH_Sold=1&_nkw=<query>&_sacat=0&LH_BIN=1",
+        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&LH_Complete=1&LH_Sold=1&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>",
         category:"sold_products"
       },
       {
-        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=<query>&_sacat=0&LH_BIN=1",
+        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>",
         category: "total_listings"
       }
     ],
