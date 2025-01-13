@@ -30,21 +30,23 @@ import { countRemainingProductsShop } from '../util/countRemainingProducts.js';
 import { hostname, wholeSaleColname } from '../db/mongo.js';
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
 import { priceToString } from '../util/lookupInfoHelper.js';
-
-interface DbProductRecordWithEan extends DbProductRecord {
-  ean: string;
-}
+import { getEanFromProduct } from '../util/getEanFromProduct.js';
+import { checkForExistingAznProducts } from '../util/checkForExistingProducts.js';
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
     const { productLimit, _id: taskId, action, userId, type } = task;
 
-    const wholeSaleProducts = (await lockWholeSaleProducts(
+    const wholesaleCandidates = await lockWholeSaleProducts(
       productLimit,
       taskId,
       action || 'none',
       'WHOLESALE_SEARCH'
-    )) as unknown as DbProductRecordWithEan[];
+    );
+
+    const wholeSaleProducts = await checkForExistingAznProducts(
+      wholesaleCandidates
+    );
 
     if (action === 'recover') {
       log(`Recovering ${type} and found ${wholeSaleProducts.length} products`);
@@ -131,13 +133,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
       const queue = queueIterator.next().value;
       queue.actualProductLimit++;
       const wholesaleProduct = wholeSaleProducts[index];
-      const {
-        ean,
-        _id: productId,
-        prc,
-        a_qty: sellQty,
-        qty: buyQty,
-      } = wholesaleProduct;
+      const { _id: productId, prc } = wholesaleProduct;
+
+      const ean = getEanFromProduct(wholesaleProduct);
+      const asin = wholesaleProduct.asin;
 
       //not needed, I swear I will write clean code
       const addProduct = async (product: ProductRecord) => {};
@@ -156,14 +155,22 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
 
             let reducedCosts = { ...update.costs };
             delete reducedCosts.azn;
-            if (update.asin) await upsertAsin(update.asin, [ean]);
+            if (update.asin && ean) await upsertAsin(update.asin, [ean]);
+            const isComplete = infoProp === 'complete';
+            const isCompleteStatus =
+              update?.costs?.azn &&
+              update.costs.azn > 0.3 &&
+              update.a_prc &&
+              update.a_prc > 1;
             const result = await updateProductWithQuery(productId, {
               $set: {
                 ...update,
-                a_status: infoProp === 'incomplete' ? 'not found' : 'complete',
+                info_prop: infoProp,
+                a_pblsh: true,
+                a_status: isComplete && isCompleteStatus ? 'complete' : 'api',
                 a_lookup_pending: false,
+                a_locked: false,
               },
-              $unset: { a_locked: '' },
               $pull: { clrName: hostname },
             });
             log(`Updated: ${ean}`, result);
@@ -181,9 +188,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
               const result = await updateProductWithQuery(productId, {
                 $set: {
                   a_status: 'not found',
+                  a_pblsh: true,
                   a_lookup_pending: false,
+                  a_locked: false,
                 },
-                $unset: { a_locked: '' },
                 $pull: { clrName: hostname },
               });
               log(`Not found: ${ean}`, result);
@@ -199,9 +207,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
           const result = await updateProductWithQuery(productId, {
             $set: {
               a_status: 'not found',
+              a_pblsh: true,
               a_lookup_pending: false,
+              a_locked: false,
             },
-            $unset: { a_locked: '' },
             $pull: { clrName: hostname },
           });
           log(`Product info missing: ${ean}`, result);
@@ -222,9 +231,10 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         const result = await updateProductWithQuery(productId, {
           $set: {
             a_status: 'not found',
+            a_pblsh: true,
             a_lookup_pending: false,
+            a_locked: false,
           },
-          $unset: { a_locked: '' },
           $pull: { clrName: hostname },
         });
         log(`Not found: ${ean} - ${cause}`, result);
@@ -253,8 +263,8 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
         queue,
         query: {
           product: {
-            value: ean,
-            key: ean,
+            value: asin || ean,
+            key: asin || ean,
             price: priceToString(prc),
           },
         },

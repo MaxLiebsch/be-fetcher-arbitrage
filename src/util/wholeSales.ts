@@ -4,9 +4,7 @@ export const wholeSaleNotFoundQuery = {
   $set: {
     e_status: "not found",
     e_lookup_pending: false,
-  },
-  $unset: {
-    e_locked: "",
+    e_locked: false,
   },
   $pull: { clrName: hostname },
 };

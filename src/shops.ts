@@ -2694,7 +2694,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     crawlActions: [],
     hasEan: false,
-    proxyType: 'des',
+    proxyType: 'mix',
     queryActions: [],
     product: [
       {

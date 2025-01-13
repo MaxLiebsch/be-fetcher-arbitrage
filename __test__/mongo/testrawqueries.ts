@@ -204,88 +204,39 @@ const aznOriginal = [
 
 const aznAggregationCntv3 = [
   {
-    $match: {
-      a_pblsh: true,
-      'costs.azn': { $gt: 0 },
-      aznUpdatedAt: { $gt: '2024-12-05T15:18:54.393Z' },
-      $or: [
-        { avg30_ahsprcs: { $gt: 0 } },
-        { avg30_ansprcs: { $gt: 0 } },
-        { avg90_ahsprcs: { $gt: 0 } },
-        { avg90_ansprcs: { $gt: 0 } },
-      ],
-      buyBoxIsAmazon: { $in: [true, false, null] },
-      $and: [
-        { bsr: { $size: 1 } },
-        { 'bsr.number': { $gt: 0, $lte: 10000000 } },
-      ],
-    },
-  },
-  {
     $addFields: {
-      a_avg_prc: {
-        $divide: [
-          {
-            $cond: {
-              if: { $gt: ['$avg30_ahsprcs', -1] },
-              then: '$avg30_ahsprcs',
-              else: {
-                $cond: {
-                  if: { $gt: ['$avg30_ansprcs', -1] },
-                  then: '$avg30_ansprcs',
-                  else: {
-                    $cond: {
-                      if: { $gt: ['$avg90_ahsprcs', -1] },
-                      then: '$avg90_ahsprcs',
-                      else: '$avg90_ansprcs',
-                    },
-                  },
-                },
-              },
-            },
+      computedPrice: {
+        $cond: {
+          if: { $eq: ['$a_avg_fld', null] },
+          then: {
+            $cond: { if: { $gt: ['$a_prc', 1] }, then: '$a_prc', else: null },
           },
-          100,
-        ],
-      },
-    },
-  },
-  { $match: { a_avg_prc: { $gt: 0 } } },
-  {
-    $addFields: {
-      'costs.azn': {
-        $round: [
-          { $multiply: [{ $divide: ['$costs.azn', '$a_prc'] }, '$a_avg_prc'] },
-          2,
-        ],
+          else: '$a_avg_price',
+        },
       },
     },
   },
   {
     $addFields: {
-      a_w_mrgn: {
-        $round: [
-          {
-            $subtract: [
-              '$a_avg_prc',
+      a_mrgn: {
+        $cond: {
+          if: { $eq: ['$computedPrice', null] },
+          then: null,
+          else: {
+            $round: [
               {
-                $add: [
+                $subtract: [
+                  '$computedPrice',
                   {
-                    $divide: [
-                      '$a_prc',
-                      {
-                        $add: [
-                          1,
-                          { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    $subtract: [
-                      '$a_avg_prc',
+                    $add: [
                       {
                         $divide: [
-                          '$a_avg_prc',
+                          {
+                            $multiply: [
+                              '$prc',
+                              { $divide: ['$a_qty', '$qty'] },
+                            ],
+                          },
                           {
                             $add: [
                               1,
@@ -294,35 +245,56 @@ const aznAggregationCntv3 = [
                           },
                         ],
                       },
+                      {
+                        $subtract: [
+                          '$computedPrice',
+                          {
+                            $divide: [
+                              '$computedPrice',
+                              {
+                                $add: [
+                                  1,
+                                  { $divide: [{ $ifNull: ['$tax', 19] }, 100] },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      '$costs.tpt',
+                      '$costs.varc',
+                      '$costs.strg_1_hy',
+                      0,
+                      '$costs.azn',
                     ],
                   },
-                  '$costs.tpt',
-                  '$costs.varc',
-                  1,
-                  '$costs.strg_2_hy',
-                  '$costs.azn',
                 ],
               },
+              2,
             ],
           },
-          2,
-        ],
+        },
       },
     },
   },
-  { $match: { a_w_mrgn: { $gte: 0 } } },
   {
     $addFields: {
-      a_w_mrgn_pct: {
-        $round: [
-          { $multiply: [{ $divide: ['$a_w_mrgn', '$a_avg_prc'] }, 100] },
-          2,
-        ],
+      a_mrgn_pct: {
+        $cond: {
+          if: { $eq: ['$a_mrgn', null] },
+          then: null,
+          else: {
+            $round: [
+              { $multiply: [{ $divide: ['$a_mrgn', '$computedPrice'] }, 100] },
+              2,
+            ],
+          },
+        },
       },
     },
   },
-  { $match: { a_w_mrgn: { $gt: 0 }, a_w_mrgn_pct: { $gte: 0 } } },
-  { $group: { _id: { field2: '$asin' }, document: { $first: '$$ROOT' } } },
-  { $replaceRoot: { newRoot: '$document' } },
-  { $count: 'productCount' },
+  { $match: { sdmn: 'wholesale', taskIds: '6784dbfb996b7d680ea69af0' } },
+  { $sort: { status: 1, a_mrgn: -1 } },
+  { $skip: 0 },
+  { $limit: 20 },
 ];

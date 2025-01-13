@@ -911,10 +911,33 @@ export const countPendingProductsForWholesaleSearchQuery = (
   taskId: ObjectId
 ) => {
   const query = {
-    taskIds: taskId.toString(),
-    target: 'a',
-    sdmn: wholeSaleColname,
-    a_lookup_pending: true,
+    $or: [
+      {
+        $and: [
+          { taskIds: taskId.toString() },
+          { target: 'a' },
+          {
+            sdmn: wholeSaleColname,
+          },
+          {
+            a_lookup_pending: true,
+          },
+        ],
+      },
+      {
+        $and: [
+          { taskIds: taskId.toString() },
+          { target: 'a' },
+          {
+            sdmn: wholeSaleColname,
+          },
+          { a_lookup_pending: false },
+          {
+            a_status: 'api',
+          },
+        ],
+      },
+    ],
   };
   return query;
 };
@@ -925,7 +948,9 @@ export const countCompletedProductsForWholesaleSearchQuery = (
     taskIds: taskId.toString(),
     target: 'a',
     sdmn: wholeSaleColname,
-    a_status: { $in: ['complete', 'not found'] },
+    a_status: {
+      $in: ['complete', 'not found'],
+    },
   };
 };
 const wholesaleTaskQuery = [
@@ -1463,29 +1488,29 @@ export const findTasksQuery = () => {
   const fallbackQuery = {
     $and: [
       {
-        maintenance: false,
+        maintenance: true, // TODO: change to false
       },
       {
         $or: [
-          {
-            $and: matchTaskQuery,
-          },
+          // {
+          //   $and: matchTaskQuery,
+          // },
           {
             $and: wholesaleTaskQuery,
           },
-          {
-            $and: wholesaleEbyTaskQuery,
-          },
-          {
-            $and: queryEansOnEbyTaskQuery,
-          },
-          { $and: crawlEanTaskQuery },
-          { $and: lookupInfoTaskQuery },
-          {
-            $and: lookupCategoryTaskQuery,
-          },
-          { $and: crawlAznListingsTaskQuery },
-          { $and: crawlEbyListingsTaskQuery },
+          // {
+          //   $and: wholesaleEbyTaskQuery,
+          // },
+          // {
+          //   $and: queryEansOnEbyTaskQuery,
+          // },
+          // { $and: crawlEanTaskQuery },
+          // { $and: lookupInfoTaskQuery },
+          // {
+          //   $and: lookupCategoryTaskQuery,
+          // },
+          // { $and: crawlAznListingsTaskQuery },
+          // { $and: crawlEbyListingsTaskQuery },
         ],
       },
     ],

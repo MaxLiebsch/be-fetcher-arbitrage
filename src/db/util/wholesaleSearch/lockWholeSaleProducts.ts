@@ -1,8 +1,8 @@
-import { DbProductRecord, ObjectId } from "@dipmaxtech/clr-pkg";
-import { getProductsCol, hostname, wholeSaleColname } from "../../mongo.js";
-import { Action } from "../../../types/tasks/Tasks.js";
-import { Options, Query } from "../queries.js";
-import { MultiStageTaskTypes, TASK_TYPES } from "../../../util/taskTypes.js";
+import { DbProductRecord, ObjectId } from '@dipmaxtech/clr-pkg';
+import { getProductsCol, hostname, wholeSaleColname } from '../../mongo.js';
+import { Action } from '../../../types/tasks/Tasks.js';
+import { Options, Query } from '../queries.js';
+import { MultiStageTaskTypes, TASK_TYPES } from '../../../util/taskTypes.js';
 
 export const lockWholeSaleProducts = async (
   limit = 0,
@@ -16,26 +16,33 @@ export const lockWholeSaleProducts = async (
     sdmn: wholeSaleColname,
   };
 
-  query["taskIds"] = taskId.toString();
+  query['taskIds'] = taskId.toString();
   const lock =
-    taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH ? "e_locked" : "a_locked";
+    taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH ? 'e_locked' : 'a_locked';
 
-  if (action === "recover") {
+  if (action === 'recover') {
     query = {
       sdmn: wholeSaleColname,
       clrName: `${hostname}`,
     };
   } else {
     if (taskType === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
-      query["e_lookup_pending"] = { $eq: true };
-      query["target"] = "e";
+      query['$and'] = [
+        { e_lookup_pending: { $eq: true } },
+        { target: 'e' },
+        { e_locked: { $ne: true } },
+      ];
     } else {
-      query["a_lookup_pending"] = { $eq: true };
-      query["target"] = "a";
+      query['$and'] = [
+        { a_lookup_pending: { $eq: true } },
+        { target: 'a' },
+        { a_status: { $nin: ['keepa', 'api'] } },
+        { a_locked: { $ne: true } },
+      ];
     }
 
     if (limit) {
-      options["limit"] = limit;
+      options['limit'] = limit;
     }
   }
 
@@ -44,7 +51,7 @@ export const lockWholeSaleProducts = async (
     .toArray()) as DbProductRecord[];
 
   // Update documents to mark them as locked
-  if (action !== "recover")
+  if (action !== 'recover')
     await productCol.updateMany(
       { _id: { $in: documents.map((doc) => doc._id) } },
       {

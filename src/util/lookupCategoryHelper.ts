@@ -203,9 +203,9 @@ export const handleCategoryAndUpdate = async (
           $set: {
             e_status: 'complete',
             e_lookup_pending: false,
+            e_locked: false,
             ...productUpdate,
           },
-          $unset: { e_locked: '' },
           $pull: { clrName: hostname },
         };
       } else {
