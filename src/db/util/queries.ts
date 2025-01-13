@@ -1488,29 +1488,29 @@ export const findTasksQuery = () => {
   const fallbackQuery = {
     $and: [
       {
-        maintenance: true, // TODO: change to false
+        maintenance: false,
       },
       {
         $or: [
-          // {
-          //   $and: matchTaskQuery,
-          // },
+          {
+            $and: matchTaskQuery,
+          },
           {
             $and: wholesaleTaskQuery,
           },
-          // {
-          //   $and: wholesaleEbyTaskQuery,
-          // },
-          // {
-          //   $and: queryEansOnEbyTaskQuery,
-          // },
-          // { $and: crawlEanTaskQuery },
-          // { $and: lookupInfoTaskQuery },
-          // {
-          //   $and: lookupCategoryTaskQuery,
-          // },
-          // { $and: crawlAznListingsTaskQuery },
-          // { $and: crawlEbyListingsTaskQuery },
+          {
+            $and: wholesaleEbyTaskQuery,
+          },
+          {
+            $and: queryEansOnEbyTaskQuery,
+          },
+          { $and: crawlEanTaskQuery },
+          { $and: lookupInfoTaskQuery },
+          {
+            $and: lookupCategoryTaskQuery,
+          },
+          { $and: crawlAznListingsTaskQuery },
+          { $and: crawlEbyListingsTaskQuery },
         ],
       },
     ],
