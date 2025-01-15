@@ -127,7 +127,7 @@ export const ebayMarginCalculationAggregationStep = [
         $round: [
           {
             $subtract: [
-              '$e_prc',
+              '$e_pRange.median',
               {
                 $add: [
                   {
@@ -163,7 +163,7 @@ export const ebayMarginCalculationAggregationStep = [
           {
             $multiply: [
               {
-                $divide: ['$e_mrgn', '$e_prc'],
+                $divide: ['$e_mrgn', '$e_pRange.median'],
               },
               100,
             ],
