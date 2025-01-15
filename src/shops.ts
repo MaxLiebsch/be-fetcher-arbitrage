@@ -2658,7 +2658,7 @@ export const shops: { [key: string]: Shop } = {
       exclude: [],
       subCategories: [],
     },
-    mimic: 'a[id=gh-la]',
+    mimic: 'div.gh-header__logo-cats-wrap a',
     paginationEl: [],
     productList: [
       {

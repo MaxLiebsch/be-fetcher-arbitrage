@@ -22,6 +22,7 @@ import { ScrapeEanStats } from '../types/taskStats/ScrapeEanStats.js';
 import { ScrapeEansTask } from '../types/tasks/Tasks.js';
 import { DailySalesTask } from '../types/tasks/DailySalesTask.js';
 import { log } from './logger.js';
+import { formatEan } from './lookupCategoryHelper.js';
 
 export async function handleCrawlEanProductInfo(
   collectionName: string,
@@ -41,7 +42,7 @@ export async function handleCrawlEanProductInfo(
       ean && /\b[0-9]{11,13}\b/.test(ean) && !ean.toString().startsWith('99');
 
     if (isEan) {
-      ean = ean.padStart(13, '0');
+      ean = formatEan(ean);
       const rawPrice = infoMap.get('price');
       const prc = safeParsePrice(rawPrice || 0);
       const currency = detectCurrency(rawPrice);
