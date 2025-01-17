@@ -100,6 +100,7 @@ export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
           // ScrapeShopTask
           type: "CRAWL_SHOP",
           maintenance: false,
+          initialized: false,
           test: false,
           id: `crawl_shop_${shopDomain}_${i + 1}_of_${chunks.length}`,
           shopDomain,
