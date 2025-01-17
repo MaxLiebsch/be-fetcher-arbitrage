@@ -34,7 +34,7 @@ export async function scrapeTotalOffers(
     const { taskIdProp } = processProps;
     const { d, proxyType } = eby;
     const { d: shopDomain } = source;
-    const { _id: productId, s_hash } = product;
+    const { _id: productId, s_hash, prc } = product;
     const foundProducts: Product[] = [];
     const addProduct = async (
       product: Partial<Record<Content, string | number | boolean | string[]>>
@@ -83,7 +83,7 @@ export async function scrapeTotalOffers(
       product: {
         value: ean,
         key: ean,
-        price: Math.ceil(product.prc * MAX_EBY_MULTIPLE).toString(),
+        price: Math.ceil(prc * MAX_EBY_MULTIPLE).toString(),
       },
       category: 'total_listings',
     };
