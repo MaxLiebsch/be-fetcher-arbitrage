@@ -157,17 +157,12 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
             delete reducedCosts.azn;
             if (update.asin && ean) await upsertAsin(update.asin, [ean]);
             const isComplete = infoProp === 'complete';
-            const isCompleteStatus =
-              update?.costs?.azn &&
-              update.costs.azn > 0.3 &&
-              update.a_prc &&
-              update.a_prc > 1;
             const result = await updateProductWithQuery(productId, {
               $set: {
                 ...update,
                 info_prop: infoProp,
                 a_pblsh: true,
-                a_status: isComplete && isCompleteStatus ? 'complete' : 'api',
+                a_status: isComplete ? 'complete' : 'api',
                 a_lookup_pending: false,
                 a_locked: false,
               },
