@@ -5082,21 +5082,9 @@ export const shops: { [key: string]: Shop } = {
     },
     paginationEl: [
       {
-        type: 'pagination',
+        type: 'infinite_scroll',
         sel: 'div.PageLinksNavi',
-        nav: '.html?ACTION=2&GROUPID=<groupid>&START=<page>&OFFSET=30&nbc=1',
-        paginationUrlSchema: {
-          replaceRegexp: '\\.html',
-          parseAndReplace: {
-            regexp: '\\d+',
-            replace: '<groupid>',
-          },
-          withQuery: false,
-          calculation: {
-            method: 'offset',
-            offset: 30,
-          },
-        },
+        nav: '&PAGE=',
         calculation: {
           method: 'count',
           last: 'div.PageLinksNavi button:is(.SiteLinks,.SiteLinksDouble)',
@@ -5252,7 +5240,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'mix',
+    proxyType: 'des',
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5264,7 +5252,6 @@ export const shops: { [key: string]: Shop } = {
         'image',
         'xhr',
         'fetch',
-
         'other',
       ],
     },
