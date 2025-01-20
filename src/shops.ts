@@ -4645,7 +4645,7 @@ export const shops: { [key: string]: Shop } = {
           'div.show-articles-per-page-top span.bold:nth-child(3)',
         ],
         product: {
-          sel: 'div.damn-product',
+          sel: 'div.minddeal-area div.damn-product',
           type: 'not_link',
           details: [
             {
@@ -4672,7 +4672,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'de',
+    proxyType: 'des',
     hasEan: true,
     product: [
       {
@@ -5099,22 +5099,22 @@ export const shops: { [key: string]: Shop } = {
     },
     product: [
       {
-        parent: 'div.av_price_frame',
-        sel: 'div[id=av_price]',
+        sel: 'meta[itemprop=price]',
+        parent: 'div[itemprop=offers]',
         content: 'price',
-        type: 'text',
+        type: 'content',
       },
       {
-        sel: 'meta[itemprop=gtin13]',
-        parent: 'div[id=av_articleheader]',
-        type: 'content',
+        sel: 'small span',
+        parent: 'div.productBuyArea',
+        type: 'text',
         content: 'ean',
       },
       {
-        sel: 'p.availability',
-        parent: 'div[id=av_inbasket]',
+        sel: 'link[itemprop=availability]',
+        parent: 'div[itemprop=offers]',
         content: 'instock',
-        type: 'text',
+        type: 'href',
       },
     ],
     productList: [

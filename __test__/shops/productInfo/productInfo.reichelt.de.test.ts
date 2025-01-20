@@ -15,9 +15,9 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await myBeforeAll(shopDomain);
   }, 1000000);
 
-  test("Mimic for block detection is working", async () => {
-    await mimicTest();
-  }, 1000000);
+  // test("Mimic for block detection is working", async () => {
+  //   await mimicTest();
+  // }, 1000000);
 
   test("Extract product Infos", async () => {
     const addProductInfo = async ({

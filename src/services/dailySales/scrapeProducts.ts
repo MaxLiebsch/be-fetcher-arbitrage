@@ -115,10 +115,11 @@ export const scrapeProducts = async (
       if (productLimitUpdated) {
         productLimit += limit;
       } else {
-        productLimit = limit;
         productLimitUpdated = true;
+        if (productLimit < limit) {
+          productLimit = limit;
+        }
       }
-      console.log('productLimit:', productLimit);
     };
 
     categories.map((category) => {
