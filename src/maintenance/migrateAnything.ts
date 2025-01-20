@@ -1,16 +1,8 @@
-import {
-  DbProductRecord,
-  getAznAvgPrice,
-  roundToTwoDecimals,
-} from '@dipmaxtech/clr-pkg';
+import { DbProductRecord } from '@dipmaxtech/clr-pkg';
 import { getProductsCol } from '../db/mongo';
-import { recalculateEbyMargin } from '../util/recalculateEbyMargin';
+import { ObjectId } from 'mongodb';
 
-const query = {
-  e_pblsh: true,
-  e_mrgn: { $gt: 0 },
-  'e_pRange.median': { $exists: true },
-};
+const query = { _id: { $type: 'string' } };
 
 let countFalsePositives = 0;
 
@@ -19,40 +11,49 @@ async function migrateAnything() {
   let total = await col.countDocuments(query);
   console.log('total:', total);
 
-  const batch = 1000;
+  const batch = 2000;
   let cnt = 0;
   let hasMore = true;
   while (hasMore && cnt <= total) {
     console.log('cnt <= total:', cnt <= total);
     const bulks: any = [];
-    const products = await col.find(query).limit(batch).skip(cnt).toArray();
-
+    // @ts-ignore
+    const products = await col.find(query).limit(batch).toArray();
+    if (products.length > 0) {
+      const deleted = await col.bulkWrite(
+        products.map((p: any) => {
+          return {
+            deleteOne: {
+              filter: { _id: p._id },
+            },
+          };
+        })
+      );
+      console.log('deleted:', deleted.deletedCount);
+    }
     for (const product of products) {
-      const { lnk, e_pRange } = product;
       let spotterSet: Partial<DbProductRecord> = {};
-      recalculateEbyMargin(product, spotterSet);
-      if (e_pRange && e_pRange.median) {
-        spotterSet = {
-          e_pRange: {
-            ...e_pRange,
-            min: roundToTwoDecimals(e_pRange.min),
-            max: roundToTwoDecimals(e_pRange.max),
-            median: roundToTwoDecimals(e_pRange.median),
-          },
-        };
+      if (typeof product._id === 'string') {
+        //@ts-ignore
+        product._id = new ObjectId(product._id as string);
+        //@ts-ignore
+        spotterSet._id = new ObjectId(product._id as string);
       }
+
       if (Object.keys(spotterSet).length > 0) {
         const update = {
           $set: { ...spotterSet },
         };
-        bulks.push({ updateOne: { filter: { _id: product._id }, update } });
+        bulks.push({
+          insertOne: { document: product },
+        });
       }
     }
 
     if (bulks.length > 0) {
       const result = await col.bulkWrite(bulks);
       console.log(
-        `Bulk write result: ${result.modifiedCount}/${result.matchedCount}`
+        `Bulk write result: ${result.insertedCount}/${products.length} products migrated.`
       );
     }
     if (products.length === 0) {

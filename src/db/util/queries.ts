@@ -989,7 +989,7 @@ const wholesaleEbyTaskQuery = [
 
 /*               Daily Sales (7)                            */
 
-export const crawlDailySalesQueryFn = (start: string) => {
+export const scrapeDailySalesQueryFn = (start: string) => {
   return [
     { type: TASK_TYPES.DAILY_SALES },
     {
@@ -1378,7 +1378,7 @@ export const findTasksQuery = () => {
     start,
     weekday
   ); // (1.1)
-  const dailySalesTaskQuery = crawlDailySalesQueryFn(start);
+  const dailySalesTaskQuery = scrapeDailySalesQueryFn(start);
   const dealsOnEbyTaskQuery = dealsOnEbyTaskQueryFn(lowerThenStartedAt); // (8)
   const dealsOnAznTaskQuery = dealsOnAznTaskQueryFn(lowerThenStartedAt); // (9)
 
@@ -1395,7 +1395,7 @@ export const findTasksQuery = () => {
   const queryEansOnEbyTaskQuery = queryEansOnEbyTaskQueryFn(lowerThenStartedAt); // (3.3)
   const lookupCategoryTaskQuery = lookupCategoryTaskQueryFn(lowerThenStartedAt); // (3.4)
 
-  const prioQuery = {
+  const prioQuery: { $and: any[] } = {
     $and: [
       {
         maintenance: false,
@@ -1415,9 +1415,6 @@ export const findTasksQuery = () => {
             ],
           },
           {
-            $and: dailySalesTaskQuery,
-          },
-          {
             $and: dealsOnAznTaskQuery,
           },
           {
@@ -1427,6 +1424,14 @@ export const findTasksQuery = () => {
       },
     ],
   };
+
+  if (today.getHours() >= 8 && today.getHours() <= 20) {
+    if (prioQuery.$and[1].$or) {
+      prioQuery.$and[1].$or.push({
+        $and: dailySalesTaskQuery,
+      });
+    }
+  }
 
   const query = {
     $and: [
