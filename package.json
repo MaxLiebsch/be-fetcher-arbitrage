@@ -1,6 +1,6 @@
 {
   "name": "be-fetcher-arbitrage",
-  "version": "0.0.171",
+  "version": "0.0.172",
   "description": "",
   "type": "module",
   "scripts": {
@@ -75,8 +75,8 @@
     "parse-price": "^1.1.8",
     "pino": "^8.20.0",
     "pino-mongodb": "^4.3.0",
-    "puppeteer": "23.11.1",
-    "rebrowser-puppeteer": "^23.10.3",
+    "puppeteer": "24.1.0",
+    "rebrowser-puppeteer": "^23.3.1",
     "request": "^2.88.2",
     "sinon": "^19.0.2",
     "ts-custom-error": "^3.3.1",

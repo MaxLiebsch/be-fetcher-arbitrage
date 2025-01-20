@@ -3246,7 +3246,7 @@ export const shops: { [key: string]: Shop } = {
   'fressnapf.de': {
     actions: [],
     active: true,
-    allowedHosts: ['fressnapf.app.baqend.com'],
+    allowedHosts: ['fressnapf.app.baqend.com', 'api.os.fressnapf.com'],
     categories: {
       exclude: ['service', 'magazin'],
       sel: 'div[data-qa-id=__navigation] ul.nav-level-1 a',
@@ -3272,7 +3272,7 @@ export const shops: { [key: string]: Shop } = {
       sharedWorker: 'enabled',
       webWorker: 'enabled',
       serviceWorker: 'disabled',
-      webSocket: 'disabled',
+      webSocket: 'enabled',
     },
     manualCategories: [],
     mimic: 'a[id=header-logo]',
@@ -3397,11 +3397,18 @@ export const shops: { [key: string]: Shop } = {
     },
     crawlActions: [
       {
-        type: 'scroll',
-        sel: 'none',
-        name: 'Scroll to bottom',
-        action: 'scroll',
+        type: 'button',
+        sel: 'div[role=dialog] button:nth-child(2)',
+        action: 'waitBefore',
+        wait: false,
+        name: 'click on consent',
       },
+      // {
+      //   type: 'scroll',
+      //   sel: 'none',
+      //   name: 'Scroll to bottom',
+      //   action: 'scroll',
+      // },
     ],
     d: 'galaxus.de',
     entryPoints: [
@@ -3420,43 +3427,54 @@ export const shops: { [key: string]: Shop } = {
     },
     paginationEl: [
       {
-        type: 'pagination',
-        nav: '?take=<page>',
-        sel: 'span[id=product-list] ~ div h2',
-        paginationUrlSchema: {
-          replace: 'attach_end',
-          calculation: {
-            offset: 60,
-            startOffset: 48,
-            method: 'offset',
-          },
-        },
+        type: 'click-and-extract',
+        sel: "div[class*=productListFooter] button",
+        nav: '?take=',
         calculation: {
           method: 'product_count',
           productsPerPage: 60,
-          last: '',
-          sel: '',
+          last: "div[class*=productListFooter] button",
+          sel: "div[class*=productListFooter] button",
         },
       },
-      {
-        type: 'pagination',
-        nav: '?take=<page>',
-        sel: 'span[id=product-list] ~ h2',
-        paginationUrlSchema: {
-          replace: 'attach_end',
-          calculation: {
-            offset: 60,
-            startOffset: 48,
-            method: 'offset',
-          },
-        },
-        calculation: {
-          method: 'product_count',
-          productsPerPage: 60,
-          sel: '',
-          last: '',
-        },
-      },
+      // {
+      //   type: 'pagination',
+      //   nav: '?take=<page>',
+      //   sel: 'span[id=product-list] ~ div h2',
+      //   paginationUrlSchema: {
+      //     replace: 'attach_end',
+      //     calculation: {
+      //       offset: 60,
+      //       startOffset: 48,
+      //       method: 'offset',
+      //     },
+      //   },
+      //   calculation: {
+      //     method: 'product_count',
+      //     productsPerPage: 60,
+      //     last: '',
+      //     sel: '',
+      //   },
+      // },
+      // {
+      //   type: 'pagination',
+      //   nav: '?take=<page>',
+      //   sel: 'span[id=product-list] ~ h2',
+      //   paginationUrlSchema: {
+      //     replace: 'attach_end',
+      //     calculation: {
+      //       offset: 60,
+      //       startOffset: 48,
+      //       method: 'offset',
+      //     },
+      //   },
+      //   calculation: {
+      //     method: 'product_count',
+      //     productsPerPage: 60,
+      //     sel: '',
+      //     last: '',
+      //   },
+      // },
     ],
     pauseOnProductPage: {
       pause: true,
@@ -3836,233 +3854,6 @@ export const shops: { [key: string]: Shop } = {
     waitUntil: {
       product: 'load',
       entryPoint: 'load',
-    },
-  },
-  'gamestop.de': {
-    actions: [],
-    active: true,
-    categories: {
-      visible: false,
-      exclude: [
-        'gebraucht',
-        'support',
-        'trading',
-        'steam',
-        'streaming',
-        'account',
-        'merchandise',
-      ],
-      sel: 'a.accountSideMenuListLink',
-      type: 'href',
-      subCategories: [
-        {
-          sel: 'div[id=categories] li a',
-          type: 'href',
-          visible: false,
-        },
-      ],
-    },
-    crawlActions: [],
-    d: 'gamestop.de',
-    entryPoints: [
-      {
-        url: 'https://www.gamestop.de',
-        category: 'default',
-      },
-    ],
-    exceptions: [
-      'https://www.gamestop.de/Content/Images/big-loader.gif',
-      'https://www.gamestop.de/Views/Locale/Content/Images/medDefault.jpg',
-      'https://www.gamestop.de/Views/Locale/Content/Images/maxDefault.jpg',
-    ],
-    hasEan: true,
-    manualCategories: [
-      {
-        name: 'PS5',
-        link: 'https://www.gamestop.de/PS5/Index',
-      },
-      {
-        name: 'Xbox Series',
-        link: 'https://www.gamestop.de/XboxSeries/Index',
-      },
-      {
-        name: 'PS4',
-        link: 'https://www.gamestop.de/PS4/Index',
-      },
-      {
-        name: 'Xbox One',
-        link: 'https://www.gamestop.de/XboxOne/Index',
-      },
-      {
-        name: 'Switch',
-        link: 'https://www.gamestop.de/Switch/Index',
-      },
-      {
-        name: 'PC',
-        link: 'https://www.gamestop.de/PC/Index',
-      },
-    ],
-    mimic: 'input#closeContentKey',
-    paginationEl: [
-      {
-        type: 'pagination',
-        sel: 'button.button-secondary.loadmoreBtn',
-        nav: '&typesorting=0&sdirection=ascending&skippos=<skip>&takenum=24',
-        paginationUrlSchema: {
-          withQuery: false,
-          calculation: {
-            method: 'replace_append',
-            replace: [
-              {
-                search: '<skip>',
-                skip: 24,
-                use: 'skip',
-              },
-              {
-                search: 'QuickSearch',
-                replace: 'QuicksearchAjax',
-              },
-            ],
-          },
-        },
-        calculation: {
-          method: 'product_count',
-          productsPerPage: 24,
-          textToMatch: 'Weitere Artikel laden',
-          dynamic: true,
-          last: 'button.button-secondary.loadmoreBtn',
-          sel: 'button.button-secondary.loadmoreBtn',
-        },
-      },
-    ],
-    pauseOnProductPage: {
-      pause: true,
-      min: 700,
-      max: 800,
-    },
-    product: [
-      {
-        sel: "script[type='application/ld+json']",
-        type: 'parse_json_element',
-        content: 'price',
-        path: '[0].offers[0].price',
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: 'parse_json_element',
-        content: 'price',
-        path: 'offers[0].price',
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: 'parse_json_element',
-        content: 'instock',
-        path: 'offers[0].availability',
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: 'parse_json_element',
-        content: 'ean',
-        path: 'gtin13',
-      },
-      {
-        sel: "script[type='application/ld+json']",
-        type: 'parse_json_element',
-        content: 'sku',
-        path: 'sku',
-      },
-    ],
-    productList: [
-      {
-        sel: 'div[id=productsList]',
-        productCntSel: ['strong.searchSumCount'],
-        product: {
-          sel: 'div[id=productsList] div[id*=product_]',
-          type: 'not_link',
-          details: [
-            {
-              content: 'link',
-              sel: 'div.searchProductImage a',
-              type: 'href',
-            },
-            {
-              content: 'image',
-              sel: 'div.searchProductImage img',
-              type: 'data-llsrc',
-            },
-            {
-              content: 'mnfctr',
-              sel: 'div[class*=SearchProductInfo] h4',
-              type: 'text',
-            },
-            {
-              content: 'name',
-              sel: 'h3.searchProductTitle a',
-              type: 'text',
-            },
-            {
-              content: 'description',
-              sel: 'div.sr-productSummary__description',
-              type: 'text',
-            },
-            {
-              content: 'price',
-              sel: 'div[class*=price-]',
-              type: 'text',
-            },
-          ],
-        },
-      },
-      {
-        sel: 'div.prodList',
-        productCntSel: ['strong.searchSumCount'],
-        product: {
-          sel: 'div.prodList div[id*=product_]',
-          type: 'not_link',
-          details: [
-            {
-              content: 'link',
-              sel: 'div.searchProductImage a',
-              type: 'href',
-            },
-            {
-              content: 'image',
-              sel: 'div.searchProductImage img',
-              type: 'data-llsrc',
-            },
-            {
-              content: 'mnfctr',
-              sel: 'div[class*=SearchProductInfo] h4',
-              type: 'text',
-            },
-            {
-              content: 'name',
-              sel: 'h3.searchProductTitle a',
-              type: 'text',
-            },
-            {
-              content: 'description',
-              sel: 'div.sr-productSummary__description',
-              type: 'text',
-            },
-            {
-              content: 'price',
-              sel: 'div[class*=price-]',
-              type: 'text',
-            },
-          ],
-        },
-      },
-    ],
-    proxyType: 'mix',
-    queryActions: [],
-    queryUrlSchema: [],
-    resourceTypes: {
-      crawl: ['media', 'font', 'image', 'script', 'stylesheet'],
-    },
-    waitUntil: {
-      product: 'domcontentloaded',
-      entryPoint: 'domcontentloaded',
     },
   },
   'hornbach.de': {
@@ -6173,6 +5964,12 @@ export const shops: { [key: string]: Shop } = {
         type: 'text',
         content: 'name',
       },
+      {
+        sel: "meta[itemprop='availability']",
+        parent: "div.rm-product-structured-data",
+        type: "content",
+        content: "instock",
+      }
     ],
     productList: [
       {

@@ -8,6 +8,7 @@ export interface Limit {
 
 export interface Category {
   name: string;
+  skipSubCategories?: boolean;
   link: string;
 }
 
