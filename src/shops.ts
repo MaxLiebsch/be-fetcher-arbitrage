@@ -4645,7 +4645,7 @@ export const shops: { [key: string]: Shop } = {
           'div.show-articles-per-page-top span.bold:nth-child(3)',
         ],
         product: {
-          sel: 'div.minddeal-area div.damn-product',
+          sel: 'div.damn-product',
           type: 'not_link',
           details: [
             {
@@ -4672,7 +4672,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'des',
+    proxyType: 'de',
     hasEan: true,
     product: [
       {
@@ -5099,22 +5099,22 @@ export const shops: { [key: string]: Shop } = {
     },
     product: [
       {
-        sel: 'meta[itemprop=price]',
-        parent: 'div[itemprop=offers]',
+        parent: 'div.av_price_frame',
+        sel: 'div[id=av_price]',
         content: 'price',
-        type: 'content',
+        type: 'text',
       },
       {
-        sel: 'small span',
-        parent: 'div.productBuyArea',
+        sel: 'li[itemprop=gtin13]',
+        parent: 'ul.articleTechnicalData',
         type: 'text',
         content: 'ean',
       },
       {
-        sel: 'link[itemprop=availability]',
+        sel: 'p.availability',
         parent: 'div[itemprop=offers]',
         content: 'instock',
-        type: 'href',
+        type: 'text',
       },
     ],
     productList: [
@@ -5266,7 +5266,6 @@ export const shops: { [key: string]: Shop } = {
     categories: {
       exclude: [
         'mindstart',
-        'promo-list',
         'specials',
         'actionen',
         'fotoparadies.de',
@@ -5282,11 +5281,13 @@ export const shops: { [key: string]: Shop } = {
       type: 'href',
       subCategories: [
         {
+          visible: false,
           sel: 'a[data-test=mms-search-category-content-sidenav-link]',
           type: 'href',
         },
         {
-          sel: 'a[data-test=mms-router-link]',
+          visible: false,
+          sel: 'section[id=alle-kategorien] a[data-test=mms-router-link][target=_self]',
           type: 'href',
         },
       ],
@@ -5456,7 +5457,7 @@ export const shops: { [key: string]: Shop } = {
           details: [
             {
               content: 'link',
-              sel: 'a[data-test*=mms-product-list-item-link]',
+              sel: 'a[data-test=mms-router-link-product-list-item-link]',
               type: 'href',
             },
             {
@@ -5467,11 +5468,6 @@ export const shops: { [key: string]: Shop } = {
             {
               content: 'name',
               sel: 'div[title] p',
-              type: 'text',
-            },
-            {
-              content: 'description',
-              sel: 'div.sr-productSummary__description',
               type: 'text',
             },
             {
@@ -5513,7 +5509,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'mix',
+    proxyType: 'des',
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
