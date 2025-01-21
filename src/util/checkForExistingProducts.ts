@@ -12,11 +12,8 @@ import {
 
 const debug = process.env.DEBUG === 'true';
 
-export const checkForExistingAznProducts = async (
-  wholeSaleProducts: DbProductRecord[]
-) => {
+export const findExistingProducts = async (eans: string[]) => {
   const col = await getProductsCol();
-  const eans = wholeSaleProducts.map((product) => product.eanList[0]);
   const matches = (await col
     .aggregate([
       {
@@ -33,7 +30,36 @@ export const checkForExistingAznProducts = async (
       { $replaceRoot: { newRoot: '$doc' } },
     ])
     .toArray()) as unknown as DbProductRecord[];
+  return matches;
+};
 
+export const findExistingProdutAsins = async (eans: string[]) => {
+  const eanAsinTable = await getCrawlDataCollection('asinean');
+  const eanAsinMatches = await eanAsinTable
+    .aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              eans: { $in: eans },
+            },
+            { asin: { $exists: true, $ne: null } },
+          ],
+        },
+      },
+      { $group: { _id: '$eans', doc: { $first: '$$ROOT' } } },
+      { $replaceRoot: { newRoot: '$doc' } },
+    ])
+    .toArray();
+  return eanAsinMatches;
+};
+
+export const checkForExistingAznProducts = async (
+  wholeSaleProducts: DbProductRecord[]
+) => {
+  const col = await getProductsCol();
+  const eans = wholeSaleProducts.map((product) => product.eanList[0]);
+  const matches = await findExistingProducts(eans);
   const productClasses = matches.map((product) => {
     return ProductFactory.createFromApi(product);
   });
@@ -80,24 +106,7 @@ export const checkForExistingAznProducts = async (
 
   if (wholeSaleProducts.length) {
     let bulkWrites: AnyBulkWriteOperation<DbProductRecord>[] = [];
-    const eanAsinTable = await getCrawlDataCollection('asinean');
-    const eanAsinMatches = await eanAsinTable
-      .aggregate([
-        {
-          $match: {
-            $and: [
-              {
-                eans: { $in: eans },
-              },
-              { asin: { $exists: true, $ne: null } },
-            ],
-          },
-        },
-        { $group: { _id: '$eans', doc: { $first: '$$ROOT' } } },
-        { $replaceRoot: { newRoot: '$doc' } },
-      ])
-      .toArray();
-
+    const eanAsinMatches = await findExistingProdutAsins(eans);
     debug && console.log('eanAsinMatches:', eanAsinMatches.length);
 
     if (eanAsinMatches.length) {

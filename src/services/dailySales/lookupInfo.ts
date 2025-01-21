@@ -15,7 +15,6 @@ import {
   defaultQuery,
   proxyAuth,
 } from '../../constants.js';
-
 import { updateTask } from '../../db/util/tasks.js';
 import {
   handleLookupInfoNotFound,
@@ -29,6 +28,9 @@ import { LookupInfoStats } from '../../types/taskStats/LookupInfoStats.js';
 import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
 import { combineQueueStats } from '../../util/combineQueueStats.js';
 import { log } from '../../util/logger.js';
+import { findExistingProdutAsins } from '../../util/checkForExistingProducts.js';
+import { updateProductWithQuery } from '../../db/util/crudProducts.js';
+import { eansReduce } from '../../util/eansReduce.js';
 
 export const lookupInfo = async (
   sellerCentral: Shop,
@@ -37,7 +39,7 @@ export const lookupInfo = async (
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
     const { browserConfig, _id: taskId, shopDomain } = task;
-    task.currentStep = 'LOOKUP_INFO'
+    task.currentStep = 'LOOKUP_INFO';
     const { concurrency, productLimit, browserConcurrency } =
       browserConfig.lookupInfo;
 
@@ -125,6 +127,9 @@ export const lookupInfo = async (
       });
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
+    const eans = eansReduce(task.lookupInfo);
+    const existingAsins = await findExistingProdutAsins(eans);
+
     while (task.progress.lookupInfo.length) {
       const product = task.lookupInfo.pop();
       task.progress.lookupInfo.pop();
@@ -132,8 +137,20 @@ export const lookupInfo = async (
       const queue = queueIterator.next().value as QueryQueue;
       queue.actualProductLimit++;
       const hasEan = Boolean(origin.hasEan || origin?.ean);
-      const { asin, _id: productId, s_hash } = product;
+      let { asin, _id: productId, s_hash } = product;
       const ean = getEanFromProduct(product);
+      if (!asin) {
+        const asinEntry = existingAsins.find((entry) =>
+          entry.eans.includes(ean)
+        );
+
+        if (asinEntry) {
+          asin = asinEntry.asin;
+          await updateProductWithQuery(productId, {
+            $set: { asin: product.asin },
+          });
+        }
+      }
 
       if (!ean) {
         completedProducts.push(productId);

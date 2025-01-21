@@ -1,11 +1,11 @@
 import {
   AddProductInfoProps,
+  DbProductRecord,
   NotFoundCause,
   ProductRecord,
   Query,
   QueryQueue,
   determineAdjustedSellPrice,
-  getAznAvgPrice,
   globalEventEmitter,
   querySellerInfosQueue,
   uuid,
@@ -35,6 +35,9 @@ import { MissingShopError } from '../errors.js';
 import { log } from '../util/logger.js';
 import { findPendingProductsForTask } from '../db/util/multiShopUtilities/findPendingProductsForTask.js';
 import { uniqueDocuments } from '../util/uniqueDocuments.js';
+import { eansReduce } from '../util/eansReduce.js';
+import { findExistingProdutAsins } from '../util/checkForExistingProducts.js';
+import { updateProductWithQuery } from '../db/util/crudProducts.js';
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -183,14 +186,36 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
 
     const queueIterator = yieldQueues(queryQueues);
 
+    const eans = eansReduce(
+      products.reduce<DbProductRecord[]>((acc, { product }) => {
+        acc.push(product);
+        return acc;
+      }, [])
+    );
+    const existingAsins = await findExistingProdutAsins(eans);
+
     for (let index = 0; index < products.length; index++) {
       const queue = queueIterator.next().value as QueryQueue;
       queue.actualProductLimit++;
       const { product, shop } = products[index];
       const shopDomain = shop.d;
       const hasEan = Boolean(shop.hasEan || shop?.ean);
-      const { asin, _id: productId, s_hash, prc } = product;
+      let { asin, _id: productId, s_hash, prc } = product;
       const ean = getEanFromProduct(product);
+
+      if (!asin) {
+        const asinEntry = existingAsins.find((entry) =>
+          entry.eans.includes(ean)
+        );
+
+        if (asinEntry) {
+          asin = asinEntry.asin;
+          await updateProductWithQuery(productId, {
+            $set: { asin: product.asin },
+          });
+        }
+      }
+
       const addProduct = async (product: ProductRecord) => {};
       const addProductInfo = async (props: AddProductInfoProps) => {
         await handleLookupInfoProductInfo(

@@ -17,7 +17,6 @@ import {
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   defaultQuery,
   MAX_RETRIES_SCRAPE_EAN,
-  ONE_MINUTE,
   proxyAuth,
   STANDARD_SETTLING_TIME,
 } from '../../constants.js';
