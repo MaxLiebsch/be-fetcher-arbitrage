@@ -189,35 +189,30 @@ export const scrapeProducts = async (
                   !ean_prop ||
                   (ean_prop !== 'missing' &&
                     ean_prop !== 'invalid' &&
-                    ean_prop !== 'timeout' &&
                     ean_prop !== 'found')
                 ) {
                   task.progress.crawlEan.push(productId);
                   return;
                 }
 
-                // ean_prop is found and info_prop is missing or completed
-                // info_prop can have the following values: missing, complete
                 if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === 'found' &&
-                    (!info_prop ||
-                      (info_prop !== 'missing' &&
-                        info_prop !== 'no_bsr' &&
-                        info_prop !== 'no_offer' &&
-                        info_prop !== 'error' &&
-                        info_prop !== 'not_found' &&
-                        info_prop !== 'incomplete' &&
-                        info_prop !== 'complete')))
+                  ean_prop === 'found' &&
+                  (!info_prop ||
+                    (info_prop !== 'missing' &&
+                      info_prop !== 'no_bsr' &&
+                      info_prop !== 'no_offer' &&
+                      info_prop !== 'error' &&
+                      info_prop !== 'not_found' &&
+                      info_prop !== 'incomplete' &&
+                      info_prop !== 'complete'))
                 ) {
                   task.progress.lookupInfo.push(productId);
                 }
 
                 if (
-                  new Date(parseISO(existingProduct.createdAt)) < xDaysAgo ||
-                  (ean_prop === 'found' &&
-                    (!eby_prop ||
-                      (eby_prop !== 'missing' && eby_prop !== 'complete')))
+                  ean_prop === 'found' &&
+                  (!eby_prop ||
+                    (eby_prop !== 'missing' && eby_prop !== 'complete'))
                 ) {
                   task.progress.queryEansOnEby.push(productId);
                 }

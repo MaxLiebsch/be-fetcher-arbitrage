@@ -81,6 +81,7 @@ export const queryEansOnEby = async (
             'progress.lookupCategory': { $each: task.progress.lookupCategory },
           },
         });
+        await isProcessComplete();
       }
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
@@ -120,7 +121,7 @@ export const queryEansOnEby = async (
 
       if (!product) continue;
 
-      const { s_hash, _id: productId, eanList } = product;
+      const { s_hash, _id: productId } = product;
 
       const ean = getEanFromProduct(product);
 
