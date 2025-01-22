@@ -5736,6 +5736,8 @@ export const shops: { [key: string]: Shop } = {
       exclude: ['outlet', 'bücher', 'buecher', 'software'],
       sel: 'ul.ps-nav__main li.ps-nav__cat a',
       type: 'href',
+      regexpMatchIndex: 0,
+      categoryRegexp: "(\\w+-\\w+|\\w+-\\w+-\\w+|\\w+-\\w+-\\d+|\\w+-\\d+)",
       subCategories: [
         {
           sel: 'div.selectedCategorySubCategories a',
