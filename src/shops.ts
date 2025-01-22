@@ -1750,10 +1750,17 @@ export const shops: { [key: string]: Shop } = {
       sel: 'ul.cmsMenuCategory__list a.cmsMenuCategory__link',
       type: 'href',
       visible: false,
+      regexpMatchIndex: 0,
+      categoryRegexp: "(\\w+-\\w+-\\d+|\\w+-\\d+|(\\w+).html)",
       subCategories: [
         {
           visible: false,
           sel: 'div.main-category li.cmsMainCategory__headline a',
+          type: 'href',
+        },
+        {
+          visible: false,
+          sel: 'a[data-track-wtac*=cp_sale_kategorien]',
           type: 'href',
         },
       ],
@@ -4244,7 +4251,7 @@ export const shops: { [key: string]: Shop } = {
         },
       },
     ],
-    proxyType: 'mix',
+    proxyType: 'de',
     queryActions: [],
     queryUrlSchema: [
       {

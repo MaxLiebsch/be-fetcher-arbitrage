@@ -123,6 +123,8 @@ export const scrapeProducts = async (
     };
 
     categories.map((category) => {
+      const { skipSubCategories, scrapeCurrentPageProducts, name, link } =
+        category;
       const handleCrawledProduct = async (product: ProductRecord) => {
         if (infos.total === productLimit && !queue.idle()) {
           console.log('product limit reached');
@@ -284,10 +286,11 @@ export const scrapeProducts = async (
         retries: 0,
         prio: 0,
         pageInfo: {
-          skipSubCategories: Boolean(category?.skipSubCategories),
-          entryCategory: category.name,
-          link: category.link,
-          name: category.name,
+          skipSubCategories: Boolean(skipSubCategories),
+          scrapeCurrentPageProducts: Boolean(scrapeCurrentPageProducts),
+          entryCategory: name,
+          link,
+          name,
         },
       });
     });

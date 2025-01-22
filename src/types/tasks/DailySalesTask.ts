@@ -1,15 +1,9 @@
 import { Task } from './Tasks.js';
-import { DbProductRecord, ObjectId } from '@dipmaxtech/clr-pkg';
+import { DbProductRecord, ICategory, ObjectId } from '@dipmaxtech/clr-pkg';
 
 export interface Limit {
   subCategories: number;
   pages: number;
-}
-
-export interface Category {
-  name: string;
-  skipSubCategories?: boolean;
-  link: string;
 }
 
 export type CurrentStepDailySales =
@@ -22,7 +16,7 @@ export type CurrentStepDailySales =
   | 'CRAWL_EBY_LISTINGS';
 
 export interface DailySalesTask extends Task {
-  categories: Category[];
+  categories: ICategory[];
   executing: boolean;
   shopDomain: string;
   currentStep?:CurrentStepDailySales;
