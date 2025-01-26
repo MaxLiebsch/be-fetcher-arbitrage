@@ -75,13 +75,14 @@ const secureMode = async () => {
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'otto.de';
-  const proxyType = 'de'
+  const shopDomain = 'conrad.de';
+  const proxyType = 'mix'
   const shop = await getShop(shopDomain);
+  console.log('shop:', shop);
   if (!shop) return;
 
-  const { exceptions } = shop;
-  const lnk = 'https://www.otto.de/p/lomac-hebeanlage-stand-wc-mit-pumpe-gestolette-1010-keramik-wc-mit-hebeanlage-S0R7T083/#variationId=S0R7T083R0FY';
+  const { exceptions,resourceTypes } = shop;
+  const lnk = 'https://www.conrad.de/de/aktionen/b2bsale.html';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -90,7 +91,7 @@ const secureMode = async () => {
     host: shopDomain,
     requestCount: 1,
     proxyType,
-    disAllowedResourceTypes: shop.resourceTypes['product'],
+    disAllowedResourceTypes: resourceTypes['crawl'],
     exceptions,
   });
 
@@ -104,8 +105,6 @@ const secureMode = async () => {
       Date.now(),
       shop.allowedHosts
     );
-    if (shop.proxyType !== 'mix') {
-    }
     return originalGoto.apply(this, [url, options]);
   };
   await page.goto(lnk, { timeout: 60000 });
