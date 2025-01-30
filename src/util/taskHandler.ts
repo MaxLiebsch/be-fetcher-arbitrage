@@ -440,48 +440,190 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     completionStatus,
   };
 
-  if (type === TASK_TYPES.DAILY_SALES) {
-    return await handleDailySalesTask(infos);
+  const taskHandlers: { [key: string]: TaskHandler<any> } = {
+    [TASK_TYPES.DAILY_SALES]: new DailySalesTaskHandler(taskResult, task),
+    [TASK_TYPES.CRAWL_SHOP]: new ScrapeShopTaskHandler(taskResult, task),
+    [TASK_TYPES.WHOLESALE_SEARCH]: new WholesaleTaskHandler(taskResult, task),
+    [TASK_TYPES.WHOLESALE_EBY_SEARCH]: new WholesaleTaskHandler(taskResult, task),
+    [TASK_TYPES.SCAN_SHOP]: new ScanTaskHandler(taskResult, task),
+    [TASK_TYPES.MATCH_PRODUCTS]: new MatchProductsTaskHandler(taskResult, task),
+    [TASK_TYPES.QUERY_EANS_EBY]: new QueryEansOnEbyTaskHandler(taskResult, task),
+    [TASK_TYPES.NEG_AZN_DEALS]: new AznTaskHandler(taskResult, task),
+    [TASK_TYPES.NEG_EBY_DEALS]: new EbyTaskHandler(taskResult, task),
+    [TASK_TYPES.DEALS_ON_AZN]: new AznTaskHandler(taskResult, task),
+    [TASK_TYPES.DEALS_ON_EBY]: new EbyTaskHandler(taskResult, task),
+    [TASK_TYPES.CRAWL_EAN]: new CrawlEansTaskHandler(taskResult, task),
+    [TASK_TYPES.LOOKUP_INFO]: new LookupInfoTaskHandler(taskResult, task),
+    [TASK_TYPES.LOOKUP_CATEGORY]: new LookupCategoryTaskHandler(taskResult, task),
+  };
+
+  const handler = taskHandlers[type];
+  if (handler) {
+    return await handler.processResult(infos);
   }
-  if (type === TASK_TYPES.CRAWL_SHOP) {
-    return await handleScrapeTask(infos);
-  }
-  if (type === TASK_TYPES.WHOLESALE_SEARCH) {
-    return await handleWholesaleTask(infos);
-  }
-  if (type === TASK_TYPES.WHOLESALE_EBY_SEARCH) {
-    return await handleWholesaleTask(infos);
-  }
-  if (type === TASK_TYPES.SCAN_SHOP) {
-    return await handleScanTask(infos);
-  }
-  if (type === TASK_TYPES.MATCH_PRODUCTS) {
-    return await handleMatchTask(infos);
-  }
-  if (type === TASK_TYPES.DEALS_ON_AZN) {
-    return await handleCrawlAznListingsTask(infos);
-  }
-  if (type === TASK_TYPES.DEALS_ON_EBY) {
-    return await handleCrawlEbyListingsTask(infos);
-  }
-  if (type === TASK_TYPES.NEG_AZN_DEALS) {
-    return await handleCrawlAznListingsTask(infos);
-  }
-  if (type === TASK_TYPES.NEG_EBY_DEALS) {
-    return await handleCrawlEbyListingsTask(infos);
-  }
-  if (type === TASK_TYPES.CRAWL_EAN) {
-    return await handleCrawlEansTask(infos);
-  }
-  if (type === TASK_TYPES.LOOKUP_INFO) {
-    return await handleLookupInfoTask(infos);
-  }
-  if (type === TASK_TYPES.QUERY_EANS_EBY) {
-    return await handleQueryEansOnEbyTask(infos);
-  }
-  if (type === TASK_TYPES.LOOKUP_CATEGORY) {
-    return await handleLookupCategoryTask(infos);
-  }
+
 
   throw new Error('Task type not found');
 }
+
+
+interface TaskHandler<T> {
+  taskResult: TaskCompletedStatus;
+  task: T;
+  processResult: (props: T) => Promise<{ htmlBody: string; subject: string; priority: string }>;
+}
+
+class DailySalesTaskHandler implements TaskHandler<DailySalesTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: DailySalesTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: DailySalesTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: DailySalesTaskProps) {
+    return handleDailySalesTask(props);
+  }
+}
+
+class ScrapeShopTaskHandler implements TaskHandler<ScrapeShopTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: ScrapeShopTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: ScrapeShopTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: ScrapeShopTaskProps) {
+    return handleScrapeTask(props);
+  }
+}
+
+class WholesaleTaskHandler implements TaskHandler<WholeSaleTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: WholeSaleTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: WholeSaleTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: WholeSaleTaskProps) {
+    return handleWholesaleTask(props);
+  }
+} 
+
+class ScanTaskHandler implements TaskHandler<ScanTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: ScanTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: ScanTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: ScanTaskProps) {
+    return handleScanTask(props);
+  }
+}
+
+class MatchProductsTaskHandler implements TaskHandler<MatchProductsTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: MatchProductsTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: MatchProductsTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: MatchProductsTaskProps) {
+    return handleMatchTask(props);
+  }
+}
+
+class QueryEansOnEbyTaskHandler implements TaskHandler<QueryEansOnEbyTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: QueryEansOnEbyTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: QueryEansOnEbyTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: QueryEansOnEbyTaskProps) {
+    return handleQueryEansOnEbyTask(props);
+  }
+}
+
+class AznTaskHandler implements TaskHandler<NegAznDealTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: NegAznDealTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: NegAznDealTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: NegAznDealTaskProps) {
+    return handleCrawlAznListingsTask(props);
+  }
+}
+
+class EbyTaskHandler implements TaskHandler<NegEbyDealTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: NegEbyDealTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: NegEbyDealTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: NegEbyDealTaskProps) {
+    return handleCrawlEbyListingsTask(props);
+  }
+}
+
+class CrawlEansTaskHandler implements TaskHandler<CrawlEansTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: CrawlEansTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: CrawlEansTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: CrawlEansTaskProps) {
+    return handleCrawlEansTask(props);
+  }
+}
+
+class LookupInfoTaskHandler implements TaskHandler<LookupInfoTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: LookupInfoTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: LookupInfoTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: LookupInfoTaskProps) {
+    return handleLookupInfoTask(props);
+  }
+}
+
+class LookupCategoryTaskHandler implements TaskHandler<LookupCategoryTaskProps> {
+  taskResult: TaskCompletedStatus;
+  task: LookupCategoryTaskProps;
+
+  constructor(taskResult: TaskCompletedStatus, task: LookupCategoryTaskProps) {
+    this.taskResult = taskResult;
+    this.task = task;
+  }
+
+  async processResult(props: LookupCategoryTaskProps) {
+    return handleLookupCategoryTask(props);
+  }
+}
+
