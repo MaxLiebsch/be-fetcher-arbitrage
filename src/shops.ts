@@ -2118,7 +2118,7 @@ export const shops: { [key: string]: Shop } = {
           details: [
             {
               content: 'link',
-              sel: 'div.product-cards__details a',
+              sel: 'a.product__card-link',
               type: 'href',
             },
             {
@@ -2133,7 +2133,7 @@ export const shops: { [key: string]: Shop } = {
             },
             {
               content: 'price',
-              sel: 'div.product-cards__price',
+              sel: 'div.product__card-price',
               type: 'text',
             },
           ],
@@ -5911,7 +5911,7 @@ export const shops: { [key: string]: Shop } = {
       {
         type: 'pagination',
         sel: 'div.rm-pagination a',
-        nav: '?q=%3Arelevance%3A&page=<page>&pageSize=24#',
+        nav: '?page=<page>&pageSize=24#',
         paginationUrlSchema: {
           replace: 'attach_end',
           calculation: {

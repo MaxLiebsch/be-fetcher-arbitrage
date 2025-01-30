@@ -1,5 +1,6 @@
 import {
   COOLDOWN,
+  DAILY_SALES_COOLDOWN,
   MAX_TASK_RETRIES,
   SCRAPE_SHOP_COOLDOWN,
 } from '../constants.js';
@@ -40,7 +41,8 @@ async function handleDailySalesTask({
 }: DailySalesTaskProps) {
   const { stats, name, message } = taskResult;
   const { taskStats, queueStats } = stats;
-  const { browserConfig, _id, id, categories, shopDomain } = task;
+  const { total } = taskStats;
+  const { browserConfig, _id, id, categories, shopDomain, retry } = task;
   const { limit } = browserConfig.crawlShop;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
@@ -53,10 +55,11 @@ async function handleDailySalesTask({
     subject = '🚱 ' + subject + ' ' + completionPercentage;
     const update = {
       executing: false,
-      lastTotal: taskStats.total,
-      completedAt: new Date().toISOString(),
+      lastTotal: total,
+      cooldown: new Date(Date.now() + DAILY_SALES_COOLDOWN).toISOString(), //
       visitedPages: queueStats?.visitedPages || [],
     };
+    updateScrapeTaskRetryStatus(retry, total, taskCompleted, update, true);
     await updateTask(_id, {
       $set: update,
       $pull: { lastCrawler: hostname },

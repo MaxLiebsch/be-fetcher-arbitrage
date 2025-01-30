@@ -1428,7 +1428,10 @@ export const findTasksQuery = () => {
   if (today.getHours() >= 8 && today.getHours() <= 20) {
     if (prioQuery.$and[1].$or) {
       prioQuery.$and[1].$or.push({
-        $and: dailySalesTaskQuery,
+        $and: [
+          ...dailySalesTaskQuery,
+          { cooldown: { $lt: new Date().toISOString() } },
+        ],
       });
     }
   }
