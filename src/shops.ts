@@ -3388,6 +3388,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'galaxus.de': {
     actions: [],
+    allowedHosts: ['static02.galaxus.com'],
     active: true,
     categories: {
       exclude: ['gesamtsortiment','voucher', 'community', 'magazin', 'gutscheine', 'gebraucht'],
@@ -5294,7 +5295,7 @@ export const shops: { [key: string]: Shop } = {
         },
         {
           visible: false,
-          sel: 'section[id=alle-kategorien] a[data-test=mms-router-link][target=_self]',
+          sel: 'section[id=alle_kategorien] a[data-test=mms-router-link][target=_self]',
           type: 'href',
         },
       ],

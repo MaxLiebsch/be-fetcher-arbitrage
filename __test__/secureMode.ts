@@ -75,14 +75,14 @@ const secureMode = async () => {
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'conrad.de';
+  const shopDomain = 'galaxus.de';
   const proxyType = 'mix'
   const shop = await getShop(shopDomain);
   console.log('shop:', shop);
   if (!shop) return;
 
   const { exceptions,resourceTypes } = shop;
-  const lnk = 'https://www.conrad.de/de/aktionen/b2bsale.html';
+  const lnk = 'https://www.galaxus.de/de/sale';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
