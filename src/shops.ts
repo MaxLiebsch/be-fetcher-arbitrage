@@ -4759,7 +4759,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     hasEan: true,
     manualCategories: [],
-    mimic: 'div.header-inner svg.header-inner__logo-svg',
+    mimic: 'a.header-inner__logo',
     paginationEl: [
       {
         type: 'pagination',
