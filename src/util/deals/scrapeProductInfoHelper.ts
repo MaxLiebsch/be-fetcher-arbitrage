@@ -1,16 +1,17 @@
 import {
   AddProductInfoProps,
   DbProductRecord,
+  deliveryStatus,
   deliveryTime,
   detectCurrency,
   prefixLink,
   roundToTwoDecimals,
   safeParsePrice,
   Shop,
-} from "@dipmaxtech/clr-pkg";
+} from '@dipmaxtech/clr-pkg';
 
-import { updateProductWithQuery } from "../../db/util/crudProducts.js";
-import { log } from "../logger.js";
+import { updateProductWithQuery } from '../../db/util/crudProducts.js';
+import { log } from '../logger.js';
 
 export async function handleDealsProductInfo(
   collection: string,
@@ -22,15 +23,20 @@ export async function handleDealsProductInfo(
   if (productInfo) {
     const infoMap = new Map();
     productInfo.forEach((info) => infoMap.set(info.key, info.value));
-    const rawPrice = infoMap.get("price");
-    const inStock = infoMap.get("instock");
-    const sku = infoMap.get("sku");
-    const image = infoMap.get("image");
-    const mku = infoMap.get("mku");
+    const rawPrice = infoMap.get('price');
+    const inStock = infoMap.get('instock');
+    const sku = infoMap.get('sku');
+    const image = infoMap.get('image');
+    const mku = infoMap.get('mku');
 
     const prc = safeParsePrice(rawPrice || 0);
     const currency = detectCurrency(rawPrice);
-    const parsedDeliveryTime = deliveryTime(inStock || "");
+    const parsedDeliveryTime = deliveryTime(inStock || '');
+
+    if (parsedDeliveryTime === deliveryStatus.l2) {
+      log(`Product not available: ${url}`);
+      return null;
+    }
 
     const productUpdate = {
       availUpdatedAt: new Date().toISOString(),
