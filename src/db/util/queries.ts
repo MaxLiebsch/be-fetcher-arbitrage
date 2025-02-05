@@ -69,6 +69,7 @@ export type Query = {
 
 export type Options = {
   limit?: number;
+  sort?: any;
 };
 
 export type AggregationReturnTotalProps = {
@@ -656,6 +657,7 @@ export const lockProductsForNegMarginAznListingsQuery = (
     query = recoveryNegMarginAznListingsQuery(taskId, domain);
   } else {
     query = pendingNegMarginAznListingsQuery(domain);
+    options['sort'] = { aznUpdatedAt: 1 }; // sort by aznUpdatedAt to get the oldest first
   }
 
   if (limit && action !== 'recover') {
@@ -863,6 +865,9 @@ export const countPendingProductsForNetMarginEbyListingsAgg = ({
   if (limit) {
     agg.push({ $limit: limit });
   }
+
+  agg.push({ $sort: { ebyUpdatedAt: 1 } }); // sort by ebyUpdatedAt to get the oldest first
+
   return agg;
 };
 export const recoveryScrapeEbyListingsQuery = (taskId: ObjectId) => {
@@ -1069,6 +1074,9 @@ export const countPendingProductsForDealsOnEbyAgg = ({
   if (limit) {
     agg.push({ $limit: limit });
   }
+
+  agg.push({ $sort: { dealEbyUpdatedAt: 1 } }); // sort by dealEbyUpdatedAt to get the oldest first
+
   return agg;
 };
 export const recoveryDealsOnEbyQuery = (taskId: ObjectId, domain: string) => {
@@ -1178,11 +1186,13 @@ export const lockProductsForDealsOnAznQuery = (
     query['dealAznTaskId'] = setTaskId(taskId);
   } else {
     query = pendingDealsOnAznQuery(domain);
+    options['sort'] = { availUpdatedAt: 1 }; // sort by availUpdatedAt to get the oldest first
   }
 
   if (limit && action !== 'recover') {
     options['limit'] = limit;
   }
+
   return { options, query };
 };
 export const setProductsLockedForDealsOnAznQuery = (taskId: ObjectId) => {

@@ -278,7 +278,9 @@ async function handleCrawlAznListingsTask({
   const { retry, _id, id } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
-    await handleTaskCompleted(_id, taskStats);
+    const coolDownFactor = 1000 * 60 * 3;
+    const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 3 min in future
+    await handleTaskCompleted(_id, taskStats, { cooldown });
   } else {
     subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
@@ -307,7 +309,9 @@ async function handleCrawlEbyListingsTask({
   const { retry, _id, id } = task;
   const { taskCompleted, completionPercentage } = completionStatus;
   if (taskCompleted) {
-    await handleTaskCompleted(_id, taskStats);
+    const coolDownFactor = 1000 * 60 * 3;
+    const cooldown = new Date(Date.now() + coolDownFactor).toISOString(); // 3 min in future
+    await handleTaskCompleted(_id, taskStats, { cooldown });
   } else {
     subject = '🚱 ' + subject + ' ' + completionPercentage;
     await handleTaskFailed(_id, retry);
@@ -444,17 +448,26 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     [TASK_TYPES.DAILY_SALES]: new DailySalesTaskHandler(taskResult, task),
     [TASK_TYPES.CRAWL_SHOP]: new ScrapeShopTaskHandler(taskResult, task),
     [TASK_TYPES.WHOLESALE_SEARCH]: new WholesaleTaskHandler(taskResult, task),
-    [TASK_TYPES.WHOLESALE_EBY_SEARCH]: new WholesaleTaskHandler(taskResult, task),
+    [TASK_TYPES.WHOLESALE_EBY_SEARCH]: new WholesaleTaskHandler(
+      taskResult,
+      task
+    ),
     [TASK_TYPES.SCAN_SHOP]: new ScanTaskHandler(taskResult, task),
     [TASK_TYPES.MATCH_PRODUCTS]: new MatchProductsTaskHandler(taskResult, task),
-    [TASK_TYPES.QUERY_EANS_EBY]: new QueryEansOnEbyTaskHandler(taskResult, task),
+    [TASK_TYPES.QUERY_EANS_EBY]: new QueryEansOnEbyTaskHandler(
+      taskResult,
+      task
+    ),
     [TASK_TYPES.NEG_AZN_DEALS]: new AznTaskHandler(taskResult, task),
     [TASK_TYPES.NEG_EBY_DEALS]: new EbyTaskHandler(taskResult, task),
     [TASK_TYPES.DEALS_ON_AZN]: new AznTaskHandler(taskResult, task),
     [TASK_TYPES.DEALS_ON_EBY]: new EbyTaskHandler(taskResult, task),
     [TASK_TYPES.CRAWL_EAN]: new CrawlEansTaskHandler(taskResult, task),
     [TASK_TYPES.LOOKUP_INFO]: new LookupInfoTaskHandler(taskResult, task),
-    [TASK_TYPES.LOOKUP_CATEGORY]: new LookupCategoryTaskHandler(taskResult, task),
+    [TASK_TYPES.LOOKUP_CATEGORY]: new LookupCategoryTaskHandler(
+      taskResult,
+      task
+    ),
   };
 
   const handler = taskHandlers[type];
@@ -462,15 +475,15 @@ export async function handleTask(taskResult: TaskCompletedStatus, task: any) {
     return await handler.processResult(infos);
   }
 
-
   throw new Error('Task type not found');
 }
-
 
 interface TaskHandler<T> {
   taskResult: TaskCompletedStatus;
   task: T;
-  processResult: (props: T) => Promise<{ htmlBody: string; subject: string; priority: string }>;
+  processResult: (
+    props: T
+  ) => Promise<{ htmlBody: string; subject: string; priority: string }>;
 }
 
 class DailySalesTaskHandler implements TaskHandler<DailySalesTaskProps> {
@@ -513,7 +526,7 @@ class WholesaleTaskHandler implements TaskHandler<WholeSaleTaskProps> {
   async processResult(props: WholeSaleTaskProps) {
     return handleWholesaleTask(props);
   }
-} 
+}
 
 class ScanTaskHandler implements TaskHandler<ScanTaskProps> {
   taskResult: TaskCompletedStatus;
@@ -543,7 +556,9 @@ class MatchProductsTaskHandler implements TaskHandler<MatchProductsTaskProps> {
   }
 }
 
-class QueryEansOnEbyTaskHandler implements TaskHandler<QueryEansOnEbyTaskProps> {
+class QueryEansOnEbyTaskHandler
+  implements TaskHandler<QueryEansOnEbyTaskProps>
+{
   taskResult: TaskCompletedStatus;
   task: QueryEansOnEbyTaskProps;
 
@@ -613,7 +628,9 @@ class LookupInfoTaskHandler implements TaskHandler<LookupInfoTaskProps> {
   }
 }
 
-class LookupCategoryTaskHandler implements TaskHandler<LookupCategoryTaskProps> {
+class LookupCategoryTaskHandler
+  implements TaskHandler<LookupCategoryTaskProps>
+{
   taskResult: TaskCompletedStatus;
   task: LookupCategoryTaskProps;
 
@@ -626,4 +643,3 @@ class LookupCategoryTaskHandler implements TaskHandler<LookupCategoryTaskProps> 
     return handleLookupCategoryTask(props);
   }
 }
-
