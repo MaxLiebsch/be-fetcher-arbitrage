@@ -1755,7 +1755,7 @@ export const shops: { [key: string]: Shop } = {
       subCategories: [
         {
           visible: false,
-          sel: 'div.main-category li.cmsMainCategory__headline a',
+          sel: 'div.cmsMainCategory__list a',
           type: 'href',
         },
         {
@@ -1838,6 +1838,14 @@ export const shops: { [key: string]: Shop } = {
         type: 'parse_json_element',
         content: 'price',
         path: 'offers.price',
+        multiple: true,
+        parent: 'div[id=product-app-container]',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'price',
+        path: 'offers.priceSpecification.price',
         multiple: true,
         parent: 'div[id=product-app-container]',
       },
@@ -2375,12 +2383,12 @@ export const shops: { [key: string]: Shop } = {
           details: [
             {
               content: 'link',
-              sel: 'a.product_row__pic',
+              sel: 'a.product__title',
               type: 'href',
             },
             {
               content: 'image',
-              sel: 'img',
+              sel: 'a.product__image img',
               type: 'src',
             },
             {
@@ -3282,7 +3290,7 @@ export const shops: { [key: string]: Shop } = {
       webSocket: 'enabled',
     },
     manualCategories: [],
-    mimic: 'a[id=header-logo]',
+    mimic: 'div[id=__header-inner]',
     paginationEl: [
       {
         type: 'pagination',
@@ -5657,12 +5665,12 @@ export const shops: { [key: string]: Shop } = {
           details: [
             {
               content: 'link',
-              sel: 'a.product_row__pic',
+              sel: 'a.product__title',
               type: 'href',
             },
             {
               content: 'image',
-              sel: 'a.product_row__pic img',
+              sel: 'a.product__image img',
               type: 'src',
             },
             {

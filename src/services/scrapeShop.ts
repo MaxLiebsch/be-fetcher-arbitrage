@@ -12,6 +12,9 @@ import { getShop } from '../db/util/shops.js';
 import {
   CONCURRENCY,
   DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
+  MAX_RETIRES_SCRAPE_SHOP,
+  MAX_RETRIES_DAILY_SALES,
+  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from '../constants.js';
 import { checkProgress } from '../util/checkProgress.js';
@@ -173,6 +176,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           requestId: uuid(),
           shop,
           addProduct,
+          retriesOnFail: MAX_RETIRES_SCRAPE_SHOP,
           proxyType,
           categoriesHeuristic: infos.categoriesHeuristic,
           productPageCountHeuristic: infos.productPageCountHeuristic,
@@ -193,6 +197,7 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
         requestId: uuid(),
         shop,
         addProduct,
+        retriesOnFail: MAX_RETIRES_SCRAPE_SHOP,
         categoriesHeuristic: infos.categoriesHeuristic,
         productPageCountHeuristic: infos.productPageCountHeuristic,
         limit,

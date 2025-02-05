@@ -22,19 +22,10 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await mimicTest();
   }, 1000000);
 
-  // test("Find mainCategories", async () => {
-  //   const result = await findMainCategories();
-  //   console.log("result:", result);
-  // }, 1000000);
-
   test("Find subCategories", async () => {
     const result =await findSubCategories();
     console.log("sub categories", result);
   }, 1000000);
-
-  // test("Find product in category count", async () => {
-  //   await productPageCount();
-  // }, 1000000);
 
   test("Find Pagination and generate page 2 link", async () => {
     await findPaginationAndNextPage();

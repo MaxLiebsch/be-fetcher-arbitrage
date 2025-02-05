@@ -40,7 +40,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await extractProductsFromSecondPageQueueless(4);
   }, 1000000); 
 
-  // afterAll(async () => {
-  //  await myAfterAll();
-  // });
+  afterAll(async () => {
+   await myAfterAll();
+  });
 });

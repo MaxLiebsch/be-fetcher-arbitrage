@@ -194,7 +194,7 @@ const testParameters = {
       'https://www.conrad.de/de/p/logitech-wireless-k400-plus-funk-tastatur-deutsch-qwertz-schwarz-integriertes-touchpad-maustasten-1396292.html',
     productsPerPage: 30,
     productsPerPageAfterLoadMore: 30,
-    subCategoriesCount: 14,
+    subCategoriesCount: 15,
     mainCategoriesCount: 12,
     initialProductPageUrl:
       'https://www.conrad.de/de/o/preisauszeichner-etiketten-2750010.html',
@@ -238,8 +238,8 @@ const testParameters = {
     pages: 20,
     productPageUrl:
       'https://www.digitalo.de/products/515702/LogiLink-CQ3041S-RJ45-Netzwerkkabel-Patchkabel-CAT-6a-S-FTP-1.50m-Weiss-Flammwidrig-mit-Rastnasenschutz-1St..html',
-    productsPerPage: 24,
-    productsPerPageAfterLoadMore: 24,
+    productsPerPage: 12,
+    productsPerPageAfterLoadMore: 12,
     subCategoriesCount: 48,
     mainCategoriesCount: 17,
     initialProductPageUrl:
