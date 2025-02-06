@@ -94,15 +94,14 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
           product: DbProductRecord;
         }) => {
           const { shop, product } = productWithShop;
+          const { _id: productId, availUpdatedAt, updatedAt } = product;
           const source: Shop = shop as Shop;
           const { d: shopDomain } = source;
-          const { _id: productId, asin } = product;
-
-          const diffHours = differenceInHours(
-            new Date(),
-            new Date(product?.availUpdatedAt || product.updatedAt)
-          );
-          if (diffHours >= MAX_AGE_SHOP_LISTING) {
+          let diffHours = null;
+          if (availUpdatedAt) {
+            diffHours = differenceInHours(new Date(), new Date(availUpdatedAt));
+          }
+          if (!diffHours || diffHours >= MAX_AGE_SHOP_LISTING) {
             const isValidProduct = await scrapeProductInfo(
               queue,
               source,

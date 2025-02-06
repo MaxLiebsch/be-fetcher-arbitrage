@@ -82,14 +82,12 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
         const { shop, product } = productWithShop;
         const source: Shop = shop as Shop;
         const { d: shopDomain } = source;
-        const { esin, _id: productId } = product;
-
-        const diffHours = differenceInHours(
-          new Date(),
-          new Date(product.availUpdatedAt || product.updatedAt)
-        );
-
-        if (diffHours >= MAX_AGE_SHOP_LISTING) {
+        const { esin, _id: productId, availUpdatedAt } = product;
+        let diffHours = null;
+        if (availUpdatedAt) {
+          diffHours = differenceInHours(new Date(), new Date(availUpdatedAt));
+        }
+        if (!diffHours || diffHours >= MAX_AGE_SHOP_LISTING) {
           const isValidProduct = await scrapeProductInfo(
             queue,
             source,
