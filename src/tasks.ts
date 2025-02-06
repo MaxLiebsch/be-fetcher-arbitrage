@@ -123,7 +123,7 @@ export const createCrawlTasks = async (shop: Shop, maxProducts: number) => {
           completed: false,
           createdAt: new Date().toISOString(),
           errored: false,
-          cooldown: new Date().toISOString(),
+          cooldown: sub(new Date(), { days: 1 }).toISOString(),
           startedAt: "",
           completedAt: "",
           lastTotal: 0,

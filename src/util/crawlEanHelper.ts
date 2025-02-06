@@ -2,6 +2,7 @@ import {
   AddProductInfoProps,
   CrawlEanProps,
   DbProductRecord,
+  deliveryStatus,
   deliveryTime,
   detectCurrency,
   NotFoundCause,
@@ -61,10 +62,6 @@ export async function handleCrawlEanProductInfo(
         ...(sku && { sku }),
         ...(mku && { mku }),
       };
-      if (task && 'queryEansOnEby' in task.progress) {
-        task.progress.queryEansOnEby.push(productId);
-        task.progress.lookupInfo.push(productId);
-      }
       if (inStock) {
         const stockStr = deliveryTime(inStock);
         if (stockStr) {
@@ -72,7 +69,24 @@ export async function handleCrawlEanProductInfo(
         }
       }
 
-      if (url === productLink) {
+      if (productUpdate['a'] && productUpdate['a'] === deliveryStatus.l2) {
+        const result = await deleteProduct(productId);
+        log(`Product not available: ${collectionName}-${productId}`, result);
+        taskStats.shops![collectionName]++;
+        taskStats.total++;
+        queue.total++;
+        return;
+      }
+
+      if (task && 'queryEansOnEby' in task.progress) {
+        task.progress.queryEansOnEby.push(productId);
+        task.progress.lookupInfo.push(productId);
+      }
+
+      if (
+        url === productLink ||
+        (productUpdate['a'] && productUpdate['a'] !== deliveryStatus.l2)
+      ) {
         const result = await updateProductWithQuery(productId, {
           $set: productUpdate,
           $unset: { ean_taskId: '' },
@@ -122,6 +136,7 @@ export async function handleCrawlEanProductInfo(
   taskStats.total++;
   queue.total++;
 }
+
 export async function handleCrawlEanNotFound(
   collection: string,
   cause: NotFoundCause,
