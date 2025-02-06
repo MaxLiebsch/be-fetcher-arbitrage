@@ -3135,7 +3135,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'lyko.com': {
     actions: [],
-    active: false,
+    active: true,
     categories: {
       exclude: [
         'magazine',

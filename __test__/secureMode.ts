@@ -5,11 +5,12 @@ import {
   registerRequest,
   uuid,
   CHROME_VERSIONS,
+  ProxyType,
 } from '@dipmaxtech/clr-pkg';
 import os from 'os';
-import { getShop, updateShops } from '../src/db/util/shops.js';
+import { updateShops } from '../src/db/util/shops.js';
 import { shops } from '../src/shops.js';
-import puppeteer from 'puppeteer-core';
+import puppeteer, { Browser } from 'puppeteer-core';
 import {
   VersionProvider,
   Versions,
@@ -70,19 +71,62 @@ export const mainBrowser = async (
   return browser;
 };
 
+export const openPage = async ({
+  lnk,
+  proxyType,
+  browser,
+}: {
+  lnk: string;
+  proxyType: ProxyType;
+  browser: Browser;
+}) => {
+  const hostname = new URL(lnk).hostname;
+  const shop = shops[hostname];
+  if (!shop) return;
+  console.log('shop:', shop.d);
+
+  const { exceptions, resourceTypes } = shop;
+  const requestId = uuid();
+  const { page } = await getPage({
+    //@ts-ignore
+    browser,
+    shop,
+    host: hostname,
+    requestCount: 1,
+    proxyType,
+    disAllowedResourceTypes: resourceTypes['crawl'],
+    exceptions,
+  });
+
+  const originalGoto = page.goto;
+  page.goto = async function (url, options) {
+    await registerRequest(url, requestId, shop.allowedHosts || [], Date.now());
+    await notifyProxyChange(
+      proxyType,
+      url,
+      requestId,
+      Date.now(),
+      shop.allowedHosts
+    );
+    return originalGoto.apply(this, [url, options]);
+  };
+  await page.goto(lnk, { timeout: 60000 });
+  return page;
+};
+
 const secureMode = async () => {
   const sleep = (delay: number) =>
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'galaxus.de';
-  const proxyType = 'mix'
-  const shop = await getShop(shopDomain);
+  const shopDomain = 'lyko.com';
+  const proxyType = 'mix';
+  const shop = await shops[shopDomain];
   console.log('shop:', shop);
   if (!shop) return;
 
-  const { exceptions,resourceTypes } = shop;
-  const lnk = 'https://www.galaxus.de/de/sale';
+  const { exceptions, resourceTypes } = shop;
+  const lnk = 'https://lyko.com/de/haar';
   const requestId = uuid();
   const { page } = await getPage({
     //@ts-ignore
@@ -116,4 +160,4 @@ const secureMode = async () => {
   // await browser.close()
 };
 
-secureMode().then(() => console.log('Secure mode test passed'));
+// secureMode().then(() => console.log('Secure mode test passed'));
