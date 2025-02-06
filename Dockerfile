@@ -114,7 +114,6 @@ COPY --from=build /app/.env.production /app/.env.production
 COPY --from=build /app/.env.development /app/.env.development 
 COPY --from=build /app/dist /app/dist
 COPY --from=build /app/scheduler.pm2.config.cjs /app/
-COPY --from=build /root/.cache /root/.cache
 
 # Proxy directory
 COPY --from=build /app/proxy/package.json /app/proxy/package.json
