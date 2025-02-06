@@ -1,11 +1,11 @@
-import { ICategory } from "@dipmaxtech/clr-pkg";
-import { getShop, updateShops, updateShopWithQuery } from "../db/util/shops.js";
-import { findTasks } from "../db/util/tasks.js";
-import { createCrawlTasks, createDailySalesTask } from "../tasks.js";
-import { distributeCrawlTasksToDays } from "./distributeCrawlTasksToDays.js";
-import { ScrapeShopTask } from "../types/tasks/Tasks.js";
-import { getArbispotterDb } from "../db/mongo.js";
-import { shops } from "../shops.js";
+import { ICategory } from '@dipmaxtech/clr-pkg';
+import { getShop, updateShops, updateShopWithQuery } from '../db/util/shops.js';
+import { findTasks } from '../db/util/tasks.js';
+import { createCrawlTasks, createDailySalesTask } from '../tasks.js';
+import { distributeCrawlTasksToDays } from './distributeCrawlTasksToDays.js';
+import { ScrapeShopTask } from '../types/tasks/Tasks.js';
+import { getArbispotterDb } from '../db/mongo.js';
+import { shops } from '../shops.js';
 
 export const newShops: {
   d: string;
@@ -17,44 +17,19 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: "otto.de",
-    ne: "Otto.de",
+    d: 'lyko.com',
+    ne: 'lyko.com',
     maxProducts: 80000,
     productLimit: 500,
     salesProductLimit: 1000,
     categories: [],
     dailySalesCategories: [
       {
-        name: "Sales",
-        link: "https://www.otto.de/sale/",
+        name: 'Sales',
+        link: 'https://lyko.com/de/schnaeppchen',
       },
     ],
   },
-  // {
-  //   d: "pieper.de",
-  //   ne: "Pieper.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     { link: "https://www.pieper.de/sale", name: "Sale" },
-  //   ],
-  // },
-  // {
-  //   d: "rossmann.de",
-  //   ne: "Rossmann.de",
-  //   maxProducts: 80000,
-  //   productLimit: 500,
-  //   salesProductLimit: 4000,
-  //   categories: [],
-  //   dailySalesCategories: [
-  //     {
-  //       link: "https://www.rossmann.de/de/angebote/m/angebote",
-  //       name: "Sale",
-  //     },
-  //   ],
-  // },
 ];
 
 export type SplitStats = { [key: number]: { total: number; ids: string[] } };
@@ -123,7 +98,7 @@ const statsPerDay: SplitStats = {
 
 const main = async () => {
   const db = await getArbispotterDb();
-  const tasks = (await findTasks({ type: "CRAWL_SHOP" })) as ScrapeShopTask[];
+  const tasks = (await findTasks({ type: 'CRAWL_SHOP' })) as ScrapeShopTask[];
   await updateShops(shops);
 
   tasks.forEach((task) => {
@@ -139,7 +114,7 @@ const main = async () => {
 
   const tasksCreated = await Promise.all(
     newShops.map(async (shop) => {
-      await db.collection("shops").updateOne(
+      await db.collection('shops').updateOne(
         { d: shop.d, ne: shop.ne },
         {
           $set: {
@@ -157,7 +132,7 @@ const main = async () => {
         throw new Error(`Shop ${shop.d} not found!`);
       }
       const salesTask = tasks.find(
-        (t) => t.shopDomain === shop.d && t.type === "DAILY_SALES"
+        (t) => t.shopDomain === shop.d && t.type === 'DAILY_SALES'
       );
       if (!salesTask && shop.dailySalesCategories.length > 0) {
         await createDailySalesTask(
@@ -169,7 +144,7 @@ const main = async () => {
         console.log(`Sales task for ${shop.d} already exists!`);
       }
       const task = tasks.find(
-        (task) => task.shopDomain === shop.d && task.type === "CRAWL_SHOP"
+        (task) => task.shopDomain === shop.d && task.type === 'CRAWL_SHOP'
       );
       if (!task) {
         return createCrawlTasks(_shop, shop.maxProducts);
@@ -189,7 +164,7 @@ const main = async () => {
     await distributeCrawlTasksToDays(initStatsPerDay, currentAvgPerDay);
     setTimeout(async () => {
       const new_tasks = (await findTasks({
-        type: "CRAWL_SHOP",
+        type: 'CRAWL_SHOP',
       })) as ScrapeShopTask[];
       new_tasks.forEach((task) => {
         statsPerDay[task.weekday].total += task.productLimit;
@@ -201,6 +176,6 @@ const main = async () => {
 };
 
 main().then((r) => {
-  console.log("Done ", newShops.map((shop) => shop.d).join(", "), "added!");
+  console.log('Done ', newShops.map((shop) => shop.d).join(', '), 'added!');
   process.exit(0);
 });

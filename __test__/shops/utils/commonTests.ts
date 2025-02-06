@@ -282,6 +282,19 @@ export const countProductPages = async () => {
     expect(pageNumberCount).toBeGreaterThan(testParameters[shopDomain].pages);
   }
 };
+
+export const findPaginationInPage = async () => {
+  if (page && shops[shopDomain]) {
+    await page.goto(testParameters[shopDomain].initialProductPageUrl);
+
+    const { pagination, paginationEl } = await findPagination(
+      page,
+      shops[shopDomain].paginationEl
+    );
+    expect(pagination !== null).toBe(true);
+  }
+};
+
 export const findPaginationAndNextPage = async () => {
   if (page && shops[shopDomain]) {
     const initialProductPageUrl =

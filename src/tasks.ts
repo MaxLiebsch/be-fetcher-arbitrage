@@ -229,6 +229,7 @@ export const createDailySalesTask = async (
     actualProductLimit: productLimit,
     startedAt: sub(new Date(), { days: 1 }).toISOString(),
     completedAt: sub(new Date(), { days: 1 }).toISOString(),
+    cooldown: sub(new Date(), { days: 1 }).toISOString(),
     progress: {
       crawlEan: [],
       lookupInfo: [],

@@ -173,6 +173,18 @@ const testParameters = {
     subCategoryUrl: 'https://www.flaconi.de/parfum/',
     nextPageUrl: 'https://www.flaconi.de/parfum/?offset=24',
   },
+  'lyko.com': {
+    countProductPageUrl: 'https://www.flaconi.de/parfum/',
+    pages: 20,
+    ean: '5060103310029',
+    productPageUrl:
+      'https://lyko.com/de/lifestyle-mehr/premium/escentric-molecules-molecule-01-',
+    productsPerPage: 24,
+    productsPerPageAfterLoadMore: 25,
+    subCategoriesCount: 8,
+    initialProductPageUrl: 'https://lyko.com/de/haar',
+    subCategoryUrl: 'https://lyko.com/de/haar',
+  },
   'babymarkt.de': {
     countProductPageUrl: 'https://www.babymarkt.de/kindersitze/',
     pages: 20,

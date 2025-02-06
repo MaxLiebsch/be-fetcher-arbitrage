@@ -11,7 +11,7 @@ async function runTests(retries = 0) {
   const result = await runCLI(
     //@ts-ignore
     {
-      testMatch: ["**/fressnapf.de.test.*"],
+      testMatch: ["**/lyko.com.test.*"],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
       verbose: true

@@ -1751,7 +1751,7 @@ export const shops: { [key: string]: Shop } = {
       type: 'href',
       visible: false,
       regexpMatchIndex: 0,
-      categoryRegexp: "(\\w+-\\w+-\\d+|\\w+-\\d+|(\\w+).html)",
+      categoryRegexp: '(\\w+-\\w+-\\d+|\\w+-\\d+|(\\w+).html)',
       subCategories: [
         {
           visible: false,
@@ -2774,13 +2774,15 @@ export const shops: { [key: string]: Shop } = {
         category: 'default',
       },
       {
-        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&LH_Complete=1&LH_Sold=1&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>",
-        category:"sold_products"
+        baseUrl:
+          'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&LH_Complete=1&LH_Sold=1&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>',
+        category: 'sold_products',
       },
       {
-        baseUrl: "https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>",
-        category: "total_listings"
-      }
+        baseUrl:
+          'https://www.ebay.de/sch/i.html?_fsrp=1&rt=nc&_from=R40&LH_PrefLoc=3&LH_ItemCondition=3&_nkw=<query>&_sacat=0&LH_BIN=1&_udhi=<price>',
+        category: 'total_listings',
+      },
     ],
     resourceTypes: {
       crawl: [
@@ -3131,6 +3133,225 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: 'load',
     },
   },
+  'lyko.com': {
+    actions: [],
+    active: false,
+    categories: {
+      exclude: [
+        'magazine',
+        'wir-sind-lyko',
+        'club lyko',
+        'skandinavische-marken',
+        'geschenkgutschein',
+        'marken',
+      ],
+      sel: '',
+      type: 'href',
+      subCategories: [
+        {
+          sel: 'a[appearance=gallery]',
+          type: 'href',
+        },
+      ],
+    },
+    crawlActions: [],
+    d: 'lyko.com',
+    entryPoints: [
+      {
+        url: 'https://www.lyko.com/de',
+        category: 'default',
+      },
+    ],
+    exceptions: [
+      'https://lyko.com/favicons/logoicon_192.png',
+      'https://lyko.com/manifest',
+    ],
+    hasEan: true,
+    manualCategories: [
+      {
+        name: 'Hautpflege',
+        link: 'https://lyko.com/de/hautpflege',
+      },
+      {
+        name: 'dermatologische-hautpflege',
+        link: 'https://lyko.com/de/hautpflege/dermatologische-hautpflege',
+      },
+      {
+        name: 'Haar',
+        link: 'https://lyko.com/de/haar',
+      },
+      {
+        link: 'https://lyko.com/de/makeup',
+        name: 'Makeup',
+      },
+      {
+        link: 'https://lyko.com/de/dufte',
+        name: 'Duefte',
+      },
+      {
+        link: 'https://lyko.com/de/lifestyle-mehr/k-beauty',
+        name: 'K-Beauty',
+      },
+      {
+        link: 'https://lyko.com/de/gesundheit-wellness',
+        name: 'Gesundheit & Wellness',
+      },
+      {
+        link: 'https://lyko.com/de/lifestyle-mehr',
+        name: 'Lifestyle & Mehr',
+      },
+      {
+        link: 'https://lyko.com/de/mann',
+        name: 'Mann',
+      },
+      {
+        link: 'https://lyko.com/de/dufte',
+        name: 'Duefte',
+      },
+      {
+        link: 'https://lyko.com/de/lifestyle-mehr/premium',
+        name: 'Duefte',
+        skipSubCategories: true,
+      },
+    ],
+    mimic: 'a[aria-label="Lyko startsida"]',
+    paginationEl: [
+      {
+        type: 'scroll-and-extract',
+        sel: "#product-listing > div:nth-child(1) button[appearance='primary,large,outlined']",
+        nav: '?offset=<page>',
+        paginationUrlSchema: {
+          calculation: {
+            offset: 24,
+            method: 'offset',
+          },
+          replace: 'attach_end',
+        },
+        calculation: {
+          method: 'product_count',
+          productsPerPage: 24,
+          last: "#product-listing > div:nth-child(1) button[appearance='primary,large,outlined']",
+          sel: "#product-listing > div:nth-child(1) button[appearance='primary,large,outlined']",
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 700,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'ean',
+        path: 'gtin12',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'ean',
+        path: 'gtin13',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'sku',
+        path: 'sku',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'instock',
+        path: 'offers.availability',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'price',
+        path: 'offers.price',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'name',
+        path: 'name',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'image',
+        path: 'image',
+        multiple: true,
+        parent: 'html',
+      },
+    ],
+    productList: [
+      {
+        sel: '#product-listing > div:nth-child(1)',
+        productCntSel: ['#product-listing > div:nth-child(2) > div'],
+        product: {
+          sel: '#product-listing div.ReactVirtualized__Grid__innerScrollContainer div > div[data-buyable-variant-code]',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: 'div:nth-child(1) > a',
+              type: 'href',
+            },
+            {
+              content: 'image',
+              sel: 'img',
+              type: 'src',
+            },
+            {
+              content: 'name',
+              sel: 'h5',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              sel: 'a[data-scope-link] > span:nth-child(1) > span:nth-child(1) span',
+              type: 'text',
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: 'mix',
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: ['media', 'font', 'image', 'other'],
+      product: [
+        'media',
+        'font',
+        'stylesheet',
+        'ping',
+        'image',
+        'xhr',
+        'fetch',
+        'script',
+        'other',
+      ],
+    },
+    waitUntil: {
+      product: 'load',
+      entryPoint: 'load',
+    },
+  },
   'fahrrad.de': {
     actions: [],
     active: false,
@@ -3399,7 +3620,14 @@ export const shops: { [key: string]: Shop } = {
     allowedHosts: ['static02.galaxus.com'],
     active: true,
     categories: {
-      exclude: ['gesamtsortiment','voucher', 'community', 'magazin', 'gutscheine', 'gebraucht'],
+      exclude: [
+        'gesamtsortiment',
+        'voucher',
+        'community',
+        'magazin',
+        'gutscheine',
+        'gebraucht',
+      ],
       sel: 'nav[id=mainNavigation] ul li a',
       visible: false,
       type: 'href',
@@ -3444,13 +3672,13 @@ export const shops: { [key: string]: Shop } = {
     paginationEl: [
       {
         type: 'click-and-extract',
-        sel: "div[class*=productListFooter] button",
+        sel: 'div[class*=productListFooter] button',
         nav: '?take=',
         calculation: {
           method: 'product_count',
           productsPerPage: 60,
-          last: "div[class*=productListFooter] button",
-          sel: "div[class*=productListFooter] button",
+          last: 'div[class*=productListFooter] button',
+          sel: 'div[class*=productListFooter] button',
         },
       },
       // {
@@ -3597,7 +3825,7 @@ export const shops: { [key: string]: Shop } = {
         productCntSel: [
           'span[id=product-list] ~ div h2',
           'span[id=product-list] ~ h2',
-          'h2[class*=productList_Count__]'
+          'h2[class*=productList_Count__]',
         ],
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
@@ -3634,7 +3862,7 @@ export const shops: { [key: string]: Shop } = {
         productCntSel: [
           'span[id=product-list] ~ div h2',
           'span[id=product-list] ~ h2',
-          'h2[class*=productList_Count__]'
+          'h2[class*=productList_Count__]',
         ],
         awaitProductCntSel: true,
         waitProductCntSel: 1000,
@@ -5073,7 +5301,7 @@ export const shops: { [key: string]: Shop } = {
           type: 'href',
         },
         {
-          visible:false,
+          visible: false,
           sel: 'div.category-page a.category__headline',
           type: 'href',
         },
@@ -5746,7 +5974,7 @@ export const shops: { [key: string]: Shop } = {
       sel: 'ul.ps-nav__main li.ps-nav__cat a',
       type: 'href',
       regexpMatchIndex: 0,
-      categoryRegexp: "(\\w+-\\w+|\\w+-\\w+-\\w+|\\w+-\\w+-\\d+|\\w+-\\d+)",
+      categoryRegexp: '(\\w+-\\w+|\\w+-\\w+-\\w+|\\w+-\\w+-\\d+|\\w+-\\d+)',
       subCategories: [
         {
           sel: 'div.selectedCategorySubCategories a',
@@ -5967,10 +6195,10 @@ export const shops: { [key: string]: Shop } = {
       },
       {
         sel: "meta[itemprop='availability']",
-        parent: "div.rm-product-structured-data",
-        type: "content",
-        content: "instock",
-      }
+        parent: 'div.rm-product-structured-data',
+        type: 'content',
+        content: 'instock',
+      },
     ],
     productList: [
       {
