@@ -4,7 +4,8 @@ ARG environment=development
 ENV PATH=$PATH:/app/node_modules/.bin
 ENV ENVIRONMENT=$environment
 ENV NODE_ENV=${ENVIRONMENT}
-ARG CHROME_VERSION=122.0.6261.94
+ARG CHROME_VERSION=133.0.6943.53
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN --mount=type=secret,id=ssh_key \
 mkdir -p /root/.ssh && \
@@ -22,7 +23,6 @@ rm /root/.ssh/id_clr_pkg
 RUN yarn global add gulp-cli
 
 WORKDIR /clr-pkg
-
 # Install dependencies and build the package
 RUN yarn install && yarn build && yarn link
 
