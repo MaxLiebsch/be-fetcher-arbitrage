@@ -1,5 +1,6 @@
 import { yieldBrowserVersion } from "@dipmaxtech/clr-pkg";
 import { runCLI } from "@jest/core";
+import { argv } from 'node:process';
 
 const maxRetries = 4; // Maximum number of retries
 const retryTests = ["Mimic for block detection is working"];
@@ -11,7 +12,7 @@ async function runTests(retries = 0) {
   const result = await runCLI(
     //@ts-ignore
     {
-      testMatch: ["**/lyko.com.test.*"],
+      testMatch: [`**/${argv[2]}.test.*`],
       testPathIgnorePatterns: ["node_modules"],
       runInBand: true,
       verbose: true

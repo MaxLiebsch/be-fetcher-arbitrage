@@ -6,6 +6,7 @@ import {
   extractProductsFromSecondPageQueueless,
   findMainCategories,
   findPaginationAndNextPage,
+  findPaginationInPage,
   findSubCategories,
   mimicTest,
   myAfterAll,
@@ -35,7 +36,14 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   test("Mimic for block detection is working", async () => {
     await mimicTest();
   }, 1000000);
-
+  
+  test("Find mainCategories", async () => {
+    const result = await findMainCategories();
+    console.log("result:", result);
+    if(result === undefined){
+      expect(1).toBe(2);
+    }
+  }, 1000000);
   test("Find subCategories", async () => {
     const result = await findSubCategories();
     console.log("sub categories", result);
@@ -48,8 +56,8 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     await productPageCount();
   }, 1000000);
 
-  test("Find Pagination and generate page 2 link", async () => {
-    await findPaginationAndNextPage();
+  test("Find Pagination", async () => {
+    await findPaginationInPage()
   }, 1000000);
 
   test("Extract product Infos", async () => {

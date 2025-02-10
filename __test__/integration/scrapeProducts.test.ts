@@ -34,7 +34,7 @@ describe('crawlproducts', () => {
   });
   test('Scrape shop', async () => {
     const task = (await findTask({
-      id: 'crawl_shop_notebooksbilliger.de_1_of_10',
+      id: process.argv[3],
       
     })) as ScrapeShopTask;
     if (!task) {

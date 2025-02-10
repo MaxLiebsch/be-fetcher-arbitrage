@@ -21,12 +21,17 @@ const testParameters = {
       'https://www.mueller.de/parfuemerie/duefte-fuer-sie/duftsets/?p=2',
   },
   'reichelt.de': {
+    subCategoriesCount: 18,
+    mainCategoriesCount: 12,
+    subCategoryUrl: 'https://www.reichelt.de/de/de/shop/kategorie/messtechnik-5868',
+    countProductPageUrl: 'https://www.reichelt.de/de/de/shop/kategorie/messinstrumente_lcd-5872?&PAGE=0',
     initialProductPageUrl:
-      'https://www.reichelt.de/motorrad-rollerzubeh-r-c9921.html',
+    'https://www.reichelt.de/de/de/shop/kategorie/crypto-wallets-9996',
     productPageUrl:
-      'https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html',
-    nextPageUrl:
-      'https://www.reichelt.de/motorrad-rollerzubeh-r-c9921.html?ACTION=2&GROUPID=9921&START=30&OFFSET=30&nbc=1',
+    'https://www.reichelt.de/kfz-lufterfrischer-wunderbaum-kirsche-kfz-153206-p337369.html',
+    ean: '7612720201433',
+    productsPerPage: 16,
+    productsPerPageAfterLoadMore: 16,
   },
   'voelkner.de': {
     initialProductPageUrl:
@@ -381,7 +386,7 @@ const testParameters = {
     ean: '4260280775081',
     productPageUrl:
       'https://www.aldi-onlineshop.de/p/bepflanzbare-muelltonnenbox-edelstahl-2-x-240-l-101011113/',
-    productsPerPage: 24,
+    productsPerPage: 48,
     productsPerPageAfterLoadMore: 50,
     subCategoriesCount: 10,
     mainCategoriesCount: 7,

@@ -3639,6 +3639,7 @@ export const shops: { [key: string]: Shop } = {
         },
       ],
     },
+    exceptions: ['https://ub.galaxus.de/ub/de-27'],
     crawlActions: [
       {
         type: 'button',
@@ -3899,7 +3900,7 @@ export const shops: { [key: string]: Shop } = {
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
-      crawl: ['media', 'font', 'ping', 'image', 'other'],
+      crawl: [],
       product: [
         'media',
         'manifest',
@@ -5327,12 +5328,12 @@ export const shops: { [key: string]: Shop } = {
     paginationEl: [
       {
         type: 'infinite_scroll',
-        sel: 'div.PageLinksNavi',
+        sel: '#pagination',
         nav: '&PAGE=',
         calculation: {
           method: 'count',
-          last: 'div.PageLinksNavi button:is(.SiteLinks,.SiteLinksDouble)',
-          sel: 'div.PageLinksNavi button:is(.SiteLinks,.SiteLinksDouble)',
+          last: '#pagination',
+          sel: '#pagination',
         },
       },
     ],
@@ -5343,32 +5344,36 @@ export const shops: { [key: string]: Shop } = {
     },
     product: [
       {
-        parent: 'div.av_price_frame',
-        sel: 'div[id=av_price]',
+        sel: 'meta[itemprop=price]',
+        parent: 'html',
         content: 'price',
-        type: 'text',
+        type: 'content',
       },
       {
         sel: 'li[itemprop=gtin13]',
-        parent: 'ul.articleTechnicalData',
+        parent: 'html',
         type: 'text',
         content: 'ean',
       },
       {
-        sel: 'p.availability',
-        parent: 'div[itemprop=offers]',
+        sel: 'link[itemprop=availability]',
+        parent: 'html',
         content: 'instock',
-        type: 'text',
+        type: 'href',
+      },
+      {
+        sel: "meta[name='og:image']",
+        parent: 'Html',
+        content: 'image',
+        type: 'content',
       },
     ],
     productList: [
       {
         sel: 'div[id=al_artikellist]',
-        productCntSel: [
-          'div.show-articles-per-page-top span.bold:nth-child(3)',
-        ],
+        productCntSel: ['li.category-active'],
         product: {
-          sel: 'div.al_gallery_article',
+          sel: 'div[id=al_artikellist] div.al_gallery_article',
           type: 'not_link',
           details: [
             {
@@ -5406,9 +5411,7 @@ export const shops: { [key: string]: Shop } = {
       },
       {
         sel: 'div.articlestage_02',
-        productCntSel: [
-          'div.show-articles-per-page-top span.bold:nth-child(3)',
-        ],
+        productCntSel: ['li.category-active'],
         product: {
           sel: 'article a',
           type: 'link',
@@ -5443,9 +5446,7 @@ export const shops: { [key: string]: Shop } = {
       },
       {
         sel: 'section.swiper-wrapper',
-        productCntSel: [
-          'div.show-articles-per-page-top span.bold:nth-child(3)',
-        ],
+        productCntSel: ['li.category-active'],
         product: {
           sel: 'article a',
           type: 'link',
@@ -5483,8 +5484,39 @@ export const shops: { [key: string]: Shop } = {
           ],
         },
       },
+      {
+        sel: '#wrapper div.swiper-slide a',
+        productCntSel: ['li.category-active'],
+        product: {
+          sel: '#wrapper div.swiper-slide a',
+          type: 'link',
+          details: [
+            {
+              content: 'image',
+              sel: 'img',
+              type: 'src',
+            },
+            {
+              content: 'name',
+              sel: 'span.headline',
+              type: 'text',
+            },
+            {
+              content: 'description',
+              sel: 'span.shorttext',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              remove: 'span.oldprice',
+              sel: 'span.price',
+              type: 'nested_remove',
+            },
+          ],
+        },
+      },
     ],
-    proxyType: 'des',
+    proxyType: 'de',
     queryActions: [],
     queryUrlSchema: [],
     resourceTypes: {
@@ -5532,6 +5564,11 @@ export const shops: { [key: string]: Shop } = {
         {
           visible: false,
           sel: 'section[id=alle_kategorien] a[data-test=mms-router-link][target=_self]',
+          type: 'href',
+        },
+        {
+          visible: false,
+          sel: 'section[id*=kategorien i] a[data-test=mms-router-link][target=_self]',
           type: 'href',
         },
       ],
@@ -5727,8 +5764,13 @@ export const shops: { [key: string]: Shop } = {
         productCntSel: ['section[data-test=mms-search-srp-headlayout] div'],
         product: {
           sel: 'section[id*=product-grid] div[data-test=mms-campaigns-productGrid-product]',
-          type: 'link',
+          type: 'not_link',
           details: [
+            {
+              content: 'link',
+              sel: 'a',
+              type: 'href',
+            },
             {
               content: 'image',
               sel: 'picture img',
@@ -6128,6 +6170,11 @@ export const shops: { [key: string]: Shop } = {
         {
           visible: false,
           sel: 'div.rm-category-nav__list div.rm-category-nav__item a',
+          type: 'href',
+        },
+        {
+          visible: false,
+          sel: 'div.rm-canvas a[data-promotion-link]:not([target=_blank])',
           type: 'href',
         },
       ],

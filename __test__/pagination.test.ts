@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from "@jest/globals";
-import testParameters from "./utils/testParamter.js";
-import { shops } from "../../src/shops.js";
+import testParameters from "./shops/utils/testParamter.js";
+import { shops } from "../src/shops.js";
 import {
   buildNextPageUrl,
   checkForBlockingSignals,
@@ -14,10 +14,10 @@ import {
   recursiveMoreButtonPgn,
   Shop,
 } from "@dipmaxtech/clr-pkg";
-import { shopFilter } from "../../src/db/util/filter.js";
-import { createPage, visitPage } from "./utils/commonTests.js";
+import { shopFilter } from "../src/db/util/filter.js";
+import { createPage, visitPage } from "./shops/utils/commonTests.js";
 import { Browser } from "puppeteer";
-import { proxyAuth } from "../../src/constants.js";
+import { proxyAuth } from "../src/constants.js";
 import findPagination from "@dipmaxtech/clr-pkg/lib/util/crawl/findPagination.js";
 
 const testCompleted = [
@@ -63,6 +63,7 @@ const maxRetries = 3;
 
 describe("test pagination", () => {
   beforeAll(async () => {
+    //@ts-expect-error - TS2339
     browser = await mainBrowser(proxyAuth, CHROME_VERSIONS[0]);
   }, 1000000);
 
@@ -76,6 +77,7 @@ describe("test pagination", () => {
       let retry = 1
       let done = false
       while(retry <= maxRetries && !done){
+        // @ts-expect-error - TS2339
         const page = await createPage(browser, shop);
         console.log(`Shop ${shop.d} Try:`, retry);
         try {

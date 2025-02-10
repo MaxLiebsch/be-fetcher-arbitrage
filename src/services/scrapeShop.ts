@@ -180,12 +180,17 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           proxyType,
           categoriesHeuristic: infos.categoriesHeuristic,
           productPageCountHeuristic: infos.productPageCountHeuristic,
+
           limit,
           queue,
           retries: 0,
           prio: 0,
           pageInfo: {
             entryCategory: category.name,
+            scrapeCurrentPageProducts: Boolean(
+              category.scrapeCurrentPageProducts
+            ),
+            skipSubCategories: Boolean(category.skipSubCategories),
             link: category.link,
             name: category.name,
           },

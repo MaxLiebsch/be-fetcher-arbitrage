@@ -1,5 +1,6 @@
 import {
   DbProductRecord,
+  ICategory,
   ObjectId,
   QueueStats,
   TaskTypes,
@@ -53,7 +54,7 @@ export interface ShopSpecificTask extends Task, MultiShopMultiQueueTask {
 }
 
 export interface ScrapeShopTask extends ShopSpecificTask {
-  categories: Category[];
+  categories: ICategory[];
   weekday: number;
   visitedPages: any[];
   executing: boolean;
