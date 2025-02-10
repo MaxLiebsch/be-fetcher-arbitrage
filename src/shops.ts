@@ -3619,6 +3619,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     allowedHosts: ['static02.galaxus.com'],
     active: true,
+    watchedRoutes: ['/graphql/get-product-list-counts'],
     categories: {
       exclude: [
         'gesamtsortiment',
@@ -3682,44 +3683,6 @@ export const shops: { [key: string]: Shop } = {
           sel: 'div[class*=productListFooter] button',
         },
       },
-      // {
-      //   type: 'pagination',
-      //   nav: '?take=<page>',
-      //   sel: 'span[id=product-list] ~ div h2',
-      //   paginationUrlSchema: {
-      //     replace: 'attach_end',
-      //     calculation: {
-      //       offset: 60,
-      //       startOffset: 48,
-      //       method: 'offset',
-      //     },
-      //   },
-      //   calculation: {
-      //     method: 'product_count',
-      //     productsPerPage: 60,
-      //     last: '',
-      //     sel: '',
-      //   },
-      // },
-      // {
-      //   type: 'pagination',
-      //   nav: '?take=<page>',
-      //   sel: 'span[id=product-list] ~ h2',
-      //   paginationUrlSchema: {
-      //     replace: 'attach_end',
-      //     calculation: {
-      //       offset: 60,
-      //       startOffset: 48,
-      //       method: 'offset',
-      //     },
-      //   },
-      //   calculation: {
-      //     method: 'product_count',
-      //     productsPerPage: 60,
-      //     sel: '',
-      //     last: '',
-      //   },
-      // },
     ],
     pauseOnProductPage: {
       pause: true,
@@ -3894,7 +3857,7 @@ export const shops: { [key: string]: Shop } = {
             },
           ],
         },
-      },
+      }
     ],
     proxyType: 'mix',
     queryActions: [],

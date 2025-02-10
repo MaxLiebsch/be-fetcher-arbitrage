@@ -180,7 +180,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
           proxyType,
           categoriesHeuristic: infos.categoriesHeuristic,
           productPageCountHeuristic: infos.productPageCountHeuristic,
-
           limit,
           queue,
           retries: 0,
