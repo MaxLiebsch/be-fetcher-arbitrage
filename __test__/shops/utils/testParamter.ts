@@ -191,17 +191,18 @@ const testParameters = {
     subCategoryUrl: 'https://lyko.com/de/haar',
   },
   'babymarkt.de': {
-    countProductPageUrl: 'https://www.babymarkt.de/kindersitze/',
+    countProductPageUrl: 'https://www.babymarkt.com/de/kindersitze/',
     pages: 20,
+    ean: "8717329384682",
     productPageUrl:
-      'https://www.babymarkt.de/kindsgard-waschtuecher-vaskedag-12er-pack-oliv-a453313.html?intc=be/cat-A453313',
+      'https://www.babymarkt.com/de/product/jollein-bandanalaetzchen-2er-pack-twinkling-wild-rose-A470043',
     productsPerPage: 33,
     productsPerPageAfterLoadMore: 33,
-    subCategoriesCount: 14,
+    subCategoriesCount: 10,
     mainCategoriesCount: 8,
-    initialProductPageUrl: 'https://www.babymarkt.de/kindersitze/',
-    subCategoryUrl: 'https://www.babymarkt.de/kindersitze/',
-    nextPageUrl: 'https://www.babymarkt.de/kindersitze/?page=2',
+    initialProductPageUrl: 'https://www.babymarkt.com/de/kindersitze/',
+    subCategoryUrl: 'https://www.babymarkt.com/de/kindersitze/',
+    nextPageUrl: 'https://www.babymarkt.com/de/kindersitze/?page=2',
   },
   'conrad.de': {
     countProductPageUrl:

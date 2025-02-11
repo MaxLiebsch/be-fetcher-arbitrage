@@ -16,14 +16,14 @@ const secureMode = async () => {
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'galaxus.de';
+  const shopDomain = 'babymarkt.de';
   const proxyType = 'mix';
   const shop = shops[shopDomain];
   console.log('shop:', shop.d);
   if (!shop) return;
 
   const { exceptions, resourceTypes } = shop;
-  const lnk = 'https://www.galaxus.de/de/s2/producttype/abfalleimer-348';
+  const lnk = 'https://www.babymarkt.com/de/sale/';
   const requestId = uuid();
   // const page = await browser.newPage();
   const { page } = await getPage({

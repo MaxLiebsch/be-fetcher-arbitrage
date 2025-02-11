@@ -54,7 +54,7 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
       if (productInfo) {
         console.log("productInfo:", productInfo);
         const ean = productInfo.find((info) => info.key === "ean");
-        expect(ean.value).toBe("4002840223515");
+        expect(ean.value).toBe(testParameters[shopDomain].ean);
       } else {
         expect(1).toBe(2);
       }
