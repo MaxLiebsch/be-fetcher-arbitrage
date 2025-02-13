@@ -17,16 +17,17 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: 'lyko.com',
-    ne: 'lyko.com',
-    maxProducts: 80000,
+    d: 'brasty.de',
+    ne: 'Brasty.de',
+    maxProducts: 40000,
     productLimit: 500,
-    salesProductLimit: 1000,
+    salesProductLimit: 250,
     categories: [],
     dailySalesCategories: [
       {
         name: 'Sales',
-        link: 'https://lyko.com/de/schnaeppchen',
+        scrapeCurrentPageProducts: true,
+        link: 'https://www.brasty.de/parfums-ausverkauf',
       },
     ],
   },

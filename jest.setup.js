@@ -1,0 +1,1 @@
+process.argv = process.argv.slice(2).map(arg => arg.replace(/--/g, ''))

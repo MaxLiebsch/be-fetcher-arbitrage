@@ -1,5 +1,5 @@
 import { VersionProvider, Versions } from "@dipmaxtech/clr-pkg/lib/util/versionProvider";
-import puppeteer, { Browser } from 'puppeteer-core';
+import puppeteer, { Browser } from 'rebrowser-puppeteer';
 import os from 'os';
 
 export const mainBrowser = async (

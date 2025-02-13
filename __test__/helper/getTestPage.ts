@@ -17,9 +17,11 @@ export const openPage = async ({
   proxyType: ProxyType;
   browser: Browser;
 }) => {
-  const hostname = new URL(lnk).hostname;
+  const hostname = new URL(lnk).hostname.replace('www.', '');
   const shop = shops[hostname];
-  if (!shop) return;
+  if (!shop) {
+    throw new Error('Shop not found');
+  } 
   console.log('shop:', shop.d);
 
   const { exceptions, resourceTypes } = shop;

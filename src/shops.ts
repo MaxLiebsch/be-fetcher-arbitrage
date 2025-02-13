@@ -1352,7 +1352,7 @@ export const shops: { [key: string]: Shop } = {
       min: 800,
       max: 900,
     },
-    product:[
+    product: [
       {
         sel: 'div[data-test-id=product-description] div[id*=product-description-] > p:last-of-type',
         parent: 'body',
@@ -1408,13 +1408,13 @@ export const shops: { [key: string]: Shop } = {
         parent: 'html',
       },
       {
-        sel: "h1[data-test-id=pdp-product-name]",
+        sel: 'h1[data-test-id=pdp-product-name]',
         type: 'text',
         content: 'name',
         parent: 'html',
       },
       {
-        sel: "picture > img",
+        sel: 'picture > img',
         type: 'src',
         content: 'image',
         parent: 'html',
@@ -1500,6 +1500,171 @@ export const shops: { [key: string]: Shop } = {
         'xhr',
         'fetch',
 
+        'other',
+      ],
+    },
+    waitUntil: {
+      product: 'load',
+      entryPoint: 'load',
+    },
+  },
+  'brasty.de': {
+    actions: [],
+    active: true,
+    categories: {
+      exclude: ['mode', 'beratung', 'grosshandel'],
+      sel: 'nav[role=navigation] a.m-main__link.m-main__link--1',
+      visible: false,
+      type: 'href',
+      subCategories: [
+        {
+          sel: 'a.c-categories__item-link',
+          type: 'href',
+          visible:false
+        },
+      ],
+    },
+    crawlActions: [],
+    d: 'brasty.de',
+    entryPoints: [
+      {
+        url: 'https://www.brasty.de',
+        category: 'default',
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: 'div.l-header__logo picture',
+    paginationEl: [
+      {
+        type: 'pagination',
+        sel: 'div.c-category-sorting__paging.js-items-paging',
+        nav: '?page=',
+        calculation: {
+          method: 'find_highest',
+          last: 'div.c-category-sorting__paging.js-items-paging a span.btn__text',
+          sel: 'div.c-category-sorting__paging.js-items-paging a span.btn__text',
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 900,
+    },
+    product: [
+      {
+        sel: 'p.c-pd-safety__ean',
+        parent: 'body',
+        type: 'text',
+        content: 'ean',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'sku',
+        path: 'sku',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'instock',
+        path: 'offers.availability',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'price',
+        path: 'offers.price',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'mnfctr',
+        path: 'brand.name',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'name',
+        path: 'name',
+        multiple: true,
+        parent: 'html',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'image',
+        path: 'image',
+        multiple: true,
+        parent: 'html',
+      }
+    ],
+    productList: [
+      {
+        sel: 'div.js-products-main-list',
+        productCntSel: ['p.c-category-products__count'],
+        product: {
+          sel: 'div.js-products-main-list div.c-productbox__inner',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: "a.c-productbox__link",
+              type: "href"
+            },
+            {
+              content: 'image',
+              sel: 'div.c-productbox__picture img',
+              type: 'src',
+            },
+            {
+              content: 'name',
+              sel: 'p[class="c-productbox__desc"]',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              sel: 'div.c-productbox__price',
+              type: 'text',
+            },
+          ],
+        },
+      },
+    
+    ],
+    proxyType: 'mix',
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      product: [
+        'media',
+        'font',
+        'stylesheet',
+        'ping',
+        'image',
+        'xhr',
+        'fetch',
+        'script',
+        'other',
+      ],
+      crawl: [
+        'media',
+        'font',
+        'stylesheet',
+        'ping',
+        'image',
+        'xhr',
+        'fetch',
+        'script',
         'other',
       ],
     },
@@ -2069,10 +2234,12 @@ export const shops: { [key: string]: Shop } = {
     mimic: 'div.header-logo picture',
     paginationEl: [
       {
-        type: 'scroll-and-click',
+        type: 'scroll-and-extract',
         sel: 'button[id=searchLoadMoreButton]',
+        activeSearchLoadSel: '#searchLoadSpinner:not(.hide)',
         endOfPageSel: 'div[id=noMoreCard]',
         wait: false,
+        timeoutAfterBtnClick: 1000,
         findPaginationStrategy: 'estimate',
         visible: false,
         nav: '?page=',
@@ -3889,7 +4056,7 @@ export const shops: { [key: string]: Shop } = {
             },
           ],
         },
-      }
+      },
     ],
     proxyType: 'mix',
     queryActions: [],
