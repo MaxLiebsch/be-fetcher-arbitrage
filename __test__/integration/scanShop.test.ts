@@ -11,7 +11,7 @@ import scan from '../../src/services/scan';
 const today = new Date();
 const productLimit = 150;
 const yesterday = sub(today, { days: 1 });
-const args = process.argv.slice(2).map((arg) => arg.replace('--', ''));
+const args = process.argv
 
 describe('scan shop', () => {
   beforeAll(async () => {
@@ -20,7 +20,7 @@ describe('scan shop', () => {
   test('scan shop', async () => {
     const task = (await findTask({
       type: 'SCAN_SHOP',
-      shopDomain:args[1],
+      shopDomain: args[1],
     })) as ScrapeShopTask;
     if (!task) {
       console.log('Task not found');

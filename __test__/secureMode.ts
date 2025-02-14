@@ -16,14 +16,14 @@ const secureMode = async () => {
     new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'babymarkt.de';
+  const shopDomain = 'allesfuerzuhause.de';
   const proxyType = 'mix';
   const shop = shops[shopDomain];
   console.log('shop:', shop.d);
   if (!shop) return;
 
   const { exceptions, resourceTypes } = shop;
-  const lnk = 'https://www.babymarkt.com/de/sale/';
+  const lnk = 'https://allesfuerzuhause.de/product/samsung-gq77s95dat-5247258/';
   const requestId = uuid();
   // const page = await browser.newPage();
   const { page } = await getPage({

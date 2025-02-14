@@ -1,19 +1,27 @@
-import { ScanQueue, scanShop, StatService, uuid } from "@dipmaxtech/clr-pkg";
-import { upsertSiteMap } from "../db/mongo.js";
-import { handleResult } from "../handleResult.js";
-import { MissingShopError } from "../errors.js";
-import { getShop } from "../db/util/shops.js";
+import {
+  ScanQueue,
+  scanShop,
+  StatService,
+  uuid,
+  globalEventEmitter,
+  sleep,
+} from '@dipmaxtech/clr-pkg';
+import { upsertSiteMap } from '../db/mongo.js';
+import { handleResult } from '../handleResult.js';
+import { MissingShopError } from '../errors.js';
+import { getShop } from '../db/util/shops.js';
 import {
   CONCURRENCY,
   DEFAULT_CHECK_PROGRESS_INTERVAL,
   proxyAuth,
-} from "../constants.js";
-import { checkProgress } from "../util/checkProgress.js";
-import { ScanTask } from "../types/tasks/Tasks.js";
-import { TaskCompletedStatus } from "../status.js";
-import { ScanShopStats } from "../types/taskStats/ScanShopStats.js";
-import { TaskReturnType } from "../types/TaskReturnType.js";
-import { log } from "../util/logger.js";
+  STANDARD_SETTLING_TIME,
+} from '../constants.js';
+import { checkProgress } from '../util/checkProgress.js';
+import { ScanTask } from '../types/tasks/Tasks.js';
+import { TaskCompletedStatus } from '../status.js';
+import { ScanShopStats } from '../types/taskStats/ScanShopStats.js';
+import { TaskReturnType } from '../types/TaskReturnType.js';
+import { log } from '../util/logger.js';
 
 export default async function scan(task: ScanTask): TaskReturnType {
   return new Promise(async (res, reject) => {
@@ -26,20 +34,20 @@ export default async function scan(task: ScanTask): TaskReturnType {
       categoriesHeuristic: {
         subCategories: {
           0: 0,
-          "1-9": 0,
-          "10-19": 0,
-          "20-29": 0,
-          "30-39": 0,
-          "40-49": 0,
-          "+50": 0,
+          '1-9': 0,
+          '10-19': 0,
+          '20-29': 0,
+          '30-39': 0,
+          '40-49': 0,
+          '+50': 0,
         },
         mainCategories: 0,
       },
       productPageCountHeuristic: {
         0: 0,
-        "1-9": 0,
-        "10-49": 0,
-        "+50": 0,
+        '1-9': 0,
+        '10-49': 0,
+        '+50': 0,
       },
       missingProperties: {
         name: 0,
@@ -49,12 +57,12 @@ export default async function scan(task: ScanTask): TaskReturnType {
       },
       locked: 0,
       notFound: 0,
-      elapsedTime: "",
+      elapsedTime: '',
     };
 
     log(`Starting scan with ${shopDomain}`);
 
-    if (shop === null) return reject(new MissingShopError("", task));
+    if (shop === null) return reject(new MissingShopError('', task));
 
     const { proxyType, entryPoints } = shop;
 
@@ -84,6 +92,14 @@ export default async function scan(task: ScanTask): TaskReturnType {
         handleResult(check, res, reject);
       }
     };
+    const eventEmitter = globalEventEmitter;
+    let done = false;
+    eventEmitter.on(`${queue.queueId}-finished`, async function scanCallback() {
+      if (done) return;
+      done = true;
+      await sleep(STANDARD_SETTLING_TIME);
+      await isCompleted();
+    });
 
     const interval = setInterval(
       async () => await isCompleted(),
@@ -92,10 +108,10 @@ export default async function scan(task: ScanTask): TaskReturnType {
 
     const link = entryPoints.length
       ? entryPoints[0].url
-      : "https://www." + shopDomain;
+      : 'https://www.' + shopDomain;
 
     queue.pushTask(scanShop, {
-      parentPath: "sitemap",
+      parentPath: 'sitemap',
       requestId: uuid(),
       shop,
       infos,
@@ -108,7 +124,7 @@ export default async function scan(task: ScanTask): TaskReturnType {
       pageInfo: {
         entryCategory: shopDomain,
         link,
-        name: shopDomain.split(".")[0],
+        name: shopDomain.split('.')[0],
       },
     });
   });

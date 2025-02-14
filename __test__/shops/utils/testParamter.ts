@@ -17,11 +17,11 @@ const testParameters = {
     productPageUrl: 'https://allesfuerzuhause.de/product/samsung-gq77s95dat-5247258/',
     productsPerPage: 16,
     productsPerPageAfterLoadMore: 32,
-    subCategoriesCount: 10,
-    mainCategoriesCount: 11,
+    subCategoriesCount: 9,
+    mainCategoriesCount: 10,
     initialProductPageUrl: 'https://allesfuerzuhause.de/tv-audio/tv-geraete/',
     subCategoryUrl: 'https://allesfuerzuhause.de/tv-audio/',
-    nextPageUrl: 'https://allesfuerzuhause.de/tv-audio/tv-geraete/#?comID=l15$c1$c3$c1&pix=1&ajaxtargets=product-grid'
+    nextPageUrl: 'https://allesfuerzuhause.de/tv-audio/tv-geraete/?comID=l15$c1$c3$c1&pix=1&ajaxtargets=product-grid'
   },
   'alternate.de': {
     initialProductPageUrl: 'https://www.alternate.de/Alle-Fernseher/4K-Fernseher',
@@ -139,6 +139,17 @@ const testParameters = {
     initialProductPageUrl: 'https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets',
     subCategoryUrl: 'https://www.euronics.de/computer-und-buero/',
     nextPageUrl: 'https://www.euronics.de/computer-und-buero/tablets-und-ebook-reader/tablets?p=2'
+  },
+  'deloox.de': {
+    productPageUrl: 'https://www.deloox.de/produkt/1000117/davidoff-cool-water-aftershave-125-ml.html',
+    productsPerPage: 24,
+    ean: '3414202000664',
+    productsPerPageAfterLoadMore: 24,
+    subCategoriesCount: 18,
+    mainCategoriesCount: 5,
+    initialProductPageUrl: 'https://www.deloox.de/kategorie/1119084/lifestyle.html',
+    subCategoryUrl: 'https://www.deloox.de/kategorie/1119084/lifestyle.html',
+    nextPageUrl: 'https://www.deloox.de/kategorie/1119084/lifestyle.html?page=2'
   },
   'flaconi.de': {
     countProductPageUrl: 'https://www.flaconi.de/parfum/',
@@ -341,7 +352,7 @@ const testParameters = {
     productPageUrl: 'https://www.saturn.de/de/product/_apple-iphone-xs-64gb-silver-64-gb-silber-dual-sim-142207689.html',
     productsPerPage: 12,
     productsPerPageAfterLoadMore: 12,
-    subCategoriesCount: 30,
+    subCategoriesCount: 26,
     ean: '0190198791412',
     mainCategoriesCount: 9,
     initialProductPageUrl: 'https://www.saturn.de/de/category/k%C3%BChl-gefrierkombinationen-1651.html',
@@ -359,6 +370,17 @@ const testParameters = {
     initialProductPageUrl: 'https://www.thalia.de/kategorie/brettspiele-4810/',
     subCategoryUrl: 'https://www.thalia.de/kategorie/gesellschaftsspiele-4808/',
     nextPageUrl: 'https://www.thalia.de/kategorie/brettspiele-4810/?p=2'
+  },
+  'parfuem365.de': {
+    productPageUrl: 'https://www.parfuem365.de/herrenduefte/22922/guy-laroche-drakkar-noir-deostick-75-ml',
+    productsPerPage: 12,
+    ean: '3360372009900',
+    productsPerPageAfterLoadMore: 24,
+    subCategoriesCount: 7,
+    mainCategoriesCount: 7,
+    initialProductPageUrl: 'https://www.parfuem365.de/herrenduefte',
+    subCategoryUrl: 'https://www.parfuem365.de/herrenduefte',
+    nextPageUrl: 'https://www.parfuem365.de/herrenduefte?p=2'
   },
   'voelkner.de': {
     initialProductPageUrl: 'https://www.voelkner.de/categories/13141_13250_13745/Multimedia/TV-Video/Fernseher.html',

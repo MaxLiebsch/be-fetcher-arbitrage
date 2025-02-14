@@ -17,19 +17,29 @@ export const newShops: {
   dailySalesCategories: ICategory[];
 }[] = [
   {
-    d: 'brasty.de',
-    ne: 'Brasty.de',
+    d: 'deloox.de',
+    ne: 'Deloox.de',
     maxProducts: 40000,
     productLimit: 500,
-    salesProductLimit: 250,
+    salesProductLimit: 1000,
     categories: [],
     dailySalesCategories: [
       {
         name: 'Sales',
         scrapeCurrentPageProducts: true,
-        link: 'https://www.brasty.de/parfums-ausverkauf',
+        skipSubCategories: true,
+        link: 'https://www.deloox.de/kategorie/1103656/new-at-deloox.html',
       },
     ],
+  },
+  {
+    d: 'parfuem365.de',
+    ne: 'Parfuem365.de',
+    maxProducts: 10000,
+    productLimit: 500,
+    salesProductLimit: 1000,
+    categories: [],
+    dailySalesCategories: [],
   },
 ];
 

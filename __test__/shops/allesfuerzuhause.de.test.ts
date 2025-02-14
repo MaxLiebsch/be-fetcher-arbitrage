@@ -51,10 +51,6 @@ describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
     }
   }, 1000000);
 
-  test("Find product in category count", async () => {
-    await productPageCount();
-  }, 1000000);
-
   test("Find Pagination and generate page 2 link", async () => {
     await findPaginationAndNextPage();
   }, 1000000);

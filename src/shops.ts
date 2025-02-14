@@ -2,6 +2,7 @@ import { Shop } from '@dipmaxtech/clr-pkg';
 
 export const shops: { [key: string]: Shop } = {
   'allesfuerzuhause.de': {
+    lastSelectorTestAt: "2025-02-13T14:00:00.000Z",
     actions: [],
     allowedHosts: ['allesfuerzuhause.de'],
     leaveDomainAsIs: true,
@@ -22,9 +23,10 @@ export const shops: { [key: string]: Shop } = {
     crawlActions: [
       {
         type: 'button',
-        sel: 'button[id=ctl07_declinebtn]',
+        sel: 'button[id=ctl07_AcceptAllBTN]',
         action: 'click',
         wait: false,
+        waitDuration: 1000,
         name: 'click on consent',
       },
     ],
@@ -65,25 +67,25 @@ export const shops: { [key: string]: Shop } = {
     product: [
       {
         sel: 'div.loadbeeTabContent',
-        parent: 'div[id=ep-tab1-c]',
-        type: 'data-loadbee-gtin',
-        content: 'ean',
-      },
-      {
-        sel: 'script[data-flix-ean]',
-        parent: 'div[id=ep-tab1-c]',
+        parent: 'html',
         type: 'data-flix-ean',
         content: 'ean',
       },
       {
-        parent: 'div.product-cart--cart',
+        sel: 'script[data-flix-ean]',
+        parent: 'html',
+        type: 'data-flix-ean',
+        content: 'ean',
+      },
+      {
+        parent: 'html',
         sel: 'div.product-as-cart',
         type: 'text',
         content: 'instock',
       },
       {
         sel: 'div.product-price--final',
-        parent: 'div.product-price',
+        parent: 'html',
         type: 'text',
         content: 'price',
       },
@@ -146,6 +148,13 @@ export const shops: { [key: string]: Shop } = {
         'fetch',
         'xhr',
         'stylesheet',
+      ],
+      product: [
+        'media',
+        'font',
+        'ping',
+        'image',
+        'other',
       ],
     },
     waitUntil: {
@@ -1306,6 +1315,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'babymarkt.de': {
+    lastSelectorTestAt: "2025-02-10T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
@@ -1509,6 +1519,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'brasty.de': {
+    lastSelectorTestAt: "2025-02-13T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
@@ -1518,7 +1529,7 @@ export const shops: { [key: string]: Shop } = {
       type: 'href',
       subCategories: [
         {
-          sel: 'a.c-categories__item-link',
+          sel: 'div.ep-cat--subcat a',
           type: 'href',
           visible:false
         },
@@ -2150,6 +2161,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'coolshop.de': {
+    lastSelectorTestAt: "2025-02-13T14:00:00.000Z",
     actions: [],
     allowedHosts: ['webshop.coolshop-cdn.com'],
     active: true,
@@ -2496,7 +2508,179 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: 'domcontentloaded',
     },
   },
+  'deloox.de': {
+    lastSelectorTestAt: "2025-02-14T14:00:00.000Z",
+    actions: [],
+    active: true,
+    categories: {
+      exclude: ['mode','marken', 'beratung', 'grosshandel'],
+      sel: 'div[id*=dx_layover] >a',
+      visible: false,
+      type: 'href',
+      subCategories: [
+        {
+          sel: 'li.dx_category-menu-category a.dx_sibling-category',
+          type: 'href',
+          visible:false
+        },
+      ],
+    },
+    crawlActions: [],
+    d: 'deloox.de',
+    entryPoints: [
+      {
+        url: 'https://www.deloox.de',
+        category: 'default',
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: 'div.dx_header-logo',
+    paginationEl: [
+      {
+        type: 'scroll-and-extract',
+        sel: '#dx_pagination-infinite-down a.dx_button',
+        nav: '?page=',
+        calculation: {
+          method: 'estimate',
+          productsPerPage: 21,
+          textToMatch: 'Mehr laden',
+          dynamic: true,
+          last: '#dx_pagination-infinite-down a.dx_button',
+          sel: '#dx_pagination-infinite-down a.dx_button',
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 800,
+      max: 900,
+    },
+    product: [
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'ean',
+        path: 'gtin14',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'sku',
+        path: 'sku',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'instock',
+        path: 'offers.availability',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'price',
+        path: 'offers.price',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'mnfctr',
+        path: 'brand.name',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'name',
+        path: 'name',
+        multiple: true,
+        parent: 'div.c-body',
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'image',
+        path: 'image',
+        multiple: true,
+        parent: 'div.c-body',
+      }
+    ],
+    productList: [
+      {
+        sel: 'div.dj-article-list div[id*=article]',
+        productCntSel: [],
+        product: {
+          sel: 'div.dj-article-list div[id*=article]',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: "div.c-image > div > a",
+              type: "href"
+            },
+            {
+              content: 'image',
+              sel: 'div.c-image img.product-image',
+              type: 'src',
+            },
+            {
+              content: 'name',
+              sel: 'span.c-name',
+              type: 'text',
+            },
+            {
+              content: 'price',
+              sel: 'div.c-new',
+              type: 'text',
+            },
+          ],
+        },
+      },
+    
+    ],
+    proxyType: 'mix',
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      product: [
+        'media',
+        'font',
+        'stylesheet',
+        'ping',
+        'image',
+        'xhr',
+        'fetch',
+        'script',
+        'other',
+      ],
+      crawl: [
+        'media',
+        'font',
+        // 'stylesheet',
+        'ping',
+        'image',
+        'xhr',
+        'fetch',
+        // 'script',
+        'other',
+      ],
+    },
+    waitUntil: {
+      product: 'load',
+      entryPoint: 'load',
+    },
+  },
   'digitalo.de': {
+
     actions: [],
     active: true,
     categories: {
@@ -3333,6 +3517,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'lyko.com': {
+    lastSelectorTestAt: "2025-02-07T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
@@ -5442,6 +5627,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'reichelt.de': {
+    lastSelectorTestAt: "2025-02-08T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
@@ -5699,6 +5885,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'saturn.de': {
+    lastSelectorTestAt: "2025-02-13T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
@@ -5856,7 +6043,7 @@ export const shops: { [key: string]: Shop } = {
         type: 'parse_json_element',
         content: 'price',
         parent: 'head',
-        path: 'object.offers[0].price',
+        path: 'object.offers.price',
         multiple: true,
       },
       {
@@ -5864,7 +6051,7 @@ export const shops: { [key: string]: Shop } = {
         type: 'parse_json_element',
         content: 'instock',
         parent: 'head',
-        path: 'object.offers[0].availability',
+        path: 'object.offers.availability',
         multiple: true,
       },
       {
@@ -5884,10 +6071,20 @@ export const shops: { [key: string]: Shop } = {
         multiple: true,
       },
       {
-        sel: 'img',
-        parent: 'div.pdp-gallery-image',
-        type: 'src',
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
         content: 'image',
+        parent: 'head',
+        path: 'object.image',
+        multiple: true,
+      },
+      {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'name',
+        parent: 'head',
+        path: 'object.name',
+        multiple: true,
       },
     ],
     productList: [
@@ -6170,6 +6367,164 @@ export const shops: { [key: string]: Shop } = {
       entryPoint: 'load',
     },
   },
+  'parfuem365.de': {
+    lastSelectorTestAt: "2025-02-08T14:00:00.000Z",
+    actions: [],
+    active: true,
+    categories: {
+      exclude: [
+        'geschenksets',
+        'account',
+        'b-ware'
+      ],
+      sel: 'div.navigation--list-wrapper > ul > li > a',
+      type: 'href',
+      visible: false,
+      subCategories: [
+        {
+          visible: false,
+          sel: 'div.sidebar--categories-wrapper > div.sidebar--categories-navigation > ul > li a',
+          type: 'href',
+        }
+      ],
+    },
+    crawlActions: [],
+    d: 'parfuem365.de',
+    entryPoints: [
+      {
+        url: 'https://www.parfuem365.de',
+        category: 'default',
+      },
+    ],
+    hasEan: true,
+    manualCategories: [],
+    mimic: 'div.logo-main a',
+    paginationEl: [
+      {
+        type: 'scroll-and-extract',
+        sel: 'a.js--load-more',
+        activeSearchLoadSel: 'div.js--loading-indicator',
+        wait: false,
+        timeoutAfterBtnClick: 1000,
+        findPaginationStrategy: 'estimate',
+        visible: false,
+        nav: '?p=',
+        calculation: {
+          method: 'estimate',
+          productsPerPage: 24,
+          textToMatch: 'Mehr anzeigen',
+          dynamic: true,
+          last: 'a.js--load-more',
+          sel: 'a.js--load-more',
+        },
+      },
+    ],
+    pauseOnProductPage: {
+      pause: true,
+      min: 1000,
+      max: 1500,
+    },
+    product: [
+      {
+        sel: 'meta[property="product:price"]',
+        parent: 'html',
+        content: 'price',
+        type: 'content',
+      },
+      {
+        sel: 'meta[itemprop=gtin13]',
+        parent: 'html',
+        type: 'content',
+        content: 'ean',
+      },
+      {
+        sel: 'meta[property="og:title"]',
+        parent: 'html',
+        type: 'content',
+        content: 'name',
+      },
+      {
+        sel: 'meta[property="product:brand"]',
+        parent: 'html',
+        type: 'content',
+        content: 'mnfctr',
+      },
+      {
+        sel: 'link[itemprop=availability]',
+        parent: 'html',
+        content: 'instock',
+        type: 'href',
+      },
+      {
+        sel: "meta[name='og:image']",
+        parent: 'Html',
+        content: 'image',
+        type: 'content',
+      },
+    ],
+    productList: [
+      {
+        sel: 'div.listing',
+        productCntSel: [],
+        product: {
+          sel: 'div.listing div.product--box',
+          type: 'not_link',
+          details: [
+            {
+              content: 'link',
+              sel: 'a',
+              type: 'href',
+            },
+            {
+              content: 'image',
+              sel: 'a img',
+              type: 'data-src',
+            },
+            {
+              content: 'name',
+              sel: 'a[title]',
+              type: 'title',
+            },
+            {
+              content: 'price',
+              sel: 'span.price--default',
+              type: 'text',
+            },
+          ],
+        },
+      },
+    ],
+    proxyType: 'mix',
+    queryActions: [],
+    queryUrlSchema: [],
+    resourceTypes: {
+      crawl: [
+        'media',
+        'font',
+        // 'stylesheet',
+        'ping',
+        'image',
+        // 'xhr',
+        // 'fetch',
+        'other',
+      ],
+      product: [
+        'media',
+        'font',
+        'stylesheet',
+        'ping',
+        'image',
+        'script',
+        'xhr',
+        'fetch',
+        'other',
+      ],
+    },
+    waitUntil: {
+      product: 'load',
+      entryPoint: 'load',
+    },
+  },
   'proshop.de': {
     actions: [],
     active: true,
@@ -6341,7 +6696,14 @@ export const shops: { [key: string]: Shop } = {
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+      {
+        type: 'scroll',
+        sel: 'none',
+        name: 'Scroll to bottom',
+        action: 'scroll',
+      },
+    ],
     d: 'rossmann.de',
     entryPoints: [
       {
