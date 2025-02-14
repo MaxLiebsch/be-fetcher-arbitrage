@@ -2510,6 +2510,7 @@ export const shops: { [key: string]: Shop } = {
   },
   'deloox.de': {
     lastSelectorTestAt: "2025-02-14T14:00:00.000Z",
+    allowedHosts: ['cdn.deloox.com'],
     actions: [],
     active: true,
     categories: {
@@ -2525,7 +2526,16 @@ export const shops: { [key: string]: Shop } = {
         },
       ],
     },
-    crawlActions: [],
+    crawlActions: [
+      {
+        type: 'button',
+        sel: '#acceptCookies',
+        action:'waitBefore',
+        wait: false,
+        name: 'click on consent',
+        waitDuration: 6000,
+      }, 
+    ],
     d: 'deloox.de',
     entryPoints: [
       {
@@ -2534,12 +2544,19 @@ export const shops: { [key: string]: Shop } = {
       },
     ],
     hasEan: true,
+    javascript: {
+      sharedWorker: 'enabled',
+      webWorker: 'enabled',
+      serviceWorker: 'enabled',
+      webSocket: 'enabled',
+    },
     manualCategories: [],
     mimic: 'div.dx_header-logo',
     paginationEl: [
       {
         type: 'scroll-and-extract',
         sel: '#dx_pagination-infinite-down a.dx_button',
+        timeoutAfterBtnClick: 8000,
         nav: '?page=',
         calculation: {
           method: 'estimate',
@@ -2616,7 +2633,7 @@ export const shops: { [key: string]: Shop } = {
     ],
     productList: [
       {
-        sel: 'div.dj-article-list div[id*=article]',
+        sel: '#article-list-wrapper',
         productCntSel: [],
         product: {
           sel: 'div.dj-article-list div[id*=article]',
@@ -2666,12 +2683,12 @@ export const shops: { [key: string]: Shop } = {
         'media',
         'font',
         // 'stylesheet',
-        'ping',
+        // 'ping',
         'image',
-        'xhr',
-        'fetch',
+        // 'xhr',
+        // 'fetch',
         // 'script',
-        'other',
+        // 'other',
       ],
     },
     waitUntil: {

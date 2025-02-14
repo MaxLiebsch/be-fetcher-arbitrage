@@ -23,7 +23,7 @@ const secureMode = async () => {
   if (!shop) return;
 
   const { exceptions, resourceTypes } = shop;
-  const lnk = 'https://allesfuerzuhause.de/product/samsung-gq77s95dat-5247258/';
+  const lnk = 'https://www.deloox.de/kategorie/1103656/new-at-deloox.html?page=2';
   const requestId = uuid();
   // const page = await browser.newPage();
   const { page } = await getPage({
