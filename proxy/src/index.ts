@@ -3,16 +3,18 @@ import url from 'url';
 import net from 'net';
 import 'dotenv/config';
 import { config } from 'dotenv';
-import { allowed, ProxyType, uuid } from '@dipmaxtech/clr-pkg';
+import { ProxyType, uuid } from '@dipmaxtech/clr-pkg';
 import { getProxyForwardUrl } from './util/proxy/getProxyForwardUrl';
 import { generateProxyConnectRequest } from './util/proxy/generateProxyConnectRequest';
 import { handleForbidden } from './util/proxy/handleForbidden';
 import { handleClientsocketError } from './util/proxy/handleClientsocketError';
 import { handleServerError } from './util/proxy/handleServerError';
-import UpcomingRequestCachev2 from './util/UpcomingRequestCachev2';
+import UpcomingRequestCachev2 from './util/UpcomingRequestCache';
 import {
   connectionHealth,
+  handleAllowedDomainsAdd,
   handleCompleted,
+  handleGetAllowedDomains,
   handleNotify,
   handleProxyChange,
   handleRegister,
@@ -26,6 +28,7 @@ import {
   ProxyServiceSearchQuery,
   TypedSocket,
 } from './types/proxy';
+import { debuglog } from 'util';
 
 const PORT = 8080;
 
@@ -39,6 +42,11 @@ const status = [
   '200',
   '200 connection established',
 ];
+
+debuglog(`${new Date().toISOString()}`)
+
+
+
 const proxyConnectedStr =
   'HTTP/1.1 200 Connection Established\r\nProxy-agent: Genius Proxy\r\n\r\n';
 
@@ -62,6 +70,8 @@ const getType = (proxy: string): ProxyType => {
 
 const upReqv2 = new UpcomingRequestCachev2();
 
+const allowedDomains: string[] = [];
+
 const server = http.createServer((req, res) => {
   if (!req.url) return;
   const parsedUrl = url.parse(req.url, true);
@@ -71,6 +81,12 @@ const server = http.createServer((req, res) => {
   const { method } = req;
   if (method === 'GET') {
     switch (pathname) {
+      case '/add-allowed-domains':
+        handleAllowedDomainsAdd(allowedDomains, typedQuery, res);
+        break;
+      case '/allowed-domains':
+        handleGetAllowedDomains(allowedDomains,res);
+        break;
       case '/change-proxy':
         host = handleProxyChange(typedQuery, res);
         break;
@@ -95,12 +111,15 @@ const server = http.createServer((req, res) => {
         res.end('Not Found');
         break;
     }
+  }else{
+    res.writeHead(405, { 'Content-Type': 'text/plain' });
+    res.end('Method Not Allowed');
   }
 });
 
 server.on('connect', (req, clientSocket: TypedSocket, head) => {
   const { hostname, port } = new URL(`http://${req.url}`);
-  if (!allowed.some((domain) => hostname.includes(domain))) {
+  if (!allowedDomains.some((domain) => hostname.includes(domain))) {
     upReqv2.kill(hostname);
     handleForbidden(clientSocket);
     return;

@@ -6,7 +6,6 @@ export interface DailySalesStats extends BaseStats {
     lookupInfo: LookupInfo
     lookupCategory: LookupCategory
     queryEansOnEby: QueryEansOnEby
-    aznListings: AznListings
     ebyListings: EbyListings
   }
   
@@ -29,11 +28,6 @@ export interface DailySalesStats extends BaseStats {
   export interface QueryEansOnEby {
     elapsedTime: string
   }
-  
-  export interface AznListings {
-    elapsedTime: string
-  }
-  
-  export interface EbyListings {
+   export interface EbyListings {
     elapsedTime: string
   }

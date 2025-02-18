@@ -32,6 +32,7 @@ import { TASK_TYPES } from '../../util/taskTypes.js';
 import { updateWholesaleProgress } from '../../util/updateProgressInTasks.js';
 import { log } from '../../util/logger.js';
 import { getEanFromProduct } from '../../util/getEanFromProduct.js';
+import { setupAllowedDomainsBasedOnShops } from '../../util/setupAllowedDomains.js';
 
 export const queryEansOnEby = async (
   collection: string,
@@ -45,7 +46,9 @@ export const queryEansOnEby = async (
     const { concurrency, productLimit } = browserConfig.queryEansOnEby;
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([ebay], task.type);
     queue.actualProductLimit = task.queryEansOnEby.length;
+    await queue.connect();
 
     const eventEmitter = globalEventEmitter;
 
@@ -85,7 +88,6 @@ export const queryEansOnEby = async (
       }
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
 
-    await queue.connect();
     let infos: QueryEansOnEbyStats = {
       total: 0,
       notFound: 0,

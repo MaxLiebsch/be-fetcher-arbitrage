@@ -22,6 +22,7 @@ import { TaskCompletedStatus } from '../status.js';
 import { ScanShopStats } from '../types/taskStats/ScanShopStats.js';
 import { TaskReturnType } from '../types/TaskReturnType.js';
 import { log } from '../util/logger.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 export default async function scan(task: ScanTask): TaskReturnType {
   return new Promise(async (res, reject) => {
@@ -71,6 +72,7 @@ export default async function scan(task: ScanTask): TaskReturnType {
       proxyAuth,
       task
     );
+    await setupAllowedDomainsBasedOnShops([shop], task.type);
     await queue.connect();
 
     const statService = StatService.getSingleton(shopDomain);

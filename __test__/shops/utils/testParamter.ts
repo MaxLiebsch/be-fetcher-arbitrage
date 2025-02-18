@@ -168,6 +168,7 @@ const testParameters = {
     pages: 20,
     productPageUrl: 'https://www.fressnapf.de/p/tetra-reptomin-energy-250ml-1035195/',
     productsPerPage: 48,
+    ean: '4004218178649',
     productsPerPageAfterLoadMore: 96,
     subCategoriesCount: 6,
     mainCategoriesCount: 11,
@@ -197,7 +198,7 @@ const testParameters = {
     productPageUrl: 'https://www.galeria.de/produkt/jean-paul-gaultier-gaultier-divine-le-parfum-eau-de-parfum-intense-refill-8435415091787',
     productsPerPage: 48,
     productsPerPageAfterLoadMore: 240,
-    subCategoriesCount: 13,
+    subCategoriesCount: 12,
     mainCategoriesCount: 7,
     initialProductPageUrl: 'https://www.galeria.de/beauty/duefte',
     subCategoryUrl: 'https://www.galeria.de/beauty',
@@ -346,7 +347,7 @@ const testParameters = {
     mainCategoriesCount: 9,
     initialProductPageUrl: 'https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036',
     subCategoryUrl: 'https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036',
-    nextPageUrl: 'https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036?q=%3Arelevance%3A&page=1&pageSize=24#'
+    nextPageUrl: 'https://www.rossmann.de/de/pflege-und-duft/c/olcat1_2325036?page=1&pageSize=24#'
   },
   'saturn.de': {
     productPageUrl: 'https://www.saturn.de/de/product/_apple-iphone-xs-64gb-silver-64-gb-silber-dual-sim-142207689.html',

@@ -13,8 +13,6 @@ import {
   CONCURRENCY,
   DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL,
   MAX_RETIRES_SCRAPE_SHOP,
-  MAX_RETRIES_DAILY_SALES,
-  MAX_RETRIES_SCRAPE_EAN,
   proxyAuth,
 } from '../constants.js';
 import { checkProgress } from '../util/checkProgress.js';
@@ -30,6 +28,7 @@ import { TaskReturnType } from '../types/TaskReturnType.js';
 import { MissingShopError } from '../errors.js';
 import { log } from '../util/logger.js';
 import { updateTask } from '../db/util/tasks.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -45,7 +44,6 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
     log(`Scrape categories ${shopDomain}`);
 
     const shop = await getShop(shopDomain);
-    // Reset lastTotal to 0
     await updateTask(taskId, {
       $set: {
         lastTotal: 0,
@@ -55,10 +53,10 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
     if (shop === null) {
       return reject(new MissingShopError(`Shop ${shopDomain} not found`, task));
     }
-
+    
     const { entryPoints, proxyType, hasEan } = shop;
     const uniqueLinks: string[] = [];
-
+    
     let infos: ScrapeShopStats = {
       new: 0,
       old: 0,
@@ -100,12 +98,12 @@ async function scrapeShop(task: ScrapeShopTask): TaskReturnType {
       task
     );
     queue.actualProductLimit = productLimit;
-
+    await setupAllowedDomainsBasedOnShops([shop], task.type); 
     const interval = setInterval(
       async () => await isCompleted(),
       DEFAULT_CRAWL_CHECK_PROGRESS_INTERVAL
     );
-
+    
     let completed = false;
     let cnt = 0;
 

@@ -5,7 +5,6 @@ import {
   Shop,
 } from '@dipmaxtech/clr-pkg';
 import { differenceInHours } from 'date-fns';
-import { getShop } from '../../../db/util/shops.js';
 import { TaskCompletedStatus } from '../../../status.js';
 import { MAX_AGE_SHOP_LISTING, proxyAuth } from '../../../constants.js';
 import {
@@ -17,11 +16,12 @@ import { scrapeProductInfo } from '../../../util/deals/scrapeProductInfo.js';
 import { updateProgressNegDealAznTasks } from '../../../util/updateProgressInTasks.js';
 import { NegAznDealTask } from '../../../types/tasks/Tasks.js';
 import { NegDealsOnAznStats } from '../../../types/taskStats/NegDealsOnAzn.js';
-import { MissingShopError, TaskErrors } from '../../../errors.js';
+import { TaskErrors } from '../../../errors.js';
 import { TaskReturnType } from '../../../types/TaskReturnType.js';
 import { log } from '../../../util/logger.js';
 import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
 import { findPendingProductsForTask } from '../../../db/util/multiShopUtilities/findPendingProductsForTask.js';
+import { setupAllowedDomainsBasedOnShops } from '../../../util/setupAllowedDomains.js';
 
 const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
   const { productLimit } = task;
@@ -38,12 +38,6 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
       log(`Recovering ${type} and found ${products.length} products`);
     } else {
       log(`Starting ${type} with ${products.length} products`);
-    }
-
-    const azn = await getShop('amazon.de');
-
-    if (!azn) {
-      return rej(new MissingShopError('amazon.de', task));
     }
 
     const infos: NegDealsOnAznStats = {
@@ -71,6 +65,7 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
     await updateProgressNegDealAznTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([...shops.map(shop => shop.shop)], task.type);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
 
@@ -94,7 +89,6 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
             product.prc = isValidProduct.prc || product.prc;
             const productUpdate: Partial<DbProductRecord> = {};
             recalculateAznMargin(product, product.a_prc || 0, productUpdate);
-            // WE DONT NEED TO SCRAPE AZN LISTINGS
             await updateProductWithQuery(productId, {
               $set: {
                 ...productUpdate,
@@ -110,7 +104,6 @@ const negAznDeals = async (task: NegAznDealTask): TaskReturnType => {
         } else {
           const productUpdate: Partial<DbProductRecord> = {};
           recalculateAznMargin(product, product.a_prc || 0, productUpdate);
-          // WE DONT NEED TO SCRAPE AZN LISTINGS
           await updateProductWithQuery(productId, {
             $set: {
               ...productUpdate,

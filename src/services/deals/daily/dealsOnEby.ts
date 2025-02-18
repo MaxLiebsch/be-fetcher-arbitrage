@@ -15,6 +15,7 @@ import { countRemainingProducts } from '../../../util/countRemainingProducts.js'
 import { log } from '../../../util/logger.js';
 import { findPendingProductsWithAggForTask } from '../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js';
 import { scrapeTotalOffers } from '../../../util/deals/scrapeTotalOffers.js';
+import { setupAllowedDomainsBasedOnShops } from '../../../util/setupAllowedDomains.js';
 
 const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
   const { productLimit } = task;
@@ -75,6 +76,7 @@ const dealsOnEby = async (task: DealOnEbyTask): TaskReturnType => {
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = _productLimit;
+    await setupAllowedDomainsBasedOnShops([eby, ...shops.map(shop => shop.shop)], task.type);
     await queue.connect();
 
     await Promise.all(

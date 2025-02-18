@@ -32,6 +32,7 @@ import { updateProductWithQuery } from '../db/util/crudProducts.js';
 import { priceToString } from '../util/lookupInfoHelper.js';
 import { getEanFromProduct } from '../util/getEanFromProduct.js';
 import { checkForExistingAznProducts } from '../util/checkForExistingProducts.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 export default async function wholesale(task: WholeSaleTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -97,7 +98,7 @@ export default async function wholesale(task: WholeSaleTask): TaskReturnType {
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
     await multiQueueInitializer(task, queuesWithId, queues, eventEmitter);
-
+    await setupAllowedDomainsBasedOnShops([toolInfo], task.type) 
     const queueIterator = yieldQueues(queues);
 
     const isCompleted = async () => {

@@ -28,11 +28,13 @@ import { WholeSaleEbyTask } from "../../types/tasks/Tasks.js";
 import { TASK_TYPES } from "../../util/taskTypes.js";
 import { updateWholesaleProgress } from "../../util/updateProgressInTasks.js";
 import { log } from "../../util/logger.js";
+import { ShopPick } from "../../types/shops.js";
+import { setupAllowedDomainsBasedOnShops } from "../../util/setupAllowedDomains.js";
 
 export const lookupCategory = async (
   collection: string,
   ebay: Shop,
-  origin: Pick<Shop, "d" | "ean" | "hasEan">,
+  origin: ShopPick,
   task: DailySalesTask | WholeSaleEbyTask
 ): Promise<MultiStageReturnType> =>
   new Promise(async (res, rej) => {
@@ -52,6 +54,8 @@ export const lookupCategory = async (
     };
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([ebay], task.type)
+    await queue.connect();
     queue.actualProductLimit = task.lookupCategory && task.lookupCategory.length;
     const eventEmitter = globalEventEmitter;
     
@@ -97,7 +101,6 @@ export const lookupCategory = async (
         });
       }
     }, DEFAULT_CHECK_PROGRESS_INTERVAL);
-    await queue.connect();
 
     while (task.progress.lookupCategory.length) {
       const product = task.lookupCategory.pop();

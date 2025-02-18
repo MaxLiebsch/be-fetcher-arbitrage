@@ -3,6 +3,7 @@ import clientPool from "./mongoPool.js";
 import os from "os";
 export const arbispotter_db = "arbispotter";
 export const crawl_data_db = "crawler-data";
+export const config_db = "config";
 export const sitemapcollectionName = "sitemaps";
 export const tasksCollectionName = "tasks";
 export const logsCollectionName = "logs";
@@ -16,6 +17,11 @@ export const getCrawlDataCollection = async (name: string) => {
   const client = await clientPool[crawl_data_db];
   return client.db().collection(name);
 };
+
+export const getSettingsCol = async ()=> {
+  const client = await clientPool[config_db];
+  return client.db('config').collection('settings');
+}
 
 export const getArbispotterCollection = async (name: string) => {
   const client = await clientPool[arbispotter_db];

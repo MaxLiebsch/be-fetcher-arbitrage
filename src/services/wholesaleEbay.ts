@@ -114,7 +114,7 @@ export const wholeSaleEby = async (task: WholeSaleEbyTask): TaskReturnType => {
         const lookupCategoryInfo = await lookupCategory(
           wholeSaleColname,
           ebay,
-          { d: "wholeSaleEby", ean: "", hasEan: true },
+          { d: "wholeSaleEby", ean: "", hasEan: true, proxyType: "mix", active: true },
           task
         );
         infos["lookupCategory"] = lookupCategoryInfo.infos;

@@ -21,7 +21,6 @@ export const resetProperty = async (query) => {
   for (let index = 0; index < activeShops.length; index++) {
     const shop = activeShops[index];
     const result = await productCol.updateMany({ sdmn: shop.d }, query);
-    console.log(shop.d, "result:", result.modifiedCount);
   }
 };
 

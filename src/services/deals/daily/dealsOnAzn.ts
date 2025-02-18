@@ -5,7 +5,6 @@ import {
   Shop,
 } from '@dipmaxtech/clr-pkg';
 import { differenceInHours } from 'date-fns';
-import { getShop } from '../../../db/util/shops.js';
 import { TaskCompletedStatus } from '../../../status.js';
 import { MAX_AGE_SHOP_LISTING, proxyAuth } from '../../../constants.js';
 import {
@@ -18,11 +17,11 @@ import { updateProgressDealsOnAznTasks } from '../../../util/updateProgressInTas
 import { DealsOnAznStats } from '../../../types/taskStats/DealsOnAznStats.js';
 import { DealOnAznTask } from '../../../types/tasks/Tasks.js';
 import { TaskReturnType } from '../../../types/TaskReturnType.js';
-import { MissingShopError } from '../../../errors.js';
 import { log } from '../../../util/logger.js';
 import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
 import { findPendingProductsForTask } from '../../../db/util/multiShopUtilities/findPendingProductsForTask.js';
 import { ShopPick } from '../../../types/shops.js';
+import { setupAllowedDomainsBasedOnShops } from '../../../util/setupAllowedDomains.js';
 
 const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
   const { productLimit } = task;
@@ -40,12 +39,6 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
       log(`Recovering ${type} and found ${productsWithShop.length} products`);
     } else {
       log(`Starting ${type} with ${productsWithShop.length} products`);
-    }
-
-    const azn = await getShop('amazon.de');
-
-    if (!azn) {
-      return rej(new MissingShopError('amazon.de', task));
     }
 
     const infos: DealsOnAznStats = {
@@ -85,6 +78,7 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
     queue.actualProductLimit = _productLimit;
+    await setupAllowedDomainsBasedOnShops([...shops.map(shop => shop.shop)], task.type);
     await queue.connect();
 
     await Promise.all(
@@ -111,7 +105,6 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
               product.prc = isValidProduct.prc || product.prc;
               const productUpdate: Partial<DbProductRecord> = {};
               recalculateAznMargin(product, product.a_prc || 0, productUpdate);
-              // WE DONT NEED TO SCRAPE AZN LISTINGS
               await updateProductWithQuery(productId, {
                 $set: {
                   ...productUpdate,
@@ -127,7 +120,6 @@ const dealsOnAzn = async (task: DealOnAznTask): TaskReturnType => {
           } else {
             const productUpdate: Partial<DbProductRecord> = {};
             recalculateAznMargin(product, product.a_prc || 0, productUpdate);
-            // WE DONT NEED TO SCRAPE AZN LISTINGS
             await updateProductWithQuery(productId, {
               $set: {
                 dealAznUpdatedAt: new Date().toISOString(),

@@ -10,4 +10,5 @@ var/*
 dist
 .vscode/launch.json
 __test__/static/*
+emails
 .vscode/tasks.json

@@ -29,6 +29,7 @@ import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
 import { ScrapeShopStats } from '../../types/taskStats/ScrapeShopStats.js';
 import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
 import { log } from '../../util/logger.js';
+import { setupAllowedDomainsBasedOnShops } from '../../util/setupAllowedDomains.js';
 
 export const scrapeProducts = async (
   shop: Shop,
@@ -74,6 +75,7 @@ export const scrapeProducts = async (
       elapsedTime: '',
     };
     const queue = new CrawlerQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([shop], task.type);
     let productLimit = task.productLimit;
     queue.actualProductLimit = productLimit;
 
@@ -231,10 +233,6 @@ export const scrapeProducts = async (
 
                 if (cat_prop === 'complete' && eby_prop === 'complete') {
                   task.progress.ebyListings.push(productId);
-                }
-
-                if (info_prop === 'complete') {
-                  task.progress.aznListings.push(productId);
                 }
               } else {
                 transformedProduct['sdmn'] = salesDbName;

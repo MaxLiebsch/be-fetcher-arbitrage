@@ -18,6 +18,7 @@ import { salesDbName } from "../../db/mongo.js";
 import { DailySalesTask } from "../../types/tasks/DailySalesTask.js";
 import { DealsOnEbyStats } from "../../types/taskStats/DealsOnEbyStats.js";
 import { MultiStageReturnType } from "../../types/DailySalesReturnType.js";
+import { setupAllowedDomainsBasedOnShops } from "../../util/setupAllowedDomains.js";
 
 export const crawlEbyListings = (
   ebay: Shop,
@@ -53,6 +54,7 @@ export const crawlEbyListings = (
     const { concurrency, productLimit } = browserConfig.crawlEbyListings;
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([ebay], task.type)
     queue.actualProductLimit = task.ebyListings.length;
 
     const eventEmitter = globalEventEmitter;

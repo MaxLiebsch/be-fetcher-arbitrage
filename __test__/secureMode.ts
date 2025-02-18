@@ -9,21 +9,23 @@ import {
 import { updateShops } from '../src/db/util/shops.js';
 import { shops } from '../src/shops.js';
 import { mainBrowser } from './helper/getMainBrowser.js';
-
+import AllowedDomainService from '../src/model/AllowedDomainService.js';
 
 const secureMode = async () => {
-  const sleep = (delay: number) =>
-    new Promise((resolve) => setTimeout(resolve, delay));
   await updateShops(shops);
   const browser = await mainBrowser(CHROME_VERSIONS[0], proxyAuth);
-  const shopDomain = 'allesfuerzuhause.de';
+  const shopDomain = 'galaxus.de';
   const proxyType = 'mix';
   const shop = shops[shopDomain];
-  console.log('shop:', shop.d);
   if (!shop) return;
+  
+  const allowedDomainService = new AllowedDomainService()
+  await allowedDomainService.addAll()
+  await allowedDomainService.setupDomains([shopDomain, ...(shop?.allowedHosts || [])])
+  console.log('allowedDomains:', await allowedDomainService.allowedDomains())
 
   const { exceptions, resourceTypes } = shop;
-  const lnk = 'https://www.deloox.de/kategorie/1103656/new-at-deloox.html?page=2';
+  const lnk = 'https://www.galaxus.de/de/sale';
   const requestId = uuid();
   // const page = await browser.newPage();
   const { page } = await getPage({

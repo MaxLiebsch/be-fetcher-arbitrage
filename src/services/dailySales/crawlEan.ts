@@ -29,6 +29,7 @@ import { salesDbName } from '../../db/mongo.js';
 import { DailySalesTask } from '../../types/tasks/DailySalesTask.js';
 import { ScrapeEanStats } from '../../types/taskStats/ScrapeEanStats.js';
 import { MultiStageReturnType } from '../../types/DailySalesReturnType.js';
+import { setupAllowedDomainsBasedOnShops } from '../../util/setupAllowedDomains.js';
 
 export const crawlEans = async (
   shop: Shop,
@@ -54,6 +55,7 @@ export const crawlEans = async (
     };
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([shop], task.type)
     queue.actualProductLimit = task.crawlEan.length;
     const eventEmitter = globalEventEmitter;
 

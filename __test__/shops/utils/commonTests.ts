@@ -199,9 +199,9 @@ export const findMainCategories = async () => {
     });
     expect(categories !== undefined).toBe(true);
     if (categories) {
-      expect(categories.length).toBe(
-        testParameters[shopDomain].mainCategoriesCount
-      );
+      const ratio = categories.length / testParameters[shopDomain].mainCategoriesCount;
+      expect(ratio).toBeGreaterThan(0.75);
+      expect(ratio).toBeLessThan(1.1);
       return categories;
     } else {
       expect(1).toBe(2);

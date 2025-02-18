@@ -27,6 +27,7 @@ import { findPendingProductsForMatchTask } from '../db/util/singleShopUtilities/
 import queryAzn from '../util/match/queryAzn.js';
 import queryEby from '../util/match/queryEby.js';
 import { getProductsCol } from '../db/mongo.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 export default async function matchProducts(
   task: MatchProductsTask,
@@ -41,13 +42,10 @@ export default async function matchProducts(
       type,
     } = task;
 
-    const srcShop = await getShop(shopDomain);
-    if (!srcShop) return reject(new MissingShopError('', task));
-
     const shops = await findShops([shopDomain, 'amazon.de', 'ebay.de']);
     if (shops === null) return reject(new MissingShopError('', task));
 
-    const { hasEan, ean } = srcShop;
+    const { hasEan, ean } = shops[shopDomain];
 
     const eanProp = Boolean(hasEan || ean);
 
@@ -98,6 +96,7 @@ export default async function matchProducts(
       proxyAuth,
       task,
     );
+    await setupAllowedDomainsBasedOnShops([...Object.values(shops)], task.type) 
     await queue.connect();
 
     let completed = false;

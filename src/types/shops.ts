@@ -2,7 +2,7 @@ import { Shop } from "@dipmaxtech/clr-pkg";
 
 export type ShopPick = Pick<
   Shop,
-  "d" | "hasEan" | "ean" | "active" | "proxyType"
+  "d" | "hasEan" | "ean" | "active" | "proxyType" | "allowedHosts"
 >;
 
 export interface PendingShop {

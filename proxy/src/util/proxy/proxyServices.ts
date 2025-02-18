@@ -1,7 +1,7 @@
 import { ServerResponse } from 'http';
 import 'dotenv/config';
 import { config } from 'dotenv';
-import UpcomingRequestCachev2 from '../UpcomingRequestCachev2';
+import UpcomingRequestCachev2 from '../UpcomingRequestCache';
 import { Proxies, ProxyServiceSearchQuery } from '../../types/proxy';
 import { ProxyType } from '@dipmaxtech/clr-pkg';
 import path from 'path';
@@ -19,7 +19,6 @@ const proxies: Proxies = {
   de: de_host,
   mix: mix_host,
 };
-
 
 function handleErrors(
   res: ServerResponse,
@@ -142,4 +141,23 @@ export function handleCompleted(
   }
   upReqv2.kill(requestId);
   handleSuccess(res, 200, `Request completed`);
+}
+
+export function handleAllowedDomainsAdd(
+  allowedDomains: string[],
+  query: ProxyServiceSearchQuery,
+  res: ServerResponse
+) {
+  const { domains } = query;
+  const parsedDomains = JSON.parse(decodeURIComponent(domains));
+  allowedDomains.length = 0;
+  allowedDomains.push(...parsedDomains);
+  handleSuccess(res, 200, 'Domains allowed');
+}
+
+export function handleGetAllowedDomains(
+  allowedDomains: string[],
+  res: ServerResponse
+) {
+  handleSuccess(res, 200, JSON.stringify(allowedDomains));
 }

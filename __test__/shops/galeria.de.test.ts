@@ -14,8 +14,14 @@ import {
   productPageCount,
 } from './utils/commonTests.js';
 
-const shopDomain = 'galeria.de';
-const proxyType = 'de';
+const match = module.filename.match(/shops\\(.*?\.\w+)/);
+let shopDomain: string | null = null;
+if (match && match[1]) {
+    shopDomain = match[1];
+} else {
+    console.log("No match found");
+}
+if(!shopDomain) throw new Error("Shop domain not found in file path");
 
 describe(shopDomain.charAt(0).toUpperCase() + shopDomain.slice(1), () => {
   beforeAll(async () => {

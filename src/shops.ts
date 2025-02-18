@@ -163,6 +163,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'aldi-onlineshop.de': {
+    lastSelectorTestAt: "2025-02-14T14:00:00.000Z",
     actions: [],
     allowedHosts: [
       'algolia.net',
@@ -2533,7 +2534,7 @@ export const shops: { [key: string]: Shop } = {
         action:'waitBefore',
         wait: false,
         name: 'click on consent',
-        waitDuration: 6000,
+        waitDuration: 12000,
       }, 
     ],
     d: 'deloox.de',
@@ -2556,7 +2557,7 @@ export const shops: { [key: string]: Shop } = {
       {
         type: 'scroll-and-extract',
         sel: '#dx_pagination-infinite-down a.dx_button',
-        timeoutAfterBtnClick: 8000,
+        timeoutAfterBtnClick: 15000,
         nav: '?page=',
         calculation: {
           method: 'estimate',
@@ -3881,6 +3882,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'fressnapf.de': {
+    lastSelectorTestAt: "2025-02-18T14:00:00.000Z",
     actions: [],
     active: true,
     allowedHosts: ['fressnapf.app.baqend.com', 'api.os.fressnapf.com'],
@@ -3962,6 +3964,12 @@ export const shops: { [key: string]: Shop } = {
         path: 'sku',
       },
       {
+        sel: "script[type='application/ld+json']",
+        type: 'parse_json_element',
+        content: 'name',
+        path: 'name',
+      },
+      {
         parent: 'div.zoom-image.g-image',
         sel: 'img',
         type: 'src',
@@ -4017,10 +4025,11 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'galaxus.de': {
+    lastSelectorTestAt: "2025-02-18T14:00:00.000Z",
     actions: [],
-    allowedHosts: ['static02.galaxus.com', 'ub.galaxus.de'],
+    allowedHosts: ['static02.galaxus.com', 'ub.galaxus.de', 'static03.galaxus.com'],
     active: true,
-    watchedRoutes: ['/graphql/get-product-list-counts'],
+    watchedRoutes: ['/graphql/get-product-list-counts', '/graphql/get-daily-deal-previews', '/graphql/product-type-filter-products'],
     categories: {
       exclude: [
         'gesamtsortiment',
@@ -4284,6 +4293,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'galeria.de': {
+    lastSelectorTestAt: "2025-02-18T14:00:00.000Z",
     actions: [],
     active: true,
     ean: '-[0-9]{11,13}',
@@ -5646,6 +5656,7 @@ export const shops: { [key: string]: Shop } = {
   'reichelt.de': {
     lastSelectorTestAt: "2025-02-08T14:00:00.000Z",
     actions: [],
+    allowedHosts: ['reichelt.com'], 
     active: true,
     categories: {
       categoryNameSegmentPos: 0,
@@ -6473,8 +6484,8 @@ export const shops: { [key: string]: Shop } = {
         type: 'href',
       },
       {
-        sel: "meta[name='og:image']",
-        parent: 'Html',
+        sel: "meta[property='og:image']",
+        parent: 'html',
         content: 'image',
         type: 'content',
       },
@@ -6694,10 +6705,12 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'rossmann.de': {
+    lastSelectorTestAt: "2025-02-18T14:00:00.000Z",
     actions: [],
     active: true,
     categories: {
-      exclude: ['marken', 'ideenwelt', 'angebote'],
+      exclude: ['marken', 'ideenwelt'],
+      visible: false,
       sel: 'div.rm-navigation__group--main li.rm-navigation__item div.rm-navigation__item-wrap > span> a.rm-cms__link',
       type: 'href',
       subCategories: [
@@ -6746,6 +6759,7 @@ export const shops: { [key: string]: Shop } = {
         },
         calculation: {
           method: 'find_highest',
+          dynamic: true,
           last: 'div.rm-pagination a',
           sel: 'div.rm-pagination a',
         },
@@ -6759,31 +6773,37 @@ export const shops: { [key: string]: Shop } = {
     product: [
       {
         sel: 'meta[itemprop=price]',
-        parent: 'section.rm-productdetail',
+        parent: 'html',
         type: 'content',
         content: 'price',
       },
       {
         sel: 'span[itemprop=sku]',
-        parent: 'section.rm-productdetail',
+        parent: 'html',
         type: 'content',
         content: 'ean',
       },
       {
         sel: 'span[itemprop=brand] meta[itemprop=name]',
-        parent: 'section.rm-productdetail',
+        parent: 'html',
         type: 'content',
         content: 'mnfctr',
       },
       {
-        sel: 'div.rm-product__card div.rm-product__title',
-        parent: 'section.rm-productdetail',
-        type: 'text',
+        sel: 'meta[property="og:image"]',
+        parent: 'html',
+        type: 'content',
+        content: 'image',
+      },
+      {
+        sel: 'meta[property="og:title"]',
+        parent: 'html',
+        type: 'content',
         content: 'name',
       },
       {
         sel: "meta[itemprop='availability']",
-        parent: 'div.rm-product-structured-data',
+        parent: 'html',
         type: 'content',
         content: 'instock',
       },
@@ -6838,7 +6858,6 @@ export const shops: { [key: string]: Shop } = {
         'script',
         'fetch',
         'xhr',
-        'stylesheet',
       ],
     },
     waitUntil: {

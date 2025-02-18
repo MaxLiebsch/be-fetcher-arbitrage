@@ -31,6 +31,7 @@ import { log } from '../../util/logger.js';
 import { findExistingProdutAsins } from '../../util/checkForExistingProducts.js';
 import { updateProductWithQuery } from '../../db/util/crudProducts.js';
 import { eansReduce } from '../../util/eansReduce.js';
+import { setupAllowedDomainsBasedOnShops } from '../../util/setupAllowedDomains.js';
 
 export const lookupInfo = async (
   sellerCentral: Shop,
@@ -106,7 +107,8 @@ export const lookupInfo = async (
         }
       )
     );
-
+    await setupAllowedDomainsBasedOnShops([sellerCentral], task.type)
+    
     async function isProcessComplete(queue: QueryQueue) {
       if (infos.total === productLimit) {
         interval && clearInterval(interval);

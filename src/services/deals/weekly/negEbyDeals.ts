@@ -15,6 +15,7 @@ import { log } from '../../../util/logger.js';
 import { countRemainingProducts } from '../../../util/countRemainingProducts.js';
 import { findPendingProductsWithAggForTask } from '../../../db/util/multiShopUtilities/findPendingProductsWithAggForTask.js';
 import { scrapeTotalOffers } from '../../../util/deals/scrapeTotalOffers.js';
+import { setupAllowedDomainsBasedOnShops } from '../../../util/setupAllowedDomains.js';
 
 const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
   const { productLimit } = task;
@@ -60,6 +61,7 @@ const negEbyDeals = async (task: NegEbyDealTask): TaskReturnType => {
     await updateProgressNegDealEbyTasks();
 
     const queue = new QueryQueue(concurrency, proxyAuth, task);
+    await setupAllowedDomainsBasedOnShops([eby], task.type);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
 

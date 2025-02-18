@@ -20,21 +20,10 @@ const yesterday = sub(today, { days: 1 });
 describe('crawlproducts', () => {
   beforeAll(async () => {
     await updateShops(shops);
-    // await deleteTasks();
-    // const tasks = read(
-    //   path(`__test__/static/collections/crawler-data.tasks.json`),
-    //   "json"
-    // );
-    // if (!tasks) throw new Error("Tasks not found");
-    // const _tasks = tasks.map((t: any) => {
-    //   delete t._id;
-    //   return t;
-    // })
-    // await insertTasks(_tasks);
   });
   test('Scrape shop', async () => {
     const task = (await findTask({
-      id: process.argv[3],
+      id: process.argv[1],
       
     })) as ScrapeShopTask;
     if (!task) {

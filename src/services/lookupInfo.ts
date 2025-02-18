@@ -38,6 +38,7 @@ import { uniqueDocuments } from '../util/uniqueDocuments.js';
 import { eansReduce } from '../util/eansReduce.js';
 import { findExistingProdutAsins } from '../util/checkForExistingProducts.js';
 import { updateProductWithQuery } from '../db/util/crudProducts.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -103,7 +104,6 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
     const queryQueues: QueryQueue[] = [];
     const queuesWithId: { [key: string]: QueryQueue } = {};
     const eventEmitter = globalEventEmitter;
-
     let completed = false;
     let cnt = 0;
 
@@ -183,7 +183,7 @@ export default async function lookupInfo(task: LookupInfoTask): TaskReturnType {
         }
       )
     );
-
+    await setupAllowedDomainsBasedOnShops([toolInfo], task.type) 
     const queueIterator = yieldQueues(queryQueues);
 
     const eans = eansReduce(

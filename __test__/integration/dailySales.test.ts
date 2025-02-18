@@ -20,7 +20,7 @@ describe('Daily Sales', () => {
     const logger = new LocalLogger().createLogger('DAILY_SALES');
     setTaskLogger(logger, 'TASK_LOGGER');
 
-    const task = await findTask({ id: process.argv[1] });
+    const task = await findTask({ shopDomain: process.argv[1], type: "DAILY_SALES" });
   
 
     if (!task) {

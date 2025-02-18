@@ -34,6 +34,7 @@ export type ProxyContext = {
 export interface ProxyServiceSearchQuery {
   requestId: string;
   host: string;
+  domains: string;
   hosts: string;
   proxy: ProxyType;
   prevProxyType: ProxyType;

@@ -14,7 +14,6 @@ import {
   MIN_DAILY_SALES,
   SAVEGUARD_INCREASE_PAGE_LIMIT_RUNAWAY_THRESHOLD,
 } from "../constants.js";
-import { scrapeAznListingsDailyDeals } from "./dailySales/scrapeAznListings.js";
 import calculatePageLimit from "../util/calculatePageLimit.js";
 import { updateTask } from "../db/util/tasks.js";
 import { getElapsedTime } from "../util/dates.js";
@@ -71,7 +70,6 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
     const sellerCentral = shops["sellercentral.amazon.de"];
     const ebay = shops["ebay.de"];
     const origin = shops[shopDomain];
-    const amazon = shops["amazon.de"];
 
     const infos: DailySalesStats = {
       total: 0,
@@ -89,9 +87,6 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
         elapsedTime: "",
       },
       queryEansOnEby: {
-        elapsedTime: "",
-      },
-      aznListings: {
         elapsedTime: "",
       },
       ebyListings: {
@@ -308,41 +303,6 @@ export const dailySales = async (task: DailySalesTask): TaskReturnType => {
     }
 
     infos.lookupCategory["elapsedTime"] =
-      getElapsedTime(stepStartTime).elapsedTimeStr;
-
-    /* AznListings */
-    if (task.progress.aznListings.length > 0) {
-      const products = await findProductsNoLimit({
-        _id: { $in: task.progress.aznListings },
-      });
-      if (products.length) {
-        log(`DailySales: AznListings ${products.length}`);
-        task.aznListings = products;
-        task.browserConfig.crawlAznListings.productLimit = products.length;
-        const crawlAznListingsInfo = await scrapeAznListingsDailyDeals(
-          amazon,
-          origin,
-          task
-        );
-        infos["aznListings"] = crawlAznListingsInfo.infos;
-        queueStats.aznListings = crawlAznListingsInfo.queueStats;
-      } else {
-        log(
-          `DailySales Progress ${task.progress.aznListings.length} but no products found`
-        );
-        await updateTask(taskId, {
-          $set: {
-            progress: {
-              ...task.progress,
-              aznListings: [],
-            },
-          },
-        })
-      }
-    } else {
-      log(`DailySales: AznListings 0`);
-    }
-    infos.aznListings["elapsedTime"] =
       getElapsedTime(stepStartTime).elapsedTimeStr;
 
     /* EbyListings */

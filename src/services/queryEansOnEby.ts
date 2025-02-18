@@ -29,6 +29,7 @@ import { TaskReturnType } from '../types/TaskReturnType.js';
 import { log } from '../util/logger.js';
 import { countRemainingProducts } from '../util/countRemainingProducts.js';
 import { findPendingProductsForTask } from '../db/util/multiShopUtilities/findPendingProductsForTask.js';
+import { setupAllowedDomainsBasedOnShops } from '../util/setupAllowedDomains.js';
 
 export default async function queryEansOnEby(
   task: QueryEansOnEbyTask
@@ -80,26 +81,23 @@ export default async function queryEansOnEby(
     infos.locked = productsWithShop.length;
 
     const startTime = Date.now();
+    
+    const toolInfo = await getShop('ebay.de');
+    if (!toolInfo) {
+      return reject(new MissingShopError(`No shop found for ebay.de`, task));
+    }
+    const { proxyType } = toolInfo;
 
     const queue = new QueryQueue(
       task?.concurrency ? task.concurrency : CONCURRENCY,
       proxyAuth,
       task
     );
+    await setupAllowedDomainsBasedOnShops([toolInfo], task.type);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
 
-    const toolInfo = await getShop('ebay.de');
 
-    if (!toolInfo) {
-      return reject(new MissingShopError(`No shop found for ebay.de`, task));
-    }
-
-    const { proxyType } = toolInfo;
-
-    if (!toolInfo) {
-      return reject(new MissingShopError(`No shop found for ebay.de`, task));
-    }
 
     let completed = false;
     let cnt = 0;

@@ -32,6 +32,7 @@ import { log } from "../util/logger.js";
 import { countRemainingProducts } from "../util/countRemainingProducts.js";
 import { setTaskId } from "../db/util/queries.js";
 import { findPendingProductsForTask } from "../db/util/multiShopUtilities/findPendingProductsForTask.js";
+import { setupAllowedDomainsBasedOnShops } from "../util/setupAllowedDomains.js";
 
 export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
   return new Promise(async (resolve, reject) => {
@@ -82,6 +83,7 @@ export default async function crawlEan(task: ScrapeEansTask): TaskReturnType {
       proxyAuth,
       task
     );
+    await setupAllowedDomainsBasedOnShops([...shops.map(shop => shop.shop)], task.type);
     queue.actualProductLimit = _productLimit;
     await queue.connect();
 
