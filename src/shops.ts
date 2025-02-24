@@ -725,6 +725,7 @@ export const shops: { [key: string]: Shop } = {
     },
   },
   'alza.de': {
+    lastSelectorTestAt: "2025-02-18T14:00:00.000Z",
     actions: [],
     active: true,
     allowedHosts: ['cdn.alza.cz', '1603811301.rsc.cdn77.org'],
@@ -1318,6 +1319,7 @@ export const shops: { [key: string]: Shop } = {
   'babymarkt.de': {
     lastSelectorTestAt: "2025-02-10T14:00:00.000Z",
     actions: [],
+    allowedHosts: ['www.babymarkt.com'],
     active: true,
     categories: {
       exclude: ['mode', 'beratung'],
@@ -2893,6 +2895,9 @@ export const shops: { [key: string]: Shop } = {
       'product-search.services.dmtech.com',
       'assets.dm.de',
       'products.dm.de',
+      'omt.dm.de',
+      'exc.mm.dm.de',
+      'sandbox-test.om.dm.de',
       'content.services.dmtech.com',
     ],
     categories: {
@@ -4029,7 +4034,7 @@ export const shops: { [key: string]: Shop } = {
     actions: [],
     allowedHosts: ['static02.galaxus.com', 'ub.galaxus.de', 'static03.galaxus.com'],
     active: true,
-    watchedRoutes: ['/graphql/get-product-list-counts', '/graphql/get-daily-deal-previews', '/graphql/product-type-filter-products'],
+    watchedRoutes: ['/graphql/get-sale-products','/graphql/get-product-list-counts', '/graphql/get-daily-deal-previews', '/graphql/product-type-filter-products'],
     categories: {
       exclude: [
         'gesamtsortiment',
@@ -4121,12 +4126,6 @@ export const shops: { [key: string]: Shop } = {
         path: 'offers.availability',
         multiple: true,
         parent: 'head',
-      },
-      {
-        sel: 'meta[property="og:availability"]',
-        parent: 'head',
-        type: 'content',
-        content: 'instock',
       },
       {
         sel: "script[type='application/ld+json']",

@@ -20,6 +20,7 @@ export const getCrawlDataCollection = async (name: string) => {
 
 export const getSettingsCol = async ()=> {
   const client = await clientPool[config_db];
+  console.log('client:', client)
   return client.db('config').collection('settings');
 }
 
@@ -79,7 +80,6 @@ export const createCollection = async (name: string) => {
   await collection.createIndex({ info_prop: 1 });
   await collection.createIndex({ eby_prop: 1 });
   await collection.createIndex({ keepaUpdatedAt: 1 });
-  await collection.createIndex({ keepaEanUpdatedAt: 1 });
   await collection.createIndex({ dealEbyUpdatedAt: 1 });
   await collection.createIndex({ dealAznUpdatedAt: 1 });
   await collection.createIndex({ ebyUpdatedAt: 1 });

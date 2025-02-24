@@ -200,17 +200,7 @@ export async function updateStats() {
               },
             },
             { $count: 'count' },
-          ],
-          keepaEan: [
-            {
-              $match: {
-                keepaEanUpdatedAt: {
-                  $gt: last24h,
-                },
-              },
-            },
-            { $count: 'count' },
-          ],
+          ], 
           products: [
             {
               $match: {

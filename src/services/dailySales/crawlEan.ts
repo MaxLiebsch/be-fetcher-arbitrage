@@ -1,6 +1,5 @@
 import {
   AddProductInfoProps,
-  DbProductRecord,
   globalEventEmitter,
   NotFoundCause,
   ObjectId,
