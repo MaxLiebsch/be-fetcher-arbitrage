@@ -22,7 +22,7 @@ export const sendMail = async (mail: any) => {
   try {
     const info = await transporter.sendMail({
       from: process.env.SMTP_USER, // sender address
-      to: [process.env.MAIL_RECIPIENT_1, process.env.MAIL_RECIPIENT_2], // list of receivers
+      to: [process.env.MAIL_RECIPIENT_1], // list of receivers
       ...mail,
     });
   } catch (error) {
